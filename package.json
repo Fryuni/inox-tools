@@ -1,0 +1,17 @@
+{
+  "name": "inox-tools",
+  "version": "0.0.0",
+  "private": true,
+  "keywords": [
+    "astro",
+    "extensions",
+    "integrations",
+    "dev-tools"
+  ],
+  "license": "MIT",
+  "author": "Luiz Ferraz <luiz@lferraz.com>",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}

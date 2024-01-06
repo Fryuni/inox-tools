@@ -1,0 +1,34 @@
+{
+  "name": "{{ name }}",
+  "version": "0.0.0",
+  {{#if description}}
+  "description": "{{ description }}",
+  {{/if}}
+  "repository": "https://github.com/Fryuni/inox-tools.git",
+  "license": "MIT",
+  "author": "Luiz Ferraz <luiz@lferraz.com>",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "README.md",
+    "dist"
+  ],
+  "type": "module",
+  "keywords": ["vite-plugin"],
+  "devDependencies": {
+      "rimraf": "^3.0.2",
+      "tsup": "^6.3.0",
+      "typescript": "^4.6.4",
+      "vite": "^3.2.0"
+  },
+  "scripts": {
+      "dev": "vite --host",
+      "clean": "rimraf ./lib",
+      "build": "tsup ./src/index.ts --outDir "lib" --dts --format cjs,esm",
+      "prepublish": "npm "run" clean && npm run build"
+  }
+}

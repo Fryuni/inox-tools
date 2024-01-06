@@ -21,8 +21,8 @@ defaults:
     shell: bash
 
 env:
-  # TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-  # TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
   FORCE_COLOR: true
   ASTRO_TELEMETRY_DISABLED: true
   # 7 GiB by default on GitHub, setting to 6 GiB

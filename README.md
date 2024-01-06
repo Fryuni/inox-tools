@@ -1,9 +1,5 @@
 <p align="center">
     <img alt="InoxTools" width="350px" src="./assets/shield.png"/>
-    <br/>
-    <strong>InoxTools</strong>
-    <br/>
-    Oxygen-free tools for Astronauts
 </p>
 
 ---

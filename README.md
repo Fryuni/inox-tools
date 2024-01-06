@@ -1,2 +1,16 @@
-# inox-tools
-Oxygen-free tools for Astronauts.
+<center>
+    <img alt="InoxTools" src="./assets/shield.png"/>
+</center>
+
+# InoxTools
+
+Welcome to InoxTools, a collection of libraries and tools for Astro as surrounding ecosystem!
+Designed with the the goal to challenge the impossible and push the limits of Astro and its tools by exploring and enveloping tricky and advanced patterns into friendly and fresh pieces.
+
+InoxTools offers a suite of "oxygen-free tools for Astronauts" - a playful nod to our space-themed, high-efficiency ecosystem that I aim to elevate to new heights with these tools!
+
+# License
+
+All the libraries under InoxTools as well as all the libraries defined in this repo are open-sourced software licensed under the MIT License.
+
+

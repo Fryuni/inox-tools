@@ -10,18 +10,18 @@
   ],
   "license": "MIT",
   "author": "Luiz Ferraz <luiz@lferraz.com>",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "build": "turbo run build",
     "format": "pnpm run format:code",
     "format:code": "prettier -w \"**/*\" --ignore-unknown --cache",
     "format:imports": "organize-imports-cli ./packages/*/tsconfig.json ./packages/*/*/tsconfig.json",
-    "release": "pnpm run build && changeset publish",
     "lint": "eslint . --report-unused-disable-directives",
-    "version": "changeset version && pnpm install --no-frozen-lockfile && pnpm run format",
-    "test": "turbo run test --concurrency=1"
+    "release": "pnpm run build && changeset publish",
+    "test": "turbo run test --concurrency=1",
+    "version": "changeset version && pnpm install --no-frozen-lockfile && pnpm run format"
   },
-  "packageManager": "pnpm@^8",
   "devDependencies": {
     "@changesets/changelog-github": "^0.5.0",
     "@changesets/cli": "^2.27.1",
@@ -38,5 +38,6 @@
     "prettier-plugin-astro": "^0.12.3",
     "turbo": "^1.11.3",
     "typescript": "^5.3.3"
-  }
+  },
+  "packageManager": "pnpm@^8"
 }

@@ -1,8 +1,10 @@
-<center>
-    <img alt="InoxTools" src="./assets/shield.png"/>
-</center>
-
-# InoxTools
+<p align="center">
+    <img alt="InoxTools" width="500px" src="./assets/shield.png"/>
+    <br/>
+    <strong>InoxTools</strong>
+    <br/>
+    Oxygen-free tools for Astronauts
+</p>
 
 Welcome to InoxTools, a collection of libraries and tools for Astro as surrounding ecosystem!
 Designed with the the goal to challenge the impossible and push the limits of Astro and its tools by exploring and enveloping tricky and advanced patterns into friendly and fresh pieces.

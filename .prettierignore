@@ -1,0 +1,17 @@
+### Copied directly from Astro's monorepo at:
+### https://github.com/withastro/astro/blob/24663c9695385fed9ece57bf4aecdca3a8581e70/.prettierignore
+
+# Deep Directories
+**/dist
+**/smoke
+**/node_modules
+**/fixtures
+**/vendor
+**/.vercel
+
+# Directories
+.github
+.changeset
+
+# Files
+pnpm-lock.yaml

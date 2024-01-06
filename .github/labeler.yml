@@ -1,0 +1,9 @@
+# See https://github.com/actions/labeler
+
+automation:
+- .github/workflows/**
+
+workspace:
+# Any config file at the root
+- '*.{js,json}' 
+- '.*'

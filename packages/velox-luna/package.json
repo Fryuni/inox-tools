@@ -9,6 +9,13 @@
   ],
   "license": "MIT",
   "author": "Luiz Ferraz <luiz@lferraz.com>",
+  "bin": {
+    "velox-luna": "index.js"
+  },
+  "files": [
+    "index.js",
+    "index.js.map"
+  ],
   "scripts": {
     "build": "esbuild --bundle index.ts --outfile=index.js --sourcemap",
     "test": "pnpm run build && node index.js"

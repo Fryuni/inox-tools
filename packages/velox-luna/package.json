@@ -10,7 +10,8 @@
   "license": "MIT",
   "author": "Luiz Ferraz <luiz@lferraz.com>",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "esbuild --bundle index.ts --outfile=index.js --sourcemap",
+    "test": "pnpm run build && node index.js"
   },
   "dependencies": {
     "@lunariajs/core": "^0.0.25"

@@ -47,3 +47,9 @@ node_modules/
 # IDEs stuff
 .idea
 .vscode
+
+# Build outputs
+dist/
+build/
+*.js
+*.js.map

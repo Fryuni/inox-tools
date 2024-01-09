@@ -1,0 +1,23 @@
+{
+  "name": "@inox-tools/velox-luna",
+  "version": "0.0.0",
+  "description": "Accelerate your i18n translation work on Lunaria projects",
+  "keywords": [
+    "lunaria",
+    "i18n",
+    "cli"
+  ],
+  "license": "MIT",
+  "author": "Luiz Ferraz <luiz@lferraz.com>",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@lunariajs/core": "^0.0.25"
+  },
+  "devDependencies": {
+    "esbuild": "^0.19.11",
+    "typescript": "^5.3.3",
+    "vitest": "^1.1.3"
+  }
+}

@@ -1,8 +1,20 @@
+import { relative as upathRelative, join as upathJoin } from 'upath';
 import { Entry, EntryRegistry } from './entry.js';
 import { Lazy } from './lazy.js';
-import { InspectedFunction, InspectedObject, PropertyMap } from './types.js';
+import {
+	InspectedFunction,
+	type InspectedObject,
+	type PropertyMap,
+	type PropertyInfo,
+} from './types.js';
+import * as modules from 'node:module';
 import * as utils from './utils.js';
-import { parseFunction, type CapturedVariables } from './parseFunction.js';
+import {getModuleFromPath} from './package.js';
+import {
+	parseFunction,
+	type CapturedPropertyChain,
+	type CapturedVariables,
+} from './parseFunction.js';
 import * as v8 from './v8.js';
 
 interface ContextFrame {
@@ -70,7 +82,10 @@ class Inspector {
 		return inspector.inspect(value);
 	}
 
-	private async inspect(value: unknown): Promise<Entry> {
+	private async inspect(
+		value: unknown,
+		capturedProperties?: CapturedPropertyChain[]
+	): Promise<Entry> {
 		// Try simple values
 		if (value == null) {
 			return Entry.json(value);
@@ -101,7 +116,7 @@ class Inspector {
 					// that we serialized out a different set of properties than the current set
 					// we're being asked to serialize.  So we have to make sure that all these props
 					// are actually serialized.
-					await this.inspectObject(value);
+					await this.inspectObject(value, capturedProperties);
 				}
 				return entry;
 			}
@@ -109,7 +124,7 @@ class Inspector {
 
 		this.cache.prepare(value);
 
-		const entry: Entry = await this.inspectComplex(value);
+		const entry: Entry = await this.inspectComplex(value, capturedProperties);
 
 		this.cache.add(value, entry);
 
@@ -139,12 +154,15 @@ class Inspector {
 		return Entry.json(val);
 	}
 
-	private async inspectComplex(value: object): Promise<Entry> {
+	private async inspectComplex(
+		value: object,
+		capturedProperties?: CapturedPropertyChain[]
+	): Promise<Entry> {
 		if (this.doNotCapture(value)) {
 			return Entry.json();
 		}
 
-		const normalizedModuleName = await this.findNormalizedModuleName(value);
+		const normalizedModuleName = await findNormalizedModuleName(value);
 		if (normalizedModuleName) {
 			return this.captureModule(normalizedModuleName);
 		}
@@ -160,8 +178,9 @@ class Inspector {
 
 		if (Array.isArray(value)) {
 			const array: Entry[] = [];
-			for (const descriptor of await this.getOwnPropertyDescriptors(value)) {
-				array[descriptor.name] = await this.inspect(await this.getOwnProperty(value, descriptor));
+			for (const descriptor of getOwnPropertyDescriptors(value)) {
+				// Property descriptors are note properly typed in TS
+				array[descriptor.name as unknown as number] = await this.inspect(getOwnProperty(value, descriptor));
 			}
 
 			return Entry.array(array);
@@ -177,11 +196,122 @@ class Inspector {
 			return Entry.array(array);
 		}
 
-		return this.inspectObject(value);
+		return this.inspectObject(value, capturedProperties);
+	}
+
+	private async inspectObject(
+		obj: NonNullable<object>,
+		capturedProperties: CapturedPropertyChain[] = []
+	): Promise<Entry<'object'>> {
+		const [entry, serializeAll] = await this.serializeObjectWorker(obj, capturedProperties);
+		if (capturedProperties.length !== 0 && serializeAll) {
+			// Object was not fully serialized, but that is needed. Serialize again with all properties.
+			const [fullEntry] = await this.serializeObjectWorker(obj, []);
+			return fullEntry;
+		}
+
+		return entry;
+	}
+
+	private async serializeObjectWorker(
+		obj: NonNullable<object>,
+		capturedProperties: CapturedPropertyChain[]
+	): Promise<[Entry<'object'>, boolean]> {
+		// TODO: Add optimization for capturing the minimal referenced subset of an object.
+
+		// if (capturedProperties.length === 0) {
+		const entry = await this.serializeAllObjectProperties(obj);
+
+		return [entry, false];
+		// }
+
+		// const [newInspection, serializeAll] = await this.serializeObjectProperties(
+		// 	obj,
+		// 	capturedProperties
+		// );
+		// Object.assign(entry.value, newInspection);
+
+		// return [entry, serializeAll];
+	}
+
+	private async serializeAllObjectProperties(obj: NonNullable<object>): Promise<Entry<'object'>> {
+		const entry = this.loadObjectEntry(obj);
+
+		// we wanted to capture everything (including the prototype chain)
+		const descriptors = getOwnPropertyDescriptors(obj);
+
+		for (const descriptor of descriptors) {
+			const keyEntry = await this.inspect(getNameOrSymbol(descriptor));
+
+			// We're about to recurse inside this object. In order to prevent infinite loops, put a
+			// dummy entry in the environment map.  That way, if we hit this object again while
+			// recursing we won't try to generate this property.
+			//
+			// Note: we only stop recursing if we hit exactly our sentinel key (i.e. we're self
+			// recursive).  We *do* want to recurse through the object again if we see it through
+			// non-recursive paths.  That's because we might be hitting this object through one
+			// prop-name-path, but we created it the first time through another prop-name path.
+			//
+			// By processing the object again, we will add the different members we need.
+			if (entry.value.env.has(keyEntry) && entry.value.env.get(keyEntry) === undefined) {
+				continue;
+			}
+			entry.value.env.set(keyEntry, <any>undefined);
+
+			const propertyInfo = await this.createPropertyInfo(descriptor);
+			const prop = getOwnProperty(obj, descriptor);
+			const valEntry = await this.inspect(prop);
+
+			// Now, replace the dummy entry with the actual one we want.
+			entry.value.env.set(keyEntry, { info: propertyInfo, entry: valEntry });
+		}
+
+		// If the object's __proto__ is not Object.prototype, then we have to capture what it
+		// actually is.  On the other end, we'll use Object.create(deserializedProto) to set
+		// things up properly.
+		//
+		// We don't need to capture the prototype if the user is not capturing 'this' either.
+		if (!entry.value.proto) {
+			const proto = Object.getPrototypeOf(obj);
+			if (proto !== Object.prototype) {
+				entry.value.proto = await this.inspect(proto);
+			}
+		}
+
+		return entry;
+	}
+
+	private loadObjectEntry(obj: NonNullable<object>): Entry<'object'> {
+		const existingEntry = this.cache.lookup(obj);
+
+		if (existingEntry === undefined) {
+			const newEntry: Entry<'object'> = {
+				type: 'object',
+				value: {},
+			};
+			this.cache.add(obj, newEntry);
+			return newEntry;
+		}
+
+		switch (existingEntry.type) {
+			case 'object':
+				return existingEntry;
+			case 'pending': {
+				this.cache.add(obj, {
+					type: 'object',
+					value: {},
+				});
+
+				// Cache will turn the existing entry into the new entry.
+				return existingEntry as unknown as Entry<'object'>;
+			}
+			default:
+				throw new Error('Mismatching entry in cache');
+		}
 	}
 
 	private async inspectFunction(func: Function): Promise<Entry<'function'>> {
-		if (hasTrueBooleanMember(func, 'doNotCapture')) {
+		if (utils.hasTrueBooleanMember(func, 'doNotCapture')) {
 			// If we get a function we're not supposed to capture, emit a function that will throw
 			// at runtime so the user can understand the problem better.
 			const funcName = func.name || 'anonymous';
@@ -233,6 +363,7 @@ class Inspector {
 		const { funcExprWithName, functionDeclarationName } = parsedFunction;
 
 		const capturedValues: PropertyMap = await this.processCapturedVariables(
+			func,
 			parsedFunction.capturedVariables
 		);
 
@@ -279,18 +410,18 @@ class Inspector {
 		}
 
 		// Capture any property on the function itself.
-		for (const descriptor of await this.getOwnPropertyDescriptors(func)) {
+		for (const descriptor of getOwnPropertyDescriptors(func)) {
 			if (descriptor.name === 'length' || descriptor.name === 'name') {
 				// Do not capture `length` and `name` properties since those cannot
 				// be changed anyway.
 				continue;
 			}
 
-			const funcProp = await this.getOwnProperty(func, descriptor);
+			const funcProp = getOwnProperty(func, descriptor);
 
 			if (
 				descriptor.name === 'prototype' &&
-				(await this.isDefaultFunctionPrototype(func, funcProp))
+				isDefaultFunctionPrototype(func, funcProp)
 			) {
 				// Only emit the function's prototype if it actually changed.
 				continue;
@@ -342,6 +473,31 @@ class Inspector {
 		return functionInfo;
 	}
 
+	private async captureModule(normalizedModuleName: string): Promise<Entry<'module' | 'object'>> {
+		// Splitting on "/" is safe to do as this module name is already in a normalized form.
+		const moduleParts = normalizedModuleName.split('/');
+
+		const nodeModulesSegment = 'node_modules';
+		const nodeModulesSegmentIndex = moduleParts.findIndex((v) => v === nodeModulesSegment);
+		const isInNodeModules = nodeModulesSegmentIndex >= 0;
+
+		// If the path goes into node_modules, strip off the node_modules part. This will help
+		// ensure that lookup of those modules will work on the cloud-side even if the module
+		// isn't in a relative node_modules directory.  For example, this happens with aws-sdk.
+		// It ends up actually being in /var/runtime/node_modules inside aws lambda.
+		//
+		// This also helps ensure that modules that are 'yarn link'ed are found properly. The
+		// module path we have may be on some non-local path due to the linking, however this
+		// will ensure that the module-name we load is a simple path that can be found off the
+		// node_modules that we actually upload with our serialized functions.
+		return {
+			type: 'module',
+			value: isInNodeModules
+				? getModuleFromPath(upathJoin(...moduleParts.slice(nodeModulesSegmentIndex + 1)))
+				: normalizedModuleName,
+		};
+	}
+
 	private async processCapturedVariables(
 		func: Function,
 		capturedVariables: CapturedVariables
@@ -356,7 +512,7 @@ class Inspector {
 						this.throwSerializableError(func, err.message);
 					});
 
-				const moduleName = await this.findNormalizedModuleName(value);
+				const moduleName = await findNormalizedModuleName(value);
 				const frameLength = this.frames.length;
 
 				if (moduleName) {
@@ -395,6 +551,23 @@ class Inspector {
 		return capturedValues;
 	}
 
+	private async createPropertyInfo(descriptor: ClosurePropertyDescriptor): Promise<PropertyInfo> {
+		const propertyInfo: PropertyInfo = { hasValue: descriptor.value !== undefined };
+		propertyInfo.configurable = descriptor.configurable;
+		propertyInfo.enumerable = descriptor.enumerable;
+		propertyInfo.writable = descriptor.writable;
+
+		if (descriptor.get) {
+			propertyInfo.get = await this.inspect(descriptor.get);
+		}
+
+		if (descriptor.set) {
+			propertyInfo.set = await this.inspect(descriptor.set);
+		}
+
+		return propertyInfo;
+	}
+
 	private findSimpleFunction(info: InspectedFunction): Entry<'function'> | undefined {
 		for (const simpleEntry of this.simpleFunctions) {
 			const simpleFunction = simpleEntry.value;
@@ -412,7 +585,7 @@ class Inspector {
 			return true;
 		}
 
-		if (hasTrueBooleanMember(value, 'doNotCapture')) {
+		if (utils.hasTrueBooleanMember(value, 'doNotCapture')) {
 			return true;
 		}
 
@@ -428,6 +601,155 @@ class Inspector {
 		// TODO: Implement nice error
 		throw new Error('not implemented');
 	}
+}
+
+interface ClosurePropertyDescriptor {
+	/** name of the property for a normal property. either 'name' or 'symbol' will be present.  but not both. */
+	name?: string;
+	/** symbol-name of the property.  either 'name' or 'symbol' will be present.  but not both. */
+	symbol?: symbol;
+
+	configurable?: boolean;
+	enumerable?: boolean;
+	value?: any;
+	writable?: boolean;
+	get?: () => any;
+	set?: (v: any) => void;
+}
+
+function createClosurePropertyDescriptor(
+	nameOrSymbol: string | symbol,
+	descriptor: PropertyDescriptor
+): ClosurePropertyDescriptor {
+	if (nameOrSymbol === undefined) {
+		throw new Error('Was not given a name or symbol');
+	}
+
+	const copy: ClosurePropertyDescriptor = { ...descriptor };
+	if (typeof nameOrSymbol === 'string') {
+		copy.name = nameOrSymbol;
+	} else {
+		copy.symbol = nameOrSymbol;
+	}
+
+	return copy;
+}
+
+function getOwnPropertyDescriptors(obj: any): ClosurePropertyDescriptor[] {
+	const result: ClosurePropertyDescriptor[] = [];
+
+	for (const name of Object.getOwnPropertyNames(obj)) {
+		if (name === '__proto__') {
+			// don't return prototypes here.  If someone wants one, they should call
+			// Object.getPrototypeOf. Note: this is the standard behavior of
+			// Object.getOwnPropertyNames.  However, the Inspector API returns these, and we want to
+			// filter them out.
+			continue;
+		}
+
+		const descriptor = Object.getOwnPropertyDescriptor(obj, name);
+		if (!descriptor) {
+			throw new Error(`Could not get descriptor for ${name} on: ${JSON.stringify(obj)}`);
+		}
+
+		result.push(createClosurePropertyDescriptor(name, descriptor));
+	}
+
+	for (const symbol of Object.getOwnPropertySymbols(obj)) {
+		const descriptor = Object.getOwnPropertyDescriptor(obj, symbol);
+		if (!descriptor) {
+			throw new Error(
+				`Could not get descriptor for symbol ${symbol.toString()} on: ${JSON.stringify(obj)}`
+			);
+		}
+
+		result.push(createClosurePropertyDescriptor(symbol, descriptor));
+	}
+
+	return result;
+}
+
+function getNameOrSymbol(descriptor: ClosurePropertyDescriptor): symbol | string {
+	if (descriptor.symbol === undefined && descriptor.name === undefined) {
+		throw new Error("Descriptor didn't have symbol or name: " + JSON.stringify(descriptor));
+	}
+
+	return descriptor.symbol || descriptor.name!;
+}
+
+function getOwnProperty(obj: any, descriptor: ClosurePropertyDescriptor): any {
+	return descriptor.get || descriptor.set ? undefined : obj[getNameOrSymbol(descriptor)];
+}
+
+function isDefaultFunctionPrototype(func: Function, prototypeProp: any): boolean {
+    // The initial value of prototype on any newly-created Function instance is a new instance of
+    // Object, but with the own-property 'constructor' set to point back to the new function.
+    if (prototypeProp && prototypeProp.constructor === func) {
+        const descriptors = getOwnPropertyDescriptors(prototypeProp);
+        return descriptors.length === 1 && descriptors[0].name === "constructor";
+    }
+
+    return false;
+}
+
+const builtInModules = Lazy.of(async () => {
+	return new Map(
+		await Promise.all(
+			modules.builtinModules.map(async (name) => [await import(`node:${name}`), name] as const)
+		)
+	);
+});
+
+type ModuleCache = {
+	id: string;
+	exports: any;
+	loaded: boolean;
+};
+
+// findNormalizedModuleName attempts to find a global name bound to the object, which can be used as
+// a stable reference across serialization.  For built-in modules (i.e. "os", "fs", etc.) this will
+// return that exact name of the module.  Otherwise, this will return the relative path to the
+// module from the current working directory of the process.  This will normally be something of the
+// form ./node_modules/<package_name>...
+//
+// This function will also always return modules in a normalized form (i.e. all path components will
+// be '/').
+async function findNormalizedModuleName(obj: any): Promise<string | undefined> {
+	// First, check the built-in modules
+	const modules = await builtInModules.get();
+	const key = modules.get(obj);
+	if (key) {
+		return key;
+	}
+
+	// Next, check the Node module cache, which will store cached values
+	// of all non-built-in Node modules loaded by the program so far. _Note_: We
+	// don't pre-compute this because the require cache will get populated
+	// dynamically during execution.
+	for (const mod of Object.values<ModuleCache>((<any>modules)._cache)) {
+		if (Object.is(mod.exports, obj)) {
+			// Rewrite the path to be a local module reference relative to the current working
+			// directory.
+			const modPath = upathRelative(process.cwd(), mod.id);
+			return './' + modPath;
+		}
+	}
+
+	// Else, return that no global name is available for this object.
+	return undefined;
+}
+
+// Is this a constructor derived from a noCapture constructor.  if so, we don't want to
+// emit it.  We would be unable to actually hook up the "super()" call as one of the base
+// constructors was set to not be captured.
+function isDerivedNoCaptureConstructor(func: Function): boolean {
+	for (let current: any = func; current; current = Object.getPrototypeOf(current)) {
+		if (utils.hasTrueBooleanMember(current, 'doNotCapture')) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 /**

@@ -39,3 +39,14 @@ export function isLegalFunctionName(n: string) {
 
 	return true;
 }
+
+/** @internal */
+export function hasTrueBooleanMember(obj: any, memberName: string | number | symbol): boolean {
+	if (obj === undefined || obj === null) {
+		return false;
+	}
+
+	const val: unknown = obj[memberName];
+
+	return typeof val === 'boolean' && val === true;
+}

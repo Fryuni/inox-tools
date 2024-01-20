@@ -95,6 +95,11 @@ export class EntryRegistry<K> {
 
 		const existingEntry = this.lookup(key);
 
+		if (Object.is(existingEntry, entry)) {
+			// Entry already stored. Do nothing.
+			return;
+		}
+
 		if (existingEntry !== undefined) {
 			if (existingEntry.type === 'pending') {
 				Object.assign(existingEntry, entry);

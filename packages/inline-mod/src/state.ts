@@ -1,3 +1,4 @@
+/** @internal */
 export const logger = new console.Console({
 	stdout: process.stdout,
 	stderr: process.stderr,
@@ -13,4 +14,5 @@ export const logger = new console.Console({
 	},
 });
 
+/** @internal */
 export const modRegistry = new Map<string, string>();

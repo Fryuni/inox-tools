@@ -12,5 +12,3 @@ InoxTools offers a suite of "oxygen-free tools for Astronauts" - a playful nod t
 # License
 
 All the libraries under InoxTools as well as all the libraries defined in this repo are open-sourced software licensed under the MIT License.
-
-

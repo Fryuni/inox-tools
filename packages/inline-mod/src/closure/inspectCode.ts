@@ -2,7 +2,7 @@ import { Entry, EntryRegistry } from './entry.js';
 import { Lazy } from './lazy.js';
 import { InspectedFunction, InspectedObject, PropertyMap } from './types.js';
 import * as utils from './utils.js';
-import { parseFunction } from './parseFunction.js';
+import { parseFunction, type CapturedVariables } from './parseFunction.js';
 import * as v8 from './v8.js';
 
 interface ContextFrame {
@@ -71,21 +71,78 @@ class Inspector {
 	}
 
 	private async inspect(value: unknown): Promise<Entry> {
+		// Try simple values
 		if (value == null) {
-			throw new Error('What to do in this case?');
+			return Entry.json(value);
+		}
+
+		switch (typeof value) {
+			case 'number':
+				return this.inspectNumber(value);
+			case 'boolean':
+			case 'string':
+				return Entry.json(value);
+		}
+
+		// Check for a cache hit
+		{
+			const entry = this.cache.lookup(value);
+			if (entry) {
+				if (entry.type === 'object') {
+					// Even though we've already serialized out this object, it might be the case
+					// that we serialized out a different set of properties than the current set
+					// we're being asked to serialize.  So we have to make sure that all these props
+					// are actually serialized.
+					await this.inspectObject(value);
+				}
+				return entry;
+			}
 		}
 
 		this.cache.prepare(value);
 
-		switch (typeof value) {
-			case 'function':
-				return this.inspectFunction(value);
+		const entry: Entry;
+
+		this.cache.add(value, entry);
+
+		return entry;
+	}
+
+	private inspectNumber(val: number): Entry {
+		// Check if this is a special number that we cannot json serialize.  Instead, we'll just inject
+		// the code necessary to represent the number on the other side.  Note: we have to do this
+		// before we do *anything* else.  This is because these special numbers don't even work in maps
+		// properly.  So, if we lookup the value in a map, we may get the cached value for something
+		// else *entirely*.  For example, 0 and -0 will map to the same entry.
+		if (Object.is(val, -0)) {
+			return Entry.expr('-0');
+		}
+		if (Object.is(val, NaN)) {
+			return Entry.expr('NaN');
+		}
+		if (Object.is(val, Infinity)) {
+			return Entry.expr('Infinity');
+		}
+		if (Object.is(val, -Infinity)) {
+			return Entry.expr('-Infinity');
 		}
 
-		throw new Error('Not implemented');
+		// Not special, just use normal json serialization.
+		return Entry.json(val);
 	}
 
 	private async inspectFunction(func: Function): Promise<Entry<'function'>> {
+		if (hasTrueBooleanMember(func, 'doNotCapture')) {
+			// If we get a function we're not supposed to capture, emit a function that will throw
+			// at runtime so the user can understand the problem better.
+			const funcName = func.name || 'anonymous';
+			const message = `Function ${funcName} cannot be safely serialized.`;
+
+			func = () => {
+				throw new Error(message);
+			};
+		}
+
 		// TODO: Add location information back in
 		// const location = v8.getFunctionLocationAsync
 		const frame: ContextFrame = { isArrowFunction: false };
@@ -126,7 +183,7 @@ class Inspector {
 		frame.isArrowFunction = parsedFunction.isArrowFunction;
 		const { funcExprWithName, functionDeclarationName } = parsedFunction;
 
-		const capturedValues: PropertyMap = await this.processCapturedValues(
+		const capturedValues: PropertyMap = await this.processCapturedVariables(
 			parsedFunction.capturedVariables
 		);
 
@@ -151,7 +208,7 @@ class Inspector {
 			!isAsyncFunction &&
 			isDerivedNoCaptureConstructor(func)
 		) {
-			const protoEntry = await this.getOrCreateEntry(proto);
+			const protoEntry = await this.inspect(proto);
 			functionInfo.proto = protoEntry;
 
 			if (functionString.startsWith('class ')) {
@@ -171,6 +228,122 @@ class Inspector {
 				functionInfo.code = rewriteSuperReferences(funcExprWithName!, /*isStatic*/ false);
 			}
 		}
+
+		// Capture any property on the function itself.
+		for (const descriptor of await this.getOwnPropertyDescriptors(func)) {
+			if (descriptor.name === 'length' || descriptor.name === 'name') {
+				// Do not capture `length` and `name` properties since those cannot
+				// be changed anyway.
+				continue;
+			}
+
+			const funcProp = await this.getOwnProperty(func, descriptor);
+
+			if (
+				descriptor.name === 'prototype' &&
+				(await this.isDefaultFunctionPrototype(func, funcProp))
+			) {
+				// Only emit the function's prototype if it actually changed.
+				continue;
+			}
+
+			const keyEntry = await this.inspect(getNameOrSymbol(descriptor));
+			const valEntry = await this.inspect(funcProp);
+			const propertyInfo = await this.createPropertyInfo(descriptor);
+
+			functionInfo.env.set(keyEntry, {
+				info: propertyInfo,
+				entry: valEntry,
+			});
+		}
+
+		const superEntry =
+			this.classInstanceMemberToSuperEntry.lookup(func) ??
+			this.classStaticMemberToSuperEntry.lookup(func);
+		if (superEntry) {
+			// This was a class constructor or method. We need to put a special `__super`
+			// entry into scope and then rewrite any calls to `super()` to refer to it.
+			capturedValues.set(await this.inspect('__super'), {
+				entry: superEntry,
+			});
+
+			functionInfo.code = rewriteSuperReference(
+				funcExprWithName,
+				this.classStaticMemberToSuperEntry.lookup(func) !== undefined
+			);
+		}
+
+		// If this was a named function (literally, only a named function-expr or function-decl), then
+		// place an entry in the environment that maps from this function name to the serialized
+		// function we're creating.  This ensures that recursive functions will call the right method.
+		// i.e if we have "function f() { f(); }" this will get rewritten to:
+		//
+		//      function __f() {
+		//          with ({ f: __f }) {
+		//              return function () { f(); }
+		//
+		// i.e. the inner call to "f();" will actually call the *outer* __f function, and not
+		// itself.
+		if (functionDeclarationName !== undefined) {
+			capturedValues.set(await this.inspect(functionDeclarationName), {
+				entry: funcEntry,
+			});
+		}
+
+		return functionInfo;
+	}
+
+	private async processCapturedVariables(
+		func: Function,
+		capturedVariables: CapturedVariables
+	): Promise<PropertyMap> {
+		const capturedValues: PropertyMap = new Map();
+
+		for (const scope of ['required', 'optional'] as const) {
+			for (const [name, properties] of capturedVariables[scope].entries()) {
+				const value = await v8
+					.lookupCapturedVariableValue(func, name, scope === 'required')
+					.catch((err) => {
+						this.throwSerializableError(func, err.message);
+					});
+
+				const moduleName = await this.findNormalizedModuleName(value);
+				const frameLength = this.frames.length;
+
+				if (moduleName) {
+					this.frames.push({
+						captureModule: {
+							name: moduleName,
+							value: value,
+						},
+					});
+				} else if (value instanceof Function) {
+					// Only bother pushing on context frame if the name of the variable
+					// we captured is different from the name of the function.  If the
+					// names are the same, this is a direct reference, and we don't have
+					// to list both the name of the capture and of the function.  if they
+					// are different, it's an indirect reference, and the name should be
+					// included for clarity.
+					if (name !== value.name) {
+						this.frames.push({ capturedFunctionName: name });
+					}
+				} else {
+					this.frames.push({ capturedVariableName: name });
+				}
+
+				const serializedName = await this.inspect(name);
+				const serializedValue = await this.inspect(value);
+
+				capturedValues.set(serializedName, { entry: serializedValue });
+
+				while (this.frames.length > frameLength) {
+					// Pop the frames until we are back where we begun.
+					this.frames.pop();
+				}
+			}
+		}
+
+		return capturedValues;
 	}
 
 	private findSimpleFunction(info: InspectedFunction): Entry<'function'> | undefined {
@@ -183,6 +356,18 @@ class Inspector {
 				return simpleEntry;
 			}
 		}
+	}
+
+	private doNotCapture(value: object): boolean {
+		if (!this.serialize(value)) {
+			return true;
+		}
+
+		if (hasTrueBooleanMember(value, 'doNotCapture')) {
+			return true;
+		}
+
+		return false;
 	}
 
 	private throwSerializableError(value: unknown, info: string): never {
@@ -242,6 +427,8 @@ class GlobalCache {
 			value: 'Object.getPrototypeOf((function*(){}).prototype)',
 		});
 		this.cache.add(Symbol.iterator, { type: 'expr', value: 'Symbol.iterator' });
+
+		this.cache.add(process.env, Entry.expr('process.env'));
 	}
 
 	private addGlobalInfo(key: string) {

@@ -42,6 +42,16 @@ export type Entry<T extends keyof EntryMap = keyof EntryMap> = {
 	};
 }[T];
 
+export namespace Entry {
+	export function expr(expr: string): Entry<'expr'> {
+		return { type: 'expr', value: expr };
+	}
+
+	export function json(json: any): Entry<'json'> {
+		return { type: 'json', value: json };
+	}
+}
+
 export type SealedRegistry<K> = Omit<EntryRegistry<K>, 'add'>;
 
 export class EntryRegistry<K> {

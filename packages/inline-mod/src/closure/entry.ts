@@ -47,8 +47,16 @@ export namespace Entry {
 		return { type: 'expr', value: expr };
 	}
 
-	export function json(json: any): Entry<'json'> {
+	export function json(json?: any): Entry<'json'> {
 		return { type: 'json', value: json };
+	}
+
+	export function regexp(regexp: RegExp): Entry<'regexp'> {
+		return { type: 'regexp', value: regexp };
+	}
+
+	export function array(array: Entry[]): Entry<'array'> {
+		return { type: 'array', value: array };
 	}
 }
 

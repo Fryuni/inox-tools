@@ -82,6 +82,14 @@ class Inspector {
 			case 'boolean':
 			case 'string':
 				return Entry.json(value);
+			case 'bigint':
+				return Entry.expr(`${value}n`);
+			case 'symbol':
+				return Entry.expr(`Symbol.for(${JSON.stringify(value.description)})`);
+		}
+
+		if (value instanceof RegExp) {
+			return Entry.regexp(value);
 		}
 
 		// Check for a cache hit
@@ -101,7 +109,7 @@ class Inspector {
 
 		this.cache.prepare(value);
 
-		const entry: Entry;
+		const entry: Entry = await this.inspectComplex(value);
 
 		this.cache.add(value, entry);
 
@@ -129,6 +137,47 @@ class Inspector {
 
 		// Not special, just use normal json serialization.
 		return Entry.json(val);
+	}
+
+	private async inspectComplex(value: object): Promise<Entry> {
+		if (this.doNotCapture(value)) {
+			return Entry.json();
+		}
+
+		const normalizedModuleName = await this.findNormalizedModuleName(value);
+		if (normalizedModuleName) {
+			return this.captureModule(normalizedModuleName);
+		}
+
+		if (value instanceof Function) {
+			return this.inspectFunction(value);
+		}
+
+		if (value instanceof Promise) {
+			const val = await value;
+			return this.inspect(val);
+		}
+
+		if (Array.isArray(value)) {
+			const array: Entry[] = [];
+			for (const descriptor of await this.getOwnPropertyDescriptors(value)) {
+				array[descriptor.name] = await this.inspect(await this.getOwnProperty(value, descriptor));
+			}
+
+			return Entry.array(array);
+		}
+
+		if (Object.prototype.toString.call(value) === '[object Arguments]') {
+			// From: https://stackoverflow.com/questions/7656280/how-do-i-check-whether-an-object-is-an-arguments-object-in-javascript
+			const array: Entry[] = [];
+			for (const elem of <unknown[]>value) {
+				array.push(await this.inspect(elem));
+			}
+
+			return Entry.array(array);
+		}
+
+		return this.inspectObject(value);
 	}
 
 	private async inspectFunction(func: Function): Promise<Entry<'function'>> {
@@ -364,6 +413,11 @@ class Inspector {
 		}
 
 		if (hasTrueBooleanMember(value, 'doNotCapture')) {
+			return true;
+		}
+
+		if (value instanceof Function && isDerivedNoCaptureConstructor(value)) {
+			// constructor derived from something that should not be captured
 			return true;
 		}
 

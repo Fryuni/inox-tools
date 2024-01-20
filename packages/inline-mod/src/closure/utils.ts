@@ -12,25 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import ts from "typescript";
+import ts from 'typescript';
 
 const legalNameRegex = /^[a-zA-Z_][0-9a-zA-Z_]*$/;
 
 /** @internal */
 export function isLegalMemberName(n: string) {
-    return legalNameRegex.test(n);
+	return legalNameRegex.test(n);
 }
 
 /** @internal */
 export function isLegalFunctionName(n: string) {
-    if (!isLegalMemberName(n)) {
-        return false;
-    }
-    const scanner = ts.createScanner(ts.ScriptTarget.Latest, /*skipTrivia:*/ false, ts.LanguageVariant.Standard, n);
-    const tokenKind = scanner.scan();
-    if (tokenKind !== ts.SyntaxKind.Identifier && tokenKind !== ts.SyntaxKind.ConstructorKeyword) {
-        return false;
-    }
+	if (!isLegalMemberName(n)) {
+		return false;
+	}
+	const scanner = ts.createScanner(
+		ts.ScriptTarget.Latest,
+		/*skipTrivia:*/ false,
+		ts.LanguageVariant.Standard,
+		n
+	);
+	const tokenKind = scanner.scan();
+	if (tokenKind !== ts.SyntaxKind.Identifier && tokenKind !== ts.SyntaxKind.ConstructorKeyword) {
+		return false;
+	}
 
-    return true;
+	return true;
 }

@@ -1,26 +1,28 @@
-import {logger} from '../state.js';
+import { logger } from '../state.js';
 import { Entry } from './entry.js';
 
 logger.log('Root module');
 
-export interface SerializeFunctionOptions {};
+export interface SerializeFunctionOptions {}
 
 export interface SerializedFunction {
-  text: string;
-};
+	text: string;
+}
 
+export function serializeFunction(
+	func: Function,
+	options: SerializeFunctionOptions
+): SerializedFunction {
+	func();
 
-export function serializeFunction(func: Function, options: SerializeFunctionOptions): SerializedFunction {
-  func();
+	logger.log('Serializing function:', func, options);
 
-  logger.log('Serializing function:', func, options);
+	const closureInfo = closure.createClosureInfoAsync(func, serialize, args.logResource);
+	return serializeJavaScriptText(closureInfo, exportName, isFactoryFunction);
 
-    const closureInfo = closure.createClosureInfoAsync(func, serialize, args.logResource);
-    return serializeJavaScriptText(closureInfo, exportName, isFactoryFunction);
-
-  return {
-    text: 'export default () => {console.log("hello from inside serialization");};',
-  };
+	return {
+		text: 'export default () => {console.log("hello from inside serialization");};',
+	};
 }
 
 /**
@@ -30,386 +32,400 @@ export function serializeFunction(func: Function, options: SerializeFunctionOpti
  * @param c The FunctionInfo to be serialized into a module string.
  */
 function serializeJavaScriptText(
-    outerClosure: closure.ClosureInfo,
-    exportName: string,
-    isFactoryFunction: boolean,
+	outerClosure: closure.ClosureInfo,
+	exportName: string,
+	isFactoryFunction: boolean
 ): SerializedFunction {
-    // Now produce a textual representation of the closure and its serialized captured environment.
+	// Now produce a textual representation of the closure and its serialized captured environment.
 
-    // State used to build up the environment variables for all the funcs we generate.
-    // In general, we try to create idiomatic code to make the generated code not too
-    // hideous.  For example, we will try to generate code like:
-    //
-    //      var __e1 = [1, 2, 3] // or
-    //      var __e2 = { a: 1, b: 2, c: 3 }
-    //
-    // However, for non-common cases (i.e. sparse arrays, objects with configured properties,
-    // etc. etc.) we will spit things out in a much more verbose fashion that eschews
-    // prettyness for correct semantics.
-    const envEntryToEnvVar = new Map<closure.Entry, string>();
-    const envVarNames = new Set<string>();
-    const functionInfoToEnvVar = new Map<closure.FunctionInfo, string>();
+	// State used to build up the environment variables for all the funcs we generate.
+	// In general, we try to create idiomatic code to make the generated code not too
+	// hideous.  For example, we will try to generate code like:
+	//
+	//      var __e1 = [1, 2, 3] // or
+	//      var __e2 = { a: 1, b: 2, c: 3 }
+	//
+	// However, for non-common cases (i.e. sparse arrays, objects with configured properties,
+	// etc. etc.) we will spit things out in a much more verbose fashion that eschews
+	// prettyness for correct semantics.
+	const envEntryToEnvVar = new Map<closure.Entry, string>();
+	const envVarNames = new Set<string>();
+	const functionInfoToEnvVar = new Map<closure.FunctionInfo, string>();
 
-    let environmentText = "";
-    let functionText = "";
-    const emittedRequires = new Set<string>();
+	let environmentText = '';
+	let functionText = '';
+	const emittedRequires = new Set<string>();
 
-    const outerFunctionName = emitFunctionAndGetName(outerClosure.func);
+	const outerFunctionName = emitFunctionAndGetName(outerClosure.func);
 
-    if (environmentText) {
-        environmentText = "\n" + environmentText;
-    }
+	if (environmentText) {
+		environmentText = '\n' + environmentText;
+	}
 
-    // Export the appropriate value.  For a normal function, this will just be exporting the name of
-    // the module function we created by serializing it.  For a factory function this will export
-    // the function produced by invoking the factory function once.
-    let text: string;
-    const exportText = `exports.${exportName} = ${outerFunctionName}${isFactoryFunction ? "()" : ""};`;
-    if (isFactoryFunction) {
-        // for a factory function, we need to call the function at the end.  That way all the logic
-        // to set up the environment has run.
-        text = environmentText + functionText + "\n" + exportText;
-    } else {
-        text = exportText + "\n" + environmentText + functionText;
-    }
+	// Export the appropriate value.  For a normal function, this will just be exporting the name of
+	// the module function we created by serializing it.  For a factory function this will export
+	// the function produced by invoking the factory function once.
+	let text: string;
+	const exportText = `exports.${exportName} = ${outerFunctionName}${
+		isFactoryFunction ? '()' : ''
+	};`;
+	if (isFactoryFunction) {
+		// for a factory function, we need to call the function at the end.  That way all the logic
+		// to set up the environment has run.
+		text = environmentText + functionText + '\n' + exportText;
+	} else {
+		text = exportText + '\n' + environmentText + functionText;
+	}
 
-    return { text, exportName, containsSecrets: outerClosure.containsSecrets };
+	return { text, exportName, containsSecrets: outerClosure.containsSecrets };
 
-    function emitFunctionAndGetName(functionInfo: closure.FunctionInfo): string {
-        // If this is the first time seeing this function, then actually emit the function code for
-        // it.  Otherwise, just return the name of the emitted function for anyone that wants to
-        // reference it from their own code.
-        let functionName = functionInfoToEnvVar.get(functionInfo);
-        if (!functionName) {
-            functionName = functionInfo.name
-                ? createEnvVarName(functionInfo.name, /*addIndexAtEnd:*/ false)
-                : createEnvVarName("f", /*addIndexAtEnd:*/ true);
-            functionInfoToEnvVar.set(functionInfo, functionName);
+	function emitFunctionAndGetName(functionInfo: closure.FunctionInfo): string {
+		// If this is the first time seeing this function, then actually emit the function code for
+		// it.  Otherwise, just return the name of the emitted function for anyone that wants to
+		// reference it from their own code.
+		let functionName = functionInfoToEnvVar.get(functionInfo);
+		if (!functionName) {
+			functionName = functionInfo.name
+				? createEnvVarName(functionInfo.name, /*addIndexAtEnd:*/ false)
+				: createEnvVarName('f', /*addIndexAtEnd:*/ true);
+			functionInfoToEnvVar.set(functionInfo, functionName);
 
-            emitFunctionWorker(functionInfo, functionName);
-        }
+			emitFunctionWorker(functionInfo, functionName);
+		}
 
-        return functionName;
-    }
+		return functionName;
+	}
 
-    function emitFunctionWorker(functionInfo: closure.FunctionInfo, varName: string) {
-        const capturedValues = envFromEnvObj(functionInfo.capturedValues);
+	function emitFunctionWorker(functionInfo: closure.FunctionInfo, varName: string) {
+		const capturedValues = envFromEnvObj(functionInfo.capturedValues);
 
-        const thisCapture = capturedValues.this;
-        const argumentsCapture = capturedValues.arguments;
+		const thisCapture = capturedValues.this;
+		const argumentsCapture = capturedValues.arguments;
 
-        capturedValues.this = undefined as unknown as string;
-        capturedValues.arguments = undefined as unknown as string;
+		capturedValues.this = undefined as unknown as string;
+		capturedValues.arguments = undefined as unknown as string;
 
-        const parameters = [...Array(functionInfo.paramCount)].map((_, index) => `__${index}`).join(", ");
+		const parameters = [...Array(functionInfo.paramCount)]
+			.map((_, index) => `__${index}`)
+			.join(', ');
 
-        for (const [keyEntry, { entry: valEntry }] of functionInfo.capturedValues) {
-            if (valEntry.module !== undefined) {
-                if (!emittedRequires.has(keyEntry.json)) {
-                    emittedRequires.add(keyEntry.json);
-                    functionText += `const ${keyEntry.json} = require("${valEntry.module}");\n`;
-                }
-                delete capturedValues[keyEntry.json];
-            }
-        }
+		for (const [keyEntry, { entry: valEntry }] of functionInfo.capturedValues) {
+			if (valEntry.module !== undefined) {
+				if (!emittedRequires.has(keyEntry.json)) {
+					emittedRequires.add(keyEntry.json);
+					functionText += `const ${keyEntry.json} = require("${valEntry.module}");\n`;
+				}
+				delete capturedValues[keyEntry.json];
+			}
+		}
 
-        functionText +=
-            "\n" +
-            "function " +
-            varName +
-            "(" +
-            parameters +
-            ") {\n" +
-            "  return (function() {\n" +
-            "    with(" +
-            envObjToString(capturedValues) +
-            ") {\n\n" +
-            "return " +
-            functionInfo.code +
-            ";\n\n" +
-            "    }\n" +
-            "  }).apply(" +
-            thisCapture +
-            ", " +
-            argumentsCapture +
-            ").apply(this, arguments);\n" +
-            "}\n";
+		functionText +=
+			'\n' +
+			'function ' +
+			varName +
+			'(' +
+			parameters +
+			') {\n' +
+			'  return (function() {\n' +
+			'    with(' +
+			envObjToString(capturedValues) +
+			') {\n\n' +
+			'return ' +
+			functionInfo.code +
+			';\n\n' +
+			'    }\n' +
+			'  }).apply(' +
+			thisCapture +
+			', ' +
+			argumentsCapture +
+			').apply(this, arguments);\n' +
+			'}\n';
 
-        // If this function is complex (i.e. non-default __proto__, or has properties, etc.)
-        // then emit those as well.
-        emitComplexObjectProperties(varName, varName, functionInfo);
+		// If this function is complex (i.e. non-default __proto__, or has properties, etc.)
+		// then emit those as well.
+		emitComplexObjectProperties(varName, varName, functionInfo);
 
-        if (functionInfo.proto !== undefined) {
-            const protoVar = envEntryToString(functionInfo.proto, `${varName}_proto`);
-            environmentText += `Object.setPrototypeOf(${varName}, ${protoVar});\n`;
-        }
-    }
+		if (functionInfo.proto !== undefined) {
+			const protoVar = envEntryToString(functionInfo.proto, `${varName}_proto`);
+			environmentText += `Object.setPrototypeOf(${varName}, ${protoVar});\n`;
+		}
+	}
 
-    function envFromEnvObj(env: closure.PropertyMap): Record<string, string> {
-        const envObj: Record<string, string> = {};
-        for (const [keyEntry, { entry: valEntry }] of env) {
-            if (typeof keyEntry.json !== "string") {
-                throw new Error("PropertyMap key was not a string.");
-            }
+	function envFromEnvObj(env: closure.PropertyMap): Record<string, string> {
+		const envObj: Record<string, string> = {};
+		for (const [keyEntry, { entry: valEntry }] of env) {
+			if (typeof keyEntry.json !== 'string') {
+				throw new Error('PropertyMap key was not a string.');
+			}
 
-            const key = keyEntry.json;
-            const val = envEntryToString(valEntry, key);
-            envObj[key] = val;
-        }
-        return envObj;
-    }
+			const key = keyEntry.json;
+			const val = envEntryToString(valEntry, key);
+			envObj[key] = val;
+		}
+		return envObj;
+	}
 
-    function envEntryToString(envEntry: closure.Entry, varName: string): string {
-        const envVar = envEntryToEnvVar.get(envEntry);
-        if (envVar !== undefined) {
-            return envVar;
-        }
+	function envEntryToString(envEntry: closure.Entry, varName: string): string {
+		const envVar = envEntryToEnvVar.get(envEntry);
+		if (envVar !== undefined) {
+			return envVar;
+		}
 
-        // Complex objects may also be referenced from multiple functions.  As such, we have to
-        // create variables for them in the environment so that all references to them unify to the
-        // same reference to the env variable.  Effectively, we need to do this for any object that
-        // could be compared for reference-identity.  Basic types (strings, numbers, etc.) have
-        // value semantics and this can be emitted directly into the code where they are used as
-        // there is no way to observe that you are getting a different copy.
-        if (isObjOrArrayOrRegExp(envEntry)) {
-            return complexEnvEntryToString(envEntry, varName);
-        } else {
-            // Other values (like strings, bools, etc.) can just be emitted inline.
-            return simpleEnvEntryToString(envEntry, varName);
-        }
-    }
+		// Complex objects may also be referenced from multiple functions.  As such, we have to
+		// create variables for them in the environment so that all references to them unify to the
+		// same reference to the env variable.  Effectively, we need to do this for any object that
+		// could be compared for reference-identity.  Basic types (strings, numbers, etc.) have
+		// value semantics and this can be emitted directly into the code where they are used as
+		// there is no way to observe that you are getting a different copy.
+		if (isObjOrArrayOrRegExp(envEntry)) {
+			return complexEnvEntryToString(envEntry, varName);
+		} else {
+			// Other values (like strings, bools, etc.) can just be emitted inline.
+			return simpleEnvEntryToString(envEntry, varName);
+		}
+	}
 
-    function simpleEnvEntryToString(envEntry: closure.Entry, varName: string): string {
-        if (envEntry.hasOwnProperty("json")) {
-            return JSON.stringify(envEntry.json);
-        } else if (envEntry.function !== undefined) {
-            return emitFunctionAndGetName(envEntry.function);
-        } else if (envEntry.module !== undefined) {
-            return `require("${envEntry.module}")`;
-        } else if (envEntry.output !== undefined) {
-            return envEntryToString(envEntry.output, varName);
-        } else if (envEntry.expr) {
-            // Entry specifies exactly how it should be emitted.  So just use whatever
-            // it wanted.
-            return envEntry.expr;
-        } else if (envEntry.promise) {
-            return `Promise.resolve(${envEntryToString(envEntry.promise, varName)})`;
-        } else {
-            throw new Error("Malformed: " + JSON.stringify(envEntry));
-        }
-    }
+	function simpleEnvEntryToString(envEntry: closure.Entry, varName: string): string {
+		if (envEntry.hasOwnProperty('json')) {
+			return JSON.stringify(envEntry.json);
+		} else if (envEntry.function !== undefined) {
+			return emitFunctionAndGetName(envEntry.function);
+		} else if (envEntry.module !== undefined) {
+			return `require("${envEntry.module}")`;
+		} else if (envEntry.output !== undefined) {
+			return envEntryToString(envEntry.output, varName);
+		} else if (envEntry.expr) {
+			// Entry specifies exactly how it should be emitted.  So just use whatever
+			// it wanted.
+			return envEntry.expr;
+		} else if (envEntry.promise) {
+			return `Promise.resolve(${envEntryToString(envEntry.promise, varName)})`;
+		} else {
+			throw new Error('Malformed: ' + JSON.stringify(envEntry));
+		}
+	}
 
-    function complexEnvEntryToString(envEntry: closure.Entry, varName: string): string {
-        // Call all environment variables __e<num> to make them unique.  But suffix
-        // them with the original name of the property to help provide context when
-        // looking at the source.
-        const envVar = createEnvVarName(varName, /*addIndexAtEnd:*/ false);
-        envEntryToEnvVar.set(envEntry, envVar);
+	function complexEnvEntryToString(envEntry: closure.Entry, varName: string): string {
+		// Call all environment variables __e<num> to make them unique.  But suffix
+		// them with the original name of the property to help provide context when
+		// looking at the source.
+		const envVar = createEnvVarName(varName, /*addIndexAtEnd:*/ false);
+		envEntryToEnvVar.set(envEntry, envVar);
 
-        if (envEntry.object) {
-            emitObject(envVar, envEntry.object, varName);
-        } else if (envEntry.array) {
-            emitArray(envVar, envEntry.array, varName);
-        } else if (envEntry.regexp) {
-            const { source, flags } = envEntry.regexp;
-            const regexVal = `new RegExp(${JSON.stringify(source)}, ${JSON.stringify(flags)})`;
-            const entryString = `var ${envVar} = ${regexVal};\n`;
+		if (envEntry.object) {
+			emitObject(envVar, envEntry.object, varName);
+		} else if (envEntry.array) {
+			emitArray(envVar, envEntry.array, varName);
+		} else if (envEntry.regexp) {
+			const { source, flags } = envEntry.regexp;
+			const regexVal = `new RegExp(${JSON.stringify(source)}, ${JSON.stringify(flags)})`;
+			const entryString = `var ${envVar} = ${regexVal};\n`;
 
-            environmentText += entryString;
-        }
+			environmentText += entryString;
+		}
 
-        return envVar;
-    }
+		return envVar;
+	}
 
-    function createEnvVarName(baseName: string, addIndexAtEnd: boolean): string {
-        const trimLeadingUnderscoreRegex = /^_*/g;
-        const legalName = makeLegalJSName(baseName).replace(trimLeadingUnderscoreRegex, "");
-        let index = 0;
+	function createEnvVarName(baseName: string, addIndexAtEnd: boolean): string {
+		const trimLeadingUnderscoreRegex = /^_*/g;
+		const legalName = makeLegalJSName(baseName).replace(trimLeadingUnderscoreRegex, '');
+		let index = 0;
 
-        let currentName = addIndexAtEnd ? "__" + legalName + index : "__" + legalName;
-        while (envVarNames.has(currentName)) {
-            currentName = addIndexAtEnd ? "__" + legalName + index : "__" + index + "_" + legalName;
-            index++;
-        }
+		let currentName = addIndexAtEnd ? '__' + legalName + index : '__' + legalName;
+		while (envVarNames.has(currentName)) {
+			currentName = addIndexAtEnd ? '__' + legalName + index : '__' + index + '_' + legalName;
+			index++;
+		}
 
-        envVarNames.add(currentName);
-        return currentName;
-    }
+		envVarNames.add(currentName);
+		return currentName;
+	}
 
-    function emitObject(envVar: string, obj: closure.ObjectInfo, varName: string): void {
-        const complex = isComplex(obj);
+	function emitObject(envVar: string, obj: closure.ObjectInfo, varName: string): void {
+		const complex = isComplex(obj);
 
-        if (complex) {
-            // we have a complex child.  Because of the possibility of recursion in
-            // the object graph, we have to spit out this variable uninitialized first.
-            // Then we can walk our children, creating a single assignment per child.
-            // This way, if the child ends up referencing us, we'll have already emitted
-            // the **initialized** variable for them to reference.
-            if (obj.proto) {
-                const protoVar = envEntryToString(obj.proto, `${varName}_proto`);
-                environmentText += `var ${envVar} = Object.create(${protoVar});\n`;
-            } else {
-                environmentText += `var ${envVar} = {};\n`;
-            }
+		if (complex) {
+			// we have a complex child.  Because of the possibility of recursion in
+			// the object graph, we have to spit out this variable uninitialized first.
+			// Then we can walk our children, creating a single assignment per child.
+			// This way, if the child ends up referencing us, we'll have already emitted
+			// the **initialized** variable for them to reference.
+			if (obj.proto) {
+				const protoVar = envEntryToString(obj.proto, `${varName}_proto`);
+				environmentText += `var ${envVar} = Object.create(${protoVar});\n`;
+			} else {
+				environmentText += `var ${envVar} = {};\n`;
+			}
 
-            emitComplexObjectProperties(envVar, varName, obj);
-        } else {
-            // All values inside this obj are simple.  We can just emit the object
-            // directly as an object literal with all children embedded in the literal.
-            const props: string[] = [];
+			emitComplexObjectProperties(envVar, varName, obj);
+		} else {
+			// All values inside this obj are simple.  We can just emit the object
+			// directly as an object literal with all children embedded in the literal.
+			const props: string[] = [];
 
-            for (const [keyEntry, { entry: valEntry }] of obj.env) {
-                const keyName = typeof keyEntry.json === "string" ? keyEntry.json : "sym";
-                const propName = envEntryToString(keyEntry, keyName);
-                const propVal = simpleEnvEntryToString(valEntry, keyName);
+			for (const [keyEntry, { entry: valEntry }] of obj.env) {
+				const keyName = typeof keyEntry.json === 'string' ? keyEntry.json : 'sym';
+				const propName = envEntryToString(keyEntry, keyName);
+				const propVal = simpleEnvEntryToString(valEntry, keyName);
 
-                if (typeof keyEntry.json === "string" && utils.isLegalMemberName(keyEntry.json)) {
-                    props.push(`${keyEntry.json}: ${propVal}`);
-                } else {
-                    props.push(`[${propName}]: ${propVal}`);
-                }
-            }
+				if (typeof keyEntry.json === 'string' && utils.isLegalMemberName(keyEntry.json)) {
+					props.push(`${keyEntry.json}: ${propVal}`);
+				} else {
+					props.push(`[${propName}]: ${propVal}`);
+				}
+			}
 
-            const allProps = props.join(", ");
-            const entryString = `var ${envVar} = {${allProps}};\n`;
-            environmentText += entryString;
-        }
+			const allProps = props.join(', ');
+			const entryString = `var ${envVar} = {${allProps}};\n`;
+			environmentText += entryString;
+		}
 
-        function isComplex(o: closure.ObjectInfo) {
-            if (obj.proto !== undefined) {
-                return true;
-            }
+		function isComplex(o: closure.ObjectInfo) {
+			if (obj.proto !== undefined) {
+				return true;
+			}
 
-            for (const v of o.env.values()) {
-                if (entryIsComplex(v)) {
-                    return true;
-                }
-            }
+			for (const v of o.env.values()) {
+				if (entryIsComplex(v)) {
+					return true;
+				}
+			}
 
-            return false;
-        }
+			return false;
+		}
 
-        function entryIsComplex(v: closure.PropertyInfoAndValue) {
-            return !isSimplePropertyInfo(v.info) || deepContainsObjOrArrayOrRegExp(v.entry);
-        }
-    }
+		function entryIsComplex(v: closure.PropertyInfoAndValue) {
+			return !isSimplePropertyInfo(v.info) || deepContainsObjOrArrayOrRegExp(v.entry);
+		}
+	}
 
-    function isSimplePropertyInfo(info: closure.PropertyInfo | undefined): boolean {
-        if (!info) {
-            return true;
-        }
+	function isSimplePropertyInfo(info: closure.PropertyInfo | undefined): boolean {
+		if (!info) {
+			return true;
+		}
 
-        return (
-            info.enumerable === true && info.writable === true && info.configurable === true && !info.get && !info.set
-        );
-    }
+		return (
+			info.enumerable === true &&
+			info.writable === true &&
+			info.configurable === true &&
+			!info.get &&
+			!info.set
+		);
+	}
 
-    function emitComplexObjectProperties(envVar: string, varName: string, objEntry: closure.ObjectInfo): void {
-        for (const [keyEntry, { info, entry: valEntry }] of objEntry.env) {
-            const subName = typeof keyEntry.json === "string" ? keyEntry.json : "sym";
-            const keyString = envEntryToString(keyEntry, varName + "_" + subName);
-            const valString = envEntryToString(valEntry, varName + "_" + subName);
+	function emitComplexObjectProperties(
+		envVar: string,
+		varName: string,
+		objEntry: closure.ObjectInfo
+	): void {
+		for (const [keyEntry, { info, entry: valEntry }] of objEntry.env) {
+			const subName = typeof keyEntry.json === 'string' ? keyEntry.json : 'sym';
+			const keyString = envEntryToString(keyEntry, varName + '_' + subName);
+			const valString = envEntryToString(valEntry, varName + '_' + subName);
 
-            if (isSimplePropertyInfo(info)) {
-                // normal property.  Just emit simply as a direct assignment.
-                if (typeof keyEntry.json === "string" && utils.isLegalMemberName(keyEntry.json)) {
-                    environmentText += `${envVar}.${keyEntry.json} = ${valString};\n`;
-                } else {
-                    environmentText += `${envVar}${`[${keyString}]`} = ${valString};\n`;
-                }
-            } else {
-                // complex property.  emit as Object.defineProperty
-                emitDefineProperty(info!, valString, keyString);
-            }
-        }
+			if (isSimplePropertyInfo(info)) {
+				// normal property.  Just emit simply as a direct assignment.
+				if (typeof keyEntry.json === 'string' && utils.isLegalMemberName(keyEntry.json)) {
+					environmentText += `${envVar}.${keyEntry.json} = ${valString};\n`;
+				} else {
+					environmentText += `${envVar}${`[${keyString}]`} = ${valString};\n`;
+				}
+			} else {
+				// complex property.  emit as Object.defineProperty
+				emitDefineProperty(info!, valString, keyString);
+			}
+		}
 
-        function emitDefineProperty(desc: closure.PropertyInfo, entryValue: string, propName: string) {
-            const copy: any = {};
-            if (desc.configurable) {
-                copy.configurable = desc.configurable;
-            }
-            if (desc.enumerable) {
-                copy.enumerable = desc.enumerable;
-            }
-            if (desc.writable) {
-                copy.writable = desc.writable;
-            }
-            if (desc.get) {
-                copy.get = envEntryToString(desc.get, `${varName}_get`);
-            }
-            if (desc.set) {
-                copy.set = envEntryToString(desc.set, `${varName}_set`);
-            }
-            if (desc.hasValue) {
-                copy.value = entryValue;
-            }
-            const line = `Object.defineProperty(${envVar}, ${propName}, ${envObjToString(copy)});\n`;
-            environmentText += line;
-        }
-    }
+		function emitDefineProperty(desc: closure.PropertyInfo, entryValue: string, propName: string) {
+			const copy: any = {};
+			if (desc.configurable) {
+				copy.configurable = desc.configurable;
+			}
+			if (desc.enumerable) {
+				copy.enumerable = desc.enumerable;
+			}
+			if (desc.writable) {
+				copy.writable = desc.writable;
+			}
+			if (desc.get) {
+				copy.get = envEntryToString(desc.get, `${varName}_get`);
+			}
+			if (desc.set) {
+				copy.set = envEntryToString(desc.set, `${varName}_set`);
+			}
+			if (desc.hasValue) {
+				copy.value = entryValue;
+			}
+			const line = `Object.defineProperty(${envVar}, ${propName}, ${envObjToString(copy)});\n`;
+			environmentText += line;
+		}
+	}
 
-    function emitArray(envVar: string, arr: closure.Entry[], varName: string): void {
-        if (arr.some(deepContainsObjOrArrayOrRegExp) || isSparse(arr) || hasNonNumericIndices(arr)) {
-            // we have a complex child.  Because of the possibility of recursion in the object
-            // graph, we have to spit out this variable initialized (but empty) first. Then we can
-            // walk our children, knowing we'll be able to find this variable if they reference it.
-            environmentText += `var ${envVar} = [];\n`;
+	function emitArray(envVar: string, arr: closure.Entry[], varName: string): void {
+		if (arr.some(deepContainsObjOrArrayOrRegExp) || isSparse(arr) || hasNonNumericIndices(arr)) {
+			// we have a complex child.  Because of the possibility of recursion in the object
+			// graph, we have to spit out this variable initialized (but empty) first. Then we can
+			// walk our children, knowing we'll be able to find this variable if they reference it.
+			environmentText += `var ${envVar} = [];\n`;
 
-            // Walk the names of the array properties directly. This ensures we work efficiently
-            // with sparse arrays.  i.e. if the array has length 1k, but only has one value in it
-            // set, we can just set htat value, instead of setting 999 undefineds.
-            for (const key of Object.getOwnPropertyNames(arr)) {
-                if (key !== "length") {
-                    const entryString = envEntryToString(arr[<any>key], `${varName}_${key}`);
-                    environmentText += `${envVar}${isNumeric(key) ? `[${key}]` : `.${key}`} = ${entryString};\n`;
-                }
-            }
-        } else {
-            // All values inside this array are simple.  We can just emit the array elements in
-            // place.  i.e. we can emit as ``var arr = [1, 2, 3]`` as that's far more preferred than
-            // having four individual statements to do the same.
-            const strings: string[] = [];
-            for (let i = 0, n = arr.length; i < n; i++) {
-                strings.push(simpleEnvEntryToString(arr[i], `${varName}_${i}`));
-            }
+			// Walk the names of the array properties directly. This ensures we work efficiently
+			// with sparse arrays.  i.e. if the array has length 1k, but only has one value in it
+			// set, we can just set htat value, instead of setting 999 undefineds.
+			for (const key of Object.getOwnPropertyNames(arr)) {
+				if (key !== 'length') {
+					const entryString = envEntryToString(arr[<any>key], `${varName}_${key}`);
+					environmentText += `${envVar}${
+						isNumeric(key) ? `[${key}]` : `.${key}`
+					} = ${entryString};\n`;
+				}
+			}
+		} else {
+			// All values inside this array are simple.  We can just emit the array elements in
+			// place.  i.e. we can emit as ``var arr = [1, 2, 3]`` as that's far more preferred than
+			// having four individual statements to do the same.
+			const strings: string[] = [];
+			for (let i = 0, n = arr.length; i < n; i++) {
+				strings.push(simpleEnvEntryToString(arr[i], `${varName}_${i}`));
+			}
 
-            const entryString = `var ${envVar} = [${strings.join(", ")}];\n`;
-            environmentText += entryString;
-        }
-    }
+			const entryString = `var ${envVar} = [${strings.join(', ')}];\n`;
+			environmentText += entryString;
+		}
+	}
 }
 (<any>serializeJavaScriptText).doNotCapture = true;
 
 const makeLegalRegex = /[^0-9a-zA-Z_]/g;
 function makeLegalJSName(n: string) {
-    return n.replace(makeLegalRegex, (x) => "");
+	return n.replace(makeLegalRegex, (x) => '');
 }
 
 function isSparse<T>(arr: Array<T>) {
-    // getOwnPropertyNames for an array returns all the indices as well as 'length'.
-    // so we subtract one to get all the real indices.  If that's not the same as
-    // the array length, then we must have missing properties and are thus sparse.
-    return arr.length !== Object.getOwnPropertyNames(arr).length - 1;
+	// getOwnPropertyNames for an array returns all the indices as well as 'length'.
+	// so we subtract one to get all the real indices.  If that's not the same as
+	// the array length, then we must have missing properties and are thus sparse.
+	return arr.length !== Object.getOwnPropertyNames(arr).length - 1;
 }
 
 function hasNonNumericIndices<T>(arr: Array<T>) {
-    return Object.keys(arr).some((k) => k !== "length" && !isNumeric(k));
+	return Object.keys(arr).some((k) => k !== 'length' && !isNumeric(k));
 }
 
 function isNumeric(n: string) {
-    return !isNaN(parseFloat(n)) && isFinite(+n);
+	return !isNaN(parseFloat(n)) && isFinite(+n);
 }
 
 function isObjOrArrayOrRegExp(env: Entry): boolean {
-    return env.object !== undefined || env.array !== undefined || env.regexp !== undefined;
+	return env.object !== undefined || env.array !== undefined || env.regexp !== undefined;
 }
 
 function deepContainsObjOrArrayOrRegExp(env: Entry): boolean {
-    return (
-        isObjOrArrayOrRegExp(env) ||
-        (env.output !== undefined && deepContainsObjOrArrayOrRegExp(env.output)) ||
-        (env.promise !== undefined && deepContainsObjOrArrayOrRegExp(env.promise))
-    );
+	return (
+		isObjOrArrayOrRegExp(env) ||
+		(env.output !== undefined && deepContainsObjOrArrayOrRegExp(env.output)) ||
+		(env.promise !== undefined && deepContainsObjOrArrayOrRegExp(env.promise))
+	);
 }
 
 /**
@@ -421,7 +437,7 @@ function deepContainsObjOrArrayOrRegExp(env: Entry): boolean {
  * @param envObj The environment object to convert to a string.
  */
 function envObjToString(envObj: Record<string, string>): string {
-    return `{ ${Object.keys(envObj)
-        .map((k) => `${k}: ${envObj[k]}`)
-        .join(", ")} }`;
+	return `{ ${Object.keys(envObj)
+		.map((k) => `${k}: ${envObj[k]}`)
+		.join(', ')} }`;
 }

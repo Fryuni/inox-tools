@@ -17,39 +17,42 @@
 // Otherwise, information may not be known when needed.  This module is only intended for use on
 // Node v11 and higher.
 
-import * as v8 from "node:v8";
-v8.setFlagsFromString("--allow-natives-syntax");
+import * as v8 from 'node:v8';
+v8.setFlagsFromString('--allow-natives-syntax');
 import * as inspector from 'inspector';
-import { Lazy } from "./lazy.js";
+import { Lazy } from './lazy.js';
 
 const scriptIdToUrlMap = new Map<string, string>();
 
-async function createInspectorSessionAsync(): Promise<inspector.Session> {
-    const inspectorSession = new inspector.Session();
-    inspectorSession.connect();
+async function createInspectorSession(): Promise<inspector.Session> {
+	const inspectorSession = new inspector.Session();
+	inspectorSession.connect();
 
-    // Enable debugging support so we can hear about the Debugger.scriptParsed event. We need that
-    // event to know how to map from scriptId's to file-urls.
-    await new Promise<import("inspector").Debugger.EnableReturnType>((resolve, reject) => {
-        inspectorSession.post("Debugger.enable", (err, res) => (err ? reject(err) : resolve(res)));
-    });
+	// Enable debugging support so we can hear about the Debugger.scriptParsed event. We need that
+	// event to know how to map from scriptId's to file-urls.
+	await new Promise<import('inspector').Debugger.EnableReturnType>((resolve, reject) => {
+		inspectorSession.post('Debugger.enable', (err, res) => (err ? reject(err) : resolve(res)));
+	});
 
-    inspectorSession.addListener("Debugger.scriptParsed", (event) => {
-        const { scriptId, url } = event.params;
-        scriptIdToUrlMap.set(scriptId, url);
-    });
+	inspectorSession.addListener('Debugger.scriptParsed', (event) => {
+		const { scriptId, url } = event.params;
 
-    return inspectorSession;
+		// TODO: Test how this behaves on the dev server
+		//  it might need to be cleared on reloads.
+		scriptIdToUrlMap.set(scriptId, url);
+	});
+
+	return inspectorSession;
 }
 
-const session = Lazy.of(createInspectorSessionAsync);
+const session = Lazy.of(createInspectorSession);
 
 /**
  * Returns the inspector session that can be used to query the state of this running Node instance.
  * @internal
  */
-export async function getSessionAsync() {
-    return session.get();
+export async function getSession() {
+	return session.get();
 }
 
 /**
@@ -57,8 +60,8 @@ export async function getSessionAsync() {
  * code that depends on them can continue executing.
  * @internal
  */
-export async function isInitializedAsync() {
-    await session.get();
+export async function isInitialized() {
+	await session.get();
 }
 
 /**
@@ -66,5 +69,5 @@ export async function isInitializedAsync() {
  * @internal
  */
 export function getScriptUrl(id: inspector.Runtime.ScriptId) {
-    return scriptIdToUrlMap.get(id);
+	return scriptIdToUrlMap.get(id);
 }

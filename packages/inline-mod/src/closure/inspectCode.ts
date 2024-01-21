@@ -1,5 +1,5 @@
 import * as modules from 'node:module';
-import upath from 'upath';
+import * as upath from 'node:path';
 import { Entry, EntryRegistry } from './entry.js';
 import { Lazy } from './lazy.js';
 import { getModuleFromPath } from './package.js';
@@ -878,17 +878,17 @@ class GlobalCache {
 		// Add entries to allow proper serialization over generators and iterators.
 		const emptyGenerator = function* (): any {};
 
-		this.cache.add(Object.getPrototypeOf(emptyGenerator), {
+		this.cache.addUnchecked(Object.getPrototypeOf(emptyGenerator), {
 			type: 'expr',
 			value: 'Object.getPrototypeOf(function*(){})',
 		});
-		this.cache.add(Object.getPrototypeOf(emptyGenerator.prototype), {
+		this.cache.addUnchecked(Object.getPrototypeOf(emptyGenerator.prototype), {
 			type: 'expr',
 			value: 'Object.getPrototypeOf((function*(){}).prototype)',
 		});
-		this.cache.add(Symbol.iterator, { type: 'expr', value: 'Symbol.iterator' });
+		this.cache.addUnchecked(Symbol.iterator, { type: 'expr', value: 'Symbol.iterator' });
 
-		this.cache.add(process.env, Entry.expr('process.env'));
+		this.cache.addUnchecked(process.env, Entry.expr('process.env'));
 	}
 
 	private addGlobalInfo(key: string) {
@@ -896,12 +896,12 @@ class GlobalCache {
 		const text = utils.isLegalMemberName(key) ? `global.${key}` : `global[${JSON.stringify(key)}]`;
 
 		if (globalObj !== undefined && globalObj !== null) {
-			this.cache.add(globalObj, { type: 'expr', value: text });
-			this.cache.add(Object.getPrototypeOf(globalObj), {
+			this.cache.addUnchecked(globalObj, { type: 'expr', value: text });
+			this.cache.addUnchecked(Object.getPrototypeOf(globalObj), {
 				type: 'expr',
 				value: `Object.getPrototypeOf(${text})`,
 			});
-			this.cache.add(globalObj.prototype, {
+			this.cache.addUnchecked(globalObj.prototype, {
 				type: 'expr',
 				value: `${text}.prototype`,
 			});

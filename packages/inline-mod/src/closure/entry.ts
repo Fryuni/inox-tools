@@ -115,6 +115,11 @@ export class EntryRegistry<K> {
 		this.inner.set(key, entry);
 	}
 
+	public addUnchecked(key: K, entry: Entry) {
+		this.remove(key);
+		this.add(key, entry);
+	}
+
 	public prepare(key: K) {
 		// Pending entry is intentionally not constructable without a cast
 		this.add(key, { type: 'pending' } as Entry<'pending'>);

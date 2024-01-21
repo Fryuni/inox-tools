@@ -1,0 +1,16 @@
+{
+  "name": "@example/inline-mod",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc && vite build",
+    "dev": "vite",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "typescript": "^5.2.2",
+    "@inox-tools/inline-mod": "workspace:*",
+    "vite": "^5.0.8"
+  }
+}

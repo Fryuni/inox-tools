@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import * as upath from 'upath';
+import * as upath from 'node:path';
 
 type Exports = string | { [key: string]: SubExports };
 type SubExports = string | { [key: string]: SubExports } | null;

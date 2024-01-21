@@ -1,6 +1,6 @@
 {
   "name": "@inox-tools/inline-mod",
-  "version": "0.0.1",
+  "version": "0.0.4",
   "description": "Define a virtual module inline with any reference to buildtime values",
   "keywords": [
     "vite-plugin"
@@ -10,20 +10,21 @@
   "author": "Luiz Ferraz <luiz@lferraz.com>",
   "type": "module",
   "exports": {
+    ".": "./dist/index.js",
     "./vite": {
       "types": "./dist/vite.d.ts",
-      "default": "./dist/index.js"
+      "default": "./dist/vite.js"
     }
   },
   "files": [
     "README.md",
-    "dist"
+    "src"
   ],
   "scripts": {
     "build": "tsup",
     "test": "vitest",
-    "dev": "vite --host",
-    "prepublish": "npm run clean && npm run build"
+    "dev": "tsup --watch",
+    "prepublish": "pnpm run build"
   },
   "dependencies": {
     "typescript": "^5"

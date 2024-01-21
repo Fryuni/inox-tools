@@ -4,9 +4,9 @@ import { Entry, EntryRegistry } from './entry.js';
 import { Lazy } from './lazy.js';
 import { getModuleFromPath } from './package.js';
 import {
-    parseFunction,
-    type CapturedPropertyChain,
-    type CapturedVariables
+	parseFunction,
+	type CapturedPropertyChain,
+	type CapturedVariables,
 } from './parseFunction.js';
 import { rewriteSuperReferences } from './rewriteSuper.js';
 import { InspectedFunction, type PropertyInfo, type PropertyMap } from './types.js';

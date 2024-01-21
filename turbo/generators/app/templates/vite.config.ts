@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite'
+import { defineConfig } from 'vite';
 import <%= pluginName %> from './src/index';
 
 // https://vitejs.dev/config/

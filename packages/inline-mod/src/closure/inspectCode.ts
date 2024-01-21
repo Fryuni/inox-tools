@@ -1,16 +1,16 @@
+import * as modules from 'node:module';
 import upath from 'upath';
 import { Entry, EntryRegistry } from './entry.js';
 import { Lazy } from './lazy.js';
-import { InspectedFunction, type PropertyMap, type PropertyInfo } from './types.js';
-import * as modules from 'node:module';
-import * as utils from './utils.js';
 import { getModuleFromPath } from './package.js';
-import { rewriteSuperReferences } from './rewriteSuper.js';
 import {
-	parseFunction,
-	type CapturedPropertyChain,
-	type CapturedVariables,
+    parseFunction,
+    type CapturedPropertyChain,
+    type CapturedVariables
 } from './parseFunction.js';
+import { rewriteSuperReferences } from './rewriteSuper.js';
+import { InspectedFunction, type PropertyInfo, type PropertyMap } from './types.js';
+import * as utils from './utils.js';
 import * as v8 from './v8.js';
 
 interface ContextFrame {

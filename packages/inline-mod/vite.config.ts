@@ -1,5 +1,7 @@
+/* eslint-disable no-console */
+
 import { defineConfig } from 'vite';
-import inlineModPlugin, {inlineMod} from './src/vite.js';
+import inlineModPlugin, { inlineMod } from './src/vite.js';
 
 const pluginConstants = {
 	name: 'other-plugin',

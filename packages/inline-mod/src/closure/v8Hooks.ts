@@ -17,9 +17,9 @@
 // Otherwise, information may not be known when needed.  This module is only intended for use on
 // Node v11 and higher.
 
+import * as inspector from 'inspector';
 import * as v8 from 'node:v8';
 v8.setFlagsFromString('--allow-natives-syntax');
-import * as inspector from 'inspector';
 
 const scriptIdToUrlMap = new Map<string, string>();
 

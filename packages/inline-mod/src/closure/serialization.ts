@@ -14,11 +14,11 @@
 
 import type { Entry } from './entry.js';
 import {
-	InspectedFunction,
-	type InspectedObject,
-	type PropertyInfo,
-	type PropertyInfoAndValue,
-	type PropertyMap,
+    InspectedFunction,
+    type InspectedObject,
+    type PropertyInfo,
+    type PropertyInfoAndValue,
+    type PropertyMap
 } from './types.js';
 import * as utils from './utils.js';
 

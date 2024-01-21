@@ -1,8 +1,8 @@
 import { getRandomValues } from 'node:crypto';
-import { modRegistry } from './state.js';
-import { getInspector } from './closure/inspectCode.js';
 import type { Entry } from './closure/entry.js';
-import { type ModEntry, type SerializedModule, serializeModule } from './closure/serialization.js';
+import { getInspector } from './closure/inspectCode.js';
+import { serializeModule, type ModEntry, type SerializedModule } from './closure/serialization.js';
+import { modRegistry } from './state.js';
 
 type ModuleExports =
 	| {

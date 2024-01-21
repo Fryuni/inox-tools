@@ -1,4 +1,4 @@
-import type { InspectedFunction, InspectedObject } from './inspectCode.js';
+import type {InspectedFunction, InspectedObject} from "./types.js";
 
 type EntryMap = {
 	// A value which can be safely json serialized.
@@ -102,6 +102,7 @@ export class EntryRegistry<K> {
 		if (existingEntry !== undefined) {
 			if (existingEntry.type === 'pending') {
 				Object.assign(existingEntry, entry);
+				return;
 			}
 
 			throw new Error('An entry for the given key was already registered.');

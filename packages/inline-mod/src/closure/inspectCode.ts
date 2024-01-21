@@ -293,7 +293,9 @@ class Inspector {
 		if (existingEntry === undefined) {
 			const newEntry: Entry<'object'> = {
 				type: 'object',
-				value: {},
+				value: {
+					env: new Map(),
+				},
 			};
 			this.cache.add(obj, newEntry);
 			return newEntry;
@@ -305,7 +307,9 @@ class Inspector {
 			case 'pending': {
 				this.cache.add(obj, {
 					type: 'object',
-					value: {},
+					value: {
+						env: new Map(),
+					},
 				});
 
 				// Cache will turn the existing entry into the new entry.
@@ -345,12 +349,9 @@ class Inspector {
 			if (existingSimpleFunction) {
 				return existingSimpleFunction;
 			} else {
-				this.simpleFunctions.push(entry.value);
-				entry.value = existingSimpleFunction;
+				this.simpleFunctions.push(entry);
 			}
 		}
-
-		this.cache.add(func, entry);
 
 		return entry;
 	}

@@ -16,14 +16,20 @@ export default function inlineModPlugin(_options: Options = {}): Plugin {
 			}
 			return null;
 		},
-		load(id) {
-			if (!id.startsWith('\0inox:inline-mod:')) {
+		async load(id) {
+			if (!id.startsWith('\0')) {
 				return null;
 			}
 
 			const ref = id.slice(1);
 
-			return modRegistry.get(ref);
+			if (!modRegistry.has(ref)) {
+				return null;
+			}
+
+			const serializedModule = await modRegistry.get(ref)!;
+
+			return serializedModule.text;
 		},
 	};
 }

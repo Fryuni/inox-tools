@@ -12,8 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import * as ts from 'typescript';
-// import * as log from "../../log";
+import ts from 'typescript';
 import * as utils from './utils.js';
 
 /** @internal */
@@ -475,7 +474,6 @@ function computeCapturedVariableNames(file: ts.SourceFile): CapturedVariables {
 		}
 	}
 
-	log.debug(`Found free variables: ${JSON.stringify(result)}`);
 	return result;
 
 	function isBuiltIn(ident: string): boolean {

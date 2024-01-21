@@ -15,10 +15,10 @@
 import type { Entry } from './entry.js';
 import {
 	InspectedFunction,
-	InspectedObject,
-	PropertyInfo,
-	PropertyInfoAndValue,
-	PropertyMap,
+	type InspectedObject,
+	type PropertyInfo,
+	type PropertyInfoAndValue,
+	type PropertyMap,
 } from './types.js';
 import * as utils from './utils.js';
 
@@ -189,7 +189,7 @@ class ModuleSerializer {
 			functionName = entry.value.name
 				? this.createEnvVarName(entry.value.name, /*addIndexAtEnd:*/ false)
 				: this.createEnvVarName('f', /*addIndexAtEnd:*/ true);
-			this.functionInfoToEnvVar.set(entry.value.name, functionName);
+			this.functionInfoToEnvVar.set(entry.value, functionName);
 
 			this.emitFunctionWorker(entry, functionName);
 		}
@@ -228,13 +228,10 @@ class ModuleSerializer {
 			parameters +
 			') {\n' +
 			'  return (function() {\n' +
-			'    with(' +
 			envObjToString(capturedValues) +
-			') {\n\n' +
 			'return ' +
 			inspectedFunction.code +
 			';\n\n' +
-			'    }\n' +
 			'  }).apply(' +
 			thisCapture +
 			', ' +
@@ -279,15 +276,15 @@ class ModuleSerializer {
 
 			for (const [keyEntry, { entry: valEntry }] of obj.env) {
 				const keyName =
-					keyEntry.type === 'json' && typeof keyEntry.value === 'string' ? keyEntry.json : 'sym';
+					keyEntry.type === 'json' && typeof keyEntry.value === 'string' ? keyEntry.value : 'sym';
 				const propVal = this.simpleEnvEntryToString(valEntry, keyName);
 
 				if (
 					keyEntry.type === 'json' &&
 					typeof keyEntry.value === 'string' &&
-					utils.isLegalMemberName(keyEntry.json)
+					utils.isLegalMemberName(keyEntry.value)
 				) {
-					props.push(`${keyEntry.json}: ${propVal}`);
+					props.push(`${keyEntry.value}: ${propVal}`);
 				} else {
 					const propName = this.envEntryToString(keyEntry, keyName);
 					props.push(`[${propName}]: ${propVal}`);
@@ -323,11 +320,11 @@ class ModuleSerializer {
 					entriesCode += `${envVar}.${keyEntry.value} = ${valString};\n`;
 				} else {
 					const keyString = this.envEntryToString(keyEntry, varName + '_' + subName);
-					entriesCode += `${envVar}${`[${keyString}]`} = ${valString};\n`;
+					entriesCode += `${envVar}[${keyString}] = ${valString};\n`;
 				}
 			} else {
 				const keyString = this.envEntryToString(keyEntry, varName + '_' + subName);
-				// complex property.  emit as Object.defineProperty
+				// Complex property, emit as Object.defineProperty
 				entriesCode += this.generateDefineProperty({
 					parentName: envVar,
 					varName: varName,
@@ -375,7 +372,7 @@ class ModuleSerializer {
 	private emitArray(envVar: string, entry: Entry<'array'>, varName: string): void {
 		const arr = entry.value;
 		if (arr.some(deepContainsObjOrArrayOrRegExp) || isSparse(arr) || hasNonNumericIndices(arr)) {
-			// we have a complex child.  Because of the possibility of recursion in the object
+			// We have a complex child.  Because of the possibility of recursion in the object
 			// graph, we have to spit out this variable initialized (but empty) first. Then we can
 			// walk our children, knowing we'll be able to find this variable if they reference it.
 			let emitCode = `var ${envVar} = [];\n`;
@@ -513,8 +510,7 @@ function isSimplePropertyInfo(info?: PropertyInfo): boolean {
 function deepContainsObjOrArrayOrRegExp(env: Entry): boolean {
 	return (
 		isObjOrArrayOrRegExp(env) ||
-		(env.type === 'object' && deepContainsObjOrArrayOrRegExp(env.value)) ||
-		(env.type !== 'promise' && deepContainsObjOrArrayOrRegExp(env.value))
+		(env.type === 'promise' && deepContainsObjOrArrayOrRegExp(env.value))
 	);
 }
 
@@ -527,7 +523,14 @@ function deepContainsObjOrArrayOrRegExp(env: Entry): boolean {
  * @param envObj The environment object to convert to a string.
  */
 function envObjToString(envObj: Record<string, string>): string {
-	return `{ ${Object.keys(envObj)
-		.map((k) => `${k}: ${envObj[k]}`)
-		.join(', ')} }`;
+	const entries = Object.entries(envObj)
+		.filter(([_, v]) => !!v)
+		.map(([k, v]) => `const ${k} = ${v};`)
+		.join('\n');
+
+	if (entries) {
+		return entries + '\n';
+	}
+
+	return '';
 }

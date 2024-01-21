@@ -20,8 +20,9 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsup ./src/index.ts --outDir 'lib' --dts --format cjs,esm",
-    "clean": "rimraf ./lib",
+    "build": "tsup",
+    "clean": "rimraf ./dist",
+    "test": "vitest",
     "dev": "vite --host",
     "prepublish": "npm run clean && npm run build"
   },

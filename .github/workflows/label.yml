@@ -8,6 +8,11 @@ on:
 jobs:
   triage:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      statuses: write
+      issues: write
+      pull-requests: write
     steps:
     - uses: actions/labeler@v4
       with:

@@ -1,6 +1,5 @@
 import { defineConfig } from 'vite';
-import inlineMod from './src/index.js';
-import inlineModPlugin from './src/vite.js';
+import inlineModPlugin, {inlineMod} from './src/vite.js';
 
 const pluginConstants = {
 	name: 'other-plugin',

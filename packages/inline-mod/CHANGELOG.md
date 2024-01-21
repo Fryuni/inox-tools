@@ -1,5 +1,11 @@
 # @inox-tools/inline-mod
 
+## 0.1.1
+
+### Patch Changes
+
+- 6dd5b5c: Update README shield
+
 ## 0.1.0
 
 ### Minor Changes

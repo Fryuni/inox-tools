@@ -1,9 +1,7 @@
-/**
- * Vite Plugin API
- * https://vitejs.dev/guide/api-plugin.html
- */
 import type { Plugin } from 'vite';
 import { modRegistry } from './state.js';
+
+export {inlineMod} from './inlining.js';
 
 export type Options = Record<never, never>;
 

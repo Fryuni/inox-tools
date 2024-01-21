@@ -23,7 +23,7 @@ type ModuleOptions = ModuleExports & {
 
 const idBuffer = Buffer.alloc(24);
 
-export default function inlineMod(options: ModuleOptions): string {
+export function inlineMod(options: ModuleOptions): string {
 	const moduleId = options.modName ?? `inox:inline-mod:${getRandomValues(idBuffer).toString('hex')}`;
 
 	modRegistry.set(moduleId, inspectInlineMod(options));

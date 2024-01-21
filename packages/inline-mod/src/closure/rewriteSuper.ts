@@ -32,6 +32,7 @@ export function rewriteSuperReferences(code: string, isStatic: boolean): string 
 	return output;
 
 	function rewriteSuperCallsWorker(transformationContext: typescript.TransformationContext) {
+		const {factory} = transformationContext;
 		const newNodes = new Set<typescript.Node>();
 		let firstFunctionDeclaration = true;
 
@@ -52,12 +53,11 @@ export function rewriteSuperReferences(code: string, isStatic: boolean): string 
 				const text = utils.isLegalMemberName(funcDecl.name!.text)
 					? '/*' + funcDecl.name!.text + '*/'
 					: '';
-				return ts.updateFunctionDeclaration(
+				return factory.updateFunctionDeclaration(
 					funcDecl,
-					funcDecl.decorators,
 					funcDecl.modifiers,
 					funcDecl.asteriskToken,
-					ts.createIdentifier(text),
+					factory.createIdentifier(text),
 					funcDecl.typeParameters,
 					funcDecl.parameters,
 					funcDecl.type,
@@ -66,7 +66,7 @@ export function rewriteSuperReferences(code: string, isStatic: boolean): string 
 			}
 
 			if (node.kind === ts.SyntaxKind.SuperKeyword) {
-				const newNode = ts.createIdentifier('__super');
+				const newNode = factory.createIdentifier('__super');
 				newNodes.add(newNode);
 				return newNode;
 			} else if (
@@ -74,9 +74,9 @@ export function rewriteSuperReferences(code: string, isStatic: boolean): string 
 				node.expression.kind === ts.SyntaxKind.SuperKeyword
 			) {
 				const expr = isStatic
-					? ts.createIdentifier('__super')
-					: ts.createPropertyAccess(ts.createIdentifier('__super'), 'prototype');
-				const newNode = ts.updatePropertyAccess(node, expr, node.name);
+					? factory.createIdentifier('__super')
+					: factory.createPropertyAccessExpression(factory.createIdentifier('__super'), 'prototype');
+				const newNode = factory.updatePropertyAccessExpression(node, expr, node.name);
 				newNodes.add(newNode);
 				return newNode;
 			} else if (
@@ -85,10 +85,10 @@ export function rewriteSuperReferences(code: string, isStatic: boolean): string 
 				node.expression.kind === ts.SyntaxKind.SuperKeyword
 			) {
 				const expr = isStatic
-					? ts.createIdentifier('__super')
-					: ts.createPropertyAccess(ts.createIdentifier('__super'), 'prototype');
+					? factory.createIdentifier('__super')
+					: factory.createPropertyAccessExpression(factory.createIdentifier('__super'), 'prototype');
 
-				const newNode = ts.updateElementAccess(node, expr, node.argumentExpression);
+				const newNode = factory.updateElementAccessExpression(node, expr, node.argumentExpression);
 				newNodes.add(newNode);
 				return newNode;
 			}

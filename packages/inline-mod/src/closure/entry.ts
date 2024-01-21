@@ -1,4 +1,4 @@
-import type {InspectedFunction, InspectedObject} from "./types.js";
+import type { InspectedFunction, InspectedObject } from './types.js';
 
 type EntryMap = {
 	// A value which can be safely json serialized.

@@ -32,7 +32,7 @@ export function rewriteSuperReferences(code: string, isStatic: boolean): string 
 	return output;
 
 	function rewriteSuperCallsWorker(transformationContext: typescript.TransformationContext) {
-		const {factory} = transformationContext;
+		const { factory } = transformationContext;
 		const newNodes = new Set<typescript.Node>();
 		let firstFunctionDeclaration = true;
 
@@ -75,7 +75,10 @@ export function rewriteSuperReferences(code: string, isStatic: boolean): string 
 			) {
 				const expr = isStatic
 					? factory.createIdentifier('__super')
-					: factory.createPropertyAccessExpression(factory.createIdentifier('__super'), 'prototype');
+					: factory.createPropertyAccessExpression(
+							factory.createIdentifier('__super'),
+							'prototype'
+						);
 				const newNode = factory.updatePropertyAccessExpression(node, expr, node.name);
 				newNodes.add(newNode);
 				return newNode;
@@ -86,7 +89,10 @@ export function rewriteSuperReferences(code: string, isStatic: boolean): string 
 			) {
 				const expr = isStatic
 					? factory.createIdentifier('__super')
-					: factory.createPropertyAccessExpression(factory.createIdentifier('__super'), 'prototype');
+					: factory.createPropertyAccessExpression(
+							factory.createIdentifier('__super'),
+							'prototype'
+						);
 
 				const newNode = factory.updateElementAccessExpression(node, expr, node.argumentExpression);
 				newNodes.add(newNode);

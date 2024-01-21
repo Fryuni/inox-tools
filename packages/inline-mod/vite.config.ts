@@ -24,7 +24,5 @@ console.log('Running outside the plugin for: ', virtualModName);
 
 // https://vitejs.dev/config/
 export default defineConfig({
-	plugins: [
-		inlineModPlugin({}),
-	],
+	plugins: [inlineModPlugin({})],
 });

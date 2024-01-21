@@ -1,5 +1,5 @@
 import { getRandomValues } from 'node:crypto';
-import { modRegistry} from './state.js';
+import { modRegistry } from './state.js';
 import { getInspector } from './closure/inspectCode.js';
 import type { Entry } from './closure/entry.js';
 import { type ModEntry, type SerializedModule, serializeModule } from './closure/serialization.js';
@@ -24,7 +24,8 @@ type ModuleOptions = ModuleExports & {
 const idBuffer = Buffer.alloc(24);
 
 export function inlineMod(options: ModuleOptions): string {
-	const moduleId = options.modName ?? `inox:inline-mod:${getRandomValues(idBuffer).toString('hex')}`;
+	const moduleId =
+		options.modName ?? `inox:inline-mod:${getRandomValues(idBuffer).toString('hex')}`;
 
 	modRegistry.set(moduleId, inspectInlineMod(options));
 

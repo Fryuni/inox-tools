@@ -1,11 +1,7 @@
 import upath from 'upath';
 import { Entry, EntryRegistry } from './entry.js';
 import { Lazy } from './lazy.js';
-import {
-	InspectedFunction,
-	type PropertyMap,
-	type PropertyInfo,
-} from './types.js';
+import { InspectedFunction, type PropertyMap, type PropertyInfo } from './types.js';
 import * as modules from 'node:module';
 import * as utils from './utils.js';
 import { getModuleFromPath } from './package.js';
@@ -536,10 +532,10 @@ class Inspector {
 		return {
 			type: 'module',
 			value: {
-			type: 'star',
-			  reference: isInNodeModules
-				? getModuleFromPath(upath.join(...moduleParts.slice(nodeModulesSegmentIndex + 1)))
-				: normalizedModuleName,
+				type: 'star',
+				reference: isInNodeModules
+					? getModuleFromPath(upath.join(...moduleParts.slice(nodeModulesSegmentIndex + 1)))
+					: normalizedModuleName,
 			},
 		};
 	}

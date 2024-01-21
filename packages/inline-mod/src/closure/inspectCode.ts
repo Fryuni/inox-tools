@@ -776,12 +776,23 @@ function isDefaultFunctionPrototype(func: Function, prototypeProp: any): boolean
 	return false;
 }
 
+const bannedBuiltInModules = new Set<string>([
+	// Deprecated modules
+	'_stream_wrap',
+	'sys',
+
+	// References to WASI module can't be serialized at the moment.
+	'wasi',
+]);
+
 const builtInModules = Lazy.of(async () => {
 	return new Map(
 		await Promise.all(
-			modules.builtinModules.map(
-				async (name) => [await import(/* @vite-ignore */ `node:${name}`), name] as const
-			)
+			modules.builtinModules
+				.filter(name => !bannedBuiltInModules.has(name))
+				.map(
+					async (name) => [await import(/* @vite-ignore */ `node:${name}`), name] as const
+				)
 		)
 	);
 });

@@ -9,7 +9,9 @@ export default defineConfig({
 	sourcemap: true,
 	clean: true,
 	splitting: false,
-	minify: true,
+	// Vite emits a giant wall of warnings when minifying this lib because it gets
+	// lost on the renamed import calls.
+	minify: false,
 	external: ['vite', 'typescript'],
 	tsconfig: 'tsconfig.json',
 });

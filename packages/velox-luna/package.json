@@ -17,7 +17,7 @@
     "index.js.map"
   ],
   "scripts": {
-    "build": "esbuild --bundle index.ts --outfile=index.js --sourcemap",
+    "build": "esbuild --bundle index.ts --outdir=dist --sourcemap",
     "test": "pnpm run build && node index.js"
   },
   "dependencies": {

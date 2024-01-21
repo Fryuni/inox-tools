@@ -42,20 +42,20 @@ export type Entry<T extends keyof EntryMap = keyof EntryMap> = {
 }[T];
 
 export namespace Entry {
-	export function expr(expr: string): Entry<'expr'> {
-		return { type: 'expr', value: expr };
+	export function expr(value: string): Entry<'expr'> {
+		return { type: 'expr', value: value };
 	}
 
-	export function json(json?: any): Entry<'json'> {
-		return { type: 'json', value: json };
+	export function json(value?: any): Entry<'json'> {
+		return { type: 'json', value: value };
 	}
 
-	export function regexp(regexp: RegExp): Entry<'regexp'> {
-		return { type: 'regexp', value: regexp };
+	export function regexp(value: RegExp): Entry<'regexp'> {
+		return { type: 'regexp', value: value };
 	}
 
-	export function array(array: Entry[]): Entry<'array'> {
-		return { type: 'array', value: array };
+	export function array(value: Entry[]): Entry<'array'> {
+		return { type: 'array', value: value };
 	}
 }
 

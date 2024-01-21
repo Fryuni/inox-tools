@@ -22,7 +22,7 @@
 import * as v8 from 'v8';
 v8.setFlagsFromString('--allow-natives-syntax');
 
-import * as inspector from 'node:inspector';
+import type * as inspector from 'node:inspector';
 import * as util from 'node:util';
 import * as vm from 'node:vm';
 import * as v8Hooks from './v8Hooks.js';
@@ -183,7 +183,7 @@ async function createContext(): Promise<InflightContext> {
 		calls: {},
 		currentCallId: 0,
 	};
-	const session = <ContextSession>v8Hooks.getSession();
+	const session = v8Hooks.getSession() as ContextSession;
 	const post = util.promisify(session.post);
 
 	// Create own context with known context id and functionsContext as `global`
@@ -213,7 +213,7 @@ async function getRuntimeIdForFunction(func: Function): Promise<inspector.Runtim
 	// location that might be overwritten by another call while we're asynchronously waiting for our
 	// original call to complete.
 
-	const session = <EvaluationSession>v8Hooks.getSession();
+	const session = v8Hooks.getSession() as EvaluationSession;
 	const post = util.promisify(session.post);
 
 	// Place the function in a unique location
@@ -252,7 +252,7 @@ async function runtimeGetProperties(
 	objectId: inspector.Runtime.RemoteObjectId,
 	ownProperties: boolean | undefined
 ) {
-	const session = <GetPropertiesSession>v8Hooks.getSession();
+	const session = v8Hooks.getSession() as GetPropertiesSession;
 	const post = util.promisify(session.post);
 
 	const retType = await post.call(session, 'Runtime.getProperties', { objectId, ownProperties });
@@ -275,7 +275,7 @@ async function getValueForObjectId(objectId: inspector.Runtime.RemoteObjectId): 
 	// 'this' and assign it to a unique-id in a well known mapping table we have set up.  As above,
 	// the unique-id is to prevent any issues with multiple in-flight asynchronous calls.
 
-	const session = <CallFunctionSession>v8Hooks.getSession();
+	const session = v8Hooks.getSession() as CallFunctionSession;
 	const post = util.promisify(session.post);
 	const context = await inflightContext();
 
@@ -289,16 +289,12 @@ async function getValueForObjectId(objectId: inspector.Runtime.RemoteObjectId): 
 
 	// This cast will become unnecessary when we move to TS 3.1.6 or above.  In that version they
 	// support typesafe '.call' calls.
-	const retType = <inspector.Runtime.CallFunctionOnReturnType>await post.call(
-		session,
-		'Runtime.callFunctionOn',
-		{
-			objectId,
-			functionDeclaration: `function () {
+	const retType = await post.call(session, 'Runtime.callFunctionOn', {
+		objectId,
+		functionDeclaration: `function () {
                 calls["${tableId}"] = this;
             }`,
-		}
-	);
+	});
 
 	if (retType.exceptionDetails) {
 		throw new Error(

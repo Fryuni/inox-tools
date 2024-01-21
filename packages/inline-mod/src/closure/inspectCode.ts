@@ -42,6 +42,38 @@ export function getInspector(serializeFn: (val: unknown) => boolean = alwaysSeri
 // This function and all the tooling it refer to cannot be serialized.
 (getInspector as any).doNotCapture = true;
 
+class InspectionError extends Error {
+	public constructor(message: string, frames?: ContextFrame[]) {
+		super(message);
+		if (frames) {
+			let stack = message + '\nWhile inspecting:';
+			for (let i = frames.length - 1; i >= 0; i--) {
+				const frame = frames[i];
+
+				stack += '\n    ';
+
+				if (i !== frames.length - 1) {
+					stack += 'in ';
+				}
+
+				if (frame.capturedFunctionName) {
+					stack += frame.capturedFunctionName;
+				} else if (frame.capturedVariableName) {
+					stack += frame.capturedVariableName;
+				} else if (frame.captureModule) {
+					stack += frame.captureModule.name;
+				} else if (frame.isArrowFunction) {
+					stack += 'anonymous function';
+				} else {
+					stack += 'unknown';
+				}
+			}
+
+			this.stack = stack;
+		}
+	}
+}
+
 /**
  * @internal
  */
@@ -51,7 +83,7 @@ class Inspector {
 	// The cache stores a map of objects to the entries we've created for them.  It's used so that
 	// we only ever create a single environemnt entry for a single object. i.e. if we hit the same
 	// object multiple times while walking the memory graph, we only emit it once.
-	public readonly cache = new EntryRegistry<Object>();
+	public readonly cache = GlobalCache.fork();
 
 	// The 'frames' we push/pop as we're walking the object graph serializing things.
 	// These frames allow us to present a useful error message to the user in the context
@@ -80,6 +112,21 @@ class Inspector {
 	public constructor(private readonly serialize: (o: unknown) => boolean) {}
 
 	public async inspect(
+		value: unknown,
+		capturedProperties?: CapturedPropertyChain[]
+	): Promise<Entry> {
+		try {
+			return await this.unsafeInspect(value, capturedProperties);
+		} catch (error) {
+			if (error instanceof InspectionError) {
+				throw error;
+			}
+
+			throw new InspectionError(error instanceof Error ? error.message : `${error}`, this.frames);
+		}
+	}
+
+	public async unsafeInspect(
 		value: unknown,
 		capturedProperties?: CapturedPropertyChain[]
 	): Promise<Entry> {
@@ -191,7 +238,7 @@ class Inspector {
 		if (Object.prototype.toString.call(value) === '[object Arguments]') {
 			// From: https://stackoverflow.com/questions/7656280/how-do-i-check-whether-an-object-is-an-arguments-object-in-javascript
 			const array: Entry[] = [];
-			for (const elem of <unknown[]>value) {
+			for (const elem of value as unknown[]) {
 				array.push(await this.inspect(elem));
 			}
 
@@ -217,7 +264,7 @@ class Inspector {
 
 	private async serializeObjectWorker(
 		obj: NonNullable<object>,
-		capturedProperties: CapturedPropertyChain[]
+		_capturedProperties: CapturedPropertyChain[]
 	): Promise<[Entry<'object'>, boolean]> {
 		// TODO: Add optimization for capturing the minimal referenced subset of an object.
 
@@ -258,7 +305,7 @@ class Inspector {
 			if (entry.value.env.has(keyEntry) && entry.value.env.get(keyEntry) === undefined) {
 				continue;
 			}
-			entry.value.env.set(keyEntry, <any>undefined);
+			entry.value.env.set(keyEntry, undefined as any);
 
 			const propertyInfo = await this.createPropertyInfo(descriptor);
 			const prop = getOwnProperty(obj, descriptor);
@@ -359,7 +406,7 @@ class Inspector {
 
 		const [error, parsedFunction] = parseFunction(functionString);
 		if (error) {
-			this.throwSerializableError(func, error);
+			this.throwSerializableError(error);
 		}
 
 		frame.isArrowFunction = parsedFunction.isArrowFunction;
@@ -548,11 +595,7 @@ class Inspector {
 
 		for (const scope of ['required', 'optional'] as const) {
 			for (const [name, properties] of capturedVariables[scope].entries()) {
-				const value = await v8
-					.lookupCapturedVariableValue(func, name, scope === 'required')
-					.catch((err) => {
-						this.throwSerializableError(func, err.message);
-					});
+				const value = await v8.lookupCapturedVariableValue(func, name, scope === 'required');
 
 				const moduleName = await findNormalizedModuleName(value);
 				const frameLength = this.frames.length;
@@ -579,7 +622,7 @@ class Inspector {
 				}
 
 				const serializedName = await this.inspect(name);
-				const serializedValue = await this.inspect(value);
+				const serializedValue = await this.inspect(value, properties);
 
 				capturedValues.set(serializedName, { entry: serializedValue });
 
@@ -639,9 +682,8 @@ class Inspector {
 		return false;
 	}
 
-	private throwSerializableError(value: unknown, info: string): never {
-		// TODO: Implement nice error
-		throw new Error('not implemented');
+	private throwSerializableError(info: string): never {
+		throw new InspectionError(info, this.frames);
 	}
 }
 

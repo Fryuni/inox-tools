@@ -13,8 +13,8 @@
 // limitations under the License.
 
 import type { Entry } from './entry.js';
+import type { InspectedFunction } from './types.js';
 import {
-    InspectedFunction,
     type InspectedObject,
     type PropertyInfo,
     type PropertyInfoAndValue,
@@ -382,7 +382,7 @@ class ModuleSerializer {
 			// set, we can just set that value, instead of setting 999 undefineds.
 			for (const key of Object.getOwnPropertyNames(arr)) {
 				if (key !== 'length') {
-					const entryString = this.envEntryToString(arr[<any>key], `${varName}_${key}`);
+					const entryString = this.envEntryToString(arr[key as any], `${varName}_${key}`);
 					emitCode += `${envVar}${isNumeric(key) ? `[${key}]` : `.${key}`} = ${entryString};\n`;
 				}
 			}

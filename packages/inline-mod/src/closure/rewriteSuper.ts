@@ -12,12 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import * as typescript from 'typescript';
+import ts from 'typescript';
 import * as utils from './utils.js';
 
 /** @internal */
 export function rewriteSuperReferences(code: string, isStatic: boolean): string {
-	const ts: typeof typescript = require('typescript');
 	const sourceFile = ts.createSourceFile('', code, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
 
 	// Transform any usages of "super(...)" into "__super.call(this, ...)", any
@@ -25,18 +24,15 @@ export function rewriteSuperReferences(code: string, isStatic: boolean): string 
 	// usages of "super.xxx" into "__super.xxx"
 	const transformed = ts.transform(sourceFile, [rewriteSuperCallsWorker]);
 	const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
-	const output = printer
-		.printNode(ts.EmitHint.Unspecified, transformed.transformed[0], sourceFile)
-		.trim();
 
-	return output;
+	return printer.printNode(ts.EmitHint.Unspecified, transformed.transformed[0], sourceFile).trim();
 
-	function rewriteSuperCallsWorker(transformationContext: typescript.TransformationContext) {
+	function rewriteSuperCallsWorker(transformationContext: ts.TransformationContext) {
 		const { factory } = transformationContext;
-		const newNodes = new Set<typescript.Node>();
+		const newNodes = new Set<ts.Node>();
 		let firstFunctionDeclaration = true;
 
-		function visitor(node: typescript.Node): typescript.Node {
+		function visitor(node: ts.Node): ts.Node {
 			// Convert the top level function so it doesn't have a name. We want to convert the user
 			// function to an anonymous function so that interior references to the same function
 			// bind properly.  i.e. if we start with "function f() { f(); }" then this gets converted to
@@ -127,6 +123,6 @@ export function rewriteSuperReferences(code: string, isStatic: boolean): string 
 			return rewritten;
 		}
 
-		return (node: typescript.Node) => ts.visitNode(node, visitor);
+		return (node: ts.Node) => ts.visitNode(node, visitor);
 	}
 }

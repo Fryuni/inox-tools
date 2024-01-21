@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { Entry, EntryRegistry } from './entry.js';
+import type { Entry } from './entry.js';
+import { EntryRegistry } from './entry.js';
 
 describe('A smart entry registry', () => {
 	const entry: Entry = {

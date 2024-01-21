@@ -5,9 +5,11 @@
 ---
 
 Welcome to InoxTools, a collection of libraries and tools for Astro as surrounding ecosystem!
-Designed with the the goal to challenge the impossible and push the limits of Astro and its tools by exploring and enveloping tricky and advanced patterns into friendly and fresh pieces.
+Designed with the goal of challenging the impossible and pushing the limits of Astro and its tools,
+InoxTools explores and envelopes tricky and advanced patterns into friendly and fresh pieces.
 
-InoxTools offers a suite of "oxygen-free tools for Astronauts" - a playful nod to our space-themed, high-efficiency ecosystem that I aim to elevate to new heights with these tools!
+InoxTools offers a suite of "oxygen-free tools for Astronauts"—a playful nod to our space-themed,
+high-efficiency ecosystem that I aim to elevate to new heights with these tools!
 
 # License
 

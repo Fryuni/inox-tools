@@ -5,16 +5,16 @@ export { inlineMod } from './inlining.js';
 
 export type Options = Record<never, never>;
 
-export default function inlineModPlugin(_options: Options = {}): Plugin {
+export default function inlineModPlugin(_options: Options = {}) {
 	return {
 		name: '@inox-tools/inline-mod',
-		resolveId(id) {
+		resolveId(id: string) {
 			if (modRegistry.has(id)) {
 				return '\0' + id;
 			}
 			return null;
 		},
-		async load(id) {
+		async load(id: string) {
 			if (!id.startsWith('\0')) {
 				return null;
 			}

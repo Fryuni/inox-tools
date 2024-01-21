@@ -4,9 +4,9 @@ import { Entry, EntryRegistry } from './entry.js';
 import { Lazy } from './lazy.js';
 import { getModuleFromPath } from './package.js';
 import {
-	parseFunction,
-	type CapturedPropertyChain,
-	type CapturedVariables,
+    parseFunction,
+    type CapturedPropertyChain,
+    type CapturedVariables
 } from './parseFunction.js';
 import { rewriteSuperReferences } from './rewriteSuper.js';
 import { InspectedFunction, type PropertyInfo, type PropertyMap } from './types.js';
@@ -779,7 +779,9 @@ function isDefaultFunctionPrototype(func: Function, prototypeProp: any): boolean
 const builtInModules = Lazy.of(async () => {
 	return new Map(
 		await Promise.all(
-			modules.builtinModules.map(async (name) => [await import(`node:${name}`), name] as const)
+			modules.builtinModules.map(
+				async (name) => [await import(/* @vite-ignore */ `node:${name}`), name] as const
+			)
 		)
 	);
 });

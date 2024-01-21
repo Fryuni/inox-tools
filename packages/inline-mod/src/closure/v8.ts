@@ -183,7 +183,7 @@ async function createContext(): Promise<InflightContext> {
 		calls: {},
 		currentCallId: 0,
 	};
-	const session = <ContextSession>await v8Hooks.getSession();
+	const session = <ContextSession>v8Hooks.getSession();
 	const post = util.promisify(session.post);
 
 	// Create own context with known context id and functionsContext as `global`
@@ -213,7 +213,7 @@ async function getRuntimeIdForFunction(func: Function): Promise<inspector.Runtim
 	// location that might be overwritten by another call while we're asynchronously waiting for our
 	// original call to complete.
 
-	const session = <EvaluationSession>await v8Hooks.getSession();
+	const session = <EvaluationSession>v8Hooks.getSession();
 	const post = util.promisify(session.post);
 
 	// Place the function in a unique location
@@ -252,7 +252,7 @@ async function runtimeGetProperties(
 	objectId: inspector.Runtime.RemoteObjectId,
 	ownProperties: boolean | undefined
 ) {
-	const session = <GetPropertiesSession>await v8Hooks.getSession();
+	const session = <GetPropertiesSession>v8Hooks.getSession();
 	const post = util.promisify(session.post);
 
 	const retType = await post.call(session, 'Runtime.getProperties', { objectId, ownProperties });
@@ -275,7 +275,7 @@ async function getValueForObjectId(objectId: inspector.Runtime.RemoteObjectId): 
 	// 'this' and assign it to a unique-id in a well known mapping table we have set up.  As above,
 	// the unique-id is to prevent any issues with multiple in-flight asynchronous calls.
 
-	const session = <CallFunctionSession>await v8Hooks.getSession();
+	const session = <CallFunctionSession>v8Hooks.getSession();
 	const post = util.promisify(session.post);
 	const context = await inflightContext();
 

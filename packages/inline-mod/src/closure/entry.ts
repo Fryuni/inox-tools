@@ -18,7 +18,10 @@ type EntryMap = {
 	array: Entry[];
 
 	// A reference to a requirable module name.
-	module: string;
+	module: {
+		type: 'default' | 'star';
+		reference: string;
+	};
 
 	// A promise value.  this will be serialized as the underlyign value the promise
 	// points to.  And deserialized as Promise.resolve(<underlying_value>)

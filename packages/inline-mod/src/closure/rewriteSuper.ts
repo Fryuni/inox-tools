@@ -109,7 +109,10 @@ export function rewriteSuperReferences(code: string, isStatic: boolean): string 
 
 				return transformationContext.factory.updateCallExpression(
 					rewritten,
-					transformationContext.factory.createPropertyAccessExpression(rewritten.expression, 'call'),
+					transformationContext.factory.createPropertyAccessExpression(
+						rewritten.expression,
+						'call'
+					),
 					rewritten.typeArguments,
 					argumentsCopy
 				);

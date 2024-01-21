@@ -1,9 +1,8 @@
-import { relative as upathRelative, join as upathJoin } from 'upath';
+import upath from 'upath';
 import { Entry, EntryRegistry } from './entry.js';
 import { Lazy } from './lazy.js';
 import {
 	InspectedFunction,
-	type InspectedObject,
 	type PropertyMap,
 	type PropertyInfo,
 } from './types.js';
@@ -17,7 +16,6 @@ import {
 	type CapturedVariables,
 } from './parseFunction.js';
 import * as v8 from './v8.js';
-import assert from 'node:assert';
 
 interface ContextFrame {
 	// TODO: Add reporting for function location
@@ -536,9 +534,12 @@ class Inspector {
 		// node_modules that we actually upload with our serialized functions.
 		return {
 			type: 'module',
-			value: isInNodeModules
-				? getModuleFromPath(upathJoin(...moduleParts.slice(nodeModulesSegmentIndex + 1)))
+			value: {
+			type: 'star',
+			  reference: isInNodeModules
+				? getModuleFromPath(upath.join(...moduleParts.slice(nodeModulesSegmentIndex + 1)))
 				: normalizedModuleName,
+			},
 		};
 	}
 
@@ -760,8 +761,8 @@ type ModuleCache = {
 // be '/').
 async function findNormalizedModuleName(obj: any): Promise<string | undefined> {
 	// First, check the built-in modules
-	const modules = await builtInModules.get();
-	const key = modules.get(obj);
+	const builtInMods = await builtInModules.get();
+	const key = builtInMods.get(obj);
 	if (key) {
 		return key;
 	}
@@ -770,11 +771,11 @@ async function findNormalizedModuleName(obj: any): Promise<string | undefined> {
 	// of all non-built-in Node modules loaded by the program so far. _Note_: We
 	// don't pre-compute this because the require cache will get populated
 	// dynamically during execution.
-	for (const mod of Object.values<ModuleCache>((<any>modules)._cache)) {
+	for (const mod of Object.values<ModuleCache>((modules as any)._cache)) {
 		if (Object.is(mod.exports, obj)) {
 			// Rewrite the path to be a local module reference relative to the current working
 			// directory.
-			const modPath = upathRelative(process.cwd(), mod.id);
+			const modPath = upath.relative(process.cwd(), mod.id);
 			return './' + modPath;
 		}
 	}

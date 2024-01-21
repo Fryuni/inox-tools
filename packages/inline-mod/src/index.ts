@@ -1,8 +1,8 @@
-import { pseudoRandomBytes } from 'node:crypto';
-import { serializeFunction } from './closure/serialization.js';
-import { modRegistry, type ModEntry } from './state.js';
+import { getRandomValues } from 'node:crypto';
+import { modRegistry} from './state.js';
 import { getInspector } from './closure/inspectCode.js';
 import type { Entry } from './closure/entry.js';
+import { ModEntry, SerializedModule, serializeModule } from './closure/serialization.js';
 
 type ModuleExports =
 	| {
@@ -18,17 +18,20 @@ type ModuleExports =
 
 type ModuleOptions = ModuleExports & {
 	serializeFn?: (val: unknown) => boolean;
+	modName?: string;
 };
 
+const idBuffer = Buffer.alloc(24);
+
 export default function inlineMod(options: ModuleOptions): string {
-	const moduleId = `inox:inline-mod:${pseudoRandomBytes(24).toString('hex')}`;
+	const moduleId = options.modName ?? `inox:inline-mod:${getRandomValues(idBuffer).toString('hex')}`;
 
 	modRegistry.set(moduleId, inspectInlineMod(options));
 
 	return moduleId;
 }
 
-async function inspectInlineMod(options: ModuleOptions): Promise<ModEntry> {
+async function inspectInlineMod(options: ModuleOptions): Promise<SerializedModule> {
 	const inspector = getInspector(options.serializeFn);
 
 	const maybeInspect = (val: unknown): Promise<Entry> | undefined => {
@@ -39,7 +42,7 @@ async function inspectInlineMod(options: ModuleOptions): Promise<ModEntry> {
 		return inspector.inspect(val);
 	};
 
-	return {
+	const modEntry: ModEntry = {
 		constExports: Object.fromEntries(
 			await Promise.all(
 				Object.entries(options.constExports ?? {}).map(
@@ -50,4 +53,6 @@ async function inspectInlineMod(options: ModuleOptions): Promise<ModEntry> {
 		defaultExport: await maybeInspect(options.defaultExport),
 		assignExport: await maybeInspect(options.assignExport),
 	};
+
+	return serializeModule(modEntry);
 }

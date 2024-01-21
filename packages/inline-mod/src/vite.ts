@@ -23,9 +23,7 @@ export default function inlineModPlugin(_options: Options = {}): Plugin {
 
 			const ref = id.slice(1);
 
-			return modRegistry.get(ref)?.then(
-				serializeModule
-			);
+			return modRegistry.get(ref);
 		},
 	};
 }

@@ -20,7 +20,6 @@
 import * as v8 from 'node:v8';
 v8.setFlagsFromString('--allow-natives-syntax');
 import * as inspector from 'inspector';
-import { Lazy } from './lazy.js';
 
 const scriptIdToUrlMap = new Map<string, string>();
 
@@ -45,23 +44,14 @@ async function createInspectorSession(): Promise<inspector.Session> {
 	return inspectorSession;
 }
 
-const session = Lazy.of(createInspectorSession);
+const session = await createInspectorSession();
 
 /**
  * Returns the inspector session that can be used to query the state of this running Node instance.
  * @internal
  */
-export async function getSession() {
-	return session.get();
-}
-
-/**
- * Returns a promise that can be used to determine when the v8hooks have been injected properly and
- * code that depends on them can continue executing.
- * @internal
- */
-export async function isInitialized() {
-	await session.get();
+export function getSession() {
+	return session;
 }
 
 /**

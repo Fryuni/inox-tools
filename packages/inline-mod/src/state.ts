@@ -1,4 +1,4 @@
-import type { Entry } from './closure/entry.js';
+import type { SerializedModule } from './closure/serialization.js';
 
 /** @internal */
 export const logger = new console.Console({
@@ -17,4 +17,4 @@ export const logger = new console.Console({
 });
 
 /** @internal */
-export const modRegistry = new Map<string, Promise<ModEntry>>();
+export const modRegistry = new Map<string, Promise<SerializedModule>>();

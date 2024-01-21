@@ -10,6 +10,7 @@ import {
 import * as modules from 'node:module';
 import * as utils from './utils.js';
 import { getModuleFromPath } from './package.js';
+import { rewriteSuperReferences } from './rewriteSuper.js';
 import {
 	parseFunction,
 	type CapturedPropertyChain,
@@ -446,8 +447,8 @@ class Inspector {
 				entry: superEntry,
 			});
 
-			functionInfo.code = rewriteSuperReference(
-				funcExprWithName,
+			functionInfo.code = rewriteSuperReferences(
+				funcExprWithName!,
 				this.classStaticMemberToSuperEntry.lookup(func) !== undefined
 			);
 		}

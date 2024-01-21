@@ -1,0 +1,46 @@
+{
+  "name": "@inox-tools/inline-mod",
+  "version": "0.0.0",
+  "description": "Define a virtual module inline with any reference to buildtime values",
+  "keywords": [
+    "vite-plugin"
+  ],
+  "repository": "https://github.com/Fryuni/inox-tools.git",
+  "license": "MIT",
+  "author": "Luiz Ferraz <luiz@lferraz.com>",
+  "type": "module",
+  "exports": {
+    "./vite": {
+      "types": "./dist/vite.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "README.md",
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "clean": "rimraf ./dist",
+    "test": "vitest",
+    "dev": "vite --host",
+    "prepublish": "npm run clean && npm run build"
+  },
+  "dependencies": {
+    "typescript": "^5"
+  },
+  "devDependencies": {
+    "@vitest/ui": "^1.1.3",
+    "tsup": "^8.0.1",
+    "upath": "^2.0.1",
+    "vitest": "^1.1.3"
+  },
+  "peerDependencies": {
+    "vite": "^3.2.0"
+  },
+  "peerDependenciesMeta": {
+    "vite": {
+      "optional": true
+    }
+  }
+}

@@ -1,7 +1,7 @@
-import { kebabCase } from 'lodash';
 import type { PlopTypes } from '@turbo/gen';
-import * as path from 'node:path';
+import { kebabCase } from 'lodash';
 import * as fs from 'node:fs/promises';
+import * as path from 'node:path';
 
 export default (plop: PlopTypes.NodePlopAPI, { destBasePath }: PlopTypes.PlopCfg) => {
 	plop.setGenerator('vite-plugin', {

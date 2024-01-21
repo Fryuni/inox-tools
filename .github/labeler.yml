@@ -5,5 +5,11 @@ automation:
 
 workspace:
 # Any config file at the root
-- '*.{js,json}' 
+- '*.{js,json}'
 - '.*'
+
+pkg/inline-mod:
+- 'packages/inline-mod/**'
+
+pkg/velox-luna:
+- 'packages/velox-luna/**'

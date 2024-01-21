@@ -17,8 +17,8 @@
     "index.js.map"
   ],
   "scripts": {
-    "build": "esbuild --bundle index.ts --outfile=index.js --sourcemap",
-    "test": "pnpm run build && node index.js"
+    "build": "esbuild --bundle index.ts --outdir=dist --sourcemap",
+    "test": "pnpm run build && node dist/index.js"
   },
   "dependencies": {
     "@lunariajs/core": "^0.0.25"

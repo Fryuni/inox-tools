@@ -17,6 +17,7 @@ import {
 	type CapturedVariables,
 } from './parseFunction.js';
 import * as v8 from './v8.js';
+import assert from 'node:assert';
 
 interface ContextFrame {
 	// TODO: Add reporting for function location
@@ -27,25 +28,32 @@ interface ContextFrame {
 	captureModule?: { name: string; value: any };
 }
 
-/**
- * @internal
- */
-export function inspectValue(value: NonNullable<object>): InspectedObject {
-	Inspector.inspect(value);
+const serializationInspectors = new WeakMap<Function, Inspector>();
 
-	return {
-		env: new Map(),
-	};
+const alwaysSerialize = (_: unknown) => true;
+
+/** @internal */
+export function getInspector(serializeFn: (val: unknown) => boolean = alwaysSerialize): Inspector {
+	const cached = serializationInspectors.get(serializeFn);
+	if (cached) {
+		return cached;
+	}
+
+	const inspector = new Inspector(serializeFn);
+	serializationInspectors.set(serializeFn, inspector);
+	return inspector;
 }
 
 // Prevent capture from recursing into the inspection logic.
 // This function and all the tooling it refer to cannot be serialized.
-(inspectValue as any).doNotCapture = true;
+(getInspector as any).doNotCapture = true;
 
 /**
  * @internal
  */
 class Inspector {
+	public static doNotCapture = true;
+
 	// The cache stores a map of objects to the entries we've created for them.  It's used so that
 	// we only ever create a single environemnt entry for a single object. i.e. if we hit the same
 	// object multiple times while walking the memory graph, we only emit it once.
@@ -75,15 +83,9 @@ class Inspector {
 	// a serialized function for each of those, we can emit them a single time.
 	private readonly simpleFunctions: Entry<'function'>[] = [];
 
-	private constructor(private readonly serialize: (o: unknown) => boolean) {}
+	public constructor(private readonly serialize: (o: unknown) => boolean) {}
 
-	public static inspect(value: object): unknown {
-		const inspector = new this(() => true);
-
-		return inspector.inspect(value);
-	}
-
-	private async inspect(
+	public async inspect(
 		value: unknown,
 		capturedProperties?: CapturedPropertyChain[]
 	): Promise<Entry> {
@@ -174,7 +176,10 @@ class Inspector {
 
 		if (value instanceof Promise) {
 			const val = await value;
-			return this.inspect(val);
+			return {
+				type: 'promise',
+				value: await this.inspect(val),
+			};
 		}
 
 		if (Array.isArray(value)) {

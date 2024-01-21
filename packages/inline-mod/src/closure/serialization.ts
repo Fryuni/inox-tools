@@ -1,28 +1,166 @@
-import { logger } from '../state.js';
-import { Entry } from './entry.js';
+// Copyright 2016-2018, Pulumi Corporation.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-logger.log('Root module');
+import type { Entry } from './entry.js';
+import * as utils from './utils.js';
 
-export interface SerializeFunctionOptions {}
+/** @internal */
+export interface ModEntry {
+	constExports?: Record<string, Entry>;
+	defaultExport?: Entry;
+	assignExport?: Entry;
+}
 
-export interface SerializedFunction {
+/** @internal */
+export interface SerializedModule {
 	text: string;
 }
 
-export function serializeFunction(
+/**
+ * serializeFunction serializes a JavaScript function into a text form that can be loaded in another execution context,
+ * for example as part of a function callback associated with an AWS Lambda.  The function serialization captures any
+ * variables captured by the function body and serializes those values into the generated text along with the function
+ * body.  This process is recursive, so that functions referenced by the body of the serialized function will themselves
+ * be serialized as well.  This process also deeply serializes captured object values, including prototype chains and
+ * property descriptors, such that the semantics of the function when deserialized should match the original function.
+ *
+ * There are several known limitations:
+ * - If a native function is captured either directly or indirectly, closure serialization will return an error.
+ * - Captured values will be serialized based on their values at the time that `serializeFunction` is called.  Mutations
+ *   to these values after that (but before the deserialized function is used) will not be observed by the deserialized
+ *   function.
+ *
+ * @param func The JavaScript function to serialize.
+ * @param args Arguments to use to control the serialization of the JavaScript function.
+ */
+export async function serializeFunction(
 	func: Function,
-	options: SerializeFunctionOptions
-): SerializedFunction {
-	func();
+	args: SerializeFunctionArgs = {}
+): Promise<SerializedFunction> {
+	const exportName = args.exportName || 'handler';
+	const serialize = args.serialize || ((_) => true);
+	const isFactoryFunction = args.isFactoryFunction === undefined ? false : args.isFactoryFunction;
 
-	logger.log('Serializing function:', func, options);
-
-	const closureInfo = closure.createClosureInfoAsync(func, serialize, args.logResource);
+	const closureInfo = await closure.createClosureInfoAsync(func, serialize, args.logResource);
+	if (!args.allowSecrets && closureInfo.containsSecrets) {
+		throw new Error('Secret outputs cannot be captured by a closure.');
+	}
 	return serializeJavaScriptText(closureInfo, exportName, isFactoryFunction);
+}
 
-	return {
-		text: 'export default () => {console.log("hello from inside serialization");};',
-	};
+class ModuleSerializer {
+	private preambleText = '';
+	private readonly imports = new Map<Entry<'module'>, string>();
+	private readonly rootDefinitions = new Map<Entry, string>();
+	private exportText = '';
+
+	public static serialize(entry: ModEntry): SerializedModule {
+		return new this().serialize(entry);
+	}
+
+	private serialize(entry: ModEntry): SerializedModule {}
+
+	private emitArray(envVar: string, arr: Entry[], varName: string): string {
+		if (arr.some(deepContainsObjOrArrayOrRegExp) || isSparse(arr) || hasNonNumericIndices(arr)) {
+			// we have a complex child.  Because of the possibility of recursion in the object
+			// graph, we have to spit out this variable initialized (but empty) first. Then we can
+			// walk our children, knowing we'll be able to find this variable if they reference it.
+			let environmentText = `var ${envVar} = [];\n`;
+
+			// Walk the names of the array properties directly. This ensures we work efficiently
+			// with sparse arrays.  i.e. if the array has length 1k, but only has one value in it
+			// set, we can just set htat value, instead of setting 999 undefineds.
+			for (const key of Object.getOwnPropertyNames(arr)) {
+				if (key !== 'length') {
+					const entryString = this.envEntryToString(arr[<any>key], `${varName}_${key}`);
+					environmentText += `${envVar}${
+						isNumeric(key) ? `[${key}]` : `.${key}`
+					} = ${entryString};\n`;
+				}
+			}
+		} else {
+			// All values inside this array are simple.  We can just emit the array elements in
+			// place.  i.e. we can emit as ``var arr = [1, 2, 3]`` as that's far more preferred than
+			// having four individual statements to do the same.
+			const strings: string[] = [];
+			for (let i = 0, n = arr.length; i < n; i++) {
+				strings.push(this.simpleEnvEntryToString(arr[i], `${varName}_${i}`));
+			}
+
+			return `var ${envVar} = [${strings.join(', ')}];\n`;
+		}
+	}
+
+	private envEntryToString(envEntry: Entry, varName: string): string {
+		const envVar = this.envEntryToEnvVar.get(envEntry);
+		if (envVar !== undefined) {
+			return envVar;
+		}
+
+		// Complex objects may also be referenced from multiple functions.  As such, we have to
+		// create variables for them in the environment so that all references to them unify to the
+		// same reference to the env variable.  Effectively, we need to do this for any object that
+		// could be compared for reference-identity.  Basic types (strings, numbers, etc.) have
+		// value semantics and this can be emitted directly into the code where they are used as
+		// there is no way to observe that you are getting a different copy.
+		if (isObjOrArrayOrRegExp(envEntry)) {
+			return this.complexEnvEntryToString(envEntry, varName);
+		} else {
+			// Other values (like strings, bools, etc.) can just be emitted inline.
+			return this.simpleEnvEntryToString(envEntry, varName);
+		}
+	}
+
+	private simpleEnvEntryToString(envEntry: Entry, varName: string): string {
+		switch (envEntry.type) {
+			case 'json':
+				return JSON.stringify(envEntry.value);
+			case 'function':
+				return this.emitFunctionAndGetName(envEntry.value);
+			case 'module':
+				return `import * as ${varName} from '${envEntry.value};`;
+			case 'promise':
+				return `Promise.resolve(${this.envEntryToString(envEntry.value, varName)})`;
+			case 'expr':
+				return envEntry.value;
+			default:
+				throw new Error('Not a simple entry.');
+		}
+	}
+
+	private complexEnvEntryToString(envEntry: Entry, varName: string): string {
+		// Call all environment variables __e<num> to make them unique.  But suffix
+		// them with the original name of the property to help provide context when
+		// looking at the source.
+		const envVar = createEnvVarName(varName, /*addIndexAtEnd:*/ false);
+		envEntryToEnvVar.set(envEntry, envVar);
+
+		if (envEntry.object) {
+			emitObject(envVar, envEntry.object, varName);
+		} else if (envEntry.array) {
+			emitArray(envVar, envEntry.array, varName);
+		} else if (envEntry.regexp) {
+			const { source, flags } = envEntry.regexp;
+			const regexVal = `new RegExp(${JSON.stringify(source)}, ${JSON.stringify(flags)})`;
+			const entryString = `var ${envVar} = ${regexVal};\n`;
+
+			environmentText += entryString;
+		}
+
+		return envVar;
+	}
+
 }
 
 /**
@@ -165,68 +303,6 @@ function serializeJavaScriptText(
 		return envObj;
 	}
 
-	function envEntryToString(envEntry: closure.Entry, varName: string): string {
-		const envVar = envEntryToEnvVar.get(envEntry);
-		if (envVar !== undefined) {
-			return envVar;
-		}
-
-		// Complex objects may also be referenced from multiple functions.  As such, we have to
-		// create variables for them in the environment so that all references to them unify to the
-		// same reference to the env variable.  Effectively, we need to do this for any object that
-		// could be compared for reference-identity.  Basic types (strings, numbers, etc.) have
-		// value semantics and this can be emitted directly into the code where they are used as
-		// there is no way to observe that you are getting a different copy.
-		if (isObjOrArrayOrRegExp(envEntry)) {
-			return complexEnvEntryToString(envEntry, varName);
-		} else {
-			// Other values (like strings, bools, etc.) can just be emitted inline.
-			return simpleEnvEntryToString(envEntry, varName);
-		}
-	}
-
-	function simpleEnvEntryToString(envEntry: closure.Entry, varName: string): string {
-		if (envEntry.hasOwnProperty('json')) {
-			return JSON.stringify(envEntry.json);
-		} else if (envEntry.function !== undefined) {
-			return emitFunctionAndGetName(envEntry.function);
-		} else if (envEntry.module !== undefined) {
-			return `require("${envEntry.module}")`;
-		} else if (envEntry.output !== undefined) {
-			return envEntryToString(envEntry.output, varName);
-		} else if (envEntry.expr) {
-			// Entry specifies exactly how it should be emitted.  So just use whatever
-			// it wanted.
-			return envEntry.expr;
-		} else if (envEntry.promise) {
-			return `Promise.resolve(${envEntryToString(envEntry.promise, varName)})`;
-		} else {
-			throw new Error('Malformed: ' + JSON.stringify(envEntry));
-		}
-	}
-
-	function complexEnvEntryToString(envEntry: closure.Entry, varName: string): string {
-		// Call all environment variables __e<num> to make them unique.  But suffix
-		// them with the original name of the property to help provide context when
-		// looking at the source.
-		const envVar = createEnvVarName(varName, /*addIndexAtEnd:*/ false);
-		envEntryToEnvVar.set(envEntry, envVar);
-
-		if (envEntry.object) {
-			emitObject(envVar, envEntry.object, varName);
-		} else if (envEntry.array) {
-			emitArray(envVar, envEntry.array, varName);
-		} else if (envEntry.regexp) {
-			const { source, flags } = envEntry.regexp;
-			const regexVal = `new RegExp(${JSON.stringify(source)}, ${JSON.stringify(flags)})`;
-			const entryString = `var ${envVar} = ${regexVal};\n`;
-
-			environmentText += entryString;
-		}
-
-		return envVar;
-	}
-
 	function createEnvVarName(baseName: string, addIndexAtEnd: boolean): string {
 		const trimLeadingUnderscoreRegex = /^_*/g;
 		const legalName = makeLegalJSName(baseName).replace(trimLeadingUnderscoreRegex, '');
@@ -361,38 +437,6 @@ function serializeJavaScriptText(
 			environmentText += line;
 		}
 	}
-
-	function emitArray(envVar: string, arr: closure.Entry[], varName: string): void {
-		if (arr.some(deepContainsObjOrArrayOrRegExp) || isSparse(arr) || hasNonNumericIndices(arr)) {
-			// we have a complex child.  Because of the possibility of recursion in the object
-			// graph, we have to spit out this variable initialized (but empty) first. Then we can
-			// walk our children, knowing we'll be able to find this variable if they reference it.
-			environmentText += `var ${envVar} = [];\n`;
-
-			// Walk the names of the array properties directly. This ensures we work efficiently
-			// with sparse arrays.  i.e. if the array has length 1k, but only has one value in it
-			// set, we can just set htat value, instead of setting 999 undefineds.
-			for (const key of Object.getOwnPropertyNames(arr)) {
-				if (key !== 'length') {
-					const entryString = envEntryToString(arr[<any>key], `${varName}_${key}`);
-					environmentText += `${envVar}${
-						isNumeric(key) ? `[${key}]` : `.${key}`
-					} = ${entryString};\n`;
-				}
-			}
-		} else {
-			// All values inside this array are simple.  We can just emit the array elements in
-			// place.  i.e. we can emit as ``var arr = [1, 2, 3]`` as that's far more preferred than
-			// having four individual statements to do the same.
-			const strings: string[] = [];
-			for (let i = 0, n = arr.length; i < n; i++) {
-				strings.push(simpleEnvEntryToString(arr[i], `${varName}_${i}`));
-			}
-
-			const entryString = `var ${envVar} = [${strings.join(', ')}];\n`;
-			environmentText += entryString;
-		}
-	}
 }
 (<any>serializeJavaScriptText).doNotCapture = true;
 
@@ -417,14 +461,21 @@ function isNumeric(n: string) {
 }
 
 function isObjOrArrayOrRegExp(env: Entry): boolean {
-	return env.object !== undefined || env.array !== undefined || env.regexp !== undefined;
+	switch (env.type) {
+		case 'object':
+		case 'array':
+		case 'regexp':
+			return true;
+		default:
+			return false;
+	}
 }
 
 function deepContainsObjOrArrayOrRegExp(env: Entry): boolean {
 	return (
 		isObjOrArrayOrRegExp(env) ||
-		(env.output !== undefined && deepContainsObjOrArrayOrRegExp(env.output)) ||
-		(env.promise !== undefined && deepContainsObjOrArrayOrRegExp(env.promise))
+		(env.type === 'object' && deepContainsObjOrArrayOrRegExp(env.value)) ||
+		(env.type !== 'promise' && deepContainsObjOrArrayOrRegExp(env.value))
 	);
 }
 

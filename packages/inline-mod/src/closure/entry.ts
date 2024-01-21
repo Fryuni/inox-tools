@@ -24,10 +24,6 @@ type EntryMap = {
 	// points to.  And deserialized as Promise.resolve(<underlying_value>)
 	promise: Entry;
 
-	// An Output<T> property.  It will be serialized over as a get() method that
-	// returns the raw underlying value.
-	output: Entry;
-
 	// A simple expression to use to represent this instance.  For example "global.Number";
 	expr: string;
 

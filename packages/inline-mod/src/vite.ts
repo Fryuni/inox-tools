@@ -7,11 +7,25 @@ import { modRegistry } from './state.js';
 
 export type Options = Record<never, never>;
 
-export default function inlineMod(_options: Options = {}): Plugin {
+export default function inlineModPlugin(_options: Options = {}): Plugin {
 	return {
 		name: '@inox-tools/inline-mod',
+		resolveId(id) {
+			if (modRegistry.has(id)) {
+				return '\0' + id;
+			}
+			return null;
+		},
 		load(id) {
-			return modRegistry.get(id);
+			if (!id.startsWith('\0inox:inline-mod:')) {
+				return null;
+			}
+
+			const ref = id.slice(1);
+
+			return modRegistry.get(ref)?.then(
+				serializeModule
+			);
 		},
 	};
 }

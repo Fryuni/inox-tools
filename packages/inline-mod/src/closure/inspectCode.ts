@@ -9,7 +9,7 @@ import {
 } from './types.js';
 import * as modules from 'node:module';
 import * as utils from './utils.js';
-import {getModuleFromPath} from './package.js';
+import { getModuleFromPath } from './package.js';
 import {
 	parseFunction,
 	type CapturedPropertyChain,
@@ -180,7 +180,9 @@ class Inspector {
 			const array: Entry[] = [];
 			for (const descriptor of getOwnPropertyDescriptors(value)) {
 				// Property descriptors are note properly typed in TS
-				array[descriptor.name as unknown as number] = await this.inspect(getOwnProperty(value, descriptor));
+				array[descriptor.name as unknown as number] = await this.inspect(
+					getOwnProperty(value, descriptor)
+				);
 			}
 
 			return Entry.array(array);
@@ -401,7 +403,7 @@ class Inspector {
 				// we have to keep track of the inheritance relationship between classes.  That way
 				// if any of the class members references 'super' we'll be able to rewrite it
 				// accordingly (since we emit classes as Functions)
-				await processDerivedClassConstructorAsync(protoEntry);
+				await this.processDerivedClassConstructor(func, protoEntry);
 
 				// Because this was was class constructor function, rewrite any 'super' references
 				// in it do its derived type if it has one.
@@ -419,10 +421,7 @@ class Inspector {
 
 			const funcProp = getOwnProperty(func, descriptor);
 
-			if (
-				descriptor.name === 'prototype' &&
-				isDefaultFunctionPrototype(func, funcProp)
-			) {
+			if (descriptor.name === 'prototype' && isDefaultFunctionPrototype(func, funcProp)) {
 				// Only emit the function's prototype if it actually changed.
 				continue;
 			}
@@ -471,6 +470,45 @@ class Inspector {
 		}
 
 		return functionInfo;
+	}
+
+	private async processDerivedClassConstructor(func: Function, protoEntry: Entry): Promise<void> {
+		// Map from derived class' constructor and members, to the entry for the base class (i.e.
+		// the base class' constructor function). We'll use this when serializing out those members
+		// to rewrite any usages of 'super' appropriately.
+
+		// We're processing the derived class constructor itself.  Just map it directly to the base
+		// class function.
+		this.classInstanceMemberToSuperEntry.add(func, protoEntry);
+
+		const addIfFunction = (prop: any, isStatic: boolean) => {
+			if (prop instanceof Function) {
+				const set = isStatic
+					? this.classStaticMemberToSuperEntry
+					: this.classInstanceMemberToSuperEntry;
+				set.add(prop, protoEntry);
+			}
+		};
+
+		// Also, make sure our methods can also find this entry so they too can refer to
+		// 'super'.
+		for (const descriptor of getOwnPropertyDescriptors(func)) {
+			if (
+				descriptor.name !== 'length' &&
+				descriptor.name !== 'name' &&
+				descriptor.name !== 'prototype'
+			) {
+				// static method.
+				const classProp = getOwnProperty(func, descriptor);
+				addIfFunction(classProp, /*isStatic*/ true);
+			}
+		}
+
+		for (const descriptor of getOwnPropertyDescriptors(func.prototype)) {
+			// instance method.
+			const classProp = getOwnProperty(func.prototype, descriptor);
+			addIfFunction(classProp, /*isStatic*/ false);
+		}
 	}
 
 	private async captureModule(normalizedModuleName: string): Promise<Entry<'module' | 'object'>> {
@@ -682,14 +720,14 @@ function getOwnProperty(obj: any, descriptor: ClosurePropertyDescriptor): any {
 }
 
 function isDefaultFunctionPrototype(func: Function, prototypeProp: any): boolean {
-    // The initial value of prototype on any newly-created Function instance is a new instance of
-    // Object, but with the own-property 'constructor' set to point back to the new function.
-    if (prototypeProp && prototypeProp.constructor === func) {
-        const descriptors = getOwnPropertyDescriptors(prototypeProp);
-        return descriptors.length === 1 && descriptors[0].name === "constructor";
-    }
+	// The initial value of prototype on any newly-created Function instance is a new instance of
+	// Object, but with the own-property 'constructor' set to point back to the new function.
+	if (prototypeProp && prototypeProp.constructor === func) {
+		const descriptors = getOwnPropertyDescriptors(prototypeProp);
+		return descriptors.length === 1 && descriptors[0].name === 'constructor';
+	}
 
-    return false;
+	return false;
 }
 
 const builtInModules = Lazy.of(async () => {

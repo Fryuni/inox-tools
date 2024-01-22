@@ -1,5 +1,11 @@
 # @inox-tools/inline-mod
 
+## 0.1.3
+
+### Patch Changes
+
+- ecdd836: Fix license on published package
+
 ## 0.1.2
 
 ### Patch Changes

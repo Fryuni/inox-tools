@@ -6,7 +6,7 @@
     "vite-plugin"
   ],
   "repository": "https://github.com/Fryuni/inox-tools.git",
-  "license": "MIT",
+  "license": "(MIT AND Apache-2.0)",
   "author": "Luiz Ferraz <luiz@lferraz.com>",
   "type": "module",
   "exports": {

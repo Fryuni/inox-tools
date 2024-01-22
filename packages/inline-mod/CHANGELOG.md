@@ -1,5 +1,12 @@
 # @inox-tools/inline-mod
 
+## 0.1.2
+
+### Patch Changes
+
+- 1bbc192: Update README
+- c498686: Fix warnings due to tsup minifier
+
 ## 0.1.1
 
 ### Patch Changes

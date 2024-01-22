@@ -1,4 +1,5 @@
 packages:
   - turbo
+  - docs
   - 'packages/*'
   - 'examples/*'

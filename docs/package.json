@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
-    "build": "astro check && astro build",
+    "validate": "astro check",
+    "build": "astro build",
     "preview": "astro preview",
     "astro": "astro"
   },
@@ -13,5 +14,9 @@
     "@astrojs/starlight": "^0.16.0",
     "astro": "^4.2.1",
     "sharp": "^0.33.2"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.4.1",
+    "typescript": "~5.2.2"
   }
 }

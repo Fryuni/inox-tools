@@ -11,12 +11,16 @@ export default defineConfig({
 			},
 			sidebar: [
 				{
-					label: 'Inline Virtual Module',
-					autogenerate: { directory: 'inline-mod' },
-				},
-				{
 					label: 'Custom Astro Routing',
 					link: '/custom-routing',
+				},
+				{
+					label: 'Inline Virtual Module',
+					badge: {
+						text: 'EXP',
+						variant: 'danger',
+					},
+					autogenerate: { directory: 'inline-mod' },
 				},
 			],
 		}),

@@ -1,7 +1,7 @@
 import { defineConfig } from 'astro/config';
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
-import { customRouting } from '@inox-tools/custom-routing';
+import { strictCustomRouting } from '@inox-tools/custom-routing';
 
 // https://astro.build/config
 export default defineConfig({
@@ -9,7 +9,7 @@ export default defineConfig({
 	integrations: [
 		mdx(),
 		sitemap(),
-		customRouting({
+		strictCustomRouting({
 			'': './src/routes/index.astro',
 			'about': './src/routes/about.astro',
 			'blog': './src/routes/blog/index.astro',

@@ -30,7 +30,17 @@ export default defineConfig({
 });
 ```
 
-### License
+## Operating modes
+
+There are two integrations available in this package, `customRouting` and `strictCustomRouting`.
+Both receive the same parameters and behave the same regarding your custom routes.
+
+The `strictCustomRouting` ensures your project routing is strictly custom. When using it your project will
+fail to build in case any route is generated from the file-based routing of `src/pages`.
+
+If you want to use both custom routing and file-based routing in the same project, use `customRouting`.
+
+## License
 
 Custom Routing is available under the MIT license.
 

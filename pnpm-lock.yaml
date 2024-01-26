@@ -73,6 +73,31 @@ importers:
         specifier: ~5.2.2
         version: 5.2.2
 
+  examples/custom-routing:
+    dependencies:
+      '@astrojs/check':
+        specifier: ^0.4.1
+        version: 0.4.1(prettier-plugin-astro@0.13.0)(prettier@3.2.4)(typescript@5.3.3)
+      '@astrojs/mdx':
+        specifier: ^2.0.5
+        version: 2.0.5(astro@4.2.1)
+      '@astrojs/rss':
+        specifier: ^4.0.2
+        version: 4.0.2
+      '@astrojs/sitemap':
+        specifier: ^3.0.5
+        version: 3.0.5
+      astro:
+        specifier: ^4.2.1
+        version: 4.2.1(@types/node@20.11.5)(typescript@5.3.3)
+      typescript:
+        specifier: ^5.3.3
+        version: 5.3.3
+    devDependencies:
+      '@inox-tools/custom-routing':
+        specifier: workspace:*
+        version: link:../../packages/custom-routing
+
   examples/inline-mod:
     devDependencies:
       '@inox-tools/inline-mod':
@@ -112,6 +137,12 @@ importers:
       '@inox-tools/inline-mod':
         specifier: workspace:*
         version: link:../../packages/inline-mod
+
+  packages/custom-routing:
+    dependencies:
+      typescript:
+        specifier: ^5
+        version: 5.3.3
 
   packages/inline-mod:
     dependencies:

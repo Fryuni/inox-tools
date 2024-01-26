@@ -14,6 +14,10 @@ export default defineConfig({
 					label: 'Inline Virtual Module',
 					autogenerate: { directory: 'inline-mod' },
 				},
+				{
+					label: 'Custom Astro Routing',
+					link: '/custom-routing',
+				},
 			],
 		}),
 	],

@@ -1,0 +1,30 @@
+{
+  "name": "@inox-tools/custom-routing",
+  "version": "0.0.0",
+  "description": "Define custom routing instead of Astro's default file-based routing.",
+  "keywords": [
+    "astro-integration",
+    "withastro"
+  ],
+  "repository": "https://github.com/Fryuni/inox-tools.git",
+  "license": "MIT",
+  "author": "Luiz Ferraz <luiz@lferraz.com>",
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "files": [
+    "README.md",
+    "*.ts"
+  ],
+  "scripts": {
+    "build": "echo 'no build'",
+    "test": "echo 'no test'"
+  },
+  "dependencies": {
+    "typescript": "^5"
+  },
+  "peerDependency": {
+    "astro": ">=3"
+  }
+}

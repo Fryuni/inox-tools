@@ -1,5 +1,11 @@
 # @inox-tools/inline-mod
 
+## 0.1.0
+
+### Minor Changes
+
+- 5690273: Initial release of the library
+
 ## 0.1.3
 
 ### Patch Changes

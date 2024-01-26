@@ -1,5 +1,11 @@
 # @inox-tools/inline-mod
 
+## 0.2.0
+
+### Minor Changes
+
+- 39f61a4: Add support for strict custom routes
+
 ## 0.1.0
 
 ### Minor Changes

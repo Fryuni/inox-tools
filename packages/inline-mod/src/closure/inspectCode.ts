@@ -154,8 +154,6 @@ class Inspector {
 			case 'bigint':
 				log('Detected BigInt');
 				return Entry.expr(`${value}n`);
-			case 'symbol':
-				return Entry.expr(`Symbol.for(${JSON.stringify(value.description)})`);
 		}
 
 		if (value instanceof RegExp) {
@@ -181,6 +179,14 @@ class Inspector {
 			}
 		}
 
+		if (typeof value === 'symbol') {
+			log('Detected symbol');
+			const entry = this.inspectSymbol(value);
+			this.cache.add(value, entry);
+
+			return entry;
+		}
+
 		log('Preparing entry for complex value');
 		this.cache.prepare(value);
 
@@ -191,6 +197,42 @@ class Inspector {
 		this.cache.add(value, entry);
 
 		return entry;
+	}
+	private inspectSymbol(value: symbol): Entry<'symbol'> {
+		for (const descriptor of getOwnPropertyDescriptors(Symbol)) {
+			if (typeof descriptor.value === 'symbol' && Object.is(value, descriptor.value)) {
+				log('Symbol is well-known as %s', descriptor.value.description);
+				return {
+					type: 'symbol',
+					value: {
+						type: 'well-known',
+						name: descriptor.name!,
+					},
+				}
+			}
+		}
+
+		if (value.description === undefined) {
+			return {
+				type: 'symbol',
+				value: {
+					type: 'unique',
+					name: '',
+				}
+			}
+		}
+
+		const global = Symbol.for(value.description);
+
+		log('Symbol was constructed');
+
+		return {
+			type: 'symbol',
+			value: {
+				type: Object.is(value, global) ? 'global' : 'unique',
+				name: value.description,
+			},
+		};
 	}
 
 	private inspectNumber(val: number): Entry {

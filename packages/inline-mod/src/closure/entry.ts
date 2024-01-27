@@ -27,6 +27,11 @@ type EntryMap = {
 	// points to.  And deserialized as Promise.resolve(<underlying_value>)
 	promise: Entry;
 
+	symbol: {
+		type: 'unique' | 'global' | 'well-known',
+		name: string,
+	};
+
 	// A simple expression to use to represent this instance.  For example "global.Number";
 	expr: string;
 

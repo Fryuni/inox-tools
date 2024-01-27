@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import { getLogger } from '../log.js';
 import type { Entry } from './entry.js';
 import type { InspectedFunction } from './types.js';
 import {
@@ -21,6 +22,8 @@ import {
 	type PropertyMap,
 } from './types.js';
 import * as utils from './utils.js';
+
+const log = getLogger('serialization');
 
 /** @internal */
 export interface ModEntry {
@@ -135,6 +138,8 @@ class ModuleSerializer {
 				return this.emitModule(envEntry, varName);
 			case 'promise':
 				return `Promise.resolve(${this.envEntryToString(envEntry.value, varName)})`;
+			case 'symbol':
+				return this.emitSymbol(envEntry, varName);
 			case 'expr':
 				return envEntry.value;
 			default:
@@ -159,7 +164,7 @@ class ModuleSerializer {
 			case 'regexp': {
 				const { source, flags } = envEntry.value;
 				const regexVal = `new RegExp(${JSON.stringify(source)}, ${JSON.stringify(flags)})`;
-				const entryString = `var ${envVar} = ${regexVal};\n`;
+				const entryString = `const ${envVar} = ${regexVal};\n`;
 
 				this.emitCode(envEntry, entryString);
 			}
@@ -263,9 +268,9 @@ class ModuleSerializer {
 			// the **initialized** variable for them to reference.
 			if (obj.proto) {
 				const protoVar = this.envEntryToString(obj.proto, `${varName}_proto`);
-				this.emitCode(entry, `var ${envVar} = Object.create(${protoVar});\n`);
+				this.emitCode(entry, `const ${envVar} = Object.create(${protoVar});\n`);
 			} else {
-				this.emitCode(entry, `var ${envVar} = {};\n`);
+				this.emitCode(entry, `const ${envVar} = {};\n`);
 			}
 
 			this.emitComplexObjectProperties(envVar, varName, obj);
@@ -292,7 +297,7 @@ class ModuleSerializer {
 			}
 
 			const allProps = props.join(', ');
-			const entryString = `var ${envVar} = {${allProps}};\n`;
+			const entryString = `const ${envVar} = {${allProps}};\n`;
 			this.emitCode(entry, entryString);
 		}
 	}
@@ -375,7 +380,7 @@ class ModuleSerializer {
 			// We have a complex child.  Because of the possibility of recursion in the object
 			// graph, we have to spit out this variable initialized (but empty) first. Then we can
 			// walk our children, knowing we'll be able to find this variable if they reference it.
-			let emitCode = `var ${envVar} = [];\n`;
+			let emitCode = `const ${envVar} = [];\n`;
 
 			// Walk the names of the array properties directly. This ensures we work efficiently
 			// with sparse arrays.  i.e. if the array has length 1k, but only has one value in it
@@ -397,7 +402,7 @@ class ModuleSerializer {
 				strings.push(this.simpleEnvEntryToString(arr[i], `${varName}_${i}`));
 			}
 
-			this.emitCode(entry, `var ${envVar} = [${strings.join(', ')}];\n`);
+			this.emitCode(entry, `const ${envVar} = [${strings.join(', ')}];\n`);
 		}
 	}
 
@@ -428,6 +433,30 @@ class ModuleSerializer {
 		}
 
 		return envObj;
+	}
+
+	private emitSymbol(entry: Entry<'symbol'>, varName: string): string {
+		const existingRef = this.envEntryToEnvVar.get(entry);
+		if (existingRef) {
+			return existingRef;
+		}
+
+		switch (entry.value.type) {
+			case 'unique': {
+				const envVar = this.createEnvVarName(varName, false);
+				this.envEntryToEnvVar.set(entry, envVar);
+				this.emitCode(entry, `const ${envVar} = Symbol("${entry.value.name}");\n`);
+				return envVar;
+			}
+			case 'global': {
+				const envVar = this.createEnvVarName(varName, false);
+				this.envEntryToEnvVar.set(entry, envVar);
+				this.emitCode(entry, `const ${envVar} = Symbol.for("${entry.value.name}");\n`);
+				return envVar;
+			}
+			case 'well-known':
+				return `Symbol.${entry.value.name}`;
+		}
 	}
 
 	private emitCode(entry: Entry | InspectedObject, code: string): void {

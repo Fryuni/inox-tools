@@ -3,43 +3,53 @@ import type { Entry } from './closure/entry.js';
 import { getInspector } from './closure/inspectCode.js';
 import { serializeModule, type ModEntry, type SerializedModule } from './closure/serialization.js';
 import { modRegistry } from './state.js';
+import { getLogger } from './log.js';
+
+const log = getLogger('inlining');
 
 type ModuleExports =
 	| {
-			constExports?: Record<string, unknown>;
-			defaultExport?: unknown;
-			assignExport?: never;
-	  }
+		constExports?: Record<string, unknown>;
+		defaultExport?: unknown;
+		assignExport?: never;
+	}
 	| {
-			constExports?: never;
-			defaultExport?: never;
-			assignExport: unknown;
-	  };
+		constExports?: never;
+		defaultExport?: never;
+		assignExport: unknown;
+	};
 
 type ModuleOptions = ModuleExports & {
 	serializeFn?: (val: unknown) => boolean;
-	modName?: string;
 };
 
 const idBuffer = Buffer.alloc(24);
 
-export function inlineMod(options: ModuleOptions): string {
-	const moduleId =
-		options.modName ?? `inox:inline-mod:${getRandomValues(idBuffer).toString('hex')}`;
+export function inlineModule(options: ModuleOptions): string {
+	const moduleId = `inox:inline-mod:${getRandomValues(idBuffer).toString('hex')}`;
 
 	modRegistry.set(moduleId, inspectInlineMod(options));
 
 	return moduleId;
 }
 
-async function inspectInlineMod(options: ModuleOptions): Promise<SerializedModule> {
+export function defineModule(name: string, options: ModuleOptions) {
+	modRegistry.set(name, inspectInlineMod(options));
+}
+
+/* @internal */
+export async function inspectInlineMod(options: ModuleOptions): Promise<SerializedModule> {
+	log('Retrieving inspector');
 	const inspector = getInspector(options.serializeFn);
+
+	log('Inspector retrieved');
 
 	const maybeInspect = (val: unknown): Promise<Entry> | undefined => {
 		if (val === undefined) {
 			return;
 		}
 
+		log('Inspecting value');
 		return inspector.inspect(val);
 	};
 

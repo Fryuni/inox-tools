@@ -13,6 +13,7 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
+    "docs": "cd docs && pnpm dev",
     "build": "turbo run --filter '@inox-tools/*' build",
     "format": "pnpm run format:code",
     "format:code": "prettier -w \"**/*\" --ignore-unknown --cache",

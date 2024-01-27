@@ -12,6 +12,9 @@ import { rewriteSuperReferences } from './rewriteSuper.js';
 import { InspectedFunction, type PropertyInfo, type PropertyMap } from './types.js';
 import * as utils from './utils.js';
 import * as v8 from './v8.js';
+import { getLogger } from '../log.js';
+
+const log = getLogger('inspectCode');
 
 interface ContextFrame {
 	// TODO: Add reporting for function location
@@ -109,7 +112,7 @@ class Inspector {
 	// a serialized function for each of those, we can emit them a single time.
 	private readonly simpleFunctions: Entry<'function'>[] = [];
 
-	public constructor(private readonly serialize: (o: unknown) => boolean) {}
+	public constructor(private readonly serialize: (o: unknown) => boolean) { }
 
 	public async inspect(
 		value: unknown,
@@ -122,6 +125,8 @@ class Inspector {
 				throw error;
 			}
 
+			log('Error during inspection:', error);
+
 			throw new InspectionError(error instanceof Error ? error.message : `${error}`, this.frames);
 		}
 	}
@@ -130,24 +135,31 @@ class Inspector {
 		value: unknown,
 		capturedProperties?: CapturedPropertyChain[]
 	): Promise<Entry> {
+		log('Inspecting value');
+
 		// Try simple values
 		if (value == null) {
+			log('Detected nullish value');
 			return Entry.json(value);
 		}
 
 		switch (typeof value) {
 			case 'number':
+				log('Detected number');
 				return this.inspectNumber(value);
 			case 'boolean':
 			case 'string':
+				log('Detected JSON compatible value');
 				return Entry.json(value);
 			case 'bigint':
+				log('Detected BigInt');
 				return Entry.expr(`${value}n`);
 			case 'symbol':
 				return Entry.expr(`Symbol.for(${JSON.stringify(value.description)})`);
 		}
 
 		if (value instanceof RegExp) {
+			log('Detected regular expression');
 			return Entry.regexp(value);
 		}
 
@@ -155,21 +167,27 @@ class Inspector {
 		{
 			const entry = this.cache.lookup(value);
 			if (entry) {
+				log('Cache HIT. Value was already inspected');
 				if (entry.type === 'object') {
+					log('Cached entry is an object, re-inspecting it');
 					// Even though we've already serialized out this object, it might be the case
 					// that we serialized out a different set of properties than the current set
 					// we're being asked to serialize.  So we have to make sure that all these props
 					// are actually serialized.
 					await this.inspectObject(value, capturedProperties);
 				}
+
 				return entry;
 			}
 		}
 
+		log('Preparing entry for complex value');
 		this.cache.prepare(value);
 
+		log('Inspecting complex value');
 		const entry: Entry = await this.inspectComplex(value, capturedProperties);
 
+		log('Caching entry for complex value');
 		this.cache.add(value, entry);
 
 		return entry;
@@ -182,19 +200,24 @@ class Inspector {
 		// properly.  So, if we lookup the value in a map, we may get the cached value for something
 		// else *entirely*.  For example, 0 and -0 will map to the same entry.
 		if (Object.is(val, -0)) {
+			log('Detected negative zero');
 			return Entry.expr('-0');
 		}
 		if (Object.is(val, NaN)) {
-			return Entry.expr('NaN');
+			log('Detected NaN');
+			return Entry.expr('Number.NaN');
 		}
 		if (Object.is(val, Infinity)) {
-			return Entry.expr('Infinity');
+			log('Detected positive infinity');
+			return Entry.expr('Number.POSITIVE_INFINITY');
 		}
 		if (Object.is(val, -Infinity)) {
-			return Entry.expr('-Infinity');
+			log('Detected negative infinity');
+			return Entry.expr('Number.NEGATIVE_INFINITY');
 		}
 
 		// Not special, just use normal json serialization.
+		log('Detected JSON-safe number');
 		return Entry.json(val);
 	}
 
@@ -203,19 +226,24 @@ class Inspector {
 		capturedProperties?: CapturedPropertyChain[]
 	): Promise<Entry> {
 		if (this.doNotCapture(value)) {
+			log('Value should skip capture');
 			return Entry.json();
 		}
 
+		log('Trying to locate value as a module import');
 		const normalizedModuleName = await findNormalizedModuleName(value);
 		if (normalizedModuleName) {
+			log('Detected value as a module:', normalizedModuleName);
 			return this.captureModule(normalizedModuleName);
 		}
 
 		if (value instanceof Function) {
+			log('Inspecting function');
 			return this.inspectFunction(value);
 		}
 
 		if (value instanceof Promise) {
+			log('Inspecting promise value');
 			const val = await value;
 			return {
 				type: 'promise',
@@ -224,6 +252,7 @@ class Inspector {
 		}
 
 		if (Array.isArray(value)) {
+			log('Inspecting array value');
 			const array: Entry[] = [];
 			for (const descriptor of getOwnPropertyDescriptors(value)) {
 				// Property descriptors are note properly typed in TS
@@ -236,6 +265,7 @@ class Inspector {
 		}
 
 		if (Object.prototype.toString.call(value) === '[object Arguments]') {
+			log('Inspecting arguments value');
 			// From: https://stackoverflow.com/questions/7656280/how-do-i-check-whether-an-object-is-an-arguments-object-in-javascript
 			const array: Entry[] = [];
 			for (const elem of value as unknown[]) {
@@ -245,6 +275,7 @@ class Inspector {
 			return Entry.array(array);
 		}
 
+		log('Inspecting object');
 		return this.inspectObject(value, capturedProperties);
 	}
 
@@ -786,15 +817,27 @@ const bannedBuiltInModules = new Set<string>([
 ]);
 
 const builtInModules = Lazy.of(async () => {
-	return new Map(
-		await Promise.all(
-			modules.builtinModules
-				.filter(name => !bannedBuiltInModules.has(name))
-				.map(
-					async (name) => [await import(/* @vite-ignore */ `node:${name}`), name] as const
-				)
-		)
-	);
+	const _log = log.extend('builtInLoader');
+
+	const moduleMap = new Map<any, string>();
+
+	const candidateModules = modules.builtinModules
+		.filter(name => !bannedBuiltInModules.has(name));
+
+	for (const name of candidateModules) {
+		_log(`Loading built-in module "${name}"`);
+		try {
+			const importVal = await import(/* @vite-ignore */ `node:${name}`);
+
+			moduleMap.set(importVal, name);
+		} catch (error) {
+			_log(`ERROR: Could not load built-in module '${name}':`, error);
+		}
+	}
+
+	_log('Completed loading of all built-in modules');
+
+	return moduleMap;
 });
 
 type ModuleCache = {
@@ -889,7 +932,7 @@ class GlobalCache {
 		// these values can be cached once and reused across avery run.
 
 		// Add entries to allow proper serialization over generators and iterators.
-		const emptyGenerator = function* (): any {};
+		const emptyGenerator = function*(): any { };
 
 		this.cache.addUnchecked(Object.getPrototypeOf(emptyGenerator), {
 			type: 'expr',

@@ -229,7 +229,7 @@ async function getRuntimeIdForFunction(func: Function): Promise<inspector.Runtim
 		if (retType.exceptionDetails) {
 			throw new Error(
 				`Error calling "Runtime.evaluate(${expression})" on context ${contextId}: ` +
-					retType.exceptionDetails.text
+				retType.exceptionDetails.text
 			);
 		}
 
@@ -260,7 +260,7 @@ async function runtimeGetProperties(
 	if (retType.exceptionDetails) {
 		throw new Error(
 			`Error calling "Runtime.getProperties(${objectId}, ${ownProperties})": ` +
-				retType.exceptionDetails.text
+			retType.exceptionDetails.text
 		);
 	}
 

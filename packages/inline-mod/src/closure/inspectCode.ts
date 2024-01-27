@@ -297,7 +297,9 @@ class Inspector {
 			log('Inspecting array value');
 			const array: Entry[] = [];
 			for (const descriptor of getOwnPropertyDescriptors(value)) {
-				// Property descriptors are note properly typed in TS
+				if (descriptor.name === 'length') continue;
+
+				// Property descriptors are not properly typed in TS
 				array[descriptor.name as unknown as number] = await this.inspect(
 					getOwnProperty(value, descriptor)
 				);
@@ -853,6 +855,8 @@ const bannedBuiltInModules = new Set<string>([
 	// Deprecated modules
 	'_stream_wrap',
 	'sys',
+	'punycode',
+	'trace_events',
 
 	// References to WASI module can't be serialized at the moment.
 	'wasi',

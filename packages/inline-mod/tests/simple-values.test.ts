@@ -94,11 +94,11 @@ test.each<SimpleReferenceScenario>([
   {
     name: 'dual reference global symbol',
     value: (() => {
-      const s = Symbol.for('something unique');
+      const s = Symbol.for('something global');
 
       return [s, s];
     })(),
-    env: 'const __defaultExport_0 = Symbol.for("something unique");',
+    env: 'const __defaultExport_0 = Symbol.for("something global");',
     construction: '[__defaultExport_0, __defaultExport_0]',
   },
   {

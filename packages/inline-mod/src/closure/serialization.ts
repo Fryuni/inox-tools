@@ -352,13 +352,13 @@ class ModuleSerializer {
 	}): string {
 		const { parentName, varName, desc, entryValue, propName } = options;
 		const copy: any = {};
-		if (desc.configurable) {
+		if (desc.configurable !== undefined) {
 			copy.configurable = desc.configurable;
 		}
-		if (desc.enumerable) {
+		if (desc.enumerable !== undefined) {
 			copy.enumerable = desc.enumerable;
 		}
-		if (desc.writable) {
+		if (desc.writable !== undefined) {
 			copy.writable = desc.writable;
 		}
 		if (desc.get) {
@@ -371,7 +371,11 @@ class ModuleSerializer {
 			copy.value = entryValue;
 		}
 
-		return `Object.defineProperty(${parentName}, ${propName}, ${envObjToString(copy)});\n`;
+		const properties = Object.entries(copy).map(
+			([key, val]) => `${key}: ${val}`,
+		);
+
+		return `Object.defineProperty(${parentName}, ${propName}, {${properties.join(',')}});\n`;
 	}
 
 	private emitArray(envVar: string, entry: Entry<'array'>, varName: string): void {

@@ -1,5 +1,13 @@
 # @inox-tools/inline-mod
 
+## 0.1.4
+
+### Patch Changes
+
+- 71fcbe5: Fix support for sparse arrays
+- 2230d1d: Add general support for serializing symbols
+- 9fc3942: Fix support for custom object property descriptors
+
 ## 0.1.3
 
 ### Patch Changes

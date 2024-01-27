@@ -1,7 +1,6 @@
-import type { Plugin } from 'vite';
 import { modRegistry } from './state.js';
 
-export { inlineMod } from './inlining.js';
+export { inlineModule as inlineMod } from './inlining.js';
 
 export type Options = Record<never, never>;
 

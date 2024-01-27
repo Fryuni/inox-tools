@@ -9,6 +9,8 @@ test('simple objects', async () => {
       weirdNumber: NaN,
       boolean: true,
       wellKnownSymbol: Symbol.search,
+      ['not an identifier']: 'anything',
+      [Symbol.toStringTag]: 'awesome',
     },
   });
 
@@ -18,7 +20,9 @@ test('simple objects', async () => {
       number: 123,
       weirdNumber: Number.NaN,
       boolean: true,
-      wellKnownSymbol: Symbol.search
+      wellKnownSymbol: Symbol.search,
+      ["not an identifier"]: "anything",
+      [Symbol.toStringTag]: "awesome"
     };
 
     export default __defaultExport;

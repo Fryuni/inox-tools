@@ -1,6 +1,18 @@
 import { test, expect } from 'vitest';
 import { inspectInlineMod } from '../src/inlining.js';
 
+test('simple arrays', async () => {
+  const module = await inspectInlineMod({
+    defaultExport: [123, 456, 789],
+  });
+
+  expect(module.text).toEqualIgnoringWhitespace(`
+    const __defaultExport = [123, 456, 789];
+
+    export default __defaultExport;
+  `);
+});
+
 test('nested arrays', async () => {
   const module = await inspectInlineMod({
     defaultExport: [123, [456], 789],

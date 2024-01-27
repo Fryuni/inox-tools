@@ -1,6 +1,30 @@
 import { test, expect } from 'vitest';
 import { inspectInlineMod } from '../src/inlining.js';
 
+test('simple objects', async () => {
+  const module = await inspectInlineMod({
+    defaultExport: {
+      string: 'foo',
+      number: 123,
+      weirdNumber: NaN,
+      boolean: true,
+      wellKnownSymbol: Symbol.search,
+    },
+  });
+
+  expect(module.text).toEqualIgnoringWhitespace(`
+    const __defaultExport = {
+      string: "foo",
+      number: 123,
+      weirdNumber: Number.NaN,
+      boolean: true,
+      wellKnownSymbol: Symbol.search
+    };
+
+    export default __defaultExport;
+  `);
+});
+
 test('nested objects', async () => {
   const module = await inspectInlineMod({
     defaultExport: {

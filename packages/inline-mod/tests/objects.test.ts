@@ -110,17 +110,9 @@ test('objects with custom getter and setter', async () => {
   expect(module.text).toEqualIgnoringWhitespace(`
     const __defaultExport = {};
 
-    function __f0() {
-      return (function() {
-        return () => "read value";
-      }).apply(undefined, undefined).apply(this, arguments);
-    }
+    const __f0 = () => "read value";
 
-    function __f1(__0) {
-      return (function() {
-        return (value) => console.log(value);
-      }).apply(undefined, undefined).apply(this, arguments);
-    }
+    const __f1 = (value) => console.log(value);
 
     Object.defineProperty(__defaultExport, "foo", {
       configurable: false,

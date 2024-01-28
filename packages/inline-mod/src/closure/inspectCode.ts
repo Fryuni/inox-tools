@@ -493,7 +493,9 @@ class Inspector {
 		);
 
 		const functionInfo: InspectedFunction = {
-			code: parsedFunction.funcExprWithoutName,
+			code: parsedFunction.isArrowFunction || parsedFunction.funcExprWithName === undefined
+				? parsedFunction.funcExprWithoutName
+				: parsedFunction.funcExprWithName,
 			capturedValues: capturedValues,
 			env: new Map(),
 			usesNonLexicalThis: parsedFunction.usesNonLexicalThis,

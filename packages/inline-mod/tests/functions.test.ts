@@ -8,11 +8,7 @@ test('arrow function', async () => {
   });
 
   expect(module.text).toEqualIgnoringWhitespace(`
-    function __f0(__0) {
-      return (function() {
-        return (value) => value + "foo";
-      }).apply(undefined, undefined).apply(this, arguments);
-    }
+    const __f0 = (value) => value + "foo";
 
     export default __f0;
   `);
@@ -70,11 +66,11 @@ test('capturing module', async () => {
   });
 
   expect(module.text).toEqualIgnoringWhitespace(`
-    import * as __vite_ssr_import_2__0 from 'path';
+    import * as __path from 'path';
 
     function __f0(__0, __1) {
       return (function() {
-        const __vite_ssr_import_2__ = __vite_ssr_import_2__0;
+        const __vite_ssr_import_2__ = __path;
         return (a, b) => __vite_ssr_import_2__.join(a, b);
       }).apply(undefined, undefined).apply(this, arguments);
     }
@@ -109,23 +105,23 @@ test('simple classes', async () => {
   expect(instance.bar()).toBe('other state');
 
   expect(text).toEqualIgnoringWhitespace(`
-    const __f0_prototype = {};
-
-    function __f1() {
+    function __f0(__0) {
       return (function() {
-        return function /*bar*/() {
-          return this.value;
-        };
-      }).apply(undefined, undefined).apply(this, arguments);
-    }
-
-    function __f2(__0) {
-      return (function() {
-        return function /*baz*/(value) {
+        return function constructor(value) {
           this.value = value;
         };
       }).apply(undefined, undefined).apply(this, arguments);
     }
+
+    const __f0_prototype = {};
+
+    const __f1 = function bar() {
+      return this.value;
+    };
+
+    const __f2 = function baz(value) {
+      this.value = value;
+    };
 
     Object.defineProperty(__f0_prototype, "constructor", {
       configurable: true,
@@ -154,14 +150,6 @@ test('simple classes', async () => {
       writable: false,
       value: __f0_prototype
     });
-
-    function __f0(__0) {
-      return (function() {
-        return function /*constructor*/(value) {
-          this.value = value;
-        };
-      }).apply(undefined, undefined).apply(this, arguments);
-    }
 
     export default __f0;
   `);

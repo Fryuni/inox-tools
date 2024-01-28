@@ -1,18 +1,3 @@
-// Copyright 2016-2018, Pulumi Corporation.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-import { getLogger } from '../log.js';
 import type { Entry } from './entry.js';
 import type { InspectedFunction } from './types.js';
 import {
@@ -22,8 +7,6 @@ import {
 	type PropertyMap,
 } from './types.js';
 import * as utils from './utils.js';
-
-const log = getLogger('serialization');
 
 /** @internal */
 export interface ModEntry {
@@ -85,12 +68,12 @@ class ModuleSerializer {
 		let exportCode = '';
 
 		if (entry.assignExport) {
-			const ref = this.envEntryToString(entry.assignExport, 'modExport');
+			const ref = this.entryToReference(entry.assignExport, 'modExport');
 			exportCode += `export = ${ref};\n`;
 		}
 
 		if (entry.defaultExport) {
-			const ref = this.envEntryToString(entry.defaultExport, 'defaultExport');
+			const ref = this.entryToReference(entry.defaultExport, 'defaultExport');
 			exportCode += `export default ${ref};`;
 		}
 
@@ -99,7 +82,7 @@ class ModuleSerializer {
 				throw new Error(`Exported const cannot have name "${key}", use assign export for that.`);
 			}
 
-			const ref = this.envEntryToString(exportEntry, key);
+			const ref = this.entryToReference(exportEntry, key);
 			exportCode += `export const ${key} = ${ref}`;
 		}
 
@@ -108,7 +91,7 @@ class ModuleSerializer {
 		};
 	}
 
-	private envEntryToString(envEntry: Entry, varName: string): string {
+	private entryToReference(envEntry: Entry, varName: string): string {
 		const envVar = this.envEntryToEnvVar.get(envEntry);
 		if (envVar !== undefined) {
 			return envVar;
@@ -124,11 +107,11 @@ class ModuleSerializer {
 			return this.complexEnvEntryToString(envEntry, varName);
 		} else {
 			// Other values (like strings, bools, etc.) can just be emitted inline.
-			return this.simpleEnvEntryToString(envEntry, varName);
+			return this.simpleEntryToReference(envEntry, varName);
 		}
 	}
 
-	private simpleEnvEntryToString(envEntry: Entry, varName: string): string {
+	private simpleEntryToReference(envEntry: Entry, varName: string): string {
 		switch (envEntry.type) {
 			case 'json':
 				return JSON.stringify(envEntry.value);
@@ -137,7 +120,7 @@ class ModuleSerializer {
 			case 'module':
 				return this.emitModule(envEntry, varName);
 			case 'promise':
-				return `Promise.resolve(${this.envEntryToString(envEntry.value, varName)})`;
+				return `Promise.resolve(${this.entryToReference(envEntry.value, varName)})`;
 			case 'symbol':
 				return this.emitSymbol(envEntry, varName);
 			case 'expr':
@@ -173,8 +156,10 @@ class ModuleSerializer {
 		return envVar;
 	}
 
-	private emitModule(entry: Entry<'module'>, varName: string): string {
-		const modName = this.createEnvVarName(varName, /* addIndexAtEnd */ true);
+	private emitModule(entry: Entry<'module'>, _varName: string): string {
+		// Import names usually get mangled my transpilers, so using their recovered name is mostly useless for readalbility.
+		// Try to get a name from the import path.
+		const modName = this.createEnvVarName(entry.value.reference, /* addIndexAtEnd */ false);
 
 		this.envEntryToEnvVar.set(entry, modName);
 
@@ -204,6 +189,17 @@ class ModuleSerializer {
 
 	private emitFunctionWorker(entry: Entry<'function'>, varName: string) {
 		const inspectedFunction = entry.value;
+		if (
+			inspectedFunction.capturedValues.size === 0
+			&& inspectedFunction.env.size === 0
+			&& inspectedFunction.proto === undefined
+		) {
+			const functionText = `const ${varName} = ${inspectedFunction.code};\n`;
+
+			this.emitCode(entry, functionText);
+			return;
+		}
+
 		const capturedValues = this.envFromEnvObj(inspectedFunction.capturedValues);
 
 		const thisCapture = capturedValues.this;
@@ -233,7 +229,7 @@ class ModuleSerializer {
 			parameters +
 			') {\n' +
 			'  return (function() {\n' +
-			envObjToString(capturedValues) +
+			reconstructFunctionScope(capturedValues) +
 			'return ' +
 			inspectedFunction.code +
 			';\n\n' +
@@ -244,16 +240,16 @@ class ModuleSerializer {
 			').apply(this, arguments);\n' +
 			'}\n';
 
-		// If this function is complex (i.e. non-default __proto__, or has properties, etc.)
-		// then emit those as well.
-		this.emitComplexObjectProperties(varName, varName, inspectedFunction);
-
 		if (inspectedFunction.proto !== undefined) {
-			const protoVar = this.envEntryToString(inspectedFunction.proto, `${varName}_proto`);
+			const protoVar = this.entryToReference(inspectedFunction.proto, `${varName}_proto`);
 			functionText += `Object.setPrototypeOf(${varName}, ${protoVar});\n`;
 		}
 
 		this.emitCode(entry, functionText);
+
+		// If this function is complex (i.e. non-default __proto__, or has properties, etc.)
+		// then emit those as well.
+		this.emitComplexObjectProperties(varName, varName, inspectedFunction);
 	}
 
 	private emitObject(envVar: string, entry: Entry<'object'>, varName: string): void {
@@ -267,7 +263,7 @@ class ModuleSerializer {
 			// This way, if the child ends up referencing us, we'll have already emitted
 			// the **initialized** variable for them to reference.
 			if (obj.proto) {
-				const protoVar = this.envEntryToString(obj.proto, `${varName}_proto`);
+				const protoVar = this.entryToReference(obj.proto, `${varName}_proto`);
 				this.emitCode(entry, `const ${envVar} = Object.create(${protoVar});\n`);
 			} else {
 				this.emitCode(entry, `const ${envVar} = {};\n`);
@@ -282,7 +278,7 @@ class ModuleSerializer {
 			for (const [keyEntry, { entry: valEntry }] of obj.env) {
 				const keyName =
 					keyEntry.type === 'json' && typeof keyEntry.value === 'string' ? keyEntry.value : 'sym';
-				const propVal = this.simpleEnvEntryToString(valEntry, keyName);
+				const propVal = this.simpleEntryToReference(valEntry, keyName);
 
 				if (
 					keyEntry.type === 'json' &&
@@ -291,7 +287,7 @@ class ModuleSerializer {
 				) {
 					props.push(`${keyEntry.value}: ${propVal}`);
 				} else {
-					const propName = this.envEntryToString(keyEntry, keyName);
+					const propName = this.entryToReference(keyEntry, keyName);
 					props.push(`[${propName}]: ${propVal}`);
 				}
 			}
@@ -313,7 +309,7 @@ class ModuleSerializer {
 			const subName =
 				keyEntry.type === 'json' && typeof keyEntry.value === 'string' ? keyEntry.value : 'sym';
 
-			const valString = this.envEntryToString(valEntry, varName + '_' + subName);
+			const valString = this.entryToReference(valEntry, varName + '_' + subName);
 
 			if (isSimplePropertyInfo(info)) {
 				// normal property.  Just emit simply as a direct assignment.
@@ -324,11 +320,11 @@ class ModuleSerializer {
 				) {
 					entriesCode += `${envVar}.${keyEntry.value} = ${valString};\n`;
 				} else {
-					const keyString = this.envEntryToString(keyEntry, varName + '_' + subName);
+					const keyString = this.entryToReference(keyEntry, varName + '_' + subName);
 					entriesCode += `${envVar}[${keyString}] = ${valString};\n`;
 				}
 			} else {
-				const keyString = this.envEntryToString(keyEntry, varName + '_' + subName);
+				const keyString = this.entryToReference(keyEntry, varName + '_' + subName);
 				// Complex property, emit as Object.defineProperty
 				entriesCode += this.generateDefineProperty({
 					parentName: envVar,
@@ -362,10 +358,10 @@ class ModuleSerializer {
 			copy.writable = desc.writable;
 		}
 		if (desc.get) {
-			copy.get = this.envEntryToString(desc.get, `${varName}_get`);
+			copy.get = this.entryToReference(desc.get, `${varName}_get`);
 		}
 		if (desc.set) {
-			copy.set = this.envEntryToString(desc.set, `${varName}_set`);
+			copy.set = this.entryToReference(desc.set, `${varName}_set`);
 		}
 		if (desc.hasValue) {
 			copy.value = entryValue;
@@ -391,7 +387,7 @@ class ModuleSerializer {
 			// set, we can just set that value, instead of setting 999 undefineds.
 			for (const key of Object.getOwnPropertyNames(arr)) {
 				if (key !== 'length') {
-					const entryString = this.envEntryToString(arr[key as any], `${varName}_${key}`);
+					const entryString = this.entryToReference(arr[key as any], `${varName}_${key}`);
 					emitCode += `${envVar}${isNumeric(key) ? `[${key}]` : `.${key}`} = ${entryString};\n`;
 				}
 			}
@@ -403,7 +399,7 @@ class ModuleSerializer {
 			// having four individual statements to do the same.
 			const strings: string[] = [];
 			for (let i = 0, n = arr.length; i < n; i++) {
-				strings.push(this.simpleEnvEntryToString(arr[i], `${varName}_${i}`));
+				strings.push(this.simpleEntryToReference(arr[i], `${varName}_${i}`));
 			}
 
 			this.emitCode(entry, `const ${envVar} = [${strings.join(', ')}];\n`);
@@ -433,7 +429,7 @@ class ModuleSerializer {
 				throw new Error('PropertyMap key was not a string.');
 			}
 
-			envObj[keyEntry.value] = this.envEntryToString(valEntry, keyEntry.value);
+			envObj[keyEntry.value] = this.entryToReference(valEntry, keyEntry.value);
 		}
 
 		return envObj;
@@ -555,7 +551,7 @@ function deepContainsObjOrArrayOrRegExp(env: Entry): boolean {
  *
  * @param envObj The environment object to convert to a string.
  */
-function envObjToString(envObj: Record<string, string>): string {
+function reconstructFunctionScope(envObj: Record<string, string>): string {
 	const entries = Object.entries(envObj)
 		.filter(([_, v]) => !!v)
 		.map(([k, v]) => `const ${k} = ${v};`)

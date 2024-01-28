@@ -15,6 +15,9 @@ export interface InspectedObject {
 	// information about the properties of the object.  We store all properties of the object,
 	// regardless of whether they have string or symbol names.
 	env: PropertyMap;
+
+	// set of already known envs to prevent infinite recursion
+	knownEnvs: Set<string | symbol>
 }
 
 // Information about a javascript function.  Note that this derives from ObjectInfo as all functions

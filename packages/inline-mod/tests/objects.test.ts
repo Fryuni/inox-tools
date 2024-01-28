@@ -49,7 +49,7 @@ test('nested objects', async () => {
   `);
 });
 
-test.skip('circular object', async () => {
+test('circular object', async () => {
   const obj: Record<string, unknown> = {};
   obj.self = obj;
 
@@ -58,9 +58,8 @@ test.skip('circular object', async () => {
   });
 
   expect(module.text).toEqualIgnoringWhitespace(`
-    const __defaultExport_1 = [];
-    __defaultExport_1[0] = 123;
-    __defaultExport_1[1] = __defaultExport_1;
+    const __defaultExport = {};
+    __defaultExport.self = __defaultExport;
 
     export default __defaultExport;
   `);

@@ -48,7 +48,7 @@ test('sparse arrays', async () => {
   `);
 });
 
-test.skip('circular arrays', async () => {
+test('circular arrays', async () => {
   const array: any[] = [];
   array.push(array);
 
@@ -57,9 +57,8 @@ test.skip('circular arrays', async () => {
   });
 
   expect(module.text).toEqualIgnoringWhitespace(`
-    const __defaultExport_1 = [];
-    __defaultExport_1[0] = 123;
-    __defaultExport_1[1] = __defaultExport_1;
+    const __defaultExport = [];
+    __defaultExport[0] = __defaultExport;
 
     export default __defaultExport;
   `);

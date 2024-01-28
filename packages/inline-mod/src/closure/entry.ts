@@ -92,22 +92,22 @@ export class EntryRegistry<K> {
 		return existingEntry;
 	}
 
-	public add(key: K, entry: Entry) {
+	public add(key: K, entry: Entry): Entry {
 		if (key === undefined || key === null) {
-			return;
+			return { type: 'pending' } as Entry<'pending'>;
 		}
 
 		const existingEntry = this.lookup(key);
 
-		if (Object.is(existingEntry, entry)) {
-			// Entry already stored. Do nothing.
-			return;
-		}
-
 		if (existingEntry !== undefined) {
+			if (Object.is(existingEntry, entry)) {
+				// Entry already stored. Do nothing.
+				return existingEntry;
+			}
+
 			if (existingEntry.type === 'pending') {
 				Object.assign(existingEntry, entry);
-				return;
+				return existingEntry;
 			}
 
 			throw new Error('An entry for the given key was already registered.');
@@ -118,6 +118,8 @@ export class EntryRegistry<K> {
 		}
 
 		this.inner.set(key, entry);
+
+		return entry;
 	}
 
 	public addUnchecked(key: K, entry: Entry) {

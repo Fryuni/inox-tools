@@ -194,9 +194,7 @@ class Inspector {
 		const entry: Entry = await this.inspectComplex(value, capturedProperties);
 
 		log('Caching entry for complex value');
-		this.cache.add(value, entry);
-
-		return entry;
+		return this.cache.add(value, entry);
 	}
 	private inspectSymbol(value: symbol): Entry<'symbol'> {
 		for (const descriptor of getOwnPropertyDescriptors(Symbol)) {
@@ -365,8 +363,7 @@ class Inspector {
 		const descriptors = getOwnPropertyDescriptors(obj);
 
 		for (const descriptor of descriptors) {
-			const keyEntry = await this.inspect(getNameOrSymbol(descriptor));
-
+			const name = getNameOrSymbol(descriptor);
 			// We're about to recurse inside this object. In order to prevent infinite loops, put a
 			// dummy entry in the environment map.  That way, if we hit this object again while
 			// recursing we won't try to generate this property.
@@ -377,13 +374,18 @@ class Inspector {
 			// prop-name-path, but we created it the first time through another prop-name path.
 			//
 			// By processing the object again, we will add the different members we need.
-			if (entry.value.env.has(keyEntry) && entry.value.env.get(keyEntry) === undefined) {
+			if (entry.value.knownEnvs.has(name)) {
 				continue;
 			}
-			entry.value.env.set(keyEntry, undefined as any);
+			entry.value.knownEnvs.add(name);
 
+			const keyEntry = await this.inspect(name);
+
+			log('Inspecting property info');
 			const propertyInfo = await this.createPropertyInfo(descriptor);
+			log('Retrieving property value');
 			const prop = getOwnProperty(obj, descriptor);
+			log('Inspecting property value', prop);
 			const valEntry = await this.inspect(prop);
 
 			// Now, replace the dummy entry with the actual one we want.
@@ -413,28 +415,23 @@ class Inspector {
 				type: 'object',
 				value: {
 					env: new Map(),
+					knownEnvs: new Set(),
 				},
 			};
-			this.cache.add(obj, newEntry);
-			return newEntry;
+			return this.cache.add(obj, newEntry) as Entry<'object'>;
 		}
 
 		switch (existingEntry.type) {
 			case 'object':
 				return existingEntry;
-			case 'pending': {
-				this.cache.add(obj, {
+			default:
+				return this.cache.add(obj, {
 					type: 'object',
 					value: {
 						env: new Map(),
+						knownEnvs: new Set(),
 					},
-				});
-
-				// Cache will turn the existing entry into the new entry.
-				return existingEntry as unknown as Entry<'object'>;
-			}
-			default:
-				throw new Error('Mismatching entry in cache');
+				}) as Entry<'object'>;
 		}
 	}
 
@@ -498,6 +495,7 @@ class Inspector {
 				: parsedFunction.funcExprWithName,
 			capturedValues: capturedValues,
 			env: new Map(),
+			knownEnvs: new Set(),
 			usesNonLexicalThis: parsedFunction.usesNonLexicalThis,
 			name: functionDeclarationName,
 			paramCount: func.length,

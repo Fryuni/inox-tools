@@ -4,6 +4,7 @@ import { getInspector } from './closure/inspectCode.js';
 import { serializeModule, type ModEntry, type SerializedModule } from './closure/serialization.js';
 import { modRegistry } from './state.js';
 import { getLogger } from './log.js';
+import { Lazy } from './closure/lazy.js';
 
 const log = getLogger('inlining');
 
@@ -37,8 +38,12 @@ export function defineModule(name: string, options: ModuleOptions) {
 	modRegistry.set(name, inspectInlineMod(options));
 }
 
+interface InlineModule extends SerializedModule {
+	module: Lazy<Promise<unknown>>,
+}
+
 /* @internal */
-export async function inspectInlineMod(options: ModuleOptions): Promise<SerializedModule> {
+export async function inspectInlineMod(options: ModuleOptions): Promise<InlineModule> {
 	log('Retrieving inspector');
 	const inspector = getInspector(options.serializeFn);
 
@@ -65,5 +70,14 @@ export async function inspectInlineMod(options: ModuleOptions): Promise<Serializ
 		assignExport: await maybeInspect(options.assignExport),
 	};
 
-	return serializeModule(modEntry);
+	const { text } = await serializeModule(modEntry);
+
+	return {
+		text: text,
+		module: Lazy.of(() => {
+			const content = 'data:text/javascript,' + text;
+
+			return import(content);
+		})
+	}
 }

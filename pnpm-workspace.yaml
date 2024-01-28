@@ -2,4 +2,5 @@ packages:
   - turbo
   - docs
   - 'packages/*'
+  - 'packages/*/playground'
   - 'examples/*'

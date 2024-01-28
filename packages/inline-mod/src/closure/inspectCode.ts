@@ -988,7 +988,6 @@ class GlobalCache {
 			type: 'expr',
 			value: 'Object.getPrototypeOf((function*(){}).prototype)',
 		});
-		this.cache.addUnchecked(Symbol.iterator, { type: 'expr', value: 'Symbol.iterator' });
 
 		this.cache.addUnchecked(process.env, Entry.expr('process.env'));
 	}

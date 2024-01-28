@@ -12,8 +12,8 @@
   },
   "dependencies": {
     "@astrojs/tailwind": "^5.1.0",
+    "@inox-tools/{{ dashCase name }}": "workspace:*",
     "astro": "^4.2.1",
-    "package-name": "workspace:*",
     "tailwindcss": "^3.4.1"
   },
   "devDependencies": {

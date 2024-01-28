@@ -1,8 +1,6 @@
 import { test, expect } from 'vitest';
 import { inspectInlineMod } from '../src/inlining.js';
-import { inlineMod } from '../src/vite.js';
 import * as path from 'node:path';
-import { modRegistry } from '../src/state.js';
 
 test('arrow function', async () => {
   const module = await inspectInlineMod({
@@ -100,9 +98,9 @@ test('simple classes', async () => {
     defaultExport: Foo,
   });
 
-  const { default: Klass } = await module.get();
+  const { default: Klass } = await module.get() as { default: typeof Foo };
 
-  const instance: Foo = new Klass('initial state');
+  const instance = new Klass('initial state');
 
   expect(instance.bar()).toBe('initial state');
 

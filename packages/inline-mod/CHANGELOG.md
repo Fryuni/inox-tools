@@ -1,5 +1,31 @@
 # @inox-tools/inline-mod
 
+## 0.1.5
+
+### Patch Changes
+
+- b4b4ab1: Optimizes serialization of non-capturing functions.
+
+  Previously, non-capturing functions would be serialized to this:
+
+  ```js
+  function __f0() {
+    return function () {
+      return () => "read value";
+    }
+      .apply(undefined, undefined)
+      .apply(this, arguments);
+  }
+  ```
+
+  Now it is serialized to this:
+
+  ```js
+  const __f0 = () => "read value";
+  ```
+
+- 1b3919f: Fix support for circular values
+
 ## 0.1.4
 
 ### Patch Changes

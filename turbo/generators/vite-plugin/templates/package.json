@@ -1,0 +1,34 @@
+{
+  "name": "package-name",
+  "version": "0.0.0",
+  "description": "TODO:",
+  "author": {
+    "email": "TODO:",
+    "name": "TODO:",
+    "url": "TODO:"
+  },
+  "license": "MIT",
+  "keywords": [
+    "astro-integration",
+    "astro-component",
+    "withastro",
+    "astro",
+    "TODO:"
+  ],
+  "homepage": "TODO:",
+  "publishConfig": {
+    "access": "public"
+  },
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {},
+  "type": "module",
+  "peerDependencies": {
+    "astro": "^4.0.0"
+  },
+  "dependencies": {
+    "astro-integration-kit": "^0.0.2"
+  }
+}

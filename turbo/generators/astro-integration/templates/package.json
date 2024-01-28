@@ -1,0 +1,30 @@
+{
+  "name": "@inox-tools/{{ dashCase name }}",
+  "version": "0.0.0",
+  "description": "{{ description }}",
+  "author": {
+    "email": "luiz@lferraz.com",
+    "name": "Luiz Ferraz",
+    "url": "https://fryuni.dev"
+  },
+  "license": "MIT",
+  "keywords": [
+    "astro-integration",
+    "astro-component",
+    "withastro",
+    "astro"
+  ],
+  "homepage": "https://inox-tools.vercel.app/{{ dashCase name }}",
+  "sideEffects": true,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {},
+  "type": "module",
+  "peerDependencies": {
+    "astro": "^4.0.0"
+  },
+  "dependencies": {
+    "astro-integration-kit": "^0.0.2"
+  }
+}

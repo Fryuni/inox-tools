@@ -1,20 +1,20 @@
-import { test, expect } from 'vitest';
+import { expect, test } from 'vitest';
 import { inspectInlineMod } from '../src/inlining.js';
 
 test('simple objects', async () => {
-  const module = await inspectInlineMod({
-    defaultExport: {
-      string: 'foo',
-      number: 123,
-      weirdNumber: NaN,
-      boolean: true,
-      wellKnownSymbol: Symbol.search,
-      ['not an identifier']: 'anything',
-      [Symbol.toStringTag]: 'awesome',
-    },
-  });
+	const module = await inspectInlineMod({
+		defaultExport: {
+			string: 'foo',
+			number: 123,
+			weirdNumber: NaN,
+			boolean: true,
+			wellKnownSymbol: Symbol.search,
+			['not an identifier']: 'anything',
+			[Symbol.toStringTag]: 'awesome',
+		},
+	});
 
-  expect(module.text).toEqualIgnoringWhitespace(`
+	expect(module.text).toEqualIgnoringWhitespace(`
     const __defaultExport = {
       string: "foo",
       number: 123,
@@ -30,16 +30,16 @@ test('simple objects', async () => {
 });
 
 test('nested objects', async () => {
-  const module = await inspectInlineMod({
-    defaultExport: {
-      foo: 'bar',
-      obj: {
-        baz: 'qux',
-      },
-    },
-  });
+	const module = await inspectInlineMod({
+		defaultExport: {
+			foo: 'bar',
+			obj: {
+				baz: 'qux',
+			},
+		},
+	});
 
-  expect(module.text).toEqualIgnoringWhitespace(`
+	expect(module.text).toEqualIgnoringWhitespace(`
     const __defaultExport = {};
     const __defaultExport_obj = {baz: "qux"};
     __defaultExport.foo = "bar";
@@ -50,14 +50,14 @@ test('nested objects', async () => {
 });
 
 test('circular object', async () => {
-  const obj: Record<string, unknown> = {};
-  obj.self = obj;
+	const obj: Record<string, unknown> = {};
+	obj.self = obj;
 
-  const module = await inspectInlineMod({
-    defaultExport: obj,
-  });
+	const module = await inspectInlineMod({
+		defaultExport: obj,
+	});
 
-  expect(module.text).toEqualIgnoringWhitespace(`
+	expect(module.text).toEqualIgnoringWhitespace(`
     const __defaultExport = {};
     __defaultExport.self = __defaultExport;
 
@@ -66,20 +66,20 @@ test('circular object', async () => {
 });
 
 test('objects with custom property descriptors', async () => {
-  const obj = {};
+	const obj = {};
 
-  Object.defineProperty(obj, 'foo', {
-    value: 'bar',
-    enumerable: false,
-    writable: false,
-    configurable: false,
-  });
+	Object.defineProperty(obj, 'foo', {
+		value: 'bar',
+		enumerable: false,
+		writable: false,
+		configurable: false,
+	});
 
-  const module = await inspectInlineMod({
-    defaultExport: obj,
-  });
+	const module = await inspectInlineMod({
+		defaultExport: obj,
+	});
 
-  expect(module.text).toEqualIgnoringWhitespace(`
+	expect(module.text).toEqualIgnoringWhitespace(`
     const __defaultExport = {};
 
     Object.defineProperty(__defaultExport, "foo", {
@@ -94,19 +94,19 @@ test('objects with custom property descriptors', async () => {
 });
 
 test('objects with custom getter and setter', async () => {
-  const obj = {};
+	const obj = {};
 
-  Object.defineProperty(obj, 'foo', {
-    get: () => 'read value',
-    // eslint-disable-next-line no-console -- Simple statement for the test
-    set: value => console.log(value),
-  });
+	Object.defineProperty(obj, 'foo', {
+		get: () => 'read value',
+		// eslint-disable-next-line no-console -- Simple statement for the test
+		set: (value) => console.log(value),
+	});
 
-  const module = await inspectInlineMod({
-    defaultExport: obj,
-  });
+	const module = await inspectInlineMod({
+		defaultExport: obj,
+	});
 
-  expect(module.text).toEqualIgnoringWhitespace(`
+	expect(module.text).toEqualIgnoringWhitespace(`
     const __defaultExport = {};
 
     const __f0 = () => "read value";
@@ -123,4 +123,3 @@ test('objects with custom getter and setter', async () => {
     export default __defaultExport;
   `);
 });
-

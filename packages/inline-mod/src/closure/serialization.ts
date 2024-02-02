@@ -1,10 +1,10 @@
 import type { Entry } from './entry.js';
 import type { InspectedFunction } from './types.js';
 import {
-	type InspectedObject,
-	type PropertyInfo,
-	type PropertyInfoAndValue,
-	type PropertyMap,
+    type InspectedObject,
+    type PropertyInfo,
+    type PropertyInfoAndValue,
+    type PropertyMap
 } from './types.js';
 import * as utils from './utils.js';
 
@@ -190,9 +190,9 @@ class ModuleSerializer {
 	private emitFunctionWorker(entry: Entry<'function'>, varName: string) {
 		const inspectedFunction = entry.value;
 		if (
-			inspectedFunction.capturedValues.size === 0
-			&& inspectedFunction.env.size === 0
-			&& inspectedFunction.proto === undefined
+			inspectedFunction.capturedValues.size === 0 &&
+			inspectedFunction.env.size === 0 &&
+			inspectedFunction.proto === undefined
 		) {
 			const functionText = `const ${varName} = ${inspectedFunction.code};\n`;
 
@@ -367,9 +367,7 @@ class ModuleSerializer {
 			copy.value = entryValue;
 		}
 
-		const properties = Object.entries(copy).map(
-			([key, val]) => `${key}: ${val}`,
-		);
+		const properties = Object.entries(copy).map(([key, val]) => `${key}: ${val}`);
 
 		return `Object.defineProperty(${parentName}, ${propName}, {${properties.join(',')}});\n`;
 	}

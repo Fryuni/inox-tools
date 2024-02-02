@@ -1,13 +1,13 @@
-import { test, expect } from 'vitest';
-import { inspectInlineMod } from '../src/inlining.js';
 import * as path from 'node:path';
+import { expect, test } from 'vitest';
+import { inspectInlineMod } from '../src/inlining.js';
 
 test('arrow function', async () => {
-  const module = await inspectInlineMod({
-    defaultExport: (value: string) => value + 'foo',
-  });
+	const module = await inspectInlineMod({
+		defaultExport: (value: string) => value + 'foo',
+	});
 
-  expect(module.text).toEqualIgnoringWhitespace(`
+	expect(module.text).toEqualIgnoringWhitespace(`
     const __f0 = (value) => value + "foo";
 
     export default __f0;
@@ -15,16 +15,16 @@ test('arrow function', async () => {
 });
 
 test('capturing object', async () => {
-  const suffixes: Partial<Record<string, string>> = {
-    foo: 'bar',
-    baz: 'qux',
-  };
+	const suffixes: Partial<Record<string, string>> = {
+		foo: 'bar',
+		baz: 'qux',
+	};
 
-  const module = await inspectInlineMod({
-    defaultExport: (value: string) => value + (suffixes[value] ?? ''),
-  });
+	const module = await inspectInlineMod({
+		defaultExport: (value: string) => value + (suffixes[value] ?? ''),
+	});
 
-  expect(module.text).toEqualIgnoringWhitespace(`
+	expect(module.text).toEqualIgnoringWhitespace(`
     const __suffixes = {foo: "bar", baz: "qux"};
     function __f0(__0) {
       return (function() {
@@ -38,16 +38,16 @@ test('capturing object', async () => {
 });
 
 test.skip('partially capturing object', async () => {
-  const suffixes = {
-    foo: 'bar',
-    baz: 'qux',
-  };
+	const suffixes = {
+		foo: 'bar',
+		baz: 'qux',
+	};
 
-  const module = await inspectInlineMod({
-    defaultExport: (value: string) => value + suffixes.foo,
-  });
+	const module = await inspectInlineMod({
+		defaultExport: (value: string) => value + suffixes.foo,
+	});
 
-  expect(module.text).toEqualIgnoringWhitespace(`
+	expect(module.text).toEqualIgnoringWhitespace(`
     const __suffixes = {foo: "bar"};
     function __f0(__0) {
       return (function() {
@@ -61,11 +61,11 @@ test.skip('partially capturing object', async () => {
 });
 
 test('capturing module', async () => {
-  const module = await inspectInlineMod({
-    defaultExport: (a: string, b: string) => path.join(a, b),
-  });
+	const module = await inspectInlineMod({
+		defaultExport: (a: string, b: string) => path.join(a, b),
+	});
 
-  expect(module.text).toEqualIgnoringWhitespace(`
+	expect(module.text).toEqualIgnoringWhitespace(`
     import * as __path from 'path';
 
     function __f0(__0, __1) {
@@ -80,31 +80,31 @@ test('capturing module', async () => {
 });
 
 test('simple classes', async () => {
-  class Foo {
-    public constructor(private value: string) { }
-    public bar() {
-      return this.value;
-    }
-    public baz(value: string) {
-      this.value = value;
-    }
-  }
+	class Foo {
+		public constructor(private value: string) {}
+		public bar() {
+			return this.value;
+		}
+		public baz(value: string) {
+			this.value = value;
+		}
+	}
 
-  const { module, text } = await inspectInlineMod({
-    defaultExport: Foo,
-  });
+	const { module, text } = await inspectInlineMod({
+		defaultExport: Foo,
+	});
 
-  const { default: Klass } = await module.get() as { default: typeof Foo };
+	const { default: Klass } = (await module.get()) as { default: typeof Foo };
 
-  const instance = new Klass('initial state');
+	const instance = new Klass('initial state');
 
-  expect(instance.bar()).toBe('initial state');
+	expect(instance.bar()).toBe('initial state');
 
-  instance.baz('other state');
+	instance.baz('other state');
 
-  expect(instance.bar()).toBe('other state');
+	expect(instance.bar()).toBe('other state');
 
-  expect(text).toEqualIgnoringWhitespace(`
+	expect(text).toEqualIgnoringWhitespace(`
     function __f0(__0) {
       return (function() {
         return function constructor(value) {
@@ -154,4 +154,3 @@ test('simple classes', async () => {
     export default __f0;
   `);
 });
-

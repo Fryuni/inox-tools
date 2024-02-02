@@ -11,8 +11,8 @@ export default defineConfig({
 		sitemap(),
 		strictCustomRouting({
 			'': './src/routes/index.astro',
-			'about': './src/routes/about.astro',
-			'blog': './src/routes/blog/index.astro',
+			about: './src/routes/about.astro',
+			blog: './src/routes/blog/index.astro',
 			'blog/[...slug]': './src/routes/blog/[...slug].astro',
 		}),
 	],

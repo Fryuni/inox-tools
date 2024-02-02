@@ -1,24 +1,24 @@
 import { getRandomValues } from 'node:crypto';
 import type { Entry } from './closure/entry.js';
 import { getInspector } from './closure/inspectCode.js';
-import { serializeModule, type ModEntry, type SerializedModule } from './closure/serialization.js';
-import { modRegistry } from './state.js';
-import { getLogger } from './log.js';
 import { Lazy } from './closure/lazy.js';
+import { serializeModule, type ModEntry, type SerializedModule } from './closure/serialization.js';
+import { getLogger } from './log.js';
+import { modRegistry } from './state.js';
 
 const log = getLogger('inlining');
 
 type ModuleExports =
 	| {
-		constExports?: Record<string, unknown>;
-		defaultExport?: unknown;
-		assignExport?: never;
-	}
+			constExports?: Record<string, unknown>;
+			defaultExport?: unknown;
+			assignExport?: never;
+	  }
 	| {
-		constExports?: never;
-		defaultExport?: never;
-		assignExport: unknown;
-	};
+			constExports?: never;
+			defaultExport?: never;
+			assignExport: unknown;
+	  };
 
 type ModuleOptions = ModuleExports & {
 	serializeFn?: (val: unknown) => boolean;
@@ -39,7 +39,7 @@ export function defineModule(name: string, options: ModuleOptions) {
 }
 
 interface InlineModule extends SerializedModule {
-	module: Lazy<Promise<unknown>>,
+	module: Lazy<Promise<unknown>>;
 }
 
 /* @internal */
@@ -78,6 +78,6 @@ export async function inspectInlineMod(options: ModuleOptions): Promise<InlineMo
 			const content = 'data:text/javascript,' + text;
 
 			return import(content);
-		})
-	}
+		}),
+	};
 }

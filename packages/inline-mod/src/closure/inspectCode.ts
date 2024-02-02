@@ -1,18 +1,18 @@
 import * as modules from 'node:module';
 import * as upath from 'node:path';
+import { getLogger } from '../log.js';
 import { Entry, EntryRegistry } from './entry.js';
 import { Lazy } from './lazy.js';
 import { getModuleFromPath } from './package.js';
 import {
-	parseFunction,
-	type CapturedPropertyChain,
-	type CapturedVariables,
+    parseFunction,
+    type CapturedPropertyChain,
+    type CapturedVariables
 } from './parseFunction.js';
 import { rewriteSuperReferences } from './rewriteSuper.js';
 import { InspectedFunction, type PropertyInfo, type PropertyMap } from './types.js';
 import * as utils from './utils.js';
 import * as v8 from './v8.js';
-import { getLogger } from '../log.js';
 
 const log = getLogger('inspectCode');
 
@@ -112,7 +112,7 @@ class Inspector {
 	// a serialized function for each of those, we can emit them a single time.
 	private readonly simpleFunctions: Entry<'function'>[] = [];
 
-	public constructor(private readonly serialize: (o: unknown) => boolean) { }
+	public constructor(private readonly serialize: (o: unknown) => boolean) {}
 
 	public async inspect(
 		value: unknown,
@@ -206,7 +206,7 @@ class Inspector {
 						type: 'well-known',
 						name: descriptor.name!,
 					},
-				}
+				};
 			}
 		}
 
@@ -216,8 +216,8 @@ class Inspector {
 				value: {
 					type: 'unique',
 					name: '',
-				}
-			}
+				},
+			};
 		}
 
 		const global = Symbol.for(value.description);
@@ -490,9 +490,10 @@ class Inspector {
 		);
 
 		const functionInfo: InspectedFunction = {
-			code: parsedFunction.isArrowFunction || parsedFunction.funcExprWithName === undefined
-				? parsedFunction.funcExprWithoutName
-				: parsedFunction.funcExprWithName,
+			code:
+				parsedFunction.isArrowFunction || parsedFunction.funcExprWithName === undefined
+					? parsedFunction.funcExprWithoutName
+					: parsedFunction.funcExprWithName,
 			capturedValues: capturedValues,
 			env: new Map(),
 			knownEnvs: new Set(),
@@ -867,8 +868,7 @@ const builtInModules = Lazy.of(async () => {
 
 	const moduleMap = new Map<any, string>();
 
-	const candidateModules = modules.builtinModules
-		.filter(name => !bannedBuiltInModules.has(name));
+	const candidateModules = modules.builtinModules.filter((name) => !bannedBuiltInModules.has(name));
 
 	for (const name of candidateModules) {
 		_log(`Loading built-in module "${name}"`);
@@ -978,7 +978,7 @@ class GlobalCache {
 		// these values can be cached once and reused across avery run.
 
 		// Add entries to allow proper serialization over generators and iterators.
-		const emptyGenerator = function*(): any { };
+		const emptyGenerator = function* (): any {};
 
 		this.cache.addUnchecked(Object.getPrototypeOf(emptyGenerator), {
 			type: 'expr',

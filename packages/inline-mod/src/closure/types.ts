@@ -17,7 +17,7 @@ export interface InspectedObject {
 	env: PropertyMap;
 
 	// set of already known envs to prevent infinite recursion
-	knownEnvs: Set<string | symbol>
+	knownEnvs: Set<string | symbol>;
 }
 
 // Information about a javascript function.  Note that this derives from ObjectInfo as all functions

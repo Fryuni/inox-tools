@@ -21,7 +21,7 @@ export default defineConfig({
 			},
 			inlineRoute: (context) => {
 				return new Response("Hello, world! I'm running on " + context.generator);
-			}
+			},
 		}),
 	],
 });

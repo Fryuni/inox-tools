@@ -28,8 +28,8 @@ type EntryMap = {
 	promise: Entry;
 
 	symbol: {
-		type: 'unique' | 'global' | 'well-known',
-		name: string,
+		type: 'unique' | 'global' | 'well-known';
+		name: string;
 	};
 
 	// A simple expression to use to represent this instance.  For example "global.Number";

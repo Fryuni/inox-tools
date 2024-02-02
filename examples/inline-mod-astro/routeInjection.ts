@@ -1,1 +1,1 @@
-export {GET} from 'virtual:injectedRoute';
+export { GET } from 'virtual:injectedRoute';

@@ -16,7 +16,7 @@ const array = [];
 array.push(array);
 
 inlineMod({
-    defaultExport: array,
+  defaultExport: array,
 });
 ```
 
@@ -27,7 +27,6 @@ const array = [];
 (array as any)['weird:prop'] = 'bar';
 
 inlineMod({
-    defaultExport: array,
+  defaultExport: array,
 });
 ```
-

@@ -195,15 +195,15 @@ function parseFunctionCode(funcString: string): [string, ParsedFunctionCode] {
 			);
 			return isSubClass
 				? makeFunctionDeclaration(
-					'constructor() { super(); }',
+						'constructor() { super(); }',
 						/*isAsync:*/ false,
 						/*isFunctionDeclaration:*/ false
-				)
+					)
 				: makeFunctionDeclaration(
-					'constructor() { }',
+						'constructor() { }',
 						/*isAsync:*/ false,
 						/*isFunctionDeclaration:*/ false
-				);
+					);
 		}
 
 		const constructorCode = funcString

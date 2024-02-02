@@ -1,5 +1,5 @@
 import inlineModPlugin, { inlineMod } from '@inox-tools/inline-mod/vite';
-import type { AstroIntegration, APIRoute } from 'astro';
+import type { APIRoute, AstroIntegration } from 'astro';
 import { defineMiddleware } from 'astro/middleware';
 
 type Options = {

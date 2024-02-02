@@ -1,6 +1,7 @@
 import { test, expect } from 'vitest';
 import { inspectInlineMod } from '../src/inlining.js';
 import * as path from 'node:path';
+import { InspectionError } from '../src/closure/types.js';
 
 test('arrow function', async () => {
   const module = await inspectInlineMod({
@@ -79,7 +80,7 @@ test('capturing module', async () => {
   `);
 });
 
-test('simple classes', async () => {
+test('simple classes definition', async () => {
   class Foo {
     public constructor(private value: string) { }
     public bar() {
@@ -152,6 +153,84 @@ test('simple classes', async () => {
     });
 
     export default __f0;
+  `);
+});
+
+test('simple class instance', async () => {
+  class Foo {
+    public constructor(private value: string) { }
+    public bar() {
+      return this.value;
+    }
+    public baz(value: string) {
+      this.value = value;
+    }
+  }
+
+  const { module, text } = await inspectInlineMod({
+    defaultExport: new Foo('initial state'),
+  });
+
+  const { default: instance } = await module.get() as { default: Foo };
+
+  expect(instance.bar()).toBe('initial state');
+
+  instance.baz('other state');
+
+  expect(instance.bar()).toBe('other state');
+
+  expect(text).toEqualIgnoringWhitespace(`
+    const __defaultExport_proto = {};
+
+    const __f0 = function bar() {
+      return this.value;
+    };
+
+    const __f1 = function baz(value) {
+      this.value = value;
+    };
+
+    function __f2(__0) {
+      return (function() {
+        return function constructor(value) {
+          this.value = value;
+        };
+      }).apply(undefined, undefined).apply(this, arguments);
+    }
+
+    Object.defineProperty(__f2, "prototype", {
+      configurable: false,
+      enumerable: false,
+      writable: false,
+      value: __defaultExport_proto
+    });
+
+    Object.defineProperty(__defaultExport_proto, "bar", {
+      configurable: true,
+      enumerable: false,
+      writable: true,
+      value: __f0
+    });
+
+    Object.defineProperty(__defaultExport_proto, "baz", {
+      configurable: true,
+      enumerable: false,
+      writable: true,
+      value: __f1
+    });
+
+    Object.defineProperty(__defaultExport_proto, "constructor", {
+      configurable: true,
+      enumerable: false,
+      writable: true,
+      value: __f2
+    });
+
+    const __defaultExport = Object.create(__defaultExport_proto);
+
+    __defaultExport.value = "initial state";
+
+    export default __defaultExport;
   `);
 });
 

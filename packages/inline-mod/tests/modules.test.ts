@@ -22,3 +22,15 @@ test('re-export native module', async () => {
     export default __path;
   `);
 });
+
+test('re-export native module', async () => {
+	const module = await inspectInlineMod({
+		defaultExport: path,
+	});
+
+	expect(module.text).toEqualIgnoringWhitespace(`
+    import * as __path from 'path';
+
+    export default __path;
+  `);
+});

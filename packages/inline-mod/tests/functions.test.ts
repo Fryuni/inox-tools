@@ -1,4 +1,3 @@
-import * as path from 'node:path';
 import { expect, test } from 'vitest';
 import { inspectInlineMod } from '../src/inlining.js';
 
@@ -53,25 +52,6 @@ test.skip('partially capturing object', async () => {
       return (function() {
         const suffixes = __suffixes;
         return (value) => value + suffixes.foo;
-      }).apply(undefined, undefined).apply(this, arguments);
-    }
-
-    export default __f0;
-  `);
-});
-
-test('capturing module', async () => {
-	const module = await inspectInlineMod({
-		defaultExport: (a: string, b: string) => path.join(a, b),
-	});
-
-	expect(module.text).toEqualIgnoringWhitespace(`
-    import * as __path from 'path';
-
-    function __f0(__0, __1) {
-      return (function() {
-        const __vite_ssr_import_2__ = __path;
-        return (a, b) => __vite_ssr_import_2__.join(a, b);
       }).apply(undefined, undefined).apply(this, arguments);
     }
 

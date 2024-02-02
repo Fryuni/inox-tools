@@ -9,7 +9,7 @@ import {
 	type CapturedVariables,
 } from './parseFunction.js';
 import { rewriteSuperReferences } from './rewriteSuper.js';
-import { InspectedFunction, type PropertyInfo, type PropertyMap } from './types.js';
+import { InspectedFunction, InspectionError, type PropertyInfo, type PropertyMap } from './types.js';
 import * as utils from './utils.js';
 import * as v8 from './v8.js';
 import { getLogger } from '../log.js';
@@ -45,7 +45,7 @@ export function getInspector(serializeFn: (val: unknown) => boolean = alwaysSeri
 // This function and all the tooling it refer to cannot be serialized.
 (getInspector as any).doNotCapture = true;
 
-class InspectionError extends Error {
+class InternalInspectionError extends InspectionError {
 	public constructor(message: string, frames?: ContextFrame[]) {
 		super(message);
 		if (frames) {
@@ -127,7 +127,7 @@ class Inspector {
 
 			log('Error during inspection:', error);
 
-			throw new InspectionError(error instanceof Error ? error.message : `${error}`, this.frames);
+			throw new InternalInspectionError(error instanceof Error ? error.message : `${error}`, this.frames);
 		}
 	}
 
@@ -758,7 +758,7 @@ class Inspector {
 	}
 
 	private throwSerializableError(info: string): never {
-		throw new InspectionError(info, this.frames);
+		throw new InternalInspectionError(info, this.frames);
 	}
 }
 

@@ -1,6 +1,28 @@
-import { modRegistry } from './state.js';
+import { inspectInlineMod, type ModuleOptions, type InlineModule } from './inlining.js';
+import { InlineModuleError } from './closure/types.js';
 
-export { inlineModule as inlineMod } from './inlining.js';
+export const modRegistry = new Map<string, Promise<InlineModule>>();
+
+class InlineModulePluginError extends InlineModuleError { };
+
+let inlineModuleCounter = 0;
+
+export function inlineModule(options: ModuleOptions): string {
+	const moduleId = `inox:inline-mod:mod_${inlineModuleCounter++}`;
+
+	modRegistry.set(moduleId, inspectInlineMod(options));
+
+	return moduleId;
+}
+
+export function defineModule(name: string, options: ModuleOptions): string {
+	if (modRegistry.has(name)) {
+		throw new InlineModulePluginError(`Module "${name}" already defined.`);
+	}
+	modRegistry.set(name, inspectInlineMod(options));
+
+	return name;
+}
 
 export type Options = Record<never, never>;
 

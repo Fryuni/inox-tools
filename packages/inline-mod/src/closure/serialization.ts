@@ -1,10 +1,10 @@
 import type { Entry } from './entry.js';
 import type { InspectedFunction } from './types.js';
 import {
-    type InspectedObject,
-    type PropertyInfo,
-    type PropertyInfoAndValue,
-    type PropertyMap
+	type InspectedObject,
+	type PropertyInfo,
+	type PropertyInfoAndValue,
+	type PropertyMap
 } from './types.js';
 import * as utils from './utils.js';
 
@@ -15,7 +15,6 @@ export interface ModEntry {
 	assignExport?: Entry;
 }
 
-/** @internal */
 export interface SerializedModule {
 	text: string;
 }

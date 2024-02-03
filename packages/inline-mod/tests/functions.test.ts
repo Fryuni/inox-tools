@@ -59,3 +59,26 @@ test.skip('partially capturing object', async () => {
   `);
 });
 
+test('recurring function', async () => {
+  function f(n: number): number {
+    return n < 0 ? n : f(n - 1);
+  }
+
+  const modInfo = await inspectInlineMod({
+    defaultExport: f,
+  });
+
+  expect(modInfo.text).toEqualIgnoringWhitespace(`
+    function __f(__0) {
+      return (function() {
+        const f = __f;
+        return function f(n) {
+          return n < 0 ? n : f(n - 1);
+        };
+      }).apply(undefined, undefined).apply(this, arguments);
+    }
+
+    export default __f;
+  `);
+});
+

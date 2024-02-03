@@ -177,33 +177,43 @@ test('prototype chain', async () => {
   expect(modInfo.text).toEqualIgnoringWhitespace(`
     const __instance_proto_proto = {};
 
-    const __f0 = function foo() {
-      return "from parent";
-    };
-
-    function __f1() {
+    function __f0() {
       return (function() {
         return function constructor() { };
       }).apply(undefined, undefined).apply(this, arguments);
     }
 
-    Object.defineProperty(__f1, "prototype", {configurable: false,enumerable: false,writable: false,value: __instance_proto_proto});
+    Object.defineProperty(__f0, "prototype", {configurable: false,enumerable: false,writable: false,value: __instance_proto_proto});
 
-    Object.defineProperty(__instance_proto_proto, "foo", {configurable: true,enumerable: false,writable: true,value: __f0});
+    const __f1 = function foo() {
+      return "from parent";
+    };
 
-    Object.defineProperty(__instance_proto_proto, "constructor", {configurable: true,enumerable: false,writable: true,value: __f1});
+    Object.defineProperty(__instance_proto_proto, "constructor", {configurable: true,enumerable: false,writable: true,value: __f0});
+
+    Object.defineProperty(__instance_proto_proto, "foo", {configurable: true,enumerable: false,writable: true,value: __f1});
 
     const __instance_proto = Object.create(__instance_proto_proto);
 
-    const __f2 = function foo() {
-      return \`I'm the child, my parent says: \${super.foo()}\`;
-    };
+    function __f2() {
+      return (function() {
+        const __super = __f0;
+        return function /* foo */() {
+          return \`I'm the child, my parent says: \${__super.prototype.foo.call(this)}\`;
+        };
+      }).apply(undefined, undefined).apply(this, arguments);
+    }
 
     function __f3() {
       return (function() {
-        return function constructor() { super(); };
+        const __super = __f0;
+        return function /* constructor */() {
+          __super.call(this);
+        };
       }).apply(undefined, undefined).apply(this, arguments);
     }
+
+    Object.setPrototypeOf(__f3, __f0);
 
     Object.defineProperty(__f3, "prototype", {configurable: false,enumerable: false,writable: false,value: __instance_proto});
 

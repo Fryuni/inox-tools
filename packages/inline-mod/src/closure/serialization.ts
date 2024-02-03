@@ -82,7 +82,7 @@ class ModuleSerializer {
 			}
 
 			const ref = this.entryToReference(exportEntry, key);
-			exportCode += `export const ${key} = ${ref}`;
+			exportCode += `export const ${key} = ${ref};\n`;
 		}
 
 		return {

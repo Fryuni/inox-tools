@@ -70,12 +70,19 @@ export default defineConfig({
 
 Then define a module inline:
 
-```ts ins={5-9}
+```ts ins={5-9,11-16}
 // vite.config.mjs
 import { defineConfig } from 'vite';
 import inlineModulePlugin, { defineModule } from '@inox-tools/inline-mod/vite';
 
 defineModule('virtual:config', {
+  constExport: {
+    configFunction: () => 'value from config',
+  },
+});
+
+// Or get the module name auto-generated
+const moduleName = inlineModule({
   constExport: {
     configFunction: () => 'value from config',
   },

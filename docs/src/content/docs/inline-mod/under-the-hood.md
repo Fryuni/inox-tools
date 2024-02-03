@@ -3,6 +3,10 @@ title: Generated modules
 description: 'What does the generated modules look like?'
 ---
 
+:::note
+The sections marked as WIP in this page are already working and tested, just the documentation is still in progress.
+:::
+
 We strive to make the generated module as simple as possible while maininting all the behavior from the original code.
 
 Sometimes it is impossible to identify whether some edge cases will happen or not, so the generated code might be more complicated than the original code.
@@ -93,5 +97,25 @@ export const simpleArray = __simpleArray;
 ```
 
 ## Nested arrays and objects
+
+WIP
+
+## Circular values
+
+WIP
+
+## Simple functions
+
+WIP
+
+## Classes
+
+WIP
+
+## Instances
+
+WIP
+
+## Capturing functions
 
 WIP

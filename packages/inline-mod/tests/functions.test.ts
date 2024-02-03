@@ -2,11 +2,11 @@ import { expect, test } from 'vitest';
 import { inspectInlineMod } from '../src/inlining.js';
 
 test('arrow function', async () => {
-  const module = await inspectInlineMod({
-    defaultExport: (value: string) => value + 'foo',
-  });
+	const module = await inspectInlineMod({
+		defaultExport: (value: string) => value + 'foo',
+	});
 
-  expect(module.text).toEqualIgnoringWhitespace(`
+	expect(module.text).toEqualIgnoringWhitespace(`
     const __f0 = (value) => value + "foo";
 
     export default __f0;
@@ -14,16 +14,16 @@ test('arrow function', async () => {
 });
 
 test('capturing object', async () => {
-  const suffixes: Partial<Record<string, string>> = {
-    foo: 'bar',
-    baz: 'qux',
-  };
+	const suffixes: Partial<Record<string, string>> = {
+		foo: 'bar',
+		baz: 'qux',
+	};
 
-  const module = await inspectInlineMod({
-    defaultExport: (value: string) => value + (suffixes[value] ?? ''),
-  });
+	const module = await inspectInlineMod({
+		defaultExport: (value: string) => value + (suffixes[value] ?? ''),
+	});
 
-  expect(module.text).toEqualIgnoringWhitespace(`
+	expect(module.text).toEqualIgnoringWhitespace(`
     const __suffixes = {foo: "bar", baz: "qux"};
     function __f0(__0) {
       return (function() {
@@ -37,16 +37,16 @@ test('capturing object', async () => {
 });
 
 test.skip('partially capturing object', async () => {
-  const suffixes = {
-    foo: 'bar',
-    baz: 'qux',
-  };
+	const suffixes = {
+		foo: 'bar',
+		baz: 'qux',
+	};
 
-  const module = await inspectInlineMod({
-    defaultExport: (value: string) => value + suffixes.foo,
-  });
+	const module = await inspectInlineMod({
+		defaultExport: (value: string) => value + suffixes.foo,
+	});
 
-  expect(module.text).toEqualIgnoringWhitespace(`
+	expect(module.text).toEqualIgnoringWhitespace(`
     const __suffixes = {foo: "bar"};
     function __f0(__0) {
       return (function() {
@@ -60,15 +60,15 @@ test.skip('partially capturing object', async () => {
 });
 
 test('recurring function', async () => {
-  function f(n: number): number {
-    return n < 0 ? n : f(n - 1);
-  }
+	function f(n: number): number {
+		return n < 0 ? n : f(n - 1);
+	}
 
-  const modInfo = await inspectInlineMod({
-    defaultExport: f,
-  });
+	const modInfo = await inspectInlineMod({
+		defaultExport: f,
+	});
 
-  expect(modInfo.text).toEqualIgnoringWhitespace(`
+	expect(modInfo.text).toEqualIgnoringWhitespace(`
     function __f(__0) {
       return (function() {
         const f = __f;
@@ -81,4 +81,3 @@ test('recurring function', async () => {
     export default __f;
   `);
 });
-

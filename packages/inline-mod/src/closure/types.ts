@@ -82,8 +82,8 @@ export namespace InspectedFunction {
 	}
 }
 
-export class InlineModuleError extends Error { }
+export class InlineModuleError extends Error {}
 
-export class InspectionError extends InlineModuleError { }
+export class InspectionError extends InlineModuleError {}
 
-export class SerializationError extends InlineModuleError { }
+export class SerializationError extends InlineModuleError {}

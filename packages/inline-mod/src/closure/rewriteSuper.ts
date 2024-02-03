@@ -72,9 +72,9 @@ export function rewriteSuperReferences(code: string, isStatic: boolean): string 
 				const expr = isStatic
 					? factory.createIdentifier('__super')
 					: factory.createPropertyAccessExpression(
-						factory.createIdentifier('__super'),
-						'prototype'
-					);
+							factory.createIdentifier('__super'),
+							'prototype'
+						);
 				const newNode = factory.updatePropertyAccessExpression(node, expr, node.name);
 				newNodes.add(newNode);
 				return newNode;
@@ -86,9 +86,9 @@ export function rewriteSuperReferences(code: string, isStatic: boolean): string 
 				const expr = isStatic
 					? factory.createIdentifier('__super')
 					: factory.createPropertyAccessExpression(
-						factory.createIdentifier('__super'),
-						'prototype'
-					);
+							factory.createIdentifier('__super'),
+							'prototype'
+						);
 
 				const newNode = factory.updateElementAccessExpression(node, expr, node.argumentExpression);
 				newNodes.add(newNode);

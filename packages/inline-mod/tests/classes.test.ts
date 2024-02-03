@@ -2,31 +2,31 @@ import { expect, test } from 'vitest';
 import { inspectInlineMod } from '../src/inlining.js';
 
 test('simple classes definition', async () => {
-  class Foo {
-    public constructor(private value: string) { }
-    public bar() {
-      return this.value;
-    }
-    public baz(value: string) {
-      this.value = value;
-    }
-  }
+	class Foo {
+		public constructor(private value: string) {}
+		public bar() {
+			return this.value;
+		}
+		public baz(value: string) {
+			this.value = value;
+		}
+	}
 
-  const { module, text } = await inspectInlineMod({
-    defaultExport: Foo,
-  });
+	const { module, text } = await inspectInlineMod({
+		defaultExport: Foo,
+	});
 
-  const { default: Klass } = (await module.get()) as { default: typeof Foo };
+	const { default: Klass } = (await module.get()) as { default: typeof Foo };
 
-  const instance = new Klass('initial state');
+	const instance = new Klass('initial state');
 
-  expect(instance.bar()).toBe('initial state');
+	expect(instance.bar()).toBe('initial state');
 
-  instance.baz('other state');
+	instance.baz('other state');
 
-  expect(instance.bar()).toBe('other state');
+	expect(instance.bar()).toBe('other state');
 
-  expect(text).toEqualIgnoringWhitespace(`
+	expect(text).toEqualIgnoringWhitespace(`
     function __f0(__0) {
       return (function() {
         return function constructor(value) {
@@ -78,29 +78,29 @@ test('simple classes definition', async () => {
 });
 
 test('simple class instance', async () => {
-  class Foo {
-    public constructor(private value: string) { }
-    public bar() {
-      return this.value;
-    }
-    public baz(value: string) {
-      this.value = value;
-    }
-  }
+	class Foo {
+		public constructor(private value: string) {}
+		public bar() {
+			return this.value;
+		}
+		public baz(value: string) {
+			this.value = value;
+		}
+	}
 
-  const { module, text } = await inspectInlineMod({
-    defaultExport: new Foo('initial state'),
-  });
+	const { module, text } = await inspectInlineMod({
+		defaultExport: new Foo('initial state'),
+	});
 
-  const { default: instance } = (await module.get()) as { default: Foo };
+	const { default: instance } = (await module.get()) as { default: Foo };
 
-  expect(instance.bar()).toBe('initial state');
+	expect(instance.bar()).toBe('initial state');
 
-  instance.baz('other state');
+	instance.baz('other state');
 
-  expect(instance.bar()).toBe('other state');
+	expect(instance.bar()).toBe('other state');
 
-  expect(text).toEqualIgnoringWhitespace(`
+	expect(text).toEqualIgnoringWhitespace(`
     const __defaultExport_proto = {};
 
     const __f0 = function bar() {
@@ -156,25 +156,25 @@ test('simple class instance', async () => {
 });
 
 test('prototype chain', async () => {
-  class Parent {
-    protected foo(): string {
-      return 'from parent';
-    }
-  }
+	class Parent {
+		protected foo(): string {
+			return 'from parent';
+		}
+	}
 
-  class Child extends Parent {
-    public foo(): string {
-      return `I'm the child, my parent says: ${super.foo()}`;
-    }
-  }
+	class Child extends Parent {
+		public foo(): string {
+			return `I'm the child, my parent says: ${super.foo()}`;
+		}
+	}
 
-  const modInfo = await inspectInlineMod({
-    constExports: {
-      instance: new Child(),
-    },
-  });
+	const modInfo = await inspectInlineMod({
+		constExports: {
+			instance: new Child(),
+		},
+	});
 
-  expect(modInfo.text).toEqualIgnoringWhitespace(`
+	expect(modInfo.text).toEqualIgnoringWhitespace(`
     const __instance_proto_proto = {};
 
     function __f0() {
@@ -226,7 +226,7 @@ test('prototype chain', async () => {
     export const instance = __instance;
   `);
 
-  const { instance } = await modInfo.module.get() as { instance: Child };
+	const { instance } = (await modInfo.module.get()) as { instance: Child };
 
-  expect(instance.foo()).toEqual("I'm the child, my parent says: from parent");
-})
+	expect(instance.foo()).toEqual("I'm the child, my parent says: from parent");
+});

@@ -5,16 +5,16 @@ import { Entry, EntryRegistry } from './entry.js';
 import { Lazy } from './lazy.js';
 import { getModuleFromPath } from './package.js';
 import {
-	parseFunction,
-	type CapturedPropertyChain,
-	type CapturedVariables
+    parseFunction,
+    type CapturedPropertyChain,
+    type CapturedVariables
 } from './parseFunction.js';
 import { rewriteSuperReferences } from './rewriteSuper.js';
 import {
-	InspectedFunction,
-	InspectionError,
-	type PropertyInfo,
-	type PropertyMap
+    InspectedFunction,
+    InspectionError,
+    type PropertyInfo,
+    type PropertyMap
 } from './types.js';
 import * as utils from './utils.js';
 import * as v8 from './v8.js';
@@ -118,7 +118,7 @@ class Inspector {
 	// a serialized function for each of those, we can emit them a single time.
 	private readonly simpleFunctions: Entry<'function'>[] = [];
 
-	public constructor(private readonly serialize: (o: unknown) => boolean) { }
+	public constructor(private readonly serialize: (o: unknown) => boolean) {}
 
 	public async inspect(
 		value: unknown,
@@ -986,7 +986,7 @@ class GlobalCache {
 		// these values can be cached once and reused across avery run.
 
 		// Add entries to allow proper serialization over generators and iterators.
-		const emptyGenerator = function*(): any { };
+		const emptyGenerator = function* (): any {};
 
 		this.cache.addUnchecked(Object.getPrototypeOf(emptyGenerator), {
 			type: 'expr',

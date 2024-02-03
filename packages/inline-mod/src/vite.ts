@@ -1,9 +1,9 @@
-import { inspectInlineMod, type ModuleOptions, type InlineModule } from './inlining.js';
 import { InlineModuleError } from './closure/types.js';
+import { inspectInlineMod, type InlineModule, type ModuleOptions } from './inlining.js';
 
 export const modRegistry = new Map<string, Promise<InlineModule>>();
 
-class InlineModulePluginError extends InlineModuleError { };
+class InlineModulePluginError extends InlineModuleError {}
 
 let inlineModuleCounter = 0;
 

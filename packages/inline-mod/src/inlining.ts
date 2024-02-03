@@ -8,15 +8,15 @@ const log = getLogger('inlining');
 
 type ModuleExports =
 	| {
-		constExports?: Record<string, unknown>;
-		defaultExport?: unknown;
-		assignExport?: never;
-	}
+			constExports?: Record<string, unknown>;
+			defaultExport?: unknown;
+			assignExport?: never;
+	  }
 	| {
-		constExports?: never;
-		defaultExport?: never;
-		assignExport: unknown;
-	};
+			constExports?: never;
+			defaultExport?: never;
+			assignExport: unknown;
+	  };
 
 export type ModuleOptions = ModuleExports & {
 	serializeFn?: (val: unknown) => boolean;

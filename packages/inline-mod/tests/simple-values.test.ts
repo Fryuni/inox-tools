@@ -147,16 +147,7 @@ test('all at once', async () => {
 				negativeInfinity: -Infinity,
 				bool: true,
 			},
-			simpleArray: [
-				'some text',
-				123,
-				123.456,
-				Number.NaN,
-				-0,
-				Infinity,
-				-Infinity,
-				true,
-			]
+			simpleArray: ['some text', 123, 123.456, Number.NaN, -0, Infinity, -Infinity, true],
 		},
 	});
 
@@ -191,4 +182,4 @@ test('all at once', async () => {
 		export const simpleObject = __simpleObject;
 		export const simpleArray = __simpleArray;
 	`);
-})
+});

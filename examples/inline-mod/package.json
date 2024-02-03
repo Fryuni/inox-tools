@@ -9,8 +9,8 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "typescript": "^5.2.2",
     "@inox-tools/inline-mod": "workspace:*",
-    "vite": "^5.0.8"
+    "typescript": "^5.2.2",
+    "vite": "^5.0.12"
   }
 }

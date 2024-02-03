@@ -142,7 +142,7 @@ function parseFunctionCode(funcString: string): [string, ParsedFunctionCode] {
 	// it will not be thought to be native code itself.
 	const nativeCodeString = '[native ' + 'code]';
 	if (funcString.indexOf(nativeCodeString) !== -1) {
-		return [`it was a native code function.`, undefined as any];
+		return ['Native code functions cannot be inspected.', undefined as any];
 	}
 
 	// There are three general forms of node toString'ed Functions we're trying to find out here.

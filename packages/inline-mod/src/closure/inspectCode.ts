@@ -10,7 +10,12 @@ import {
     type CapturedVariables
 } from './parseFunction.js';
 import { rewriteSuperReferences } from './rewriteSuper.js';
-import { InspectedFunction, type PropertyInfo, type PropertyMap } from './types.js';
+import {
+    InspectedFunction,
+    InspectionError,
+    type PropertyInfo,
+    type PropertyMap
+} from './types.js';
 import * as utils from './utils.js';
 import * as v8 from './v8.js';
 
@@ -45,7 +50,7 @@ export function getInspector(serializeFn: (val: unknown) => boolean = alwaysSeri
 // This function and all the tooling it refer to cannot be serialized.
 (getInspector as any).doNotCapture = true;
 
-class InspectionError extends Error {
+class InternalInspectionError extends InspectionError {
 	public constructor(message: string, frames?: ContextFrame[]) {
 		super(message);
 		if (frames) {
@@ -94,9 +99,10 @@ class Inspector {
 	private readonly frames: ContextFrame[] = [];
 
 	// A mapping from a class method/constructor to the environment entry corresponding to the
-	// __super value.  When we emit the code for any class member we will end up adding
+	// __super value.  When we emit the code for any class member we will end up adding in an
+	// intermediary scope:
 	//
-	//  with ( { __super: <...> })
+	//  const __super = ...;
 	//
 	// We will also rewrite usages of "super" in the methods to refer to __super.  This way we can
 	// accurately serialize out the class members, while preserving functionality.
@@ -127,7 +133,10 @@ class Inspector {
 
 			log('Error during inspection:', error);
 
-			throw new InspectionError(error instanceof Error ? error.message : `${error}`, this.frames);
+			throw new InternalInspectionError(
+				error instanceof Error ? error.message : `${error}`,
+				this.frames
+			);
 		}
 	}
 
@@ -512,27 +521,25 @@ class Inspector {
 		if (
 			!Object.is(proto, Function.prototype) &&
 			!isAsyncFunction &&
-			isDerivedNoCaptureConstructor(func)
+			!isDerivedNoCaptureConstructor(func)
 		) {
 			const protoEntry = await this.inspect(proto);
 			functionInfo.proto = protoEntry;
 
-			if (functionString.startsWith('class ')) {
-				// This was a class (which is effectively synonymous with a constructor-function).
-				// We also know that it's a derived class because of the `proto !==
-				// Function.prototype` check above.  (The prototype of a non-derived class points at
-				// Function.prototype).
-				//
-				// they're a bit trickier to serialize than just a straight function. Specifically,
-				// we have to keep track of the inheritance relationship between classes.  That way
-				// if any of the class members references 'super' we'll be able to rewrite it
-				// accordingly (since we emit classes as Functions)
-				await this.processDerivedClassConstructor(func, protoEntry);
+			// This was a class (which is effectively synonymous with a constructor-function).
+			// We also know that it's a derived class because of the `proto !==
+			// Function.prototype` check above.  (The prototype of a non-derived class points at
+			// Function.prototype).
+			//
+			// they're a bit trickier to serialize than just a straight function. Specifically,
+			// we have to keep track of the inheritance relationship between classes.  That way
+			// if any of the class members references 'super' we'll be able to rewrite it
+			// accordingly (since we emit classes as Functions)
+			await this.processDerivedClassConstructor(func, protoEntry);
 
-				// Because this was was class constructor function, rewrite any 'super' references
-				// in it do its derived type if it has one.
-				functionInfo.code = rewriteSuperReferences(funcExprWithName!, /*isStatic*/ false);
-			}
+			// Because this was was class constructor function, rewrite any 'super' references
+			// in it do its derived type if it has one.
+			functionInfo.code = rewriteSuperReferences(funcExprWithName!, /*isStatic*/ false);
 		}
 
 		// Capture any property on the function itself.
@@ -563,6 +570,7 @@ class Inspector {
 		const superEntry =
 			this.classInstanceMemberToSuperEntry.lookup(func) ??
 			this.classStaticMemberToSuperEntry.lookup(func);
+
 		if (superEntry) {
 			// This was a class constructor or method. We need to put a special `__super`
 			// entry into scope and then rewrite any calls to `super()` to refer to it.
@@ -582,8 +590,8 @@ class Inspector {
 		// i.e if we have "function f() { f(); }" this will get rewritten to:
 		//
 		//      function __f() {
-		//          with ({ f: __f }) {
-		//              return function () { f(); }
+		//          const f = __f;
+		//          return function () { f(); }
 		//
 		// i.e. the inner call to "f();" will actually call the *outer* __f function, and not
 		// itself.
@@ -759,7 +767,7 @@ class Inspector {
 	}
 
 	private throwSerializableError(info: string): never {
-		throw new InspectionError(info, this.frames);
+		throw new InternalInspectionError(info, this.frames);
 	}
 }
 

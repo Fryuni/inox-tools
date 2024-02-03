@@ -17,7 +17,7 @@ import * as utils from './utils.js';
 
 /** @internal */
 export function rewriteSuperReferences(code: string, isStatic: boolean): string {
-	const sourceFile = ts.createSourceFile('', code, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+	const sourceFile = ts.createSourceFile('', code, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
 
 	// Transform any usages of "super(...)" into "__super.call(this, ...)", any
 	// instance usages of "super.xxx" into "__super.prototype.xxx" and any static
@@ -38,8 +38,8 @@ export function rewriteSuperReferences(code: string, isStatic: boolean): string 
 			// bind properly.  i.e. if we start with "function f() { f(); }" then this gets converted to
 			//
 			//  function __f() {
-			//      with ({ f: __f }) {
-			//          return /*f*/() { f(); }
+			//  		const f = __f;
+			//      return /*f*/() { f(); }
 			//
 			// This means the inner call properly binds to the *outer* function we create.
 			if (firstFunctionDeclaration && ts.isFunctionDeclaration(node)) {

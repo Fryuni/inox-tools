@@ -1,4 +1,4 @@
-import inlineModPlugin, { inlineMod } from '@inox-tools/inline-mod/vite';
+import inlineModPlugin, { defineModule, inlineModule } from '@inox-tools/inline-mod/vite';
 import type { APIRoute, AstroIntegration } from 'astro';
 import { defineMiddleware } from 'astro/middleware';
 
@@ -16,15 +16,16 @@ export default function customIntegration({
 	return {
 		name: 'custom-integration',
 		hooks: {
-			'astro:config:setup': ({ updateConfig, injectRoute, addMiddleware }) => {
-				inlineMod({
+			'astro:config:setup': ({ updateConfig, injectRoute, addMiddleware, addWatchFile }) => {
+				addWatchFile(import.meta.url);
+
+				defineModule('virtual:configuration', {
 					defaultExport: config,
-					modName: 'virtual:configuration',
 				});
 
 				addMiddleware({
 					order: 'pre',
-					entrypoint: inlineMod({
+					entrypoint: inlineModule({
 						constExports: {
 							onRequest: defineMiddleware((context, next) => {
 								context.locals = { ...locals };
@@ -35,8 +36,7 @@ export default function customIntegration({
 				});
 
 				if (inlineRoute) {
-					inlineMod({
-						modName: 'virtual:injectedRoute',
+					defineModule('virtual:injectedRoute', {
 						constExports: {
 							GET: inlineRoute,
 						},

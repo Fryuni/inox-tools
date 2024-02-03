@@ -17,20 +17,21 @@ hero:
 ---
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
+import InvisibleLink from '../../components/InvisibleLink.astro';
 
 ## Next steps
 
 <CardGrid stagger>
-	<a href="/custom-routing">
+	<InvisibleLink href="/custom-routing">
 		<Card title="Custom Astro Routing" icon="add-document">
 			Define custom Astro Routes without relying on file-based routing.
 		</Card>
-	</a>
-	<a href="/inline-mod">
+	</InvisibleLink>
+	<InvisibleLink href="/inline-mod">
 		<Card title="Inline Virtual Module" icon="pencil">
 			Pass inline JS values and functions as a virtual module to Vite projects.
 		</Card>
-	</a>
+	</InvisibleLink>
 	{/* <Card title="Add new content" icon="add-document">
 		Add Markdown or MDX files to `src/content/docs` to create new pages.
 	</Card>

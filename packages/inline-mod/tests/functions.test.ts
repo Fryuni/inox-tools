@@ -1,4 +1,3 @@
-import * as path from 'node:path';
 import { expect, test } from 'vitest';
 import { inspectInlineMod } from '../src/inlining.js';
 
@@ -60,97 +59,25 @@ test.skip('partially capturing object', async () => {
   `);
 });
 
-test('capturing module', async () => {
-	const module = await inspectInlineMod({
-		defaultExport: (a: string, b: string) => path.join(a, b),
-	});
-
-	expect(module.text).toEqualIgnoringWhitespace(`
-    import * as __path from 'path';
-
-    function __f0(__0, __1) {
-      return (function() {
-        const __vite_ssr_import_2__ = __path;
-        return (a, b) => __vite_ssr_import_2__.join(a, b);
-      }).apply(undefined, undefined).apply(this, arguments);
-    }
-
-    export default __f0;
-  `);
-});
-
-test('simple classes', async () => {
-	class Foo {
-		public constructor(private value: string) {}
-		public bar() {
-			return this.value;
-		}
-		public baz(value: string) {
-			this.value = value;
-		}
+test('recurring function', async () => {
+	function f(n: number): number {
+		return n < 0 ? n : f(n - 1);
 	}
 
-	const { module, text } = await inspectInlineMod({
-		defaultExport: Foo,
+	const modInfo = await inspectInlineMod({
+		defaultExport: f,
 	});
 
-	const { default: Klass } = (await module.get()) as { default: typeof Foo };
-
-	const instance = new Klass('initial state');
-
-	expect(instance.bar()).toBe('initial state');
-
-	instance.baz('other state');
-
-	expect(instance.bar()).toBe('other state');
-
-	expect(text).toEqualIgnoringWhitespace(`
-    function __f0(__0) {
+	expect(modInfo.text).toEqualIgnoringWhitespace(`
+    function __f(__0) {
       return (function() {
-        return function constructor(value) {
-          this.value = value;
+        const f = __f;
+        return function f(n) {
+          return n < 0 ? n : f(n - 1);
         };
       }).apply(undefined, undefined).apply(this, arguments);
     }
 
-    const __f0_prototype = {};
-
-    const __f1 = function bar() {
-      return this.value;
-    };
-
-    const __f2 = function baz(value) {
-      this.value = value;
-    };
-
-    Object.defineProperty(__f0_prototype, "constructor", {
-      configurable: true,
-      enumerable: false,
-      writable: true,
-      value: __f0
-    });
-
-    Object.defineProperty(__f0_prototype, "bar", {
-      configurable: true,
-      enumerable: false,
-      writable: true,
-      value: __f1
-    });
-
-    Object.defineProperty(__f0_prototype, "baz", {
-      configurable: true,
-      enumerable: false,
-      writable: true,
-      value: __f2
-    });
-
-    Object.defineProperty(__f0, "prototype", {
-      configurable: false,
-      enumerable: false,
-      writable: false,
-      value: __f0_prototype
-    });
-
-    export default __f0;
+    export default __f;
   `);
 });

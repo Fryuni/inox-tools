@@ -13,7 +13,7 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "docs": "cd docs && pnpm dev",
+    "docs:dev": "cd docs && pnpm dev",
     "build": "turbo run --filter '@inox-tools/*' build",
     "format": "pnpm run format:code && pnpm run format:imports && pnpm run lint",
     "format:code": "prettier -w \"**/*\" --ignore-unknown --cache",
@@ -26,10 +26,10 @@
   "devDependencies": {
     "@changesets/changelog-github": "^0.5.0",
     "@changesets/cli": "^2.27.1",
-    "@types/node": "^20.11.5",
-    "@typescript-eslint/eslint-plugin": "^6.19.0",
-    "@typescript-eslint/parser": "^6.19.0",
-    "esbuild": "^0.19.11",
+    "@types/node": "^20.11.16",
+    "@typescript-eslint/eslint-plugin": "^6.20.0",
+    "@typescript-eslint/parser": "^6.20.0",
+    "esbuild": "^0.20.0",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-no-only-tests": "^3.1.0",
@@ -37,7 +37,7 @@
     "organize-imports-cli": "^0.10.0",
     "prettier": "^3.2.4",
     "prettier-plugin-astro": "^0.13.0",
-    "turbo": "^1",
+    "turbo": "^1.12.2",
     "typescript": "^5.3.3"
   },
   "packageManager": "pnpm@^8"

@@ -81,3 +81,9 @@ export namespace InspectedFunction {
 		return info.capturedValues.size === 0 && info.env.size === 0 && !info.proto;
 	}
 }
+
+export class InlineModuleError extends Error {}
+
+export class InspectionError extends InlineModuleError {}
+
+export class SerializationError extends InlineModuleError {}

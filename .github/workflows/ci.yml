@@ -91,7 +91,9 @@ jobs:
         run: pnpm run lint
 
       - name: Format Check
-        run: pnpm run format --check
+        run: |
+          pnpm run format
+          git diff --exit-code
 
   test:
     name: "Test: Node ${{ matrix.NODE_VERSION }}"

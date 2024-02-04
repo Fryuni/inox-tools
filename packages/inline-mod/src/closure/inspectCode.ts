@@ -51,7 +51,7 @@ export function getInspector(serializeFn: (val: unknown) => boolean = alwaysSeri
 (getInspector as any).doNotCapture = true;
 
 class InternalInspectionError extends InspectionError {
-	public constructor(message: string, frames?: ContextFrame[]) {
+	public constructor(message: string, frames?: ContextFrame[], otherStack?: string) {
 		super(message);
 		if (frames) {
 			let stack = message + '\nWhile inspecting:';
@@ -77,7 +77,7 @@ class InternalInspectionError extends InspectionError {
 				}
 			}
 
-			this.stack = stack;
+			this.stack = stack + '\n' + (otherStack ?? this.stack);
 		}
 	}
 }
@@ -135,7 +135,8 @@ class Inspector {
 
 			throw new InternalInspectionError(
 				error instanceof Error ? error.message : `${error}`,
-				this.frames
+				this.frames,
+				error.stack
 			);
 		}
 	}
@@ -280,10 +281,10 @@ class Inspector {
 		}
 
 		log('Trying to locate value as a module import');
-		const normalizedModuleName = await findNormalizedModuleName(value);
-		if (normalizedModuleName) {
-			log('Detected value as a module:', normalizedModuleName);
-			return this.captureModule(normalizedModuleName);
+		const moduleEntry = await findModuleEntry(value);
+		if (moduleEntry) {
+			log('Detected value as a module:', moduleEntry.value.reference);
+			return moduleEntry;
 		}
 
 		if (value instanceof Function) {
@@ -643,34 +644,6 @@ class Inspector {
 		}
 	}
 
-	private async captureModule(normalizedModuleName: string): Promise<Entry<'module' | 'object'>> {
-		// Splitting on "/" is safe to do as this module name is already in a normalized form.
-		const moduleParts = normalizedModuleName.split('/');
-
-		const nodeModulesSegment = 'node_modules';
-		const nodeModulesSegmentIndex = moduleParts.findIndex((v) => v === nodeModulesSegment);
-		const isInNodeModules = nodeModulesSegmentIndex >= 0;
-
-		// If the path goes into node_modules, strip off the node_modules part. This will help
-		// ensure that lookup of those modules will work on the cloud-side even if the module
-		// isn't in a relative node_modules directory.  For example, this happens with aws-sdk.
-		// It ends up actually being in /var/runtime/node_modules inside aws lambda.
-		//
-		// This also helps ensure that modules that are 'yarn link'ed are found properly. The
-		// module path we have may be on some non-local path due to the linking, however this
-		// will ensure that the module-name we load is a simple path that can be found off the
-		// node_modules that we actually upload with our serialized functions.
-		return {
-			type: 'module',
-			value: {
-				type: 'star',
-				reference: isInNodeModules
-					? getModuleFromPath(upath.join(...moduleParts.slice(nodeModulesSegmentIndex + 1)))
-					: normalizedModuleName,
-			},
-		};
-	}
-
 	private async processCapturedVariables(
 		func: Function,
 		capturedVariables: CapturedVariables
@@ -681,13 +654,14 @@ class Inspector {
 			for (const [name, properties] of capturedVariables[scope].entries()) {
 				const value = await v8.lookupCapturedVariableValue(func, name, scope === 'required');
 
-				const moduleName = await findNormalizedModuleName(value);
+				const moduleEntry = await findModuleEntry(value);
 				const frameLength = this.frames.length;
 
-				if (moduleName) {
+				if (moduleEntry) {
+					this.cache.add(value, moduleEntry);
 					this.frames.push({
 						captureModule: {
-							name: moduleName,
+							name: moduleEntry.value.reference,
 							value: value,
 						},
 					});
@@ -871,10 +845,10 @@ const bannedBuiltInModules = new Set<string>([
 	'wasi',
 ]);
 
-const builtInModules = Lazy.of(async () => {
+const moduleLookup = Lazy.of(async () => {
 	const _log = log.extend('builtInLoader');
 
-	const moduleMap = new Map<any, string>();
+	const reverseModuleCache = new Map<unknown, Entry<'module' | 'moduleValue'>>();
 
 	const candidateModules = modules.builtinModules.filter((name) => !bannedBuiltInModules.has(name));
 
@@ -883,7 +857,35 @@ const builtInModules = Lazy.of(async () => {
 		try {
 			const importVal = await import(/* @vite-ignore */ `node:${name}`);
 
-			moduleMap.set(importVal, name);
+			reverseModuleCache.set(importVal, {
+				type: 'module',
+				value: {
+					type: 'star',
+					reference: name,
+				},
+			});
+
+			if (importVal.default !== undefined) {
+				reverseModuleCache.set(importVal.default, {
+					type: 'module',
+					value: {
+						type: 'default',
+						reference: name,
+					},
+				});
+			}
+
+			for (const [key, value] of Object.entries(importVal)) {
+				if (utils.isLegalFunctionName(key)) {
+					reverseModuleCache.set(value, {
+						type: 'moduleValue',
+						value: {
+							reference: name,
+							exportName: key,
+						},
+					});
+				}
+			}
 		} catch (error) {
 			_log(`ERROR: Could not load built-in module '${name}':`, error);
 		}
@@ -891,7 +893,10 @@ const builtInModules = Lazy.of(async () => {
 
 	_log('Completed loading of all built-in modules');
 
-	return moduleMap;
+	return {
+		cachedModules: new Set<string>(),
+		reverseModuleCache,
+	};
 });
 
 type ModuleCache = {
@@ -908,12 +913,12 @@ type ModuleCache = {
 //
 // This function will also always return modules in a normalized form (i.e. all path components will
 // be '/').
-async function findNormalizedModuleName(obj: any): Promise<string | undefined> {
+async function findModuleEntry(obj: any): Promise<Entry<'module' | 'moduleValue'> | null> {
 	// First, check the built-in modules
-	const builtInMods = await builtInModules.get();
-	const key = builtInMods.get(obj);
-	if (key) {
-		return key;
+	const { cachedModules, reverseModuleCache } = await moduleLookup.get();
+	const entry = reverseModuleCache.get(obj);
+	if (entry !== undefined) {
+		return entry;
 	}
 
 	// Next, check the Node module cache, which will store cached values
@@ -921,16 +926,60 @@ async function findNormalizedModuleName(obj: any): Promise<string | undefined> {
 	// don't pre-compute this because the require cache will get populated
 	// dynamically during execution.
 	for (const mod of Object.values<ModuleCache>((modules as any)._cache)) {
-		if (Object.is(mod.exports, obj)) {
-			// Rewrite the path to be a local module reference relative to the current working
-			// directory.
-			const modPath = upath.relative(process.cwd(), mod.id);
-			return './' + modPath;
+		if (cachedModules.has(mod.id)) continue;
+
+		// Rewrite the path to be a local module reference relative to the current working directory.
+		const modPath = './' + upath.relative(process.cwd(), mod.id);
+
+		// If the path goes into node_modules, strip off the node_modules part. This will help
+		// ensure that lookup of those modules will work on the cloud-side even if the module
+		// isn't in a relative node_modules directory.  For example, this happens with aws-sdk.
+		// It ends up actually being in /var/runtime/node_modules inside aws lambda.
+		//
+		// This also helps ensure that modules that are 'yarn link'ed are found properly. The
+		// module path we have may be on some non-local path due to the linking, however this
+		// will ensure that the module-name we load is a simple path that can be found off the
+		// node_modules that we actually upload with our serialized functions.
+		const modReference = getModuleFromPath(modPath);
+
+		const rawImport = await import(mod.id);
+
+		if (!reverseModuleCache.has(rawImport)) {
+			reverseModuleCache.set(rawImport, {
+				type: 'module',
+				value: {
+					type: 'star',
+					reference: modReference,
+				},
+			});
 		}
+
+		if (mod.exports.default !== undefined && !reverseModuleCache.has(mod.exports.default)) {
+			reverseModuleCache.set(mod.exports.default, {
+				type: 'module',
+				value: {
+					type: 'default',
+					reference: modReference,
+				},
+			});
+		}
+
+		for (const [key, value] of Object.entries(mod.exports)) {
+			if (utils.isLegalFunctionName(key) && !reverseModuleCache.has(value)) {
+				reverseModuleCache.set(value, {
+					type: 'moduleValue',
+					value: {
+						reference: modReference,
+						exportName: key,
+					},
+				});
+			}
+		}
+
+		cachedModules.add(mod.id);
 	}
 
-	// Else, return that no global name is available for this object.
-	return undefined;
+	return reverseModuleCache.get(obj) ?? null;
 }
 
 // Is this a constructor derived from a noCapture constructor.  if so, we don't want to

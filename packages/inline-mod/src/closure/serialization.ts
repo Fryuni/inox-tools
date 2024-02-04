@@ -55,6 +55,8 @@ class ModuleSerializer {
 	 */
 	private readonly emittedTargets = new Set<Entry | InspectedObject>();
 
+	private readonly namedImports = new Map<string, Map<string, string>>();
+
 	private importCode = '';
 
 	private environmentCode = '';
@@ -86,7 +88,9 @@ class ModuleSerializer {
 		}
 
 		return {
-			text: [this.importCode, this.environmentCode, exportCode].join('\n'),
+			text: [this.importCode, this.aggregateNamedImports(), this.environmentCode, exportCode].join(
+				'\n'
+			),
 		};
 	}
 
@@ -118,6 +122,8 @@ class ModuleSerializer {
 				return this.emitFunctionAndGetName(envEntry);
 			case 'module':
 				return this.emitModule(envEntry, varName);
+			case 'moduleValue':
+				return this.emitModuleValue(envEntry, varName);
 			case 'promise':
 				return `Promise.resolve(${this.entryToReference(envEntry.value, varName)})`;
 			case 'symbol':
@@ -167,6 +173,39 @@ class ModuleSerializer {
 		this.importCode += `${importPrefix} ${modName} from '${entry.value.reference}';`;
 
 		return modName;
+	}
+
+	private emitModuleValue(entry: Entry<'moduleValue'>, _varName: string): string {
+		const importName = this.createEnvVarName(entry.value.exportName, /* addIndexAtEnd */ false);
+
+		this.envEntryToEnvVar.set(entry, importName);
+
+		const importMapping = this.namedImports.get(entry.value.reference);
+
+		if (importMapping === undefined) {
+			const newMapping = new Map([[entry.value.exportName, importName]]);
+
+			this.namedImports.set(entry.value.reference, newMapping);
+		} else {
+			importMapping.set(entry.value.exportName, importName);
+		}
+
+		return importName;
+	}
+
+	private aggregateNamedImports(): string {
+		let code = '';
+
+		for (const [moduleName, mapping] of this.namedImports.entries()) {
+			code += 'import {\n';
+			for (const [exportName, importName] of mapping.entries()) {
+				code += `  ${exportName} as ${importName},\n`;
+			}
+
+			code += `} from '${moduleName}';\n`;
+		}
+
+		return code;
 	}
 
 	private emitFunctionAndGetName(entry: Entry<'function'>): string {

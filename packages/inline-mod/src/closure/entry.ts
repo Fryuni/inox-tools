@@ -23,6 +23,11 @@ type EntryMap = {
 		reference: string;
 	};
 
+	moduleValue: {
+		reference: string;
+		exportName: string;
+	};
+
 	// A promise value.  this will be serialized as the underlyign value the promise
 	// points to.  And deserialized as Promise.resolve(<underlying_value>)
 	promise: Entry;

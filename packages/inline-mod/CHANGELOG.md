@@ -1,5 +1,11 @@
 # @inox-tools/inline-mod
 
+## 1.0.1
+
+### Patch Changes
+
+- 3bf3825: Add support for referring to named exports instead of serializing them recursivelly
+
 ## 1.0.0
 
 ### Major Changes
@@ -17,7 +23,7 @@
   ```js
   function __f0() {
     return function () {
-      return () => 'read value';
+      return () => "read value";
     }
       .apply(undefined, undefined)
       .apply(this, arguments);
@@ -27,7 +33,7 @@
   Now it is serialized to this:
 
   ```js
-  const __f0 = () => 'read value';
+  const __f0 = () => "read value";
   ```
 
 - 1b3919f: Fix support for circular values

@@ -135,3 +135,22 @@ import { function } from 'virtual-import-string';
 #### `serializeFn` option
 
 A function to allow excluding values referred in the module from being serialized. A functions excluded from serialization will throw if called at runtime.
+
+### `defineModule`
+
+This function accepts a name of a module and the same definition as [`inlineModule`](#inlinemodule). The generated module will be available at the given name instead of generating a new name.
+
+```ts
+defineModule('virtual:your-plugin/config', {
+  constExports: {
+    getValue: () => 'value',
+  },
+});
+```
+
+Can be imported as:
+
+```js
+import { getValue } from 'virtual:your-plugin/config';
+```
+

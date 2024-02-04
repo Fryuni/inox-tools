@@ -75,33 +75,39 @@ You can add the plugin embeded with your own plugin:
 import inlineMod from '@inox-tools/inline-mod/vite';
 
 export default () => {
-    return [inlineMod(), {
-        name: 'your-plugin',
-        // ...
-    }];
-}
+  return [
+    inlineMod(),
+    {
+      name: 'your-plugin',
+      // ...
+    },
+  ];
+};
 ```
 
 Then define a module inline. For example to expose your configuration to runtime:
 
 ```ts ins={5-9,11-16}
 // your-plugin.ts
-import inlineMod, {defineModule} from '@inox-tools/inline-mod/vite';
+import inlineMod, { defineModule } from '@inox-tools/inline-mod/vite';
 
 type Options = {
-    someFunction: () => string;
+  someFunction: () => string;
 };
 
 export default (options: Options) => {
-    defineModule('virtual:your-plugin/config', {
-      constExport: options,
-    });
+  defineModule('virtual:your-plugin/config', {
+    constExport: options,
+  });
 
-    return [inlineMod(), {
-        name: 'your-plugin',
-        // ...
-    }];
-}
+  return [
+    inlineMod(),
+    {
+      name: 'your-plugin',
+      // ...
+    },
+  ];
+};
 ```
 
 Now you can import your configuration anywhere in your code, be it in the server or the client.

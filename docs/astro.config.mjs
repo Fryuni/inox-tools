@@ -18,7 +18,7 @@ export default defineConfig({
 					label: 'Inline Module',
 					badge: {
 						text: 'NEW',
-						variant: 'success'
+						variant: 'success',
 					},
 					autogenerate: { directory: 'inline-mod' },
 				},

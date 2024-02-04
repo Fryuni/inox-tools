@@ -14,7 +14,7 @@ import { defineConfig } from 'vite';
 import inlineMod from '@inox-tools/inline-mod/vite';
 
 export default defineConfig({
-    plugins: [inlineMod()],
+  plugins: [inlineMod()],
 });
 ```
 
@@ -28,10 +28,13 @@ You can use this plugin embeded with your own plugin:
 import inlineMod from '@inox-tools/inline-mod/vite';
 
 export default () => {
-    return [inlineMod(), {
-        name: 'your-plugin',
-    }];
-}
+  return [
+    inlineMod(),
+    {
+      name: 'your-plugin',
+    },
+  ];
+};
 ```
 
 ## API
@@ -61,10 +64,10 @@ For example:
 
 ```ts
 inlineMod({
-    constExports: {
-        foo: 'bar',
-        baz: () => 'qux',
-    },
+  constExports: {
+    foo: 'bar',
+    baz: () => 'qux',
+  },
 });
 ```
 
@@ -88,10 +91,10 @@ For example:
 
 ```ts
 inlineMod({
-    defaultExport: {
-        foo: 'bar',
-        baz: () => 'qux',
-    },
+  defaultExport: {
+    foo: 'bar',
+    baz: () => 'qux',
+  },
 });
 ```
 
@@ -114,9 +117,9 @@ For example, if a value should have the name `function`:
 
 ```ts
 inlineMod({
-    assignExport: {
-        'function': () => 'value',
-    },
+  assignExport: {
+    function: () => 'value',
+  },
 });
 ```
 
@@ -132,4 +135,3 @@ import { function } from 'virtual-import-string';
 #### `serializeFn` option
 
 A function to allow excluding values referred in the module from being serialized. A functions excluded from serialization will throw if called at runtime.
-

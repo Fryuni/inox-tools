@@ -123,8 +123,8 @@ __nestedArray[2] = 789;
 
 const __nestedObject = {};
 
-const __nestedObject_value = {here: 123};
-__nestedObject.some = "nested";
+const __nestedObject_value = { here: 123 };
+__nestedObject.some = 'nested';
 __nestedObject.value = __nestedObject_value;
 
 export const nestedArray = __nestedArray;
@@ -202,7 +202,6 @@ const __f0 = () => Math.random();
 export const getValue = __f0;
 ```
 
-
 ## Classes
 
 Classes in ECMAScript are syntactic sugar for defining values on the prototype chain. At runtime, it is impossible to find the original syntax that generated the values.
@@ -211,11 +210,11 @@ For maximum compatibility and to maintain all the minute bahaviors that an imple
 
 ```ts
 class FancyClass {
-	public constructor(public state: string) { }
+  public constructor(public state: string) {}
 
-	public method() {
-		console.log(this.state);
-	}
+  public method() {
+    console.log(this.state);
+  }
 }
 
 inlineModule({
@@ -229,11 +228,13 @@ Generates:
 
 ```ts
 function __f0(__0) {
-  return (function() {
-		return function constructor(state) {
+  return function () {
+    return function constructor(state) {
       this.state = state;
     };
-  }).apply(undefined, undefined).apply(this, arguments);
+  }
+    .apply(undefined, undefined)
+    .apply(this, arguments);
 }
 
 const __f0_prototype = {};
@@ -241,9 +242,24 @@ const __f1 = function method() {
   console.log(this.state);
 };
 
-Object.defineProperty(__f0_prototype, "constructor", {configurable: true,enumerable: false,writable: true,value: __f0});
-Object.defineProperty(__f0_prototype, "method", {configurable: true,enumerable: false,writable: true,value: __f1});
-Object.defineProperty(__f0, "prototype", {configurable: false,enumerable: false,writable: false,value: __f0_prototype});
+Object.defineProperty(__f0_prototype, 'constructor', {
+  configurable: true,
+  enumerable: false,
+  writable: true,
+  value: __f0,
+});
+Object.defineProperty(__f0_prototype, 'method', {
+  configurable: true,
+  enumerable: false,
+  writable: true,
+  value: __f1,
+});
+Object.defineProperty(__f0, 'prototype', {
+  configurable: false,
+  enumerable: false,
+  writable: false,
+  value: __f0_prototype,
+});
 
 export const FancyClass = __f0;
 ```
@@ -254,11 +270,11 @@ Serializing an instance implicitly serialize the class that originated them as w
 
 ```ts
 class FancyClass {
-	public constructor(public state: string) { }
+  public constructor(public state: string) {}
 
-	public method() {
-		console.log(this.state);
-	}
+  public method() {
+    console.log(this.state);
+  }
 }
 
 inlineModule({
@@ -277,19 +293,36 @@ const __f0 = function method() {
 };
 
 function __f1(__0) {
-  return (function() {
-		return function constructor(state) {
+  return function () {
+    return function constructor(state) {
       this.state = state;
     };
-  }).apply(undefined, undefined).apply(this, arguments);
+  }
+    .apply(undefined, undefined)
+    .apply(this, arguments);
 }
 
-Object.defineProperty(__f1, "prototype", {configurable: false,enumerable: false,writable: false,value: __instance_proto});
-Object.defineProperty(__instance_proto, "method", {configurable: true,enumerable: false,writable: true,value: __f0});
-Object.defineProperty(__instance_proto, "constructor", {configurable: true,enumerable: false,writable: true,value: __f1});
+Object.defineProperty(__f1, 'prototype', {
+  configurable: false,
+  enumerable: false,
+  writable: false,
+  value: __instance_proto,
+});
+Object.defineProperty(__instance_proto, 'method', {
+  configurable: true,
+  enumerable: false,
+  writable: true,
+  value: __f0,
+});
+Object.defineProperty(__instance_proto, 'constructor', {
+  configurable: true,
+  enumerable: false,
+  writable: true,
+  value: __f1,
+});
 
 const __instance = Object.create(__instance_proto);
-__instance.state = "instance value";
+__instance.state = 'instance value';
 
 export const instance = __instance;
 ```
@@ -300,30 +333,34 @@ export const instance = __instance;
 const capturedValue = { counter: 0 };
 
 inlineModule({
-	constExports: {
-		increment: () => capturedValue.counter++,
-		read: () => capturedValue.counter,
-	},
+  constExports: {
+    increment: () => capturedValue.counter++,
+    read: () => capturedValue.counter,
+  },
 });
 ```
 
 Generates:
 
 ```js
-const __capturedValue =  {counter: 0};
+const __capturedValue = { counter: 0 };
 
 function __f0() {
-  return (function() {
-		const capturedValue = __capturedValue;
-  		return  () => capturedValue.counter++;
-  }).apply(undefined, undefined).apply(this, arguments);
+  return function () {
+    const capturedValue = __capturedValue;
+    return () => capturedValue.counter++;
+  }
+    .apply(undefined, undefined)
+    .apply(this, arguments);
 }
 
 function __f1() {
-  return (function() {
-		const capturedValue = __capturedValue;
-		return () => capturedValue.counter;
-  }).apply(undefined, undefined).apply(this, arguments);
+  return function () {
+    const capturedValue = __capturedValue;
+    return () => capturedValue.counter;
+  }
+    .apply(undefined, undefined)
+    .apply(this, arguments);
 }
 
 export const increment = __f0;
@@ -338,7 +375,7 @@ Values that were imported from a native Node module are detected and instead of 
 ```ts
 import * as path from 'node:path';
 import fs from 'node:fs';
-import {inspect} from 'node:util';
+import { inspect } from 'node:util';
 
 inlineModule({
   constExports: {
@@ -354,9 +391,7 @@ Generates:
 ```js
 import * as __path from 'path';
 import __fs from 'fs';
-import {
-  inspect as __inspect,
-} from 'util';
+import { inspect as __inspect } from 'util';
 
 export const path = __path;
 export const fs = __fs;
@@ -370,7 +405,7 @@ Values imported from third-party libraries are also detected and not serialized.
 ```ts
 import * as one from 'lib-one';
 import two from 'lib-two';
-import {three} from 'lib-three';
+import { three } from 'lib-three';
 
 inlineModule({
   constExports: {
@@ -386,9 +421,7 @@ Generates:
 ```js
 import * as __one from 'lib-one';
 import __two from 'lib-two';
-import {
-  three as __three,
-} from 'lib-three';
+import { three as __three } from 'lib-three';
 
 export const one = __one;
 export const two = __two;
@@ -401,16 +434,16 @@ export const three = __three;
 const value = {};
 
 Object.defineProperty(value, 'property', {
-	value: 'value',
-	writable: false,
-	enumerable: false,
-	configurable: false,
+  value: 'value',
+  writable: false,
+  enumerable: false,
+  configurable: false,
 });
 
 inlineModule({
-	constExports: {
-		obj: value,
-	},
+  constExports: {
+    obj: value,
+  },
 });
 ```
 
@@ -419,13 +452,12 @@ Generates:
 ```js
 const __obj = {};
 
-Object.defineProperty(__obj, "property", {
+Object.defineProperty(__obj, 'property', {
   configurable: false,
   enumerable: false,
   writable: false,
-  value: "value"
+  value: 'value',
 });
-		
+
 export const obj = __obj;
 ```
-

@@ -162,6 +162,28 @@ export const circularArray = __circularArray;
 export const circularObject = __circularObject;
 ```
 
+## Sparse arrays
+
+```ts
+const array = [];
+array[50] = 123;
+
+inlineModule({
+  constExports: {
+    array,
+  },
+});
+```
+
+Generates:
+
+```ts
+const __array = [];
+__array[50] = 123;
+
+export const array = __array;
+```
+
 ## Simple functions
 
 ```ts
@@ -307,5 +329,103 @@ function __f1() {
 export const increment = __f0;
 
 export const read = __f1;
+```
+
+## Imports of built-in modules
+
+Values that were imported from a native Node module are detected and instead of serialized they are re-imported at runtime.
+
+```ts
+import * as path from 'node:path';
+import fs from 'node:fs';
+import {inspect} from 'node:util';
+
+inlineModule({
+  constExports: {
+    path,
+    fs,
+    inspect,
+  },
+});
+```
+
+Generates:
+
+```js
+import * as __path from 'path';
+import __fs from 'fs';
+import {
+  inspect as __inspect,
+} from 'util';
+
+export const path = __path;
+export const fs = __fs;
+export const inspect = __inspect;
+```
+
+## Import of third-party dependencies
+
+Values imported from third-party libraries are also detected and not serialized. But this only works for values that are exported somewhere in the third-party library.
+
+```ts
+import * as one from 'lib-one';
+import two from 'lib-two';
+import {three} from 'lib-three';
+
+inlineModule({
+  constExports: {
+    one,
+    two,
+    three,
+  },
+});
+```
+
+Generates:
+
+```js
+import * as __one from 'lib-one';
+import __two from 'lib-two';
+import {
+  three as __three,
+} from 'lib-three';
+
+export const one = __one;
+export const two = __two;
+export const three = __three;
+```
+
+## Non-standard properties
+
+```ts
+const value = {};
+
+Object.defineProperty(value, 'property', {
+	value: 'value',
+	writable: false,
+	enumerable: false,
+	configurable: false,
+});
+
+inlineModule({
+	constExports: {
+		obj: value,
+	},
+});
+```
+
+Generates:
+
+```js
+const __obj = {};
+
+Object.defineProperty(__obj, "property", {
+  configurable: false,
+  enumerable: false,
+  writable: false,
+  value: "value"
+});
+		
+export const obj = __obj;
 ```
 

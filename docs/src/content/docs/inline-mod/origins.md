@@ -1,5 +1,7 @@
 ---
 title: Origins
+sidebar:
+  order: 100
 ---
 
 This plugin was based on the [work by the Pulumi Corporation][original code] for their inline lambda feature.

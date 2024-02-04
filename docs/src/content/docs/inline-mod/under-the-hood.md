@@ -1,6 +1,8 @@
 ---
 title: Generated modules
 description: 'What does the generated modules look like?'
+sidebar:
+  order: 10
 ---
 
 :::note

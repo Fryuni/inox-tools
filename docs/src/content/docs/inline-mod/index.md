@@ -61,44 +61,61 @@ Add the Vite plugin that will resolve inline modules to their source code during
 ```ts
 // vite.config.mjs
 import { defineConfig } from 'vite';
-import inlineModulePlugin from '@inox-tools/inline-mod/vite';
+import inlineMod from '@inox-tools/inline-mod/vite';
 
 export default defineConfig({
-  plugins: [inlineModulePlugin()],
+  plugins: [inlineMod()],
 });
 ```
 
-Then define a module inline:
-
-```ts ins={5-9,11-16}
-// vite.config.mjs
-import { defineConfig } from 'vite';
-import inlineModulePlugin, { defineModule } from '@inox-tools/inline-mod/vite';
-
-defineModule('virtual:config', {
-  constExport: {
-    configFunction: () => 'value from config',
-  },
-});
-
-// Or get the module name auto-generated
-const moduleName = inlineModule({
-  constExport: {
-    configFunction: () => 'value from config',
-  },
-});
-
-export default defineConfig({
-  plugins: [inlineModulePlugin()],
-});
-```
-
-Finally, import the defined module from anywhere in your code:
+You can add the plugin embeded with your own plugin:
 
 ```ts
-import { configFunction } from 'virtual:config';
+// your-plugin.ts
+import inlineMod from '@inox-tools/inline-mod/vite';
 
-const configValue = configFunction();
+export default () => {
+  return [
+    inlineMod(),
+    {
+      name: 'your-plugin',
+      // ...
+    },
+  ];
+};
+```
+
+Then define a module inline. For example to expose your configuration to runtime:
+
+```ts ins={5-9,11-16}
+// your-plugin.ts
+import inlineMod, { defineModule } from '@inox-tools/inline-mod/vite';
+
+type Options = {
+  someFunction: () => string;
+};
+
+export default (options: Options) => {
+  defineModule('virtual:your-plugin/config', {
+    constExport: options,
+  });
+
+  return [
+    inlineMod(),
+    {
+      name: 'your-plugin',
+      // ...
+    },
+  ];
+};
+```
+
+Now you can import your configuration anywhere in your code, be it in the server or the client.
+
+```ts
+import { someFunction } from 'virtual:your-plugin/config';
+
+const configValue = someFunction();
 ```
 
 ## License

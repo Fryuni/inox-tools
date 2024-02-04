@@ -23,7 +23,7 @@
   ```js
   function __f0() {
     return function () {
-      return () => "read value";
+      return () => 'read value';
     }
       .apply(undefined, undefined)
       .apply(this, arguments);
@@ -33,7 +33,7 @@
   Now it is serialized to this:
 
   ```js
-  const __f0 = () => "read value";
+  const __f0 = () => 'read value';
   ```
 
 - 1b3919f: Fix support for circular values

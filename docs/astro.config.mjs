@@ -15,10 +15,10 @@ export default defineConfig({
 					link: '/custom-routing',
 				},
 				{
-					label: 'Inline Virtual Module',
+					label: 'Inline Module',
 					badge: {
-						text: 'EXP',
-						variant: 'danger',
+						text: 'NEW',
+						variant: 'success',
 					},
 					autogenerate: { directory: 'inline-mod' },
 				},

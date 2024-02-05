@@ -58,7 +58,7 @@ a JSON to decide what to do at runtime. Use whatever is most semantic for your A
 
 Add the Vite plugin that will resolve inline modules to their source code during the bundling:
 
-```ts
+```ts ins={3} ins="inlineMod()"
 // vite.config.mjs
 import { defineConfig } from 'vite';
 import inlineMod from '@inox-tools/inline-mod/vite';
@@ -70,7 +70,7 @@ export default defineConfig({
 
 You can add the plugin embeded with your own plugin:
 
-```ts
+```ts ins={2,6}
 // your-plugin.ts
 import inlineMod from '@inox-tools/inline-mod/vite';
 
@@ -87,7 +87,7 @@ export default () => {
 
 Then define a module inline. For example to expose your configuration to runtime:
 
-```ts ins={5-9,11-16}
+```ts ins={9-11} ins=/defineModule(?!\\()/
 // your-plugin.ts
 import inlineMod, { defineModule } from '@inox-tools/inline-mod/vite';
 

@@ -153,4 +153,3 @@ Can be imported as:
 ```js
 import { getValue } from 'virtual:your-plugin/config';
 ```
-

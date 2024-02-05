@@ -87,7 +87,7 @@ export default () => {
 
 Then define a module inline. For example to expose your configuration to runtime:
 
-```ts ins={9-11} ins=/defineModule(?!\\()/
+```ts ins={9-11} ins=/defineModule(?= )/
 // your-plugin.ts
 import inlineMod, { defineModule } from '@inox-tools/inline-mod/vite';
 

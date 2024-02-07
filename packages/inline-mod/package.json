@@ -10,7 +10,6 @@
   "author": "Luiz Ferraz <luiz@lferraz.com>",
   "type": "module",
   "exports": {
-    ".": "./dist/index.js",
     "./vite": {
       "types": "./dist/vite.d.ts",
       "default": "./dist/vite.js"

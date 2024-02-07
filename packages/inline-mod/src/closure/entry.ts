@@ -45,6 +45,9 @@ type EntryMap = {
 	// A simple expression to use to represent this instance.  For example "global.Number";
 	expr: string;
 
+	// A simple expression to use to construct an instance. The reference of the instance is relevant.
+	refExpr: string;
+
 	// A placeholder for a pending entry
 	pending: never;
 };

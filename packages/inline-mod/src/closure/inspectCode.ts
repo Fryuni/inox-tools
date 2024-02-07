@@ -310,6 +310,13 @@ class Inspector {
 			};
 		}
 
+		if (value instanceof URL) {
+			return {
+				type: 'refExpr',
+				value: `new URL(${JSON.stringify(value.toString())})`,
+			};
+		}
+
 		if (Array.isArray(value)) {
 			log('Inspecting array value');
 			const array: Entry[] = [];

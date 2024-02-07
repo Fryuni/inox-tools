@@ -131,6 +131,11 @@ class ModuleSerializer {
 				return this.emitSymbol(envEntry, varName);
 			case 'expr':
 				return envEntry.value;
+			case 'refExpr': {
+				const name = this.createEnvVarName(varName, false);
+				this.emitCode(envEntry, `const ${name} = ${envEntry.value};\n`);
+				return name;
+			}
 			case 'pending':
 				return '';
 		}

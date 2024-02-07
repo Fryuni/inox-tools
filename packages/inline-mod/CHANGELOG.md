@@ -1,5 +1,12 @@
 # @inox-tools/inline-mod
 
+## 1.1.0-smart-factory.0
+
+### Minor Changes
+
+- 8aca13a: Implement support for async magic factory
+- db4e594: Add new factory utility
+
 ## 1.0.1
 
 ### Patch Changes

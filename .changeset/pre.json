@@ -9,7 +9,11 @@
     "@inox-tools/custom-routing": "0.2.0",
     "@inox-tools/inline-mod": "1.0.1",
     "@inox-tools/velox-luna": "0.0.1",
-    "turbo": "1.0.0"
+    "turbo": "1.0.0",
+    "templates": "1.0.0"
   },
-  "changesets": []
+  "changesets": [
+    "fresh-beers-dream",
+    "thick-plums-prove"
+  ]
 }

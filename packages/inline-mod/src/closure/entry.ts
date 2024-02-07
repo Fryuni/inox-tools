@@ -10,6 +10,11 @@ type EntryMap = {
 	// A closure we are dependent on.
 	function: InspectedFunction;
 
+	factory: {
+		isAsync: boolean;
+		factory: Entry<'function'>;
+	};
+
 	// An object which may contain nested closures.
 	// Can include an optional proto if the user is not using the default Object.prototype.
 	object: InspectedObject;
@@ -44,8 +49,10 @@ type EntryMap = {
 	pending: never;
 };
 
-export type Entry<T extends keyof EntryMap = keyof EntryMap> = {
-	[K in keyof EntryMap]: {
+export type EntryType = keyof EntryMap;
+
+export type Entry<T extends EntryType = EntryType> = {
+	[K in EntryType]: {
 		type: K;
 		value: EntryMap[K];
 	};

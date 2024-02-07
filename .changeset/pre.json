@@ -1,0 +1,19 @@
+{
+  "mode": "pre",
+  "tag": "smart-factory",
+  "initialVersions": {
+    "docs": "0.0.1",
+    "@examples/custom-routing": "0.0.1",
+    "@example/inline-mod": "0.0.0",
+    "inline-mod-astro": "0.0.1",
+    "@inox-tools/custom-routing": "0.2.0",
+    "@inox-tools/inline-mod": "1.0.1",
+    "@inox-tools/velox-luna": "0.0.1",
+    "turbo": "1.0.0",
+    "templates": "1.0.0"
+  },
+  "changesets": [
+    "fresh-beers-dream",
+    "thick-plums-prove"
+  ]
+}

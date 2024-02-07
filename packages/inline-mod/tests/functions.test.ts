@@ -1,5 +1,6 @@
 import { expect, test } from 'vitest';
-import { factory, inspectInlineMod } from '../src/inlining.js';
+import { magicFactory } from '../src/closure/inspectCode.js';
+import { inspectInlineMod } from '../src/inlining.js';
 
 test('arrow function', async () => {
 	const module = await inspectInlineMod({
@@ -85,12 +86,15 @@ test('recurring function', async () => {
 test('factory values', async () => {
 	let callCount = 0;
 
-	const factoryValue = factory(() => {
-		callCount++;
+	const factoryValue = magicFactory({
+		isAsync: false,
+		fn: () => {
+			callCount++;
 
-		return {
-			value: 'foo',
-		};
+			return {
+				value: 'foo',
+			};
+		},
 	});
 
 	const modInfo = await inspectInlineMod({
@@ -125,4 +129,41 @@ test('factory values', async () => {
 	expect(factoryValue.value).toEqual('bar');
 
 	expect(callCount).toBe(1);
+});
+
+test('async factory values', async () => {
+	let callCount = 0;
+
+	const factoryValue = magicFactory({
+		isAsync: true,
+		fn: () => {
+			callCount++;
+
+			return Promise.resolve({
+				value: 'foo',
+			});
+		},
+	});
+
+	const modInfo = await inspectInlineMod({
+		defaultExport: factoryValue,
+	});
+
+	expect(modInfo.text).toEqualIgnoringWhitespace(`
+    function __f0() {
+      return (function() {
+        const callCount = 0;
+        return () => {
+          callCount++;
+          return Promise.resolve({
+            value: "foo"
+          });
+        };
+      }).apply(undefined, undefined).apply(this, arguments);
+    }
+
+    const __defaultExport = await __f0();
+
+    export default __defaultExport;
+  `);
 });

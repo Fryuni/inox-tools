@@ -1,10 +1,24 @@
+import { magicFactory } from './closure/inspectCode.js';
 import { InlineModuleError } from './closure/types.js';
 import { inspectInlineMod, type InlineModule, type ModuleOptions } from './inlining.js';
-export { factory } from './inlining.js';
 
 const modRegistry = new Map<string, Promise<InlineModule>>();
 
 class InlineModulePluginError extends InlineModuleError {}
+
+export function factory<T>(factoryFn: () => T): T {
+	return magicFactory({
+		isAsync: false,
+		fn: factoryFn,
+	});
+}
+
+export function asyncFactory<T>(factoryFn: () => Promise<T>): Promise<T> {
+	return magicFactory({
+		isAsync: true,
+		fn: factoryFn,
+	});
+}
 
 let inlineModuleCounter = 0;
 

@@ -453,8 +453,9 @@ class ModuleSerializer {
 	}
 
 	private emitFactory(envVar: string, entry: Entry<'factory'>, varName: string): void {
-		const factoryRef = this.entryToReference(entry.value, varName + '_factory');
-		this.emitCode(entry, `const ${envVar} = ${factoryRef}();\n`);
+		const factoryRef = this.entryToReference(entry.value.factory, varName + '_factory');
+		const prefix = entry.value.isAsync ? 'await ' : '';
+		this.emitCode(entry, `const ${envVar} = ${prefix}${factoryRef}();\n`);
 	}
 
 	private createEnvVarName(baseName: string, addIndexAtEnd: boolean): string {

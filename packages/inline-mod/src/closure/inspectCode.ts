@@ -273,10 +273,14 @@ class Inspector {
 		value: object,
 		capturedProperties?: CapturedPropertyChain[]
 	): Promise<Entry> {
-		if (factorySymbol in value) {
+		const factoryInfo = tryExtractMagicFactory(value);
+		if (factoryInfo) {
 			return {
 				type: 'factory',
-				value: (await this.inspect(value[factorySymbol])) as Entry<'function'>,
+				value: {
+					isAsync: factoryInfo.isAsync,
+					factory: (await this.inspect(factoryInfo.factory)) as Entry<'function'>,
+				},
 			};
 		}
 
@@ -1002,63 +1006,85 @@ function isDerivedNoCaptureConstructor(func: Function): boolean {
 
 const factorySymbol = Symbol('inox-tool/inline-factory');
 
-function ensureFactoryInitialized(magicValue: {
+type MagicPlaceholder = {
 	[factorySymbol]: {
 		initialized: boolean;
+		isAsync: boolean;
 		factory: () => Record<any, any>;
 	};
-}): void {
+};
+
+function ensureFactoryInitialized(magicValue: MagicPlaceholder): void {
 	if (!magicValue[factorySymbol].initialized) {
 		Object.assign(magicValue, magicValue[factorySymbol].factory());
 		magicValue[factorySymbol].initialized = true;
 	}
 }
 
-export function magicFactory<T extends Record<any, any>>(fn: T | (() => T)): T {
+const magicFactoryProxyHandler: ProxyHandler<MagicPlaceholder> = {
+	has: (target, key) => {
+		if (key === factorySymbol) return true;
+		ensureFactoryInitialized(target);
+
+		return Reflect.has(target, key);
+	},
+	get: (target, key) => {
+		if (key === factorySymbol) {
+			return {
+				isAsync: target[factorySymbol].isAsync,
+				factory: target[factorySymbol].factory,
+			};
+		}
+
+		ensureFactoryInitialized(target);
+
+		return Reflect.get(target, key);
+	},
+	set: (target, key, value) => {
+		if (key === factorySymbol) {
+			return false;
+		}
+
+		ensureFactoryInitialized(target);
+
+		return Reflect.set(target, key, value);
+	},
+	ownKeys: (target) => {
+		ensureFactoryInitialized(target);
+
+		return Reflect.ownKeys(target).filter((k) => k !== factorySymbol);
+	},
+};
+
+export function magicFactory<T extends Record<any, any>>({
+	isAsync,
+	fn,
+}: {
+	isAsync: boolean;
+	fn: T | (() => T);
+}): T {
 	if (typeof fn !== 'function') {
 		return fn;
 	}
 
-	return new Proxy(
+	return new Proxy<T & MagicPlaceholder>(
 		{
+			// Trick for TS
 			...({} as T),
 			[factorySymbol]: {
 				initialized: false,
+				isAsync,
 				factory: fn,
 			},
 		},
-		{
-			has: (target, key) => {
-				if (key === factorySymbol) return true;
-				ensureFactoryInitialized(target);
-
-				return Reflect.has(target, key);
-			},
-			get: (target, key) => {
-				if (key === factorySymbol) {
-					return target[factorySymbol].factory;
-				}
-
-				ensureFactoryInitialized(target);
-
-				return Reflect.get(target, key);
-			},
-			set: (target, key, value) => {
-				if (key === factorySymbol) {
-					return false;
-				}
-
-				ensureFactoryInitialized(target);
-
-				return Reflect.set(target, key, value);
-			},
-			ownKeys: (target) => {
-				ensureFactoryInitialized(target);
-
-				return Reflect.ownKeys(target).filter((k) => k !== factorySymbol);
-			},
-		}
+		magicFactoryProxyHandler
 	);
+}
+
+function tryExtractMagicFactory(value: any): MagicPlaceholder[typeof factorySymbol] | undefined {
+	if (factorySymbol in value) {
+		return value[factorySymbol];
+	}
 }
 
 /**

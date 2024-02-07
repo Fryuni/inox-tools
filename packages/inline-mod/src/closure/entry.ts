@@ -10,7 +10,10 @@ type EntryMap = {
 	// A closure we are dependent on.
 	function: InspectedFunction;
 
-	factory: Entry<'function'>;
+	factory: {
+		isAsync: boolean;
+		factory: Entry<'function'>;
+	};
 
 	// An object which may contain nested closures.
 	// Can include an optional proto if the user is not using the default Object.prototype.

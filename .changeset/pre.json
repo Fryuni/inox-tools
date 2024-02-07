@@ -13,7 +13,10 @@
     "templates": "1.0.0"
   },
   "changesets": [
+    "eleven-shrimps-rest",
     "fresh-beers-dream",
+    "itchy-pants-happen",
+    "tame-rivers-tie",
     "thick-plums-prove"
   ]
 }

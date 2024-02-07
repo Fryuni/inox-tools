@@ -1,5 +1,16 @@
 # @inox-tools/inline-mod
 
+## 1.1.0-smart-factory.3
+
+### Minor Changes
+
+- d430acc: Add support for serializing URL objects
+
+### Patch Changes
+
+- 645a2e4: Handle import errors on cache build
+- 2e7a6af: Fix dependency import path search
+
 ## 1.1.0-smart-factory.0
 
 ### Minor Changes

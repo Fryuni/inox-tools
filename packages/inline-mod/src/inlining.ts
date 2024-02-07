@@ -26,6 +26,8 @@ export interface InlineModule extends SerializedModule {
 	module: Lazy<Promise<unknown>>;
 }
 
+export { magicFactory as factory } from './closure/inspectCode.js';
+
 /* @internal */
 export async function inspectInlineMod(options: ModuleOptions): Promise<InlineModule> {
 	log('Retrieving inspector');

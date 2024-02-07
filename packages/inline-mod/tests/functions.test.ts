@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { inspectInlineMod } from '../src/inlining.js';
+import { factory, inspectInlineMod } from '../src/inlining.js';
 
 test('arrow function', async () => {
 	const module = await inspectInlineMod({
@@ -80,4 +80,49 @@ test('recurring function', async () => {
 
     export default __f;
   `);
+});
+
+test('factory values', async () => {
+	let callCount = 0;
+
+	const factoryValue = factory(() => {
+		callCount++;
+
+		return {
+			value: 'foo',
+		};
+	});
+
+	const modInfo = await inspectInlineMod({
+		defaultExport: factoryValue,
+	});
+
+	expect(modInfo.text).toEqualIgnoringWhitespace(`
+    function __f0() {
+      return (function() {
+        const callCount = 0;
+        return () => {
+          callCount++;
+          return {
+            value: "foo"
+          };
+        };
+      }).apply(undefined, undefined).apply(this, arguments);
+    }
+
+    const __defaultExport = __f0();
+
+    export default __defaultExport;
+  `);
+
+	expect(callCount).toBe(0);
+
+	expect(factoryValue.value).toEqual('foo');
+
+	expect(callCount).toBe(1);
+
+	factoryValue.value = 'bar';
+	expect(factoryValue.value).toEqual('bar');
+
+	expect(callCount).toBe(1);
 });

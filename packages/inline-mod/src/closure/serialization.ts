@@ -1,4 +1,4 @@
-import type { Entry } from './entry.js';
+import type { Entry, EntryType } from './entry.js';
 import type { InspectedFunction } from './types.js';
 import {
     type InspectedObject,
@@ -106,20 +106,21 @@ class ModuleSerializer {
 		// could be compared for reference-identity.  Basic types (strings, numbers, etc.) have
 		// value semantics and this can be emitted directly into the code where they are used as
 		// there is no way to observe that you are getting a different copy.
-		if (isObjOrArrayOrRegExp(envEntry)) {
-			return this.complexEnvEntryToString(envEntry, varName);
+		if (isPossiblyRecursive(envEntry)) {
+			return this.possiblyRecursiveEntryToReference(envEntry, varName);
 		} else {
 			// Other values (like strings, bools, etc.) can just be emitted inline.
-			return this.simpleEntryToReference(envEntry, varName);
+			return this.nonRecursiveEntryToReference(envEntry, varName);
 		}
 	}
 
-	private simpleEntryToReference(envEntry: Entry, varName: string): string {
+	private nonRecursiveEntryToReference(
+		envEntry: Entry<NonRecursiveTypes>,
+		varName: string
+	): string {
 		switch (envEntry.type) {
 			case 'json':
 				return JSON.stringify(envEntry.value);
-			case 'function':
-				return this.emitFunctionAndGetName(envEntry);
 			case 'module':
 				return this.emitModule(envEntry, varName);
 			case 'moduleValue':
@@ -130,12 +131,19 @@ class ModuleSerializer {
 				return this.emitSymbol(envEntry, varName);
 			case 'expr':
 				return envEntry.value;
-			default:
-				throw new Error('Not a simple entry.');
+			case 'pending':
+				return '';
 		}
 	}
 
-	private complexEnvEntryToString(envEntry: Entry, varName: string): string {
+	private possiblyRecursiveEntryToReference(
+		envEntry: Entry<PossiblyRecursiveTypes>,
+		varName: string
+	): string {
+		if (envEntry.type === 'function') {
+			return this.emitFunctionAndGetName(envEntry);
+		}
+
 		// Call all environment variables __e<num> to make them unique.  But suffix
 		// them with the original name of the property to help provide context when
 		// looking at the source.
@@ -145,20 +153,22 @@ class ModuleSerializer {
 		switch (envEntry.type) {
 			case 'object':
 				this.emitObject(envVar, envEntry, varName);
-				break;
+				return envVar;
 			case 'array':
 				this.emitArray(envVar, envEntry, varName);
-				break;
+				return envVar;
 			case 'regexp': {
 				const { source, flags } = envEntry.value;
 				const regexVal = `new RegExp(${JSON.stringify(source)}, ${JSON.stringify(flags)})`;
 				const entryString = `const ${envVar} = ${regexVal};\n`;
 
 				this.emitCode(envEntry, entryString);
+				return envVar;
 			}
+			case 'factory':
+				this.emitFactory(envVar, envEntry, varName);
+				return envVar;
 		}
-
-		return envVar;
 	}
 
 	private emitModule(entry: Entry<'module'>, _varName: string): string {
@@ -316,7 +326,7 @@ class ModuleSerializer {
 			for (const [keyEntry, { entry: valEntry }] of obj.env) {
 				const keyName =
 					keyEntry.type === 'json' && typeof keyEntry.value === 'string' ? keyEntry.value : 'sym';
-				const propVal = this.simpleEntryToReference(valEntry, keyName);
+				const propVal = this.entryToReference(valEntry, keyName);
 
 				if (
 					keyEntry.type === 'json' &&
@@ -435,11 +445,16 @@ class ModuleSerializer {
 			// having four individual statements to do the same.
 			const strings: string[] = [];
 			for (let i = 0, n = arr.length; i < n; i++) {
-				strings.push(this.simpleEntryToReference(arr[i], `${varName}_${i}`));
+				strings.push(this.entryToReference(arr[i], `${varName}_${i}`));
 			}
 
 			this.emitCode(entry, `const ${envVar} = [${strings.join(', ')}];\n`);
 		}
+	}
+
+	private emitFactory(envVar: string, entry: Entry<'factory'>, varName: string): void {
+		const factoryRef = this.entryToReference(entry.value, varName + '_factory');
+		this.emitCode(entry, `const ${envVar} = ${factoryRef}();\n`);
 	}
 
 	private createEnvVarName(baseName: string, addIndexAtEnd: boolean): string {
@@ -529,15 +544,20 @@ function isNumeric(n: string) {
 	return !isNaN(parseFloat(n)) && isFinite(+n);
 }
 
-function isObjOrArrayOrRegExp(env: Entry): boolean {
-	switch (env.type) {
-		case 'object':
-		case 'array':
-		case 'regexp':
-			return true;
-		default:
-			return false;
-	}
+const possiblyRecursiveTypes = [
+	'object',
+	'array',
+	'function',
+	'regexp',
+	'factory',
+] satisfies EntryType[];
+
+type PossiblyRecursiveTypes = (typeof possiblyRecursiveTypes)[number];
+
+type NonRecursiveTypes = Exclude<EntryType, PossiblyRecursiveTypes>;
+
+function isPossiblyRecursive(env: Entry): env is Entry<PossiblyRecursiveTypes> {
+	return (possiblyRecursiveTypes as string[]).includes(env.type);
 }
 
 function isComplex(obj: InspectedObject) {
@@ -574,7 +594,7 @@ function isSimplePropertyInfo(info?: PropertyInfo): boolean {
 
 function deepContainsObjOrArrayOrRegExp(env: Entry): boolean {
 	return (
-		isObjOrArrayOrRegExp(env) ||
+		isPossiblyRecursive(env) ||
 		(env.type === 'promise' && deepContainsObjOrArrayOrRegExp(env.value))
 	);
 }

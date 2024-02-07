@@ -1,7 +1,8 @@
 import { InlineModuleError } from './closure/types.js';
 import { inspectInlineMod, type InlineModule, type ModuleOptions } from './inlining.js';
+export { factory } from './inlining.js';
 
-export const modRegistry = new Map<string, Promise<InlineModule>>();
+const modRegistry = new Map<string, Promise<InlineModule>>();
 
 class InlineModulePluginError extends InlineModuleError {}
 

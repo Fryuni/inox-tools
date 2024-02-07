@@ -5,6 +5,10 @@ on:
     branches:
       - main
   pull_request:
+    - opened
+    - reopened
+    - synchronize
+    - labeled
 
 defaults:
   run:

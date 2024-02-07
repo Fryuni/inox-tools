@@ -863,7 +863,7 @@ const bannedBuiltInModules = new Set<string>([
 ]);
 
 const moduleLookup = Lazy.of(async () => {
-	const _log = log.extend('builtInLoader');
+	const _log = getLogger('builtInLoader');
 
 	const reverseModuleCache = new Map<unknown, Entry<'module' | 'moduleValue'>>();
 
@@ -959,16 +959,22 @@ async function findModuleEntry(obj: any): Promise<Entry<'module' | 'moduleValue'
 		// node_modules that we actually upload with our serialized functions.
 		const modReference = getModuleFromPath(modPath);
 
-		const rawImport = await import(mod.id);
+		try {
+			// const rawImport = await import(/* @vite-ignore */ mod.id);
+			const rawImport = mod.exports;
 
-		if (!reverseModuleCache.has(rawImport)) {
-			reverseModuleCache.set(rawImport, {
-				type: 'module',
-				value: {
-					type: 'star',
-					reference: modReference,
-				},
-			});
+			if (!reverseModuleCache.has(rawImport)) {
+				reverseModuleCache.set(rawImport, {
+					type: 'module',
+					value: {
+						type: 'star',
+						reference: modReference,
+					},
+				});
+			}
+		} catch (err) {
+			log('Failed on:', mod, err);
+			throw err;
 		}
 
 		if (mod.exports.default !== undefined && !reverseModuleCache.has(mod.exports.default)) {

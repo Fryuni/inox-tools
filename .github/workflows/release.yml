@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  pull_request:
 
 defaults:
   run:
@@ -18,6 +19,7 @@ jobs:
   changelog:
     name: Changelog PR or Release
     runs-on: ubuntu-latest
+    if: ${{ github.event.type == 'push' || github.event.pull_request.labels }}
     permissions:
       contents: write
       id-token: write
@@ -34,7 +36,7 @@ jobs:
           cache: "pnpm"
 
       - name: Install dependencies
-        run: pnpm install
+        run: exit 1 # pnpm install
 
       - name: Build Packages
         run: pnpm run build

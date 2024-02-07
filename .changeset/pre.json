@@ -1,6 +1,6 @@
 {
   "mode": "pre",
-  "tag": "next",
+  "tag": "smart-factory",
   "initialVersions": {
     "docs": "0.0.1",
     "@examples/custom-routing": "0.0.1",

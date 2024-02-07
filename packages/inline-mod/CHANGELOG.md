@@ -1,5 +1,11 @@
 # @inox-tools/inline-mod
 
+## 1.1.0-smart-factory.0
+
+### Minor Changes
+
+- 40ccddf: Test
+
 ## 1.0.1
 
 ### Patch Changes

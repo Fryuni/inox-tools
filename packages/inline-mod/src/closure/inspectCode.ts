@@ -859,6 +859,7 @@ const bannedBuiltInModules = new Set<string>([
 
 	// References to WASI module can't be serialized at the moment.
 	'wasi',
+	'tty',
 ]);
 
 const moduleLookup = Lazy.of(async () => {

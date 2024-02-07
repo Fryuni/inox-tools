@@ -19,7 +19,7 @@ jobs:
   changelog:
     name: Changelog PR or Release
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'push' || contains(github.event.pull_request.labels.*.name, "preview") }}
+    if: ${{ github.event_name == 'push' || contains(github.event.pull_request.labels.*.name, 'preview') }}
     permissions:
       contents: write
       id-token: write
@@ -48,8 +48,8 @@ jobs:
           # Note: pnpm install after versioning is necessary to refresh lockfile
           version: pnpm run version
           publish: pnpm exec changeset publish
-          commit: ${{ github.event_name == "push" && "[ci] release" || "[pre] release" }}
-          title: ${{ github.event_name == "push" && "[ci] release" || "[pre] release" }}
+          commit: ${{ github.event_name == 'push' && '[ci] release' || '[pre] release' }}
+          title: ${{ github.event_name == 'push' && '[ci] release' || '[pre] release' }}
         env:
           # Needs access to push to main
           GITHUB_TOKEN: ${{ secrets.COMMIT_TOKEN }}

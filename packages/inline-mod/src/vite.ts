@@ -1,3 +1,4 @@
+import 'vite/types/importMeta.js';
 import { magicFactory } from './closure/inspectCode.js';
 import { InlineModuleError } from './closure/types.js';
 import { inspectInlineMod, type InlineModule, type ModuleOptions } from './inlining.js';
@@ -31,7 +32,7 @@ export function inlineModule(options: ModuleOptions): string {
 }
 
 export function defineModule(name: string, options: ModuleOptions): string {
-	if (modRegistry.has(name)) {
+	if (import.meta.env.PROD && modRegistry.has(name)) {
 		throw new InlineModulePluginError(`Module "${name}" already defined.`);
 	}
 	modRegistry.set(name, inspectInlineMod(options));

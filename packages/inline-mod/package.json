@@ -1,6 +1,6 @@
 {
   "name": "@inox-tools/inline-mod",
-  "version": "1.1.0-smart-factory.3",
+  "version": "1.1.0-smart-factory.4",
   "description": "Define a virtual module inline with any reference to buildtime values",
   "keywords": [
     "vite-plugin"

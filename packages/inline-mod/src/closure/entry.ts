@@ -1,3 +1,4 @@
+import { isDeepStrictEqual } from 'util';
 import type { InspectedFunction, InspectedObject } from './types.js';
 
 type EntryMap = {
@@ -115,7 +116,7 @@ export class EntryRegistry<K> {
 		const existingEntry = this.lookup(key);
 
 		if (existingEntry !== undefined) {
-			if (Object.is(existingEntry, entry)) {
+			if (Object.is(existingEntry, entry) || isDeepStrictEqual(existingEntry, entry)) {
 				// Entry already stored. Do nothing.
 				return existingEntry;
 			}

@@ -1,4 +1,5 @@
-import 'vite/types/importMeta.js';
+/// <reference types="vite/client" />
+
 import { magicFactory } from './closure/inspectCode.js';
 import { InlineModuleError } from './closure/types.js';
 import { inspectInlineMod, type InlineModule, type ModuleOptions } from './inlining.js';

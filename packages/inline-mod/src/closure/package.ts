@@ -37,18 +37,22 @@ function getPackageDefinition(path: string): PackageDefinition | undefined {
 	try {
 		const directories = path.split(upath.sep);
 
-		let libPathDepth = directories.lastIndexOf('node_modules') + 2;
+		const lastNodeModules = directories.lastIndexOf('node_modules');
 
-		if (libPathDepth === 0) {
+		if (lastNodeModules === -1) {
 			log('No node_modules in path');
 			return;
 		}
 
+		// Start one below the node_modules
+		let libPathDepth = lastNodeModules + 1;
+
 		if (directories[libPathDepth].startsWith('@')) {
+			// Go one deeper if package is scoped
 			libPathDepth++;
 		}
 
-		const libAbsPath = directories.slice(0, libPathDepth);
+		const libAbsPath = directories.slice(0, libPathDepth + 1);
 
 		const packageDefinitionAbsPath = libAbsPath.join(upath.sep) + '/package.json';
 
@@ -274,6 +278,7 @@ export function getModuleFromPath(
 	packageDefinition = packageDefinition || getPackageDefinition(importPath);
 
 	if (packageDefinition === undefined) {
+		log('Not a package:', importPath);
 		return importPath;
 	}
 

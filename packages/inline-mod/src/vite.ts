@@ -1,9 +1,24 @@
+import { magicFactory } from './closure/inspectCode.js';
 import { InlineModuleError } from './closure/types.js';
 import { inspectInlineMod, type InlineModule, type ModuleOptions } from './inlining.js';
 
-export const modRegistry = new Map<string, Promise<InlineModule>>();
+const modRegistry = new Map<string, Promise<InlineModule>>();
 
 class InlineModulePluginError extends InlineModuleError {}
+
+export function factory<T>(factoryFn: () => T): T {
+	return magicFactory({
+		isAsync: false,
+		fn: factoryFn,
+	});
+}
+
+export function asyncFactory<T>(factoryFn: () => Promise<T>): Promise<T> {
+	return magicFactory({
+		isAsync: true,
+		fn: factoryFn,
+	});
+}
 
 let inlineModuleCounter = 0;
 
@@ -16,7 +31,7 @@ export function inlineModule(options: ModuleOptions): string {
 }
 
 export function defineModule(name: string, options: ModuleOptions): string {
-	if (modRegistry.has(name)) {
+	if (process.env.NODE_ENV === 'production' && modRegistry.has(name)) {
 		throw new InlineModulePluginError(`Module "${name}" already defined.`);
 	}
 	modRegistry.set(name, inspectInlineMod(options));

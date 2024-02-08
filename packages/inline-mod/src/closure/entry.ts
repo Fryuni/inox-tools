@@ -1,3 +1,4 @@
+import { isDeepStrictEqual } from 'util';
 import type { InspectedFunction, InspectedObject } from './types.js';
 
 type EntryMap = {
@@ -9,6 +10,11 @@ type EntryMap = {
 
 	// A closure we are dependent on.
 	function: InspectedFunction;
+
+	factory: {
+		isAsync: boolean;
+		factory: Entry<'function'>;
+	};
 
 	// An object which may contain nested closures.
 	// Can include an optional proto if the user is not using the default Object.prototype.
@@ -40,12 +46,17 @@ type EntryMap = {
 	// A simple expression to use to represent this instance.  For example "global.Number";
 	expr: string;
 
+	// A simple expression to use to construct an instance. The reference of the instance is relevant.
+	refExpr: string;
+
 	// A placeholder for a pending entry
 	pending: never;
 };
 
-export type Entry<T extends keyof EntryMap = keyof EntryMap> = {
-	[K in keyof EntryMap]: {
+export type EntryType = keyof EntryMap;
+
+export type Entry<T extends EntryType = EntryType> = {
+	[K in EntryType]: {
 		type: K;
 		value: EntryMap[K];
 	};
@@ -105,7 +116,7 @@ export class EntryRegistry<K> {
 		const existingEntry = this.lookup(key);
 
 		if (existingEntry !== undefined) {
-			if (Object.is(existingEntry, entry)) {
+			if (Object.is(existingEntry, entry) || isDeepStrictEqual(existingEntry, entry)) {
 				// Entry already stored. Do nothing.
 				return existingEntry;
 			}

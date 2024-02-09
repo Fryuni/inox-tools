@@ -49,7 +49,7 @@ Use this function to define a module inline. It receives the definition of a mod
 const inlineMod: ({
 	constExports?: Record<string, unknown>;
 	defaultExport?: unknown;
-	assignExport?: unknown;
+	assignExports?: unknown;
 	serializeFn?: (val: unknown) => boolean;
 }) => string;
 ```
@@ -107,10 +107,9 @@ defaultValue.foo;
 defaultValue.baz();
 ```
 
-<!--
-#### `assignExport` option
+#### `assignExports` option
 
-Defines a value that will be assigned as the export value. This is an advanced pattern to be used when you must export a value with a name that cannot be used as an ECMAScript identifier. This may be needed when your module is generated from external schemas.
+Defines values that should be exported by assignment. This is a more advanced pattern to be used when you must export a value with a name that cannot be used as an ECMAScript identifier. This may be needed when your module is generated from external schemas.
 
 In this case, the module can be imported using a wildcard import (`import * as name`) but not by name individually.
 
@@ -118,7 +117,7 @@ For example, if a value should have the name `function`:
 
 ```ts
 inlineMod({
-  assignExport: {
+  assignExports: {
     function: () => 'value',
   },
 });
@@ -132,8 +131,6 @@ import * as allValues from 'virtual-import-string';
 // But this doesn't work
 import { function } from 'virtual-import-string';
 ```
-
--->
 
 #### `serializeFn` option
 

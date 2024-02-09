@@ -6,19 +6,10 @@ import { getLogger } from './log.js';
 
 const log = getLogger('inlining');
 
-type ModuleExports =
-	| {
-			constExports?: Record<string, unknown>;
-			defaultExport?: unknown;
-			assignExport?: never;
-	  }
-	| {
-			constExports?: never;
-			defaultExport?: never;
-			assignExport: unknown;
-	  };
-
-export type ModuleOptions = ModuleExports & {
+export type ModuleOptions = {
+	constExports?: Record<string, unknown>;
+	defaultExport?: unknown;
+	assignExports?: Record<string, unknown>;
 	serializeFn?: (val: unknown) => boolean;
 };
 
@@ -50,7 +41,15 @@ export async function inspectInlineMod(options: ModuleOptions): Promise<InlineMo
 			)
 		),
 		defaultExport: await maybeInspect(options.defaultExport),
-		assignExport: await maybeInspect(options.assignExport),
+		assignExports: options.assignExports
+			? Object.fromEntries(
+					await Promise.all(
+						Object.entries(options.assignExports).map(
+							async ([key, value]) => [key, await inspector.inspect(value)] as const
+						)
+					)
+				)
+			: undefined,
 	};
 
 	const { text } = await serializeModule(modEntry);

@@ -1,6 +1,7 @@
 import type { Entry, EntryType } from './entry.js';
 import type { InspectedFunction } from './types.js';
 import {
+    SerializationError,
     type InspectedObject,
     type PropertyInfo,
     type PropertyInfoAndValue,
@@ -12,7 +13,7 @@ import * as utils from './utils.js';
 export interface ModEntry {
 	constExports?: Record<string, Entry>;
 	defaultExport?: Entry;
-	assignExport?: Entry;
+	assignExports?: Record<string, Entry>;
 }
 
 export interface SerializedModule {
@@ -68,11 +69,6 @@ class ModuleSerializer {
 	private serialize(entry: ModEntry): SerializedModule {
 		let exportCode = '';
 
-		if (entry.assignExport) {
-			const ref = this.entryToReference(entry.assignExport, 'modExport');
-			exportCode += `export = ${ref};\n`;
-		}
-
 		if (entry.defaultExport) {
 			const ref = this.entryToReference(entry.defaultExport, 'defaultExport');
 			exportCode += `export default ${ref};`;
@@ -80,11 +76,22 @@ class ModuleSerializer {
 
 		for (const [key, exportEntry] of Object.entries(entry.constExports ?? {})) {
 			if (!utils.isLegalFunctionName(key)) {
-				throw new Error(`Exported const cannot have name "${key}", use assign export for that.`);
+				throw new SerializationError(
+					`Exported const cannot have name "${key}", use assign export for that.`
+				);
 			}
 
 			const ref = this.entryToReference(exportEntry, key);
 			exportCode += `export const ${key} = ${ref};\n`;
+		}
+
+		if (entry.assignExports) {
+			exportCode += 'export {\n';
+			for (const [key, exportEntry] of Object.entries(entry.assignExports ?? {})) {
+				const ref = this.entryToReference(exportEntry, key, true);
+				exportCode += `  ${ref} as ${JSON.stringify(key)},\n`;
+			}
+			exportCode += '};';
 		}
 
 		return {
@@ -94,7 +101,7 @@ class ModuleSerializer {
 		};
 	}
 
-	private entryToReference(envEntry: Entry, varName: string): string {
+	private entryToReference(envEntry: Entry, varName: string, requireReference = false): string {
 		const envVar = this.envEntryToEnvVar.get(envEntry);
 		if (envVar !== undefined) {
 			return envVar;
@@ -106,12 +113,21 @@ class ModuleSerializer {
 		// could be compared for reference-identity.  Basic types (strings, numbers, etc.) have
 		// value semantics and this can be emitted directly into the code where they are used as
 		// there is no way to observe that you are getting a different copy.
-		if (isPossiblyRecursive(envEntry)) {
-			return this.possiblyRecursiveEntryToReference(envEntry, varName);
-		} else {
-			// Other values (like strings, bools, etc.) can just be emitted inline.
-			return this.nonRecursiveEntryToReference(envEntry, varName);
+		let reference = isPossiblyRecursive(envEntry)
+			? this.possiblyRecursiveEntryToReference(envEntry, varName)
+			: this.nonRecursiveEntryToReference(envEntry, varName);
+
+		if (requireReference && !this.envEntryToEnvVar.has(envEntry)) {
+			// The entry did not create a reference, but it is required.
+			// Generate one here
+			const forcedReference = this.createEnvVarName(varName, false);
+			this.envEntryToEnvVar.set(envEntry, forcedReference);
+			this.emitCode(envEntry, `const ${forcedReference} = ${reference};\n`);
+
+			return forcedReference;
 		}
+
+		return reference;
 	}
 
 	private nonRecursiveEntryToReference(

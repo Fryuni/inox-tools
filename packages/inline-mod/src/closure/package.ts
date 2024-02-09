@@ -25,6 +25,7 @@ type PackageDefinition = {
 	name: string;
 	exports?: Exports;
 	main?: string;
+	type?: string;
 };
 
 // TODO[issue] handle https://nodejs.org/api/packages.html#package-entry-points
@@ -277,8 +278,8 @@ export function getModuleFromPath(
 ): string {
 	packageDefinition = packageDefinition || getPackageDefinition(importPath);
 
-	if (packageDefinition === undefined) {
-		log('Not a package:', importPath);
+	if (packageDefinition?.type !== 'module') {
+		log('Not a module:', importPath);
 		return importPath;
 	}
 
@@ -286,5 +287,14 @@ export function getModuleFromPath(
 	const minimalPath = importParts.slice(importParts.lastIndexOf('node_modules') + 1).join('/');
 
 	const modMap = new ModuleMap(packageDefinition, opts);
-	return modMap.get(minimalPath) ?? importPath;
+	const resolution = modMap.get(minimalPath);
+
+	if (!resolution) {
+		log('Internal module:', importPath);
+		return importPath;
+	}
+
+	log('Resolved module:', { importPath, resolution });
+
+	return resolution;
 }

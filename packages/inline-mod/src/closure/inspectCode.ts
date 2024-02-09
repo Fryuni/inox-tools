@@ -945,6 +945,8 @@ async function findModuleEntry(obj: any): Promise<Entry<'module' | 'moduleValue'
 	for (const mod of Object.values<ModuleCache>((modules as any)._cache)) {
 		if (cachedModules.has(mod.id)) continue;
 
+		log('Caching module:', mod.id);
+
 		// Rewrite the path to be a local module reference relative to the current working directory.
 		const modPath = './' + upath.relative(process.cwd(), mod.id);
 
@@ -972,8 +974,7 @@ async function findModuleEntry(obj: any): Promise<Entry<'module' | 'moduleValue'
 		try {
 			// Import only if the path is reachable. Otherwise,
 			// use the reference to the exported object.
-			const rawImport =
-				modReference === modPath ? mod.exports : await import(/* @vite-ignore */ mod.id);
+			const rawImport = await import(/* @vite-ignore */ mod.id);
 
 			if (!reverseModuleCache.has(rawImport)) {
 				reverseModuleCache.set(rawImport, {
@@ -987,6 +988,16 @@ async function findModuleEntry(obj: any): Promise<Entry<'module' | 'moduleValue'
 		} catch (err) {
 			log('Failed on:', mod, err);
 			throw err;
+		}
+
+		if (!reverseModuleCache.has(mod.exports)) {
+			reverseModuleCache.set(mod.exports, {
+				type: 'module',
+				value: {
+					type: 'star',
+					reference: modReference,
+				},
+			});
 		}
 
 		for (const [key, value] of Object.entries(mod.exports)) {

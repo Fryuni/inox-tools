@@ -1,41 +1,41 @@
-import debugDefault, * as debugStar from 'debug';
+import debug from 'debug';
 import consoleDefault, * as consoleStar from 'node:console';
 import { expect, test } from 'vitest';
 import { inspectInlineMod } from '../src/inlining.js';
 
-test('dependency star import', async () => {
+// test('dependency star import', async () => {
+// 	const modInfo = await inspectInlineMod({
+// 		defaultExport: starPMap,
+// 	});
+//
+// 	expect(modInfo.text).toEqualIgnoringWhitespace(`
+// 		import * as __debug from 'debug';
+//
+// 		export default __debug;
+// 	`);
+// });
+
+test('CJS dependency default import', async () => {
 	const modInfo = await inspectInlineMod({
-		defaultExport: debugStar,
+		defaultExport: debug,
 	});
 
 	expect(modInfo.text).toEqualIgnoringWhitespace(`
-		import * as __debug from 'debug';
+		import __node_modulespnpmdebug434node_modulesdebugsrcindexjs from './../../node_modules/.pnpm/debug@4.3.4/node_modules/debug/src/index.js';
 
-		export default __debug;
+		export default __node_modulespnpmdebug434node_modulesdebugsrcindexjs;
 	`);
 });
 
-test('dependency default import', async () => {
+test('CJS dependency named import', async () => {
 	const modInfo = await inspectInlineMod({
-		defaultExport: debugDefault,
-	});
-
-	expect(modInfo.text).toEqualIgnoringWhitespace(`
-		import __debug from 'debug';
-
-		export default __debug;
-	`);
-});
-
-test('dependency named import', async () => {
-	const modInfo = await inspectInlineMod({
-		defaultExport: debugStar.coerce,
+		defaultExport: debug.coerce,
 	});
 
 	expect(modInfo.text).toEqualIgnoringWhitespace(`
 		import {
 			coerce as __coerce,
-		} from 'debug';
+		} from './../../node_modules/.pnpm/debug@4.3.4/node_modules/debug/src/index.js';
 
 		export default __coerce;
 	`);

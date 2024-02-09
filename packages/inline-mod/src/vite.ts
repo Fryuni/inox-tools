@@ -1,8 +1,30 @@
+import * as fs from 'node:fs/promises';
+import * as path from 'node:path';
 import { magicFactory } from './closure/inspectCode.js';
 import { InlineModuleError } from './closure/types.js';
 import { inspectInlineMod, type InlineModule, type ModuleOptions } from './inlining.js';
 
+const rootPath = path.join(process.cwd(), '.inox-tools', 'inline-mod');
+
 const modRegistry = new Map<string, Promise<InlineModule>>();
+
+function register(name: string, modInfoPromise: Promise<InlineModule>): void {
+	if (process.env.NODE_ENV === 'production' && modRegistry.has(name)) {
+		throw new InlineModulePluginError(`Module "${name}" already defined.`);
+	}
+
+	if (process.env.EMIT_INLINE_MODULES) {
+		modInfoPromise.then(async (modInfo) => {
+			await fs.mkdir(rootPath, { recursive: true });
+
+			await fs.writeFile(path.join(rootPath, name.replace(/:/g, '_') + '.mjs'), modInfo.text, {
+				encoding: 'utf-8',
+			});
+		});
+	}
+
+	modRegistry.set(name, modInfoPromise);
+}
 
 class InlineModulePluginError extends InlineModuleError {}
 
@@ -25,16 +47,13 @@ let inlineModuleCounter = 0;
 export function inlineModule(options: ModuleOptions): string {
 	const moduleId = `inox:inline-mod:mod_${inlineModuleCounter++}`;
 
-	modRegistry.set(moduleId, inspectInlineMod(options));
+	register(moduleId, inspectInlineMod(options));
 
 	return moduleId;
 }
 
 export function defineModule(name: string, options: ModuleOptions): string {
-	if (process.env.NODE_ENV === 'production' && modRegistry.has(name)) {
-		throw new InlineModulePluginError(`Module "${name}" already defined.`);
-	}
-	modRegistry.set(name, inspectInlineMod(options));
+	register(name, inspectInlineMod(options));
 
 	return name;
 }

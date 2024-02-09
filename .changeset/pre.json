@@ -1,5 +1,5 @@
 {
-  "mode": "pre",
+  "mode": "exit",
   "tag": "smart-factory",
   "initialVersions": {
     "docs": "0.0.1",

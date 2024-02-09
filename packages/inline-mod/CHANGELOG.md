@@ -1,5 +1,13 @@
 # @inox-tools/inline-mod
 
+## 1.1.1
+
+### Patch Changes
+
+- 23dea8c: Fix handling of mixed CJS and ESM imports
+- 040d148: Fix serialization of native Date values
+- c0d3cc5: Handle corner case of dependency import detection
+
 ## 1.1.0
 
 ### Minor Changes

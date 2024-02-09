@@ -959,9 +959,21 @@ async function findModuleEntry(obj: any): Promise<Entry<'module' | 'moduleValue'
 		// node_modules that we actually upload with our serialized functions.
 		const modReference = getModuleFromPath(modPath);
 
+		if (mod.exports.default !== undefined && !reverseModuleCache.has(mod.exports.default)) {
+			reverseModuleCache.set(mod.exports.default, {
+				type: 'module',
+				value: {
+					type: 'default',
+					reference: modReference,
+				},
+			});
+		}
+
 		try {
-			// const rawImport = await import(/* @vite-ignore */ mod.id);
-			const rawImport = mod.exports;
+			// Import only if the path is reachable. Otherwise,
+			// use the reference to the exported object.
+			const rawImport =
+				modReference === modPath ? mod.exports : await import(/* @vite-ignore */ mod.id);
 
 			if (!reverseModuleCache.has(rawImport)) {
 				reverseModuleCache.set(rawImport, {
@@ -975,16 +987,6 @@ async function findModuleEntry(obj: any): Promise<Entry<'module' | 'moduleValue'
 		} catch (err) {
 			log('Failed on:', mod, err);
 			throw err;
-		}
-
-		if (mod.exports.default !== undefined && !reverseModuleCache.has(mod.exports.default)) {
-			reverseModuleCache.set(mod.exports.default, {
-				type: 'module',
-				value: {
-					type: 'default',
-					reference: modReference,
-				},
-			});
 		}
 
 		for (const [key, value] of Object.entries(mod.exports)) {

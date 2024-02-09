@@ -217,7 +217,7 @@ This means that if the value is not used during build it will only be constructe
 
 ### `asyncFactory`
 
-Simmilar to [`factory`](#factory), this functions allows declaring how to construct a value at runtime. The key difference is that using `asyncFactory` the return value of the given factory function will be awaited.
+Similar to [`factory`](#factory), this functions allows declaring how to construct a value at runtime. The key difference is that using `asyncFactory` the return value of the given factory function will be awaited.
 
 This is useful when you want to load remote information upon initialization of your module, like loading credentials from a remote secret manager.
 

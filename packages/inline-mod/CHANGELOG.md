@@ -1,5 +1,20 @@
 # @inox-tools/inline-mod
 
+## 1.1.0
+
+### Minor Changes
+
+- d430acc: Add support for serializing URL objects
+- 8aca13a: Implement support for async magic factory
+- db4e594: Add new factory utility
+
+### Patch Changes
+
+- 645a2e4: Handle import errors on cache build
+- 1daa274: Add support for debugging and inspecting generated modules
+- 5093c2d: Allow updating module resulution in DEV environment
+- 2e7a6af: Fix dependency import path search
+
 ## 1.1.0-smart-factory.4
 
 ### Patch Changes

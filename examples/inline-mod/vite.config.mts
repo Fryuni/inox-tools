@@ -1,11 +1,10 @@
-import inlineModPlugin, { inlineMod } from '@inox-tools/inline-mod/vite';
+import inlineModPlugin, { defineModule } from '@inox-tools/inline-mod/vite';
 import { defineConfig } from 'vite';
 
-inlineMod({
+defineModule('virtual:interceptors', {
 	constExports: {
 		interceptCounter: (count) => count % 13,
 	},
-	modName: 'virtual:interceptors',
 });
 
 export default defineConfig({

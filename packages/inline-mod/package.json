@@ -29,10 +29,10 @@
   },
   "dependencies": {
     "debug": "^4.3.4",
-    "typescript": "^5"
+    "typescript": "^5.3.3"
   },
   "devDependencies": {
-    "@faker-js/faker": "^8.4.0",
+    "@faker-js/faker": "^8.4.1",
     "@types/debug": "^4.1.12",
     "@vitest/coverage-v8": "^1.2.2",
     "@vitest/ui": "^1.2.2",

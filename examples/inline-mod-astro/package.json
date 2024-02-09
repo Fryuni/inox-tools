@@ -11,16 +11,14 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/check": "^0.4.1",
-    "@astrojs/mdx": "^2.1.1",
-    "@astrojs/rss": "^4.0.4",
-    "@astrojs/sitemap": "^3.0.5",
-    "astro": "^4.3.2",
+    "@astrojs/check": "^0.5.2",
+    "@astrojs/node": "^8.2.0",
+    "astro": "^4.3.5",
     "typescript": "^5.3.3",
-    "vite": "^5.0.12"
+    "vite": "^5.1.1"
   },
   "devDependencies": {
-    "@inox-tools/inline-mod": "workspace:*"
+    "@inox-tools/inline-mod": "link:../../packages/inline-mod"
   },
   "overrides": {
     "vite": "$vite"

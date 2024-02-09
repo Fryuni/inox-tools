@@ -1,16 +1,18 @@
 import inlineModPlugin, { defineModule, inlineModule } from '@inox-tools/inline-mod/vite';
-import type { APIRoute, AstroIntegration } from 'astro';
+import type { APIRoute, AstroIntegration, MiddlewareHandler } from 'astro';
 import { defineMiddleware } from 'astro/middleware';
 
 type Options = {
 	config: any;
 	locals: Record<string, any>;
+	inlineMiddleware?: MiddlewareHandler;
 	inlineRoute?: APIRoute;
 };
 
 export default function customIntegration({
 	config,
 	locals,
+	inlineMiddleware,
 	inlineRoute,
 }: Options): AstroIntegration {
 	return {
@@ -34,6 +36,17 @@ export default function customIntegration({
 						},
 					}),
 				});
+
+				if (inlineMiddleware) {
+					addMiddleware({
+						order: 'pre',
+						entrypoint: inlineModule({
+							constExports: {
+								onRequest: inlineMiddleware,
+							},
+						}),
+					});
+				}
 
 				if (inlineRoute) {
 					defineModule('virtual:injectedRoute', {

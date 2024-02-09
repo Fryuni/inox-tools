@@ -313,7 +313,14 @@ class Inspector {
 		if (value instanceof URL) {
 			return {
 				type: 'refExpr',
-				value: `new URL(${JSON.stringify(value.toString())})`,
+				value: `new URL(${JSON.stringify(value.href)})`,
+			};
+		}
+
+		if (value instanceof Date) {
+			return {
+				type: 'refExpr',
+				value: `new Date(${this.inspectNumber(value.valueOf()).value})`,
 			};
 		}
 

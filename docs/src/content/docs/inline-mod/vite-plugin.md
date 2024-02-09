@@ -245,6 +245,19 @@ const __defaultValue = await __f0();
 export default __defaultValue;
 ```
 
+:::tip
+Even though it is an async factory, you don't need to await when importing:
+
+```ts
+import configValue from 'virtual:module';
+
+// The config value is already resolved, no need to await it.
+configValue.credentials;
+```
+
+This is because in ECMAScript modules all `import` statements are implicitly awaited, and the awaiting of the value happens at that time.
+:::
+
 Just like `factory`, the value can be used at runtime, but you need to pass the unawaited value to the module definition:
 
 ```ts

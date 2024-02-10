@@ -9,6 +9,12 @@ export default defineConfig({
 			social: {
 				github: 'https://github.com/Fryuni/inox-tools',
 			},
+			head: [{
+				tag: 'script',
+				attrs: {
+					src: './loadVercel.ts',
+				}
+			}],
 			sidebar: [
 				{
 					label: 'Custom Astro Routing',

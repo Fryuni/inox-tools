@@ -1,5 +1,12 @@
 # @inox-tools/inline-mod
 
+## 1.1.2
+
+### Patch Changes
+
+- ddae7b7: Add support for non-valid identifier exports
+- 0bcfffe: Export module definition type
+
 ## 1.1.1
 
 ### Patch Changes

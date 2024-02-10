@@ -28,7 +28,7 @@ function register(name: string, modInfoPromise: Promise<InlineModule>): void {
 	modRegistry.set(name, modInfoPromise);
 }
 
-class InlineModulePluginError extends InlineModuleError { }
+class InlineModulePluginError extends InlineModuleError {}
 
 export function factory<T>(factoryFn: () => T): T {
 	return magicFactory({

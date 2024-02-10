@@ -9,4 +9,3 @@ Plugin exposing `@inox-tools/inline-mod` as an [Astro Integration Kit](https://a
 ### License
 
 Inline Modules AIK Plugin is available under the MIT license.
-

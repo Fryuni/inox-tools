@@ -12,5 +12,7 @@
     "@inox-tools/velox-luna": "0.0.1",
     "templates": "1.0.0"
   },
-  "changesets": []
+  "changesets": [
+    "slow-otters-remain"
+  ]
 }

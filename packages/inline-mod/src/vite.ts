@@ -4,6 +4,8 @@ import { magicFactory } from './closure/inspectCode.js';
 import { InlineModuleError } from './closure/types.js';
 import { inspectInlineMod, type InlineModule, type ModuleOptions } from './inlining.js';
 
+export type { ModuleOptions };
+
 const rootPath = path.join(process.cwd(), '.inox-tools', 'inline-mod');
 
 const modRegistry = new Map<string, Promise<InlineModule>>();
@@ -26,7 +28,7 @@ function register(name: string, modInfoPromise: Promise<InlineModule>): void {
 	modRegistry.set(name, modInfoPromise);
 }
 
-class InlineModulePluginError extends InlineModuleError {}
+class InlineModulePluginError extends InlineModuleError { }
 
 export function factory<T>(factoryFn: () => T): T {
 	return magicFactory({

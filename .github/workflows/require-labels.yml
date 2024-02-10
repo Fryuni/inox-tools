@@ -1,0 +1,20 @@
+name: Require PR Labels
+
+on:
+  - pull_request
+
+jobs:
+  check-pr-label:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      statuses: write
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Do not merge preview PRs
+        uses: mheap/github-action-required-labels@v5
+        with:
+          mode: exactly
+          count: 0
+          labels: "preview"

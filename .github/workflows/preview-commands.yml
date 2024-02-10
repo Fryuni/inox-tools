@@ -78,7 +78,9 @@ jobs:
         run: pnpm install
 
       - name: Enter pre-release mode
-        run: pnpm changeset pre enter ${{ steps.getPreviewName.outputs.result }}
+        run: |
+          pnpm changeset pre enter ${{ steps.getPreviewName.outputs.result }}
+          pnpm version
 
       - name: Commit
         uses: EndBug/add-and-commit@v9

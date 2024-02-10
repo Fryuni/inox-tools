@@ -17,10 +17,10 @@
     "typescript": "^5.3.3",
     "vite": "^5.1.1"
   },
-  "devDependencies": {
-    "@inox-tools/inline-mod": "link:../../packages/inline-mod"
-  },
   "overrides": {
     "vite": "$vite"
+  },
+  "devDependencies": {
+    "@inox-tools/aik-mod": "workspace:0.0.1-beta.1"
   }
 }

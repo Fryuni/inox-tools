@@ -7,6 +7,8 @@ import type { HookParameters, MiddlewareHandler } from 'astro';
 import { definePlugin, type Plugin } from 'astro-integration-kit';
 import type { PluginOption } from 'vite';
 
+export { asyncFactory, factory } from '@inox-tools/inline-mod/vite';
+
 type HookParams = HookParameters<'astro:config:setup'>;
 
 process.setSourceMapsEnabled(true);

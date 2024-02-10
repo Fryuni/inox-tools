@@ -1,5 +1,11 @@
 # @inox-tools/aik-mod
 
+## 0.0.1-beta.1
+
+### Patch Changes
+
+- Do not inline the inliner
+
 ## 0.0.1-beta.0
 
 ### Patch Changes

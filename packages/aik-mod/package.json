@@ -1,6 +1,6 @@
 {
   "name": "@inox-tools/aik-mod",
-  "version": "0.0.1-beta.0",
+  "version": "0.0.1-beta.1",
   "description": "AIK Plugin for inline modules",
   "keywords": [
     "aik",
@@ -28,8 +28,10 @@
     "prepublish": "pnpm run build",
     "test": "echo 'No tests'"
   },
+  "dependencies": {
+    "@inox-tools/inline-mod": "workspace:^"
+  },
   "devDependencies": {
-    "@inox-tools/inline-mod": "workspace:^",
     "@types/node": "^20.11.17",
     "astro": "^4.3.5",
     "astro-integration-kit": "^0.1.0",

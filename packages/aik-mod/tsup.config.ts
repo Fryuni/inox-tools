@@ -10,6 +10,6 @@ export default defineConfig({
 	clean: true,
 	splitting: false,
 	minify: true,
-	external: ['astro-integration-kit', 'astro'],
+	external: ['astro-integration-kit', 'astro', '@inox-tools/inline-mod'],
 	tsconfig: 'tsconfig.json',
 });

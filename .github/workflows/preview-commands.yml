@@ -4,7 +4,8 @@ on:
   issue_comment:
     types: [created]
   pull_request:
-    - unlabeled
+    types:
+      - unlabeled
 
 defaults:
   run:

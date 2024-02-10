@@ -90,7 +90,3 @@ jobs:
           author_name: Croct Bot
           author_email: bot@croct.com
 
-      - name: Add Label
-        uses: actions-ecosystem/action-add-labels@v1
-        with:
-          labels: preview

@@ -1,0 +1,44 @@
+name: No preview mode
+
+on:
+  - pull-requests:
+    types:
+      - synchronize
+      - opened
+      - reopened
+
+jobs:
+  no-preview:
+    name: Block Preview mode
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v2
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Check for preview mode
+        # Fails if in preview mode
+        run: pnpm changeset pre enter foo
+
+      - name: Remove Preview Label
+        uses: actions-ecosystem/action-remove-labels@v1
+        with:
+          labels: preview
+
+      - name: Add Label
+        if: ${{ failure() }}
+        uses: actions-ecosystem/action-add-labels@v1
+        with:
+          labels: preview

@@ -132,6 +132,7 @@ test('factory values', async () => {
 });
 
 test('async factory values', async () => {
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars -- Used to test serialization
 	let callCount = 0;
 
 	const factoryValue = magicFactory({

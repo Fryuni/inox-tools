@@ -1,8 +1,8 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
-    "declaration": false,
-    "declarationMap": false,
+    "declaration": true,
+    "emitDeclarationOnly": true,
     "strict": true,
     "moduleResolution": "Node16",
     "target": "ES2022",

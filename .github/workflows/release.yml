@@ -39,6 +39,7 @@ jobs:
         with:
           node-version: 18
           cache: "pnpm"
+          registry-url: 'https://npm.pkg.github.com/'
 
       - name: Install dependencies
         run: pnpm install
@@ -50,8 +51,8 @@ jobs:
         if: ${{ contains(github.event.pull_request.labels.*.name, 'preview') }}
         run: pnpm exec changeset publish
         env:
-          # Needs access to publish to npm
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          # Use Node auth from above
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create Release Pull Request or Publish
         id: changesets

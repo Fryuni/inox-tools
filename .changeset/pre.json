@@ -1,0 +1,16 @@
+{
+  "mode": "pre",
+  "tag": "beta",
+  "initialVersions": {
+    "docs": "0.0.1",
+    "@examples/custom-routing": "0.0.1",
+    "@example/inline-mod": "0.0.0",
+    "inline-mod-astro": "0.0.1",
+    "aik-mod": "0.0.0",
+    "@inox-tools/custom-routing": "0.2.0",
+    "@inox-tools/inline-mod": "1.1.1",
+    "@inox-tools/velox-luna": "0.0.1",
+    "templates": "1.0.0"
+  },
+  "changesets": []
+}

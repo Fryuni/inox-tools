@@ -13,5 +13,5 @@ Object.assign(
 );
 
 export default function generator(plop: PlopTypes.NodePlopAPI): void {
-	plop.load('./app/index.ts');
+	plop.load('./vite-plugin/index.ts');
 }

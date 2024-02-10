@@ -3,9 +3,6 @@ name: Preview commands
 on:
   issue_comment:
     types: [created]
-  pull_request:
-    types:
-      - unlabeled
 
 defaults:
   run:

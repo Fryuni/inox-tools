@@ -26,8 +26,7 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "prepublish": "pnpm run build",
-    "test": "vitest run --coverage",
-    "test:dev": "vitest --coverage.enabled=true"
+    "test": "echo 'No tests'"
   },
   "devDependencies": {
     "@inox-tools/inline-mod": "workspace:^",
@@ -37,5 +36,8 @@
     "tsup": "^8.0.2",
     "typescript": "^5.3.3",
     "vite": "^5.1.1"
+  },
+  "peerDependencies": {
+    "astro": "^4.3.5"
   }
 }

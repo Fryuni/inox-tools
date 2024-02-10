@@ -10,6 +10,6 @@ export default defineConfig({
   clean: true,
   splitting: false,
   minify: true,
-  external: ['astro-integration-kit'],
+  external: ['astro-integration-kit', 'astro'],
   tsconfig: 'tsconfig.json',
 });

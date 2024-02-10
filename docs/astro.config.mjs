@@ -9,6 +9,9 @@ export default defineConfig({
 			social: {
 				github: 'https://github.com/Fryuni/inox-tools',
 			},
+			components: {
+				Head: './src/components/Head.astro',
+			},
 			sidebar: [
 				{
 					label: 'Custom Astro Routing',

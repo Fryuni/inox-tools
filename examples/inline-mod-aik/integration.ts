@@ -15,7 +15,7 @@ export default defineIntegration({
 	name: 'custom-integration',
 	options: defineOptions<Options>({} as Required<Options>),
 	plugins: [defineModPlugin, inlineModPlugin, defineMiddlewarePlugin],
-	setup: (options) => {
+	setup: ({ options }) => {
 		// Cast due to https://github.com/florian-lefebvre/astro-integration-kit/pull/48
 		const { config, locals, inlineMiddleware, inlineRoute } = options as Options;
 

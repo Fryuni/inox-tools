@@ -1,0 +1,27 @@
+{
+  "name": "@examples/inline-mod-aik",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "astro": "astro",
+    "build": "astro check && astro build",
+    "dev": "astro dev",
+    "preview": "astro preview",
+    "start": "astro dev"
+  },
+  "dependencies": {
+    "@astrojs/check": "^0.5.2",
+    "@astrojs/node": "^8.2.0",
+    "astro": "^4.3.5",
+    "typescript": "^5.3.3",
+    "vite": "^5.1.1"
+  },
+  "overrides": {
+    "vite": "$vite"
+  },
+  "devDependencies": {
+    "@inox-tools/aik-mod": "workspace:^",
+    "astro-integration-kit": "^0.1.0"
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "name": "@inox-tools/aik-mod",
+  "version": "0.1.0-beta.2",
+  "description": "AIK Plugin for inline modules",
+  "keywords": [
+    "aik",
+    "astro-integration-kit",
+    "astro-integration",
+    "astro"
+  ],
+  "repository": "https://github.com/Fryuni/inox-tools.git",
+  "license": "MIT",
+  "author": "Luiz Ferraz <luiz@lferraz.com>",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "README.md",
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "prepublish": "pnpm run build",
+    "test": "echo 'No tests'"
+  },
+  "dependencies": {
+    "@inox-tools/inline-mod": "workspace:^"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.17",
+    "astro": "^4.3.5",
+    "astro-integration-kit": "^0.1.0",
+    "tsup": "^8.0.2",
+    "typescript": "^5.3.3",
+    "vite": "^5.1.1"
+  },
+  "peerDependencies": {
+    "astro": "^4.3.5"
+  }
+}

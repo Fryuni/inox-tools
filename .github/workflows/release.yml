@@ -39,6 +39,7 @@ jobs:
         with:
           node-version: 18
           cache: "pnpm"
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
         run: pnpm install
@@ -46,15 +47,23 @@ jobs:
       - name: Build Packages
         run: pnpm run build
 
+      - name: Publish preview
+        if: ${{ contains(github.event.pull_request.labels.*.name, 'preview') }}
+        run: pnpm exec changeset publish
+        env:
+          # Use Node auth from above
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       - name: Create Release Pull Request or Publish
         id: changesets
+        if: ${{ github.event_name == 'push' }}
         uses: changesets/action@v1
         with:
           # Note: pnpm install after versioning is necessary to refresh lockfile
           version: pnpm run version
           publish: pnpm exec changeset publish
-          commit: ${{ github.event_name == 'push' && '[ci] release' || '[pre] release' }}
-          title: ${{ github.event_name == 'push' && '[ci] release' || '[pre] release' }}
+          commit: '[ci] release'
+          title: '[ci] release'
         env:
           # Needs access to push to main
           GITHUB_TOKEN: ${{ secrets.COMMIT_TOKEN }}

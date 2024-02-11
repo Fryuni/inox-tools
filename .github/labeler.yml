@@ -11,5 +11,8 @@ workspace:
 pkg/inline-mod:
 - 'packages/inline-mod/**'
 
+pkg/aik-mod:
+- 'packages/aik-mod/**'
+
 pkg/velox-luna:
 - 'packages/velox-luna/**'

@@ -1,5 +1,12 @@
 # @inox-tools/inline-mod
 
+## 1.2.0
+
+### Minor Changes
+
+- a4046d5: Propagate factory construction across Promise resolution
+- e830a7e: Move experimental support for mixed ESM imports behind env var
+
 ## 1.2.0-beta.0
 
 ### Minor Changes

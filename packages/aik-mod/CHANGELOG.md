@@ -1,5 +1,18 @@
 # @inox-tools/aik-mod
 
+## 0.1.0
+
+### Minor Changes
+
+- a4046d5: Reject definition of reserved module
+- a4046d5: Implement `defineMiddleware` plugin
+
+### Patch Changes
+
+- Updated dependencies [a4046d5]
+- Updated dependencies [e830a7e]
+  - @inox-tools/inline-mod@1.2.0
+
 ## 0.1.0-beta.2
 
 ### Minor Changes

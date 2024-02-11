@@ -978,23 +978,24 @@ async function findModuleEntry(obj: any): Promise<Entry<'module' | 'moduleValue'
 			});
 		}
 
-		try {
-			// Import only if the path is reachable. Otherwise,
-			// use the reference to the exported object.
-			const rawImport = await import(/* @vite-ignore */ mod.id);
+		if (process.env.INLINE_MODULES_FORCE_ESM_RESOLUTION === 'true') {
+			try {
+				// Import only if the path is reachable. Otherwise,
+				// use the reference to the exported object.
+				const rawImport = await import(/* @vite-ignore */ mod.id);
 
-			if (!reverseModuleCache.has(rawImport)) {
-				reverseModuleCache.set(rawImport, {
-					type: 'module',
-					value: {
-						type: 'star',
-						reference: modReference,
-					},
-				});
+				if (!reverseModuleCache.has(rawImport)) {
+					reverseModuleCache.set(rawImport, {
+						type: 'module',
+						value: {
+							type: 'star',
+							reference: modReference,
+						},
+					});
+				}
+			} catch (err) {
+				log('Failed on:', mod, err);
 			}
-		} catch (err) {
-			log('Failed on:', mod, err);
-			throw err;
 		}
 
 		if (!reverseModuleCache.has(mod.exports)) {

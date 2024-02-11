@@ -7,7 +7,7 @@ description: Allows defining a named virtual module inline.
 
 It receives the [definition of the virtual module](/inline-mod/vite-plugin/#inlinemodule).
 
-```ts /defineModule\\b/ {2,7}
+```ts /defineModule\b/ {2,7}
 // my-integration.ts
 import { defineIntegration } from "astro-integration-kit";
 import { defineModulePlugin } from "@inox-tools/aik-mod";
@@ -28,4 +28,3 @@ export default defineIntegration({
     }
 });
 ```
-

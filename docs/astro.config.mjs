@@ -1,8 +1,14 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 
+const SITE =
+	process.env.VERCEL_ENV !== 'production' && process.env.VERCEL_URL
+		? `https://${process.env.VERCEL_URL}`
+		: 'https://inox-tools.vercel.app';
+
 // https://astro.build/config
 export default defineConfig({
+	site: SITE,
 	integrations: [
 		starlight({
 			title: 'Inox Tools',
@@ -29,4 +35,13 @@ export default defineConfig({
 			],
 		}),
 	],
+	// markdown: {
+	// 	remarkPlugins: [
+	// 		() => (tree) => {
+	// 			visit(tree, 'code', (node) => {
+	// 				console.log(node);
+	// 			});
+	// 		},
+	// 	],
+	// }
 });

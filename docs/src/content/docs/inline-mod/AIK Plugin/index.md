@@ -14,7 +14,7 @@ Inox Tools' Inline Modules are available as an AIK plugin for a simpler ergonomi
 
 Add the desired plugins (or all plugins) to your `defineIntegration` call:
 
-```ts ins={2,9-12} ins=/\\[(defineMiddlewarePlugin)/ ins=/defineMiddleware(?= )/
+```ts ins={2,9-12} ins=/\S(defineMiddlewarePlugin)/ ins=/defineMiddleware(?= )/
 // your-integration.ts
 import { defineMiddlewarePlugin } from '@inox-tools/aik-mod';
 
@@ -31,4 +31,3 @@ export default defineIntegration({
   }),
 });
 ```
-

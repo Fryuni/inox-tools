@@ -21,6 +21,8 @@ async function getVersion() {
 			`npm API call failed: GET "${url}" returned status ${response.status}: ${JSON.stringify(json)}`
 		);
 	}
+
+	return json.version;
 }
 
 const version = import.meta.env.DEV ? '0.0.0-dev' : await getVersion();

@@ -1,6 +1,5 @@
 import { defineConfig } from 'astro/config';
-import customIntegration from './integration';
-import { asyncFactory, factory } from '@inox-tools/inline-mod/vite';
+import customIntegration, { factory, asyncFactory } from './integration';
 import node from '@astrojs/node';
 
 const configUrl = import.meta.url;

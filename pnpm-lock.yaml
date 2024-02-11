@@ -132,8 +132,11 @@ importers:
         version: 5.1.1(@types/node@20.11.17)
     devDependencies:
       '@inox-tools/aik-mod':
-        specifier: workspace:0.0.1-beta.1
+        specifier: workspace:^
         version: link:../../packages/aik-mod
+      astro-integration-kit:
+        specifier: ^0.1.0
+        version: 0.1.0(astro@4.3.5)
 
   examples/inline-mod-astro:
     dependencies:

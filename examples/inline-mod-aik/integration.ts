@@ -1,35 +1,45 @@
-import inlineModPlugin, { defineModule, inlineModule } from '@inox-tools/inline-mod/vite';
-import type { APIRoute, AstroIntegration, MiddlewareHandler } from 'astro';
-import { defineMiddleware } from 'astro/middleware';
+import { defineMiddlewarePlugin, defineModPlugin, inlineModPlugin } from '@inox-tools/aik-mod';
+import type { APIRoute, MiddlewareHandler } from 'astro';
+import { defineIntegration, defineOptions } from 'astro-integration-kit';
+import { defineMiddleware as defineMiddlewareHandler } from 'astro/middleware';
+export { asyncFactory, factory } from '@inox-tools/aik-mod';
 
 type Options = {
-	config: any;
-	locals: Record<string, any>;
-	inlineMiddleware?: MiddlewareHandler;
-	inlineRoute?: APIRoute;
+	config?: any;
+	locals?: Record<string, any> | null;
+	inlineMiddleware?: MiddlewareHandler | null;
+	inlineRoute?: APIRoute | null;
 };
 
-export default function customIntegration({
-	config,
-	locals,
-	inlineMiddleware,
-	inlineRoute,
-}: Options): AstroIntegration {
-	return {
-		name: 'custom-integration',
-		hooks: {
-			'astro:config:setup': ({ updateConfig, injectRoute, addMiddleware, addWatchFile }) => {
+export default defineIntegration({
+	name: 'custom-integration',
+	options: defineOptions<Options>({} as Required<Options>),
+	plugins: [defineModPlugin, inlineModPlugin, defineMiddlewarePlugin],
+	setup: (options) => {
+		// Cast due to https://github.com/florian-lefebvre/astro-integration-kit/pull/48
+		const { config, locals, inlineMiddleware, inlineRoute } = options as Options;
+
+		return {
+			'astro:config:setup': ({
+				defineModule,
+				inlineModule,
+				defineMiddleware,
+				addWatchFile,
+				addMiddleware,
+				injectRoute,
+			}) => {
 				addWatchFile(import.meta.url);
 
 				defineModule('virtual:configuration', {
 					defaultExport: config,
 				});
 
+				// Define an inline middleware manually
 				addMiddleware({
 					order: 'pre',
 					entrypoint: inlineModule({
 						constExports: {
-							onRequest: defineMiddleware((context, next) => {
+							onRequest: defineMiddlewareHandler((context, next) => {
 								context.locals = { ...locals };
 								return next();
 							}),
@@ -38,14 +48,8 @@ export default function customIntegration({
 				});
 
 				if (inlineMiddleware) {
-					addMiddleware({
-						order: 'pre',
-						entrypoint: inlineModule({
-							constExports: {
-								onRequest: inlineMiddleware,
-							},
-						}),
-					});
+					// Or using the specialized plugin!
+					defineMiddleware('pre', inlineMiddleware);
 				}
 
 				if (inlineRoute) {
@@ -63,13 +67,7 @@ export default function customIntegration({
 						entrypoint: './routeInjection.ts',
 					});
 				}
-
-				updateConfig({
-					vite: {
-						plugins: [inlineModPlugin({})],
-					},
-				});
 			},
-		},
-	};
-}
+		};
+	},
+});

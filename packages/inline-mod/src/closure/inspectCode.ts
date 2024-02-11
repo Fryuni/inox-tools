@@ -1041,7 +1041,8 @@ function isDerivedNoCaptureConstructor(func: Function): boolean {
 
 const factorySymbol = Symbol('inox-tool/inline-factory');
 
-type MagicPlaceholder = {
+type MagicPlaceholder<T> = {
+	value: T;
 	[factorySymbol]: {
 		initialized: boolean;
 		isAsync: boolean;
@@ -1049,21 +1050,24 @@ type MagicPlaceholder = {
 	};
 };
 
-function ensureFactoryInitialized(magicValue: MagicPlaceholder): void {
+function ensureFactoryInitialized<T>(magicValue: MagicPlaceholder<T>): T {
 	if (!magicValue[factorySymbol].initialized) {
-		Object.assign(magicValue, magicValue[factorySymbol].factory());
+		const referenceValue = magicValue[factorySymbol].factory();
+		magicValue.value = referenceValue;
 		magicValue[factorySymbol].initialized = true;
 	}
+
+	return magicValue.value;
 }
 
-const magicFactoryProxyHandler: ProxyHandler<MagicPlaceholder> = {
+const magicFactoryProxyHandler: ProxyHandler<MagicPlaceholder<any>> = {
 	has: (target, key) => {
 		if (key === factorySymbol) return true;
-		ensureFactoryInitialized(target);
+		const baseValue = ensureFactoryInitialized(target);
 
-		return Reflect.has(target, key);
+		return Reflect.has(baseValue, key);
 	},
-	get: (target, key) => {
+	get: (target, key): unknown => {
 		if (key === factorySymbol) {
 			return {
 				isAsync: target[factorySymbol].isAsync,
@@ -1071,30 +1075,49 @@ const magicFactoryProxyHandler: ProxyHandler<MagicPlaceholder> = {
 			};
 		}
 
-		ensureFactoryInitialized(target);
+		const baseValue = ensureFactoryInitialized(target);
 
-		return Reflect.get(target, key);
+		const val = Reflect.get(baseValue, key);
+
+		if (key !== 'then' || typeof val !== 'function') {
+			return val;
+		}
+
+		// Propagate the magic across Promise resolution
+		type PromiseCB = (v: any) => any;
+		return (cb: PromiseCB, cbErr?: PromiseCB) =>
+			(baseValue as unknown as PromiseLike<any>)
+				.then((value: any) =>
+					magicFactory({
+						isAsync: true,
+						initialValue: value,
+						fn: target[factorySymbol].factory,
+					})
+				)
+				.then(cb, cbErr);
 	},
 	set: (target, key, value) => {
 		if (key === factorySymbol) {
 			return false;
 		}
 
-		ensureFactoryInitialized(target);
+		const baseValue = ensureFactoryInitialized(target);
 
-		return Reflect.set(target, key, value);
+		return Reflect.set(baseValue, key, value);
 	},
 	ownKeys: (target) => {
-		ensureFactoryInitialized(target);
+		const baseValue = ensureFactoryInitialized(target);
 
-		return Reflect.ownKeys(target).filter((k) => k !== factorySymbol);
+		return Reflect.ownKeys(baseValue).filter((k) => k !== factorySymbol);
 	},
 };
 
 export function magicFactory<T extends Record<any, any>>({
+	initialValue,
 	isAsync,
 	fn,
 }: {
+	initialValue?: T;
 	isAsync: boolean;
 	fn: T | (() => T);
 }): T {
@@ -1102,18 +1125,18 @@ export function magicFactory<T extends Record<any, any>>({
 		return fn;
 	}
 
-	return new Proxy<T & MagicPlaceholder>(
+	return new Proxy<MagicPlaceholder<T>>(
 		{
 			// Trick for TS
-			...({} as T),
+			value: initialValue ?? ({} as T),
 			[factorySymbol]: {
-				initialized: false,
+				initialized: initialValue !== undefined,
 				isAsync,
 				factory: fn,
 			},
 		},
 		magicFactoryProxyHandler
-	);
+	) as unknown as T;
 }
 
 function tryExtractMagicFactory(value: any): MagicPlaceholder[typeof factorySymbol] | undefined {

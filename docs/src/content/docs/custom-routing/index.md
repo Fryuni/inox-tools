@@ -1,5 +1,6 @@
 ---
 title: Custom Astro Routing
+packageName: '@inox-tools/custom-routing'
 description: Define custom routes and entrypoints in an Astro project without relying on the file-based routing.
 sidebar:
   label: Overview

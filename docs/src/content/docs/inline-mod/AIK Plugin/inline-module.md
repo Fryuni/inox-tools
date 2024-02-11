@@ -9,23 +9,22 @@ It receives the [definition of the virtual module](/inline-mod/vite-plugin/#inli
 
 ```ts /inlineModule\\b/ {2,7}
 // my-integration.ts
-import { defineIntegration } from "astro-integration-kit";
-import { inlineModulePlugin } from "@inox-tools/aik-mod";
+import { defineIntegration } from 'astro-integration-kit';
+import { inlineModulePlugin } from '@inox-tools/aik-mod';
 
 export default defineIntegration({
-    name: "my-integration",
-    plugins: [inlineModulePlugin],
-    setup(options) {
-        return {
-            "astro:config:setup": ({ inlineModule }) => {
-                const moduleName = inlineModule({
-                    defaultExport: 'some value',
-                    constExports: {},
-                    assignExports: {},
-                }),
-            },
-        }
-    }
+  name: 'my-integration',
+  plugins: [inlineModulePlugin],
+  setup(options) {
+    return {
+      'astro:config:setup': ({ inlineModule }) => {
+        const moduleName = inlineModule({
+          defaultExport: 'some value',
+          constExports: {},
+          assignExports: {},
+        });
+      },
+    };
+  },
 });
 ```
-

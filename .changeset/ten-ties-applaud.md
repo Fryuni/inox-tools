@@ -1,5 +1,5 @@
 ---
-"@inox-tools/aik-mod": patch
+"@inox-tools/aik-mod": minor
 ---
 
 Implement `defineMiddleware` plugin

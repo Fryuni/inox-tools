@@ -68,5 +68,5 @@ jobs:
           # Needs access to push to main
           GITHUB_TOKEN: ${{ secrets.COMMIT_TOKEN }}
           # Needs access to publish to npm
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 

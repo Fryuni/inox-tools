@@ -5,6 +5,7 @@ import vitePlugin, {
 } from '@inox-tools/inline-mod/vite';
 import type { HookParameters, MiddlewareHandler } from 'astro';
 import { definePlugin, type Plugin } from 'astro-integration-kit';
+import { AstroError } from 'astro/errors';
 import type { PluginOption } from 'vite';
 
 export { asyncFactory, factory } from '@inox-tools/inline-mod/vite';
@@ -76,9 +77,16 @@ type DefineModPlugin = Plugin<
 export const defineModPlugin: DefineModPlugin = definePlugin({
 	name: 'defineModule',
 	hook: 'astro:config:setup',
-	implementation: ({ config, updateConfig }) => {
+	implementation: ({ config, updateConfig, logger }) => {
 		const ensurePlugin = ensurePluginIsInstalled({ config, updateConfig });
 		return (name: string, options: ModuleOptions) => {
+			if (name.startsWith('astro:')) {
+				throw new AstroError(
+					`${logger.label} is trying to declare a module with a reserved name: ${name}`,
+					'The astro: prefix for virtual modules is reserved for Astro core. Please use a different name.'
+				);
+			}
+
 			ensurePlugin();
 			return defineModule(name, options);
 		};

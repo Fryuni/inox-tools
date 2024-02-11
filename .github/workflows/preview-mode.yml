@@ -42,8 +42,8 @@ jobs:
         with:
           labels: preview
 
-      - name: Add Label
-        if: ${{ failure() }}
-        uses: actions-ecosystem/action-add-labels@v1
-        with:
-          labels: preview
+      # - name: Add Label
+      #   if: ${{ failure() }}
+      #   uses: actions-ecosystem/action-add-labels@v1
+      #   with:
+      #     labels: preview

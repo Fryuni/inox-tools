@@ -11,9 +11,13 @@
     "@inox-tools/inline-mod": "1.1.1",
     "@inox-tools/velox-luna": "0.0.1",
     "templates": "1.0.0",
-    "@inox-tools/aik-mod": "0.0.0"
+    "@inox-tools/aik-mod": "0.0.0",
+    "@examples/inline-mod-aik": "0.0.1"
   },
   "changesets": [
+    "metal-pots-cover",
+    "rich-adults-smile",
+    "six-bottles-walk",
     "slow-otters-remain",
     "ten-ties-applaud"
   ]

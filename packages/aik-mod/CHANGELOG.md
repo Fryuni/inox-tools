@@ -1,5 +1,17 @@
 # @inox-tools/aik-mod
 
+## 0.1.0-beta.2
+
+### Minor Changes
+
+- ce1ea71: Reject definition of reserved module
+
+### Patch Changes
+
+- Updated dependencies [8cee245]
+- Updated dependencies [e830a7e]
+  - @inox-tools/inline-mod@1.2.0-beta.0
+
 ## 0.0.1-beta.1
 
 ### Patch Changes

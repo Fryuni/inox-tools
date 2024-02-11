@@ -1,5 +1,6 @@
 ---
 title: Vite Plugin
+packageName: '@inox-tools/inline-mod'
 description: API reference for the Inline Module Vite plugin
 sidebar:
   order: 1

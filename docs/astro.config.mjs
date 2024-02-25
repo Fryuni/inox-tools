@@ -25,6 +25,10 @@ export default defineConfig({
 					link: '/custom-routing',
 				},
 				{
+					label: 'Self Declared Sitemap',
+					link: '/declarative-sitemap',
+				},
+				{
 					label: 'Inline Module',
 					badge: {
 						text: 'NEW',

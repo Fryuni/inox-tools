@@ -1,0 +1,42 @@
+{
+  "name": "@inox-tools/declarative-sitemap",
+  "version": "0.0.0",
+  "description": "Declarative form of Astro Sitemap integration",
+  "keywords": [
+    "sitemap",
+    "seo",
+    "astro-integration",
+    "astro"
+  ],
+  "repository": "https://github.com/Fryuni/inox-tools.git",
+  "license": "MIT",
+  "author": "Luiz Ferraz <luiz@lferraz.com>",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "README.md",
+    "src",
+    "dist"
+  ],
+  "scripts": {
+    "test": "echo 'No tests'"
+  },
+  "devDependencies": {
+    "astro": "^4.4.4",
+    "astro-integration-kit": "^0.3.0",
+    "tsup": "^8.0.2",
+    "typescript": "^5.3.3",
+    "vite": "^5.1.4"
+  },
+  "peerDependencies": {
+    "astro": "^4.3.5"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.1.1"
+  }
+}

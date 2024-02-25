@@ -1,12 +1,24 @@
 import { defineIntegration } from 'astro-integration-kit';
 import { AstroError } from 'astro/errors';
+import { type RouteData } from 'astro';
 import { EnumChangefreq } from 'sitemap';
 import { z } from 'astro/zod';
 import * as path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { addVitePluginPlugin, hasIntegrationPlugin } from 'astro-integration-kit/plugins';
 import { normalizePath } from 'vite';
 import sitemap from '@astrojs/sitemap';
+import { Console } from 'node:console';
+
+const console = new Console({
+	stdout: process.stdout, stderr: process.stderr,
+	inspectOptions: {
+		depth: 5,
+		colors: true,
+		sorted: true,
+		showProxy: true,
+		showHidden: true,
+	},
+});
 
 const POSSIBLE_PAGE_EXTENSIONS = ['.astro', '.ts', '.js', '.md', '.mdx'];
 
@@ -28,13 +40,9 @@ export default defineIntegration({
 	}),
 	plugins: [addVitePluginPlugin, hasIntegrationPlugin],
 	setup: ({ options: { includeByDefault, ...options } }) => {
-		const decidedOptions = new Map<
-			string,
-			{
-				importId: string;
-				decision: boolean;
-			}
-		>();
+		const decidedOptions = new Map<string, boolean>();
+		const componentModuleMapping = new Map<string, string>();
+		const componentImportMapping = new Map<string, string>();
 
 		return {
 			'astro:config:setup': ({ addVitePlugin, hasIntegration, updateConfig, config }) => {
@@ -45,35 +53,6 @@ export default defineIntegration({
 					);
 				}
 
-				const rootPath = fileURLToPath(config.root);
-
-				addVitePlugin({
-					name: '@inox-tools/declarative-sitemap',
-					enforce: 'post',
-					transform(code, id, transformOptions) {
-						if (!transformOptions?.ssr) return;
-
-						const fileURL = getFileURL(id);
-						if (!fileURL) return;
-
-						if (
-							fileURL.search !== '' ||
-							!POSSIBLE_PAGE_EXTENSIONS.includes(path.extname(fileURL.pathname))
-						)
-							return;
-
-						const [, sitemapOption] = /^export const sitemap = (true|false);?$/m.exec(code) ?? [];
-
-						if (sitemapOption !== undefined) {
-							const relativePath = path.relative(rootPath, fileURL.pathname);
-							decidedOptions.set(relativePath, {
-								importId: id,
-								decision: sitemapOption === 'true',
-							});
-						}
-					},
-				});
-
 				// The sitemap integration will run _after_ the build is done, so after the build re-mapping done below.
 				updateConfig({
 					integrations: [
@@ -83,26 +62,90 @@ export default defineIntegration({
 								const url = new URL(page);
 								const route = path.relative(config.base, url.pathname);
 
-								return decidedOptions.get(route)?.decision ?? includeByDefault;
+								return decidedOptions.get(trimSlashes(route)) ?? includeByDefault;
 							},
 						}),
 					],
 				});
+
+				addVitePlugin({
+					name: ' @inox-tools/declarative-sitemap',
+					async generateBundle() {
+						for (const [component, moduleSpecifier] of componentModuleMapping) {
+							const resolvedId = await this.resolve(moduleSpecifier);
+							if (resolvedId === null) continue;
+
+							componentImportMapping.set(component, resolvedId.id);
+						}
+					}
+				});
 			},
-			'astro:build:done': ({ routes, pages }) => {
+			'astro:build:setup': (o) => {
+				for (const page of o.pages.values()) {
+					componentModuleMapping.set(page.component, page.moduleSpecifier);
+				}
+			},
+			'astro:build:done': async ({ routes, pages }) => {
+				const resolution = await collectSitemapConfigurationFromRoutes(routes);
+
 				for (const page of pages) {
-					const sitePathCandidate = '/' + page.pathname;
-					const route = routes.find((r) => r.pattern.test(sitePathCandidate));
-					if (!route) continue;
+					const sitePath = trimSlashes(page.pathname);
+					const staticDecision = resolution.static.get(sitePath);
 
-					const decision = decidedOptions.get(route.component);
+					if (staticDecision !== undefined) {
+						decidedOptions.set(sitePath, staticDecision);
+						continue;
+					}
 
-					if (!decision) continue;
+					const dynamicDecision = resolution.dynamic.find((decision) => decision.pattern.test(sitePath))?.decision;
 
-					decidedOptions.set(page.pathname.replace(/\/$/, ''), decision);
+					if (dynamicDecision === undefined) continue;
+
+					decidedOptions.set(sitePath, dynamicDecision);
 				}
 			},
 		};
+
+		async function collectSitemapConfigurationFromRoutes(routes: RouteData[]): Promise<SiteMapResolution> {
+			const result: SiteMapResolution = {
+				static: new Map(),
+				dynamic: [],
+			};
+
+			for (const route of routes) {
+				// Only pages may enter the sitemap
+				if (route.type !== 'page') continue;
+
+				const moduleName = componentImportMapping.get(route.component);
+				if (!moduleName) continue;
+
+				console.log('Importing module:', moduleName);
+
+				const componentValue = await import(/* @vite-ignore */ moduleName);
+
+				// No sitemap configuration
+				if (componentValue.sitemap === undefined) continue;
+
+				switch (componentValue.sitemap) {
+					case true:
+					case false: {
+						if (route.pathname === undefined) {
+							result.dynamic.push({
+								pattern: route.pattern,
+								decision: componentValue.sitemap,
+							});
+						} else {
+							result.static.set(trimSlashes(route.pathname), componentValue.sitemap);
+						}
+						break;
+					}
+				}
+			}
+
+			console.log(result);
+
+			return result;
+		}
 	},
 });
 
@@ -114,4 +157,17 @@ function getFileURL(id: string): URL | undefined {
 		// If we can't construct a valid URL, exit early
 		return;
 	}
+}
+
+type SiteMapResolution = {
+	static: Map<string, boolean>;
+	dynamic: Array<{
+		pattern: RegExp;
+		decision: boolean;
+	}>;
+}
+
+
+function trimSlashes(input: string): string {
+	return input.replace(/^\/+|\/+$/g, '');
 }

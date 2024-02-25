@@ -6,13 +6,14 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
-    "build": "astro check && astro build",
+    "build": "astro build",
     "preview": "astro preview",
     "astro": "astro"
   },
   "dependencies": {
     "@astrojs/check": "^0.5.5",
     "@astrojs/mdx": "^2.1.1",
+    "@astrojs/node": "^8.2.1",
     "@astrojs/rss": "^4.0.5",
     "@inox-tools/declarative-sitemap": "workspace:^",
     "astro": "^4.4.4",

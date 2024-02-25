@@ -2,13 +2,14 @@
 import { type CollectionEntry, getCollection } from 'astro:content';
 import BlogPost from '../../layouts/BlogPost.astro';
 
-export const sitemap = true;
+export const prerender = true;
 
 export async function getStaticPaths() {
 	const posts = await getCollection('blog');
 	return posts.map((post) => ({
 		params: { slug: post.slug },
 		props: post,
+		sitemap: post.data.showInSitemap,
 	}));
 }
 type Props = CollectionEntry<'blog'>;

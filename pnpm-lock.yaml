@@ -109,6 +109,9 @@ importers:
       '@astrojs/mdx':
         specifier: ^2.1.1
         version: 2.1.1(astro@4.4.4)
+      '@astrojs/node':
+        specifier: ^8.2.1
+        version: 8.2.1(astro@4.4.4)
       '@astrojs/rss':
         specifier: ^4.0.5
         version: 4.0.5

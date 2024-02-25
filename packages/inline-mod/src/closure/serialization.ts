@@ -1,11 +1,11 @@
 import type { Entry, EntryType } from './entry.js';
 import type { InspectedFunction } from './types.js';
 import {
-    SerializationError,
-    type InspectedObject,
-    type PropertyInfo,
-    type PropertyInfoAndValue,
-    type PropertyMap
+	SerializationError,
+	type InspectedObject,
+	type PropertyInfo,
+	type PropertyInfoAndValue,
+	type PropertyMap,
 } from './types.js';
 import * as utils from './utils.js';
 

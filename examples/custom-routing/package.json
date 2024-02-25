@@ -1,5 +1,5 @@
 {
-  "name": "@examples/custom-routing",
+  "name": "@example/custom-routing",
   "type": "module",
   "private": true,
   "version": "0.0.1",
@@ -11,11 +11,11 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/check": "^0.5.2",
+    "@astrojs/check": "^0.5.5",
     "@astrojs/mdx": "^2.1.1",
     "@astrojs/rss": "^4.0.5",
-    "@astrojs/sitemap": "^3.0.5",
-    "astro": "^4.3.5",
+    "@astrojs/sitemap": "^3.1.1",
+    "astro": "^4.4.4",
     "typescript": "^5.3.3"
   },
   "devDependencies": {

@@ -32,14 +32,15 @@
     "@inox-tools/inline-mod": "workspace:^"
   },
   "devDependencies": {
-    "@types/node": "^20.11.17",
-    "astro": "^4.3.5",
-    "astro-integration-kit": "^0.1.0",
+    "@types/node": "^20.11.20",
+    "astro": "^4.4.4",
+    "astro-integration-kit": "^0.3.0",
     "tsup": "^8.0.2",
     "typescript": "^5.3.3",
-    "vite": "^5.1.1"
+    "vite": "^5.1.4"
   },
   "peerDependencies": {
-    "astro": "^4.3.5"
+    "astro": "^4.3.5",
+    "astro-integration-kit": "^0.2 || ^0.3"
   }
 }

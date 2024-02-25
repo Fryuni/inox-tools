@@ -1,23 +1,22 @@
 import { defineMiddlewarePlugin, defineModPlugin, inlineModPlugin } from '@inox-tools/aik-mod';
 import type { APIRoute, MiddlewareHandler } from 'astro';
-import { defineIntegration, defineOptions } from 'astro-integration-kit';
+import { z } from 'astro/zod';
+import { defineIntegration } from 'astro-integration-kit';
 import { defineMiddleware as defineMiddlewareHandler } from 'astro/middleware';
 export { asyncFactory, factory } from '@inox-tools/aik-mod';
 
-type Options = {
-	config?: any;
-	locals?: Record<string, any> | null;
-	inlineMiddleware?: MiddlewareHandler | null;
-	inlineRoute?: APIRoute | null;
-};
-
 export default defineIntegration({
 	name: 'custom-integration',
-	options: defineOptions<Options>({} as Required<Options>),
+	optionsSchema: z.object({
+		config: z.any().optional(),
+		locals: z.record(z.any()).optional(),
+		inlineMiddleware: z.custom<MiddlewareHandler>((val) => val instanceof Function).optional(),
+		inlineRoute: z.custom<APIRoute>((val) => val instanceof Function).optional(),
+	}),
 	plugins: [defineModPlugin, inlineModPlugin, defineMiddlewarePlugin],
 	setup: ({ options }) => {
 		// Cast due to https://github.com/florian-lefebvre/astro-integration-kit/pull/48
-		const { config, locals, inlineMiddleware, inlineRoute } = options as Options;
+		const { config, locals, inlineMiddleware, inlineRoute } = options;
 
 		return {
 			'astro:config:setup': ({

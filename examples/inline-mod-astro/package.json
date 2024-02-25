@@ -1,5 +1,5 @@
 {
-  "name": "inline-mod-astro",
+  "name": "@example/inline-mod-astro",
   "type": "module",
   "private": true,
   "version": "0.0.1",
@@ -11,11 +11,11 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/check": "^0.5.2",
-    "@astrojs/node": "^8.2.0",
-    "astro": "^4.3.5",
+    "@astrojs/check": "^0.5.5",
+    "@astrojs/node": "^8.2.1",
+    "astro": "^4.4.4",
     "typescript": "^5.3.3",
-    "vite": "^5.1.1"
+    "vite": "^5.1.4"
   },
   "devDependencies": {
     "@inox-tools/inline-mod": "link:../../packages/inline-mod"

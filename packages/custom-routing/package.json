@@ -28,6 +28,6 @@
     "astro": ">=3"
   },
   "devDependencies": {
-    "astro": "^4.3.5"
+    "astro": "^4.4.4"
   }
 }

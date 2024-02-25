@@ -221,6 +221,9 @@ importers:
       '@astrojs/sitemap':
         specifier: ^3.1.1
         version: 3.1.1
+      sitemap:
+        specifier: ^7.1.1
+        version: 7.1.1
     devDependencies:
       astro:
         specifier: ^4.4.4

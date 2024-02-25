@@ -5,5 +5,10 @@ import sitemap from '@inox-tools/declarative-sitemap';
 // https://astro.build/config
 export default defineConfig({
 	site: 'https://example.com',
-	integrations: [mdx(), sitemap()],
+	integrations: [
+		mdx(),
+		sitemap({
+			includeByDefault: true,
+		}),
+	],
 });

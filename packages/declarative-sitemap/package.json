@@ -14,14 +14,13 @@
   "type": "module",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
+      "default": "./index.ts"
     }
   },
   "files": [
     "README.md",
     "src",
-    "dist"
+    "index.ts"
   ],
   "scripts": {
     "test": "echo 'No tests'"
@@ -37,6 +36,7 @@
     "astro": "^4.3.5"
   },
   "dependencies": {
-    "@astrojs/sitemap": "^3.1.1"
+    "@astrojs/sitemap": "^3.1.1",
+    "sitemap": "^7.1.1"
   }
 }

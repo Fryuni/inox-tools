@@ -101,6 +101,27 @@ importers:
         specifier: workspace:*
         version: link:../../packages/custom-routing
 
+  examples/declarative-sitemap:
+    dependencies:
+      '@astrojs/check':
+        specifier: ^0.5.5
+        version: 0.5.5(prettier-plugin-astro@0.13.0)(prettier@3.2.5)(typescript@5.3.3)
+      '@astrojs/mdx':
+        specifier: ^2.1.1
+        version: 2.1.1(astro@4.4.4)
+      '@astrojs/rss':
+        specifier: ^4.0.5
+        version: 4.0.5
+      '@inox-tools/declarative-sitemap':
+        specifier: workspace:^
+        version: link:../../packages/declarative-sitemap
+      astro:
+        specifier: ^4.4.4
+        version: 4.4.4(@types/node@20.11.20)(typescript@5.3.3)
+      typescript:
+        specifier: ^5.3.3
+        version: 5.3.3
+
   examples/inline-mod:
     devDependencies:
       '@inox-tools/inline-mod':

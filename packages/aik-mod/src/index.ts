@@ -1,7 +1,7 @@
 import vitePlugin, {
-    defineModule,
-    inlineModule,
-    type ModuleOptions
+	defineModule,
+	inlineModule,
+	type ModuleOptions,
 } from '@inox-tools/inline-mod/vite';
 import type { HookParameters, MiddlewareHandler } from 'astro';
 import { definePlugin, type Plugin } from 'astro-integration-kit';

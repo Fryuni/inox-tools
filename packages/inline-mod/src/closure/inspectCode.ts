@@ -5,16 +5,16 @@ import { Entry, EntryRegistry } from './entry.js';
 import { Lazy } from './lazy.js';
 import { getModuleFromPath } from './package.js';
 import {
-    parseFunction,
-    type CapturedPropertyChain,
-    type CapturedVariables
+	parseFunction,
+	type CapturedPropertyChain,
+	type CapturedVariables,
 } from './parseFunction.js';
 import { rewriteSuperReferences } from './rewriteSuper.js';
 import {
-    InspectedFunction,
-    InspectionError,
-    type PropertyInfo,
-    type PropertyMap
+	InspectedFunction,
+	InspectionError,
+	type PropertyInfo,
+	type PropertyMap,
 } from './types.js';
 import * as utils from './utils.js';
 import * as v8 from './v8.js';

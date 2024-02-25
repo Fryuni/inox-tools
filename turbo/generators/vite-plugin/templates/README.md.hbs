@@ -1,0 +1,26 @@
+<p align="center">
+    <img alt="InoxTools" width="350px" src="https://github.com/Fryuni/inox-tools/blob/main/assets/shield.png?raw=true"/>
+</p>
+
+# {{ titleCase name }}
+
+{{ description }}
+
+## Install
+
+```js
+npm i -D @inox-tools/{{ dashCase name }}
+```
+
+Add plugin to your vite.config.ts:
+
+```js
+// vite.config.ts
+import { defineConfig } from 'vite'
+import {{ camelCase name }} from '@inox-tools/{{ dashCase name }}';
+
+// https://vitejs.dev/config/
+export default defineConfig({
+    plugins: [{{ camelCase name }}({})]
+})
+```

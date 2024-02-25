@@ -1,5 +1,5 @@
 {
-  "name": "{{ name }}",
+  "name": "@inox-tools/{{ dashCase name }}",
   "version": "0.0.0",
   {{#if description}}
   "description": "{{ description }}",
@@ -15,20 +15,23 @@
   },
   "files": [
     "README.md",
+    "src",
     "dist"
   ],
   "type": "module",
   "keywords": ["vite-plugin"],
   "devDependencies": {
-      "rimraf": "^3.0.2",
-      "tsup": "^6.3.0",
-      "typescript": "^4.6.4",
-      "vite": "^3.2.0"
+    "@vitest/coverage-v8": "^1.2.2",
+    "@vitest/ui": "^1.2.2",
+    "jest-extended": "^4.0.2",
+    "tsup": "^8.0.1",
+    "vitest": "^1.2.2"
   },
   "scripts": {
-      "dev": "vite --host",
-      "clean": "rimraf ./lib",
-      "build": "tsup ./src/index.ts --outDir "lib" --dts --format cjs,esm",
-      "prepublish": "npm "run" clean && npm run build"
+    "build": "tsup",
+    "test": "vitest run --coverage",
+    "test:dev": "vitest --coverage.enabled=true",
+    "dev": "tsup --watch",
+    "prepublish": "pnpm run build"
   }
 }

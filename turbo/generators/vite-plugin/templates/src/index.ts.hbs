@@ -5,14 +5,14 @@
  import type { Plugin, ResolvedConfig, UserConfig, ViteDevServer } from "vite";
 
 export type Options = {
-    // TODO 
+    // TODO
 }
 
-export default function <%= pluginName %>(options: Options): Plugin {
+export default function {{ camelCase name }}(options: Options): Plugin {
     let config: ResolvedConfig;
 
     return {
-        name: 'vite-plugin-<%= name %>',
+        name: '@inox-tools/{{ dashCase name }}',
         apply(config, { command }) {
             // TODO
             return command === 'serve';

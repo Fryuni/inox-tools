@@ -37,7 +37,7 @@ export default (plop: PlopTypes.NodePlopAPI, { destBasePath }: PlopTypes.PlopCfg
 		actions: [
 			{
 				type: 'addMany',
-				destination: '{{ turbo.paths.root }}/packages/{{ name }}',
+				destination: '{{ turbo.paths.root }}/packages/{{ dashCase name }}',
 				templateFiles: `${__dirname}/templates/**/*`,
 				base: `${__dirname}/templates`,
 				verbose: true,

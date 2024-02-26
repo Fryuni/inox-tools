@@ -15,7 +15,8 @@
   "exports": {
     ".": {
       "default": "./index.ts"
-    }
+    },
+    "./state": "./state.ts"
   },
   "files": [
     "README.md",
@@ -26,9 +27,9 @@
     "test": "echo 'No tests'"
   },
   "devDependencies": {
+    "@types/node": "^20.11.20",
     "astro": "^4.4.4",
     "astro-integration-kit": "^0.3.0",
-    "tsup": "^8.0.2",
     "typescript": "^5.3.3",
     "vite": "^5.1.4"
   },

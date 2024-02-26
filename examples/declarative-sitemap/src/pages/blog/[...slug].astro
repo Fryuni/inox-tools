@@ -1,16 +1,17 @@
 ---
 import { type CollectionEntry, getCollection } from 'astro:content';
 import BlogPost from '../../layouts/BlogPost.astro';
+import {setParamsSitemap} from 'virtual:inox/sitemap';
 
 export const prerender = true;
 
 export async function getStaticPaths() {
 	const posts = await getCollection('blog');
-	return posts.map((post) => ({
+	return setParamsSitemap(posts.map((post) => ({
 		params: { slug: post.slug },
 		props: post,
 		sitemap: post.data.showInSitemap,
-	}));
+	})));
 }
 type Props = CollectionEntry<'blog'>;
 

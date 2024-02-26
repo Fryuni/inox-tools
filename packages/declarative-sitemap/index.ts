@@ -4,10 +4,13 @@ import { type RouteData } from 'astro';
 import { EnumChangefreq } from 'sitemap';
 import { z } from 'astro/zod';
 import * as path from 'node:path';
-import { addVitePluginPlugin, hasIntegrationPlugin } from 'astro-integration-kit/plugins';
+import { addVirtualImportPlugin, hasIntegrationPlugin } from 'astro-integration-kit/plugins';
 import { normalizePath } from 'vite';
 import sitemap from '@astrojs/sitemap';
 import { Console } from 'node:console';
+import './virtual.d.ts';
+
+process.setSourceMapsEnabled(true);
 
 const console = new Console({
 	stdout: process.stdout, stderr: process.stderr,
@@ -38,20 +41,25 @@ export default defineIntegration({
 		lastmod: z.date().optional(),
 		priority: z.number().optional(),
 	}),
-	plugins: [addVitePluginPlugin, hasIntegrationPlugin],
+	plugins: [addVirtualImportPlugin, hasIntegrationPlugin],
 	setup: ({ options: { includeByDefault, ...options } }) => {
 		const decidedOptions = new Map<string, boolean>();
 		const componentModuleMapping = new Map<string, string>();
 		const componentImportMapping = new Map<string, string>();
 
 		return {
-			'astro:config:setup': ({ addVitePlugin, hasIntegration, updateConfig, config }) => {
+			'astro:config:setup': ({ addVirtualImport, hasIntegration, updateConfig, config }) => {
 				if (hasIntegration('@astrojs/sitemap')) {
 					throw new AstroError(
 						'Cannot use both `@inox-tools/declarative-sitemap` and `@astrojs/sitemap` integrations at the same time.',
 						'Remove the `@astrojs/sitemap` integration from your project to use `@inox-tools/declarative-sitemap`.'
 					);
 				}
+
+				addVirtualImport({
+					name: 'virtual:inox/sitemap',
+					content: 'export * from "@inox-tools/declarative-sitemap/state";',
+				});
 
 				// The sitemap integration will run _after_ the build is done, so after the build re-mapping done below.
 				updateConfig({
@@ -66,24 +74,23 @@ export default defineIntegration({
 							},
 						}),
 					],
-				});
+					vite: {
+						plugins: [{
+							name: '@inox-tools/declarative-sitemap',
+							generateBundle(options, bundle) {
+								for (const [filename, chunk] of Object.entries(bundle)) {
+									if (chunk.type !== 'chunk') continue;
 
-				addVitePlugin({
-					name: ' @inox-tools/declarative-sitemap',
-					async generateBundle() {
-						for (const [component, moduleSpecifier] of componentModuleMapping) {
-							const resolvedId = await this.resolve(moduleSpecifier);
-							if (resolvedId === null) continue;
-
-							componentImportMapping.set(component, resolvedId.id);
-						}
+									console.log({
+										chunk: filename,
+										moduleIds: chunk.moduleIds,
+										exports: chunk.exports,
+									});
+								}
+							}
+						}],
 					}
 				});
-			},
-			'astro:build:setup': (o) => {
-				for (const page of o.pages.values()) {
-					componentModuleMapping.set(page.component, page.moduleSpecifier);
-				}
 			},
 			'astro:build:done': async ({ routes, pages }) => {
 				const resolution = await collectSitemapConfigurationFromRoutes(routes);

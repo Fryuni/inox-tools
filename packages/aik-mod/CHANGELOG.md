@@ -1,5 +1,11 @@
 # @inox-tools/aik-mod
 
+## 0.2.0
+
+### Minor Changes
+
+- 0b0b8a0: Bump AIK version, now compatible with 0.2.x and 0.3.x
+
 ## 0.1.0
 
 ### Minor Changes

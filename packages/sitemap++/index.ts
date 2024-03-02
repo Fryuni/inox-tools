@@ -13,7 +13,8 @@ import './virtual.d.ts';
 process.setSourceMapsEnabled(true);
 
 const console = new Console({
-	stdout: process.stdout, stderr: process.stderr,
+	stdout: process.stdout,
+	stderr: process.stderr,
 	inspectOptions: {
 		depth: 5,
 		colors: true,
@@ -75,21 +76,23 @@ export default defineIntegration({
 						}),
 					],
 					vite: {
-						plugins: [{
-							name: '@inox-tools/declarative-sitemap',
-							generateBundle(options, bundle) {
-								for (const [filename, chunk] of Object.entries(bundle)) {
-									if (chunk.type !== 'chunk') continue;
+						plugins: [
+							{
+								name: '@inox-tools/declarative-sitemap',
+								generateBundle(options, bundle) {
+									for (const [filename, chunk] of Object.entries(bundle)) {
+										if (chunk.type !== 'chunk') continue;
 
-									console.log({
-										chunk: filename,
-										moduleIds: chunk.moduleIds,
-										exports: chunk.exports,
-									});
-								}
-							}
-						}],
-					}
+										console.log({
+											chunk: filename,
+											moduleIds: chunk.moduleIds,
+											exports: chunk.exports,
+										});
+									}
+								},
+							},
+						],
+					},
 				});
 			},
 			'astro:build:done': async ({ routes, pages }) => {
@@ -104,7 +107,9 @@ export default defineIntegration({
 						continue;
 					}
 
-					const dynamicDecision = resolution.dynamic.find((decision) => decision.pattern.test(sitePath))?.decision;
+					const dynamicDecision = resolution.dynamic.find((decision) =>
+						decision.pattern.test(sitePath)
+					)?.decision;
 
 					if (dynamicDecision === undefined) continue;
 
@@ -113,7 +118,9 @@ export default defineIntegration({
 			},
 		};
 
-		async function collectSitemapConfigurationFromRoutes(routes: RouteData[]): Promise<SiteMapResolution> {
+		async function collectSitemapConfigurationFromRoutes(
+			routes: RouteData[]
+		): Promise<SiteMapResolution> {
 			const result: SiteMapResolution = {
 				static: new Map(),
 				dynamic: [],
@@ -172,8 +179,7 @@ type SiteMapResolution = {
 		pattern: RegExp;
 		decision: boolean;
 	}>;
-}
-
+};
 
 function trimSlashes(input: string): string {
 	return input.replace(/^\/+|\/+$/g, '');

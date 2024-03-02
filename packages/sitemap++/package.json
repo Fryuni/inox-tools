@@ -1,7 +1,7 @@
 {
-  "name": "@inox-tools/declarative-sitemap",
+  "name": "@inox-tools/sitemap++",
   "version": "0.0.0",
-  "description": "Declarative form of Astro Sitemap integration",
+  "description": "Higher level abstraction an utilities over Astro's official sitemap integration",
   "keywords": [
     "sitemap",
     "seo",

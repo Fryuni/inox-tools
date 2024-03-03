@@ -1,0 +1,32 @@
+{
+  "name": "@inox-tools/aik-route-config",
+  "version": "0.0.0",
+  "description": "",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "test": "echo 'No tests'"
+  },
+  "keywords": [
+    "aik",
+    "astro-integration-kit",
+    "astro-integration",
+    "astro"
+  ],
+  "repository": "https://github.com/Fryuni/inox-tools.git",
+  "license": "MIT",
+  "author": "Luiz Ferraz <luiz@lferraz.com>",
+  "type": "module",
+  "peerDependencies": {
+    "astro": "^4.3.5",
+    "astro-integration-kit": "^0.2 || ^0.3"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "recast": "^0.23.5",
+    "vite": "^5.1.4"
+  }
+}

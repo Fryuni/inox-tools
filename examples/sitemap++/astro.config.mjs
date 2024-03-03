@@ -1,6 +1,6 @@
 import { defineConfig } from 'astro/config';
 import mdx from '@astrojs/mdx';
-import sitemap from '@inox-tools/declarative-sitemap';
+import sitemap from '@inox-tools/sitemap++';
 
 import node from '@astrojs/node';
 

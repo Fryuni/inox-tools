@@ -1,10 +1,15 @@
-import { defineIntegration } from 'astro-integration-kit';
+import { defineIntegration, createResolver } from 'astro-integration-kit';
+import routeConfigPlugin from '@inox-tools/aik-route-config';
 import { AstroError } from 'astro/errors';
 import { type RouteData } from 'astro';
 import { EnumChangefreq } from 'sitemap';
 import { z } from 'astro/zod';
 import * as path from 'node:path';
-import { addVirtualImportPlugin, hasIntegrationPlugin } from 'astro-integration-kit/plugins';
+import {
+	addVirtualImportPlugin,
+	hasIntegrationPlugin,
+	watchIntegrationPlugin,
+} from 'astro-integration-kit/plugins';
 import { normalizePath } from 'vite';
 import sitemap from '@astrojs/sitemap';
 import { Console } from 'node:console';
@@ -24,7 +29,7 @@ const console = new Console({
 	},
 });
 
-const POSSIBLE_PAGE_EXTENSIONS = ['.astro', '.ts', '.js', '.md', '.mdx'];
+// const POSSIBLE_PAGE_EXTENSIONS = ['.astro', '.ts', '.js', '.md', '.mdx'];
 
 export default defineIntegration({
 	name: '@inox-tools/declarative-sitemap',
@@ -42,14 +47,27 @@ export default defineIntegration({
 		lastmod: z.date().optional(),
 		priority: z.number().optional(),
 	}),
-	plugins: [addVirtualImportPlugin, hasIntegrationPlugin],
+	plugins: [
+		addVirtualImportPlugin,
+		hasIntegrationPlugin,
+		watchIntegrationPlugin,
+		routeConfigPlugin,
+	],
 	setup: ({ options: { includeByDefault, ...options } }) => {
+		const { resolve } = createResolver(import.meta.url);
+
 		const decidedOptions = new Map<string, boolean>();
-		const componentModuleMapping = new Map<string, string>();
+		// const componentModuleMapping = new Map<string, string>();
 		const componentImportMapping = new Map<string, string>();
 
 		return {
-			'astro:config:setup': ({ addVirtualImport, hasIntegration, updateConfig, config }) => {
+			'astro:config:setup': ({
+				defineRouteConfig,
+				watchIntegration,
+				hasIntegration,
+				updateConfig,
+				config,
+			}) => {
 				if (hasIntegration('@astrojs/sitemap')) {
 					throw new AstroError(
 						'Cannot use both `@inox-tools/declarative-sitemap` and `@astrojs/sitemap` integrations at the same time.',
@@ -57,9 +75,14 @@ export default defineIntegration({
 					);
 				}
 
-				addVirtualImport({
-					name: 'virtual:inox/sitemap',
-					content: 'export * from "@inox-tools/declarative-sitemap/state";',
+				const watchDir = resolve('.');
+				console.log('Watching:', watchDir);
+				watchIntegration(watchDir);
+
+				watchIntegration(resolve('../aik-route-config'));
+
+				defineRouteConfig({
+					importName: 'sitemap++:config',
 				});
 
 				// The sitemap integration will run _after_ the build is done, so after the build re-mapping done below.
@@ -75,24 +98,6 @@ export default defineIntegration({
 							},
 						}),
 					],
-					vite: {
-						plugins: [
-							{
-								name: '@inox-tools/declarative-sitemap',
-								generateBundle(options, bundle) {
-									for (const [filename, chunk] of Object.entries(bundle)) {
-										if (chunk.type !== 'chunk') continue;
-
-										console.log({
-											chunk: filename,
-											moduleIds: chunk.moduleIds,
-											exports: chunk.exports,
-										});
-									}
-								},
-							},
-						],
-					},
 				});
 			},
 			'astro:build:done': async ({ routes, pages }) => {

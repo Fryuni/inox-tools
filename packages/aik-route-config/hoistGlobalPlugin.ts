@@ -1,6 +1,5 @@
 import * as recast from 'recast';
 import * as parser from 'recast/parsers/typescript.js';
-import * as path from 'node:path';
 import type { Plugin, TransformResult } from 'vite';
 
 const b = recast.types.builders;
@@ -41,8 +40,8 @@ function hoistImport(importPath: string, modName: string, code: string): Transfo
 		ast = recast.parse(code, {
 			sourceFileName: modName,
 			parser: {
-				parse(code: string) {
-					return parser.parse(code, {
+				parse(_code: string) {
+					return parser.parse(_code, {
 						sourceType: 'module',
 						strictMode: true,
 					});
@@ -50,8 +49,10 @@ function hoistImport(importPath: string, modName: string, code: string): Transfo
 			},
 		});
 	} catch (e) {
+		/* eslint-disable no-console */
 		console.log('Error on parsing:', e);
 		console.log('Code:', code);
+		/* eslint-enable no-console */
 		throw e;
 	}
 
@@ -74,13 +75,13 @@ function hoistImport(importPath: string, modName: string, code: string): Transfo
 			if (!found) return false;
 
 			if (path.node.kind === 'const') {
-				const declarator = path.node.declarations.find(
-					(declarator) =>
-						declarator.type === 'VariableDeclarator' &&
-						declarator.id.type === 'Identifier' &&
-						declarator.id.name === '$$Astro'
+				const declaration = path.node.declarations.find(
+					(decl) =>
+						decl.type === 'VariableDeclarator' &&
+						decl.id.type === 'Identifier' &&
+						decl.id.name === '$$Astro'
 				);
-				if (declarator) {
+				if (declaration) {
 					astroNode = path;
 				}
 				return this.traverse(path);

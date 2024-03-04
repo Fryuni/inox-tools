@@ -22,7 +22,7 @@ const globalHandlers: Map<string, InnerHandler<any>> = ((globalThis as any)[
 export default definePlugin({
 	name: 'defineRouteConfig',
 	hook: 'astro:config:setup',
-	implementation: (astroConfig, integrationConfig) => {
+	implementation: (astroConfig) => {
 		const { logger, updateConfig } = astroConfig;
 
 		return <T = any>(options: PerRouteConfigOptions<T>): void => {

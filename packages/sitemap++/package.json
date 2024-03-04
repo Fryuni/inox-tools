@@ -1,6 +1,6 @@
 {
   "name": "@inox-tools/sitemap++",
-  "version": "0.0.0",
+  "version": "0.1.0-alpha.0",
   "description": "Higher level abstraction an utilities over Astro's official sitemap integration",
   "keywords": [
     "sitemap",

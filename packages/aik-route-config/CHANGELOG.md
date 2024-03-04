@@ -1,5 +1,11 @@
 # @inox-tools/aik-route-config
 
+## 0.1.0-alpha.1
+
+### Patch Changes
+
+- Update READMEs
+
 ## 0.1.0-alpha.0
 
 ### Minor Changes

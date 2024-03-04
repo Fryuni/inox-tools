@@ -20,7 +20,7 @@
   "type": "module",
   "peerDependencies": {
     "astro": "^4.3.5",
-    "astro-integration-kit": "^0.2 || ^0.3"
+    "astro-integration-kit": "^0.5"
   },
   "devDependencies": {
     "typescript": "^5.3.3"

@@ -5,11 +5,7 @@ import { type RouteData } from 'astro';
 import { EnumChangefreq } from 'sitemap';
 import { z } from 'astro/zod';
 import * as path from 'node:path';
-import {
-	addVirtualImportPlugin,
-	hasIntegrationPlugin,
-	watchIntegrationPlugin,
-} from 'astro-integration-kit/plugins';
+import { addVirtualImportsPlugin, hasIntegrationPlugin } from 'astro-integration-kit/plugins';
 import { normalizePath } from 'vite';
 import sitemap from '@astrojs/sitemap';
 import { Console } from 'node:console';
@@ -29,8 +25,6 @@ const console = new Console({
 	},
 });
 
-// const POSSIBLE_PAGE_EXTENSIONS = ['.astro', '.ts', '.js', '.md', '.mdx'];
-
 export default defineIntegration({
 	name: '@inox-tools/declarative-sitemap',
 	optionsSchema: z.object({
@@ -47,24 +41,16 @@ export default defineIntegration({
 		lastmod: z.date().optional(),
 		priority: z.number().optional(),
 	}),
-	plugins: [
-		addVirtualImportPlugin,
-		hasIntegrationPlugin,
-		watchIntegrationPlugin,
-		routeConfigPlugin,
-	],
+	plugins: [addVirtualImportsPlugin, hasIntegrationPlugin, routeConfigPlugin],
 	setup: ({ options: { includeByDefault, ...options } }) => {
-		const { resolve } = createResolver(import.meta.url);
-
 		const decidedOptions = new Map<string, boolean>();
-		// const componentModuleMapping = new Map<string, string>();
 		const componentImportMapping = new Map<string, string>();
 
 		return {
 			'astro:config:setup': ({
 				defineRouteConfig,
-				watchIntegration,
 				hasIntegration,
+				injectRoute,
 				updateConfig,
 				config,
 			}) => {
@@ -75,14 +61,18 @@ export default defineIntegration({
 					);
 				}
 
-				const watchDir = resolve('.');
-				console.log('Watching:', watchDir);
-				watchIntegration(watchDir);
+				injectRoute({
+					pattern: 'foo',
+					entrypoint: '@inox-tools/sitemap++/foo.astro',
+				});
 
-				watchIntegration(resolve('../aik-route-config'));
+				type ConfigCallback = (hooks: {}) => Promise<void> | void;
 
 				defineRouteConfig({
 					importName: 'sitemap++:config',
+					callbackHandler: (context, configCb: ConfigCallback) => {
+						configCb({});
+					},
 				});
 
 				// The sitemap integration will run _after_ the build is done, so after the build re-mapping done below.

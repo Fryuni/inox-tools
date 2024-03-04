@@ -1,5 +1,6 @@
 import * as recast from 'recast';
 import * as parser from 'recast/parsers/typescript.js';
+import * as path from 'node:path';
 import type { Plugin, TransformResult } from 'vite';
 
 const b = recast.types.builders;
@@ -21,9 +22,8 @@ export function hoistGlobalPlugin(options: HoistGlobalOptions): Plugin {
 		load(id) {
 			if (id === resolvedId) {
 				return `
-        let counter = 0;
-        export default function (url, cb) {
-          console.log('Loader called',url, counter++);
+        export default function(context, cb) {
+          globalThis[Symbol.for('@inox-tools/aik-route-config')]?.get('${options.configImport}')?.(context, cb);
         }`;
 			}
 		},
@@ -101,10 +101,16 @@ function hoistImport(importPath: string, modName: string, code: string): Transfo
 				.get('expression', 'arguments')
 				.insertAt(
 					0,
-					b.memberExpression(
-						b.memberExpression(b.identifier('import'), b.identifier('meta')),
-						b.identifier('url')
-					)
+					b.objectExpression([
+						b.objectProperty(
+							b.identifier('bundleFile'),
+							b.memberExpression(
+								b.memberExpression(b.identifier('import'), b.identifier('meta')),
+								b.identifier('url')
+							)
+						),
+						b.objectProperty(b.identifier('sourceFile'), b.stringLiteral(modName)),
+					])
 				);
 
 			// Hoist it

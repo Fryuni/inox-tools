@@ -1,7 +1,7 @@
 ---
 import { type CollectionEntry, getCollection } from 'astro:content';
 import BlogPost from '../../layouts/BlogPost.astro';
-import sitemap from 'sitemap++:config';
+import sitemap from 'sitemap-ext:config';
 
 sitemap(async ({ setSitemap }) => {
 	const posts = await getCollection('blog');

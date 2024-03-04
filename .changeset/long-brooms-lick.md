@@ -1,5 +1,5 @@
 ---
-"@inox-tools/sitemap++": patch
+"@inox-tools/sitemap-ext": patch
 ---
 
 First implementation

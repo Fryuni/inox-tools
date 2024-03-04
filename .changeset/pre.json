@@ -7,11 +7,11 @@
     "@example/inline-mod": "0.0.0",
     "@example/inline-mod-aik": "0.0.1",
     "@example/inline-mod-astro": "0.0.1",
-    "@example/sitemap++": "0.0.1",
+    "@example/sitemap-ext": "0.0.1",
     "@inox-tools/aik-mod": "0.1.0",
     "@inox-tools/custom-routing": "0.2.0",
     "@inox-tools/inline-mod": "1.2.0",
-    "@inox-tools/sitemap++": "0.0.0",
+    "@inox-tools/sitemap-ext": "0.0.0",
     "@inox-tools/velox-luna": "0.0.1",
     "templates": "1.0.0",
     "@inox-tools/aik-route-config": "0.0.0"

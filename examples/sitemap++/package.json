@@ -1,5 +1,5 @@
 {
-  "name": "@example/sitemap++",
+  "name": "@example/sitemap-ext",
   "private": true,
   "type": "module",
   "version": "0.0.1",
@@ -15,7 +15,7 @@
     "@astrojs/mdx": "^2.1.1",
     "@astrojs/node": "^8.2.1",
     "@astrojs/rss": "^4.0.5",
-    "@inox-tools/sitemap++": "workspace:^",
+    "@inox-tools/sitemap-ext": "workspace:^",
     "astro": "^4.4.4",
     "typescript": "^5.3.3"
   }

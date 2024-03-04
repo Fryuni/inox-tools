@@ -1,5 +1,5 @@
 {
-  "name": "@inox-tools/sitemap++",
+  "name": "@inox-tools/sitemap-ext",
   "version": "0.1.0-alpha.0",
   "description": "Higher level abstraction an utilities over Astro's official sitemap integration",
   "keywords": [

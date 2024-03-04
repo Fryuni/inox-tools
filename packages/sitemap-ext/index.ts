@@ -83,7 +83,7 @@ export default defineIntegration({
 				}) => Promise<void> | void;
 
 				defineRouteConfig({
-					importName: 'sitemap++:config',
+					importName: 'sitemap-ext:config',
 					callbackHandler: (context, configCb: ConfigCallback) => {
 						configCb({
 							removeFromSitemap(routeParams) {

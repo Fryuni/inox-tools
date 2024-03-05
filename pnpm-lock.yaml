@@ -160,7 +160,7 @@ importers:
         specifier: link:../../packages/inline-mod
         version: link:../../packages/inline-mod
 
-  examples/sitemap++:
+  examples/sitemap-ext:
     dependencies:
       '@astrojs/check':
         specifier: ^0.5.5
@@ -3032,11 +3032,6 @@ packages:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
     dev: true
 
-  /bare-events@2.2.0:
-    resolution: {integrity: sha512-Yyyqff4PIFfSuthCZqLlPISTWHmnQxoPuAvkmgzsJEmG3CesdIv6Xweayl0JkCZJSB2yYIdJyEz97tpxNhgjbg==}
-    requiresBuild: true
-    optional: true
-
   /bare-events@2.2.1:
     resolution: {integrity: sha512-9GYPpsPFvrWBkelIhOhTWtkeZxVxZOdb3VnFTCzlOo3OjvmTvzLoZFUT8kNFACx0vJej6QPney1Cf9BvzCNE/A==}
     requiresBuild: true
@@ -3046,7 +3041,7 @@ packages:
     resolution: {integrity: sha512-+CjmZANQDFZWy4PGbVdmALIwmt33aJg8qTkVjClU6X4WmZkTPBDxRHiBn7fpqEWEfF3AC2io++erpViAIQbSjg==}
     requiresBuild: true
     dependencies:
-      bare-events: 2.2.0
+      bare-events: 2.2.1
       bare-os: 2.2.0
       bare-path: 2.1.0
       streamx: 2.16.1

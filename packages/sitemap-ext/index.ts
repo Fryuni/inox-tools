@@ -84,8 +84,8 @@ export default defineIntegration({
 
 				defineRouteConfig({
 					importName: 'sitemap-ext:config',
-					callbackHandler: (context, configCb: ConfigCallback) => {
-						configCb({
+					callbackHandler: (context, configCb: ConfigCallback | boolean) => {
+						const hooks: Parameters<ConfigCallback>[0] = {
 							removeFromSitemap(routeParams) {
 								for (const route of context.routeData) {
 									makeDecision(false, route, routeParams);
@@ -103,7 +103,17 @@ export default defineIntegration({
 									}
 								}
 							},
-						});
+						};
+
+						if (typeof configCb === 'boolean') {
+							if (configCb) {
+								hooks.addToSitemap();
+							} else {
+								hooks.removeFromSitemap();
+							}
+						} else {
+							configCb(hooks);
+						}
 					},
 				});
 

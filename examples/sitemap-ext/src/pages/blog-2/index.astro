@@ -5,13 +5,10 @@ import Footer from '../../components/Footer.astro';
 import { SITE_TITLE, SITE_DESCRIPTION } from '../../consts';
 import { getCollection } from 'astro:content';
 import FormattedDate from '../../components/FormattedDate.astro';
-import sitemap from 'sitemap-ext:config';
 
-sitemap(async ({ removeFromSitemap }) => {
-	removeFromSitemap();
-});
+Sitemap.include();
 
-sitemap(false);
+Sitemap.exclude();
 
 const posts = (await getCollection('blog')).sort(
 	(a, b) => a.data.pubDate.valueOf() - b.data.pubDate.valueOf()

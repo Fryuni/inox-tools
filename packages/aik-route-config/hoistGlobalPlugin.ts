@@ -34,16 +34,17 @@ export function hoistGlobalPlugin(options: HoistGlobalOptions): Plugin {
 	};
 }
 
-function hoistImport(importPath: string, modName: string, code: string): TransformResult | null {
+/** @internal */
+export function hoistImport(magicImport: string, currentModule: string, code: string): TransformResult | null {
 	let ast: ReturnType<typeof parser.parse>;
 	try {
 		ast = recast.parse(code, {
-			sourceFileName: modName,
+			sourceFileName: currentModule,
 			parser: {
 				parse(_code: string) {
 					return parser.parse(_code, {
 						sourceType: 'module',
-						strictMode: true,
+						strictMode: false,
 					});
 				},
 			},
@@ -56,23 +57,25 @@ function hoistImport(importPath: string, modName: string, code: string): Transfo
 		throw e;
 	}
 
-	let found: string | null = null;
+	let found: string[] = [];
 	let astroNode: any;
 
 	recast.visit(ast, {
 		visitImportDeclaration(path) {
-			if (path.node.source.type === 'StringLiteral' && path.node.source.value === importPath) {
+			if (path.node.source.type === 'StringLiteral' && path.node.source.value === magicImport) {
 				const defaultSpecifier = path.node.specifiers?.find(
 					(specifier) => specifier.type === 'ImportDefaultSpecifier'
 				);
 				const defaultImport = defaultSpecifier?.local?.name?.toString();
-				found = defaultImport!;
+				if (defaultImport) {
+					found.push(defaultImport);
+				}
 			}
 
-			return false;
+			return this.traverse(path);
 		},
 		visitVariableDeclaration(path) {
-			if (!found) return false;
+			if (!found.length) return false;
 
 			if (path.node.kind === 'const') {
 				const declaration = path.node.declarations.find(
@@ -88,18 +91,26 @@ function hoistImport(importPath: string, modName: string, code: string): Transfo
 			}
 		},
 		visitExpressionStatement(path) {
-			if (!found) return false;
+			if (!found.length) return false;
 
-			if (path.node.expression.type !== 'CallExpression') return this.traverse(path);
+			let exprPath = path.get('expression');
+			let expression = path.node.expression;
+
+			if (expression.type === 'AwaitExpression' && expression.argument?.type === 'CallExpression') {
+				exprPath = exprPath.get('argument');
+				expression = expression.argument;
+			}
+
+			if (expression.type !== 'CallExpression') return this.traverse(path);
 
 			if (
-				path.node.expression.callee.type !== 'Identifier' ||
-				path.node.expression.callee.name !== found
+				expression.callee.type !== 'Identifier' ||
+				!found.includes(expression.callee.name)
 			)
 				return this.traverse(path);
 
-			path
-				.get('expression', 'arguments')
+			exprPath
+				.get('arguments')
 				.insertAt(
 					0,
 					b.objectExpression([
@@ -110,21 +121,21 @@ function hoistImport(importPath: string, modName: string, code: string): Transfo
 								b.identifier('url')
 							)
 						),
-						b.objectProperty(b.identifier('sourceFile'), b.stringLiteral(modName)),
+						b.objectProperty(b.identifier('sourceFile'), b.stringLiteral(currentModule)),
 					])
 				);
 
 			// Hoist it
-			astroNode.insertAfter(path.node);
+			astroNode.insertAfter(b.expressionStatement(b.awaitExpression(expression)));
 			// Remove original
 			path.replace();
 			return false;
 		},
 	});
 
-	if (!found) return null;
+	if (!found.length) return null;
 
-	const newCode = recast.print(ast, { sourceFileName: modName, sourceMapName: 'foo' });
+	const newCode = recast.print(ast, { sourceFileName: currentModule, sourceMapName: 'foo' });
 
 	return {
 		code: newCode.code,

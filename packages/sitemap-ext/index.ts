@@ -48,8 +48,7 @@ export default defineIntegration({
 					inclusions.push({ type: 'regex', regex: route.pattern, decision });
 				} else {
 					for (const routeParam of routeParams) {
-						// TODO: https://github.com/withastro/astro/pull/10298
-						const pathName = route.generate(routeParam) || '/';
+						const pathName = route.generate(routeParam);
 
 						inclusions.push({ type: 'static', path: pathName, decision });
 					}

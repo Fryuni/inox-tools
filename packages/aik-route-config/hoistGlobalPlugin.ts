@@ -35,7 +35,11 @@ export function hoistGlobalPlugin(options: HoistGlobalOptions): Plugin {
 }
 
 /** @internal */
-export function hoistImport(magicImport: string, currentModule: string, code: string): TransformResult | null {
+export function hoistImport(
+	magicImport: string,
+	currentModule: string,
+	code: string
+): TransformResult | null {
 	let ast: ReturnType<typeof parser.parse>;
 	try {
 		ast = recast.parse(code, {
@@ -103,10 +107,7 @@ export function hoistImport(magicImport: string, currentModule: string, code: st
 
 			if (expression.type !== 'CallExpression') return this.traverse(path);
 
-			if (
-				expression.callee.type !== 'Identifier' ||
-				!found.includes(expression.callee.name)
-			)
+			if (expression.callee.type !== 'Identifier' || !found.includes(expression.callee.name))
 				return this.traverse(path);
 
 			exprPath

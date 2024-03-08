@@ -3,19 +3,19 @@ import { loadAstroFixture } from './utils.js';
 import { hoistImport } from '../hoistGlobalPlugin.js';
 
 test('Nothing to hoist', async () => {
-  const astroCode = await loadAstroFixture('nothing');
+	const astroCode = await loadAstroFixture('nothing');
 
-  const result = hoistImport('magic:hoist', '/src/pages/simple.astro', astroCode);
+	const result = hoistImport('magic:hoist', '/src/pages/simple.astro', astroCode);
 
-  expect(result).toMatchInlineSnapshot(`null`);
+	expect(result).toMatchInlineSnapshot(`null`);
 });
 
 test('hoist simple call', async () => {
-  const astroCode = await loadAstroFixture('simple');
+	const astroCode = await loadAstroFixture('simple');
 
-  const result = hoistImport('magic:hoist', '/src/pages/simple.astro', astroCode);
+	const result = hoistImport('magic:hoist', '/src/pages/simple.astro', astroCode);
 
-  expect(result?.code).toMatchInlineSnapshot(`
+	expect(result?.code).toMatchInlineSnapshot(`
     "import {
       Fragment,
       render as $$render,
@@ -64,11 +64,11 @@ test('hoist simple call', async () => {
 });
 
 test('hoist awaited call', async () => {
-  const astroCode = await loadAstroFixture('awaited');
+	const astroCode = await loadAstroFixture('awaited');
 
-  const result = hoistImport('magic:hoist', '/src/pages/simple.astro', astroCode);
+	const result = hoistImport('magic:hoist', '/src/pages/simple.astro', astroCode);
 
-  expect(result?.code).toMatchInlineSnapshot(`
+	expect(result?.code).toMatchInlineSnapshot(`
     "import {
       Fragment,
       render as $$render,

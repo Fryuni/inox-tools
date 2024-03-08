@@ -17,8 +17,10 @@
     "@inox-tools/aik-route-config": "0.0.0"
   },
   "changesets": [
+    "kind-vans-punch",
     "long-brooms-lick",
     "nine-points-attend",
+    "purple-crews-watch",
     "shy-jars-kneel",
     "tasty-deers-decide"
   ]

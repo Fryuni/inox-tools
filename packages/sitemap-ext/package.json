@@ -1,7 +1,7 @@
 {
   "name": "@inox-tools/sitemap-ext",
   "version": "0.1.0-alpha.1",
-  "description": "Higher level abstraction an utilities over Astro's official sitemap integration",
+  "description": "Higher level extension over Astro's official sitemap integration",
   "keywords": [
     "sitemap",
     "seo",
@@ -13,14 +13,12 @@
   "author": "Luiz Ferraz <luiz@lferraz.com>",
   "type": "module",
   "exports": {
-    ".": "./index.ts",
-    "./foo.astro": "./foo.astro",
-    "./state": "./state.ts"
+    ".": "./index.ts"
   },
   "files": [
     "README.md",
-    "src",
-    "index.ts"
+    "index.ts",
+    "virtual.d.ts"
   ],
   "scripts": {
     "test": "echo 'No tests'"

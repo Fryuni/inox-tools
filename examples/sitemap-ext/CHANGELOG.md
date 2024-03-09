@@ -1,5 +1,11 @@
 # @example/sitemap-ext
 
+## 0.1.0-alpha.2
+
+### Patch Changes
+
+- @inox-tools/sitemap-ext@0.1.0-alpha.3
+
 ## 0.1.0-alpha.1
 
 ### Minor Changes

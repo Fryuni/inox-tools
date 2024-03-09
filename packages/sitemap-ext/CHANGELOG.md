@@ -1,5 +1,11 @@
 # @inox-tools/sitemap-ext
 
+## 0.1.1
+
+### Patch Changes
+
+- df67d8d: Fixes handling of external sitemap entries being dropped when SSR routes add their own entries
+
 ## 0.1.0
 
 ### Minor Changes

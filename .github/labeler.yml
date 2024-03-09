@@ -8,11 +8,20 @@ workspace:
 - '*.{js,json}'
 - '.*'
 
+pkg/aik-mod:
+- 'packages/aik-mod/**'
+
+pkg/aik-route-config:
+- 'packages/aik-route-config/**'
+
+pkg/custom-routing:
+- 'packages/custom-routing/**'
+
 pkg/inline-mod:
 - 'packages/inline-mod/**'
 
-pkg/aik-mod:
-- 'packages/aik-mod/**'
+pkg/sitemap-ext:
+- 'packages/sitemap-ext/**'
 
 pkg/velox-luna:
 - 'packages/velox-luna/**'

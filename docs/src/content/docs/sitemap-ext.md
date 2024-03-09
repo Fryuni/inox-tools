@@ -4,6 +4,7 @@ packageName: '@inox-tools/sitemap-ext'
 ---
 
 An unofficial extension of the official [`@astrojs/sitemap`](https://docs.astro.build/en/guides/integrations-guide/sitemap/) integration that allows:
+
 - Each route to self-declare whether they should be included in the sitemap.
 - Pre-rendered dynamic routes to include only some of it's rendered pages in the sitemap.
 - On-demand (SSR) routes to include themselves in the sitemap, or some of their known pages if they are dynamic.
@@ -12,7 +13,7 @@ The goal of this extension is to provide higher-level functionality and configur
 
 ## Installation
 
-To install this integration you just need to replace the 
+To install this integration you just need to replace the
 
 ```ts title="astro.config.mjs" del={1} add={2}
 import sitemap from '@astrojs/sitemap';
@@ -67,11 +68,11 @@ This hook function will be called during build-time only and will be given callb
 
 ```ts
 type ConfigHook = (callbacks: {
-	addToSitemap: (routeParams?: Record<string, string | undefined>[]) => void;
-	removeFromSitemap: (routeParams?: Record<string, string | undefined>[]) => void;
-	setSitemap: (
-		routeParams: Array<{ sitemap?: boolean; params: Record<string, string | undefined> }>
-	) => void;
+  addToSitemap: (routeParams?: Record<string, string | undefined>[]) => void;
+  removeFromSitemap: (routeParams?: Record<string, string | undefined>[]) => void;
+  setSitemap: (
+    routeParams: Array<{ sitemap?: boolean; params: Record<string, string | undefined> }>
+  ) => void;
 }) => Promise<void> | void;
 ```
 
@@ -81,9 +82,9 @@ As noted by the type, the given hook function can be async, which means you can 
 ---
 import sitemap from 'sitemap-ext:config';
 
-sitemap(async ({addToSitemap, removeFromSitemap}) => {
+sitemap(async ({ addToSitemap, removeFromSitemap }) => {
   const shouldBeIncluded = await fetchThisConfigFromRemote();
-  
+
   if (shouldBeIncluded) {
     addToSitemap();
   } else {
@@ -105,16 +106,18 @@ On a static route this argument is ignored. On a dynamic route, this argument is
 
 ```astro title="src/pages/[locale]/[postId].astro"
 ---
-import {getCollection} from 'astro:content';
+import { getCollection } from 'astro:content';
 import sitemap from 'sitemap-ext:config';
 
-sitemap(async ({addToSitemap}) => {
+sitemap(async ({ addToSitemap }) => {
   const blogPosts = await getCollection('posts');
-  
-  addToSitemap(blogPosts.map(post => ({
-    locale: post.data.locale,
-    postId: post.data.id,
-  })));
+
+  addToSitemap(
+    blogPosts.map((post) => ({
+      locale: post.data.locale,
+      postId: post.data.id,
+    }))
+  );
 });
 ---
 ```
@@ -127,19 +130,21 @@ Calling this function from a static route does nothing.
 
 ```astro title="src/pages/[locale]/[postId].astro"
 ---
-import {getCollection} from 'astro:content';
+import { getCollection } from 'astro:content';
 import sitemap from 'sitemap-ext:config';
 
-sitemap(async ({setSitemap}) => {
+sitemap(async ({ setSitemap }) => {
   const blogPosts = await getCollection('posts');
-  
-  setSitemap(blogPosts.map(post => ({
-    params: {
-      locale: post.data.locale,
-      postId: post.data.id,
-    },
-    sitemap: post.data.includeInSitemap,
-  })));
+
+  setSitemap(
+    blogPosts.map((post) => ({
+      params: {
+        locale: post.data.locale,
+        postId: post.data.id,
+      },
+      sitemap: post.data.includeInSitemap,
+    }))
+  );
 });
 ---
 ```
@@ -152,22 +157,22 @@ To avoid writing the same logic twice you can call the sitemap configuration fun
 
 ```astro title="src/pages/[locale]/[postId].astro"
 ---
-import {getCollection} from 'astro:content';
+import { getCollection } from 'astro:content';
 import sitemap from 'sitemap-ext:config';
 
-export function getStaticPaths() {
+export async function getStaticPaths() {
   const blogPosts = await getCollection('posts');
 
-  const postParams = blogPosts.map(post => ({
+  const postParams = blogPosts.map((post) => ({
     params: {
       locale: post.data.locale,
       postId: post.data.id,
     },
-    props: {post}, // for Astro.props
+    props: { post }, // for Astro.props
     sitemap: post.data.includeInSitemap,
   }));
-  
-  sitemap(({setSitemap}) => setSitemap(postParams));
+
+  sitemap(({ setSitemap }) => setSitemap(postParams));
 
   return postParams;
 }
@@ -179,7 +184,7 @@ export function getStaticPaths() {
 The official sitemap integration doesn't have built-in support for SSR pages, requiring you to re-declare in your configuration all the URLs for server-rendered content that you want included in your sitemap.
 
 Using this extension, on-demand routes can opt into being included in the sitemap. SSR pages on static routes can use the [boolean option](#full-opt-inout) to add themselves to the sitemap. Dynamic routes can only add the pages that are known at build time. This can be useful in many scenarios:
+
 - When you can generate the content for any matching URL, but some of them are well-known.
 - When providing [self-healing URLs](https://medium.com/@vishalkamath853/self-healing-urls-eb66756a9c62) to support renaming your slugs over time.
 - When your content can change per-request, but not the URLs.
-

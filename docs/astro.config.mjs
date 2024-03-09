@@ -25,8 +25,8 @@ export default defineConfig({
 					link: '/custom-routing',
 				},
 				{
-					label: 'Self Declared Sitemap',
-					link: '/declarative-sitemap',
+					label: 'Sitemap Extensions',
+					link: '/sitemap-ext',
 				},
 				{
 					label: 'Inline Module',

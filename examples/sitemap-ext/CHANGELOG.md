@@ -1,5 +1,19 @@
 # @example/sitemap-ext
 
+## 0.1.0
+
+### Minor Changes
+
+- 370c7c2: Update type declaration
+
+### Patch Changes
+
+- Updated dependencies [8e8defe]
+- Updated dependencies [ada0969]
+- Updated dependencies [370c7c2]
+- Updated dependencies [370c7c2]
+  - @inox-tools/sitemap-ext@0.1.0
+
 ## 0.1.0-alpha.2
 
 ### Patch Changes

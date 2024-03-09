@@ -1,5 +1,23 @@
 # @inox-tools/sitemap-ext
 
+## 0.1.0
+
+### Minor Changes
+
+- 370c7c2: Add support for more flexible per-route API
+
+### Patch Changes
+
+- 8e8defe: Update dependencies
+- ada0969: First implementation
+- 370c7c2: Update READMEs
+- Updated dependencies [370c7c2]
+- Updated dependencies [8e8defe]
+- Updated dependencies [370c7c2]
+- Updated dependencies [370c7c2]
+- Updated dependencies [370c7c2]
+  - @inox-tools/aik-route-config@0.1.0
+
 ## 0.1.0-alpha.3
 
 ### Patch Changes

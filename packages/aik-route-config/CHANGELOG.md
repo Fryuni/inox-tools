@@ -1,5 +1,18 @@
 # @inox-tools/aik-route-config
 
+## 0.1.0
+
+### Minor Changes
+
+- 370c7c2: Handle use of magic imports in unsupported scopes
+- 370c7c2: Initial development
+
+### Patch Changes
+
+- 8e8defe: Update dependencies
+- 370c7c2: Handle async config definitions
+- 370c7c2: Update READMEs
+
 ## 0.1.0-alpha.3
 
 ### Minor Changes

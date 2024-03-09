@@ -1,5 +1,6 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
+import starlightLinksValidator from 'starlight-links-validator';
 
 const SITE =
 	process.env.VERCEL_ENV !== 'production' && process.env.VERCEL_URL
@@ -37,15 +38,11 @@ export default defineConfig({
 					autogenerate: { directory: 'inline-mod' },
 				},
 			],
+			plugins: [
+				starlightLinksValidator({
+					errorOnRelativeLinks: true,
+				}),
+			],
 		}),
 	],
-	// markdown: {
-	// 	remarkPlugins: [
-	// 		() => (tree) => {
-	// 			visit(tree, 'code', (node) => {
-	// 				console.log(node);
-	// 			});
-	// 		},
-	// 	],
-	// }
 });

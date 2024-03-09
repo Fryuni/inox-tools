@@ -26,15 +26,15 @@ export default defineConfig({
 					link: '/custom-routing',
 				},
 				{
-					label: 'Self Declared Sitemap',
-					link: '/declarative-sitemap',
-				},
-				{
-					label: 'Inline Module',
+					label: 'Sitemap Extensions',
+					link: '/sitemap-ext',
 					badge: {
 						text: 'NEW',
 						variant: 'success',
 					},
+				},
+				{
+					label: 'Inline Module',
 					autogenerate: { directory: 'inline-mod' },
 				},
 			],

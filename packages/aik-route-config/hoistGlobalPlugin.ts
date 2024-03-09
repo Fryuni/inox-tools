@@ -1,3 +1,6 @@
+import * as assert from 'assert';
+import type { NodePath } from 'ast-types/lib/node-path.js';
+import type { Context } from 'ast-types/lib/path-visitor.js';
 import * as recast from 'recast';
 import * as parser from 'recast/parsers/typescript.js';
 import type { Plugin, TransformResult } from 'vite';
@@ -61,80 +64,10 @@ export function hoistImport(
 		throw e;
 	}
 
-	let found: string[] = [];
-	let astroNode: any;
+	const visitor = makeVisitor(magicImport, currentModule);
+	recast.visit(ast, visitor);
 
-	recast.visit(ast, {
-		visitImportDeclaration(path) {
-			if (path.node.source.type === 'StringLiteral' && path.node.source.value === magicImport) {
-				const defaultSpecifier = path.node.specifiers?.find(
-					(specifier) => specifier.type === 'ImportDefaultSpecifier'
-				);
-				const defaultImport = defaultSpecifier?.local?.name?.toString();
-				if (defaultImport) {
-					found.push(defaultImport);
-				}
-			}
-
-			return this.traverse(path);
-		},
-		visitVariableDeclaration(path) {
-			if (!found.length) return false;
-
-			if (path.node.kind === 'const') {
-				const declaration = path.node.declarations.find(
-					(decl) =>
-						decl.type === 'VariableDeclarator' &&
-						decl.id.type === 'Identifier' &&
-						decl.id.name === '$$Astro'
-				);
-				if (declaration) {
-					astroNode = path;
-				}
-				return this.traverse(path);
-			}
-		},
-		visitExpressionStatement(path) {
-			if (!found.length) return false;
-
-			let exprPath = path.get('expression');
-			let expression = path.node.expression;
-
-			if (expression.type === 'AwaitExpression' && expression.argument?.type === 'CallExpression') {
-				exprPath = exprPath.get('argument');
-				expression = expression.argument;
-			}
-
-			if (expression.type !== 'CallExpression') return this.traverse(path);
-
-			if (expression.callee.type !== 'Identifier' || !found.includes(expression.callee.name))
-				return this.traverse(path);
-
-			exprPath
-				.get('arguments')
-				.insertAt(
-					0,
-					b.objectExpression([
-						b.objectProperty(
-							b.identifier('bundleFile'),
-							b.memberExpression(
-								b.memberExpression(b.identifier('import'), b.identifier('meta')),
-								b.identifier('url')
-							)
-						),
-						b.objectProperty(b.identifier('sourceFile'), b.stringLiteral(currentModule)),
-					])
-				);
-
-			// Hoist it
-			astroNode.insertAfter(b.expressionStatement(b.awaitExpression(expression)));
-			// Remove original
-			path.replace();
-			return false;
-		},
-	});
-
-	if (!found.length) return null;
+	if (visitor.state.phase === VisitorPhase.Cancelled) return null;
 
 	const newCode = recast.print(ast, { sourceFileName: currentModule, sourceMapName: 'foo' });
 
@@ -142,6 +75,162 @@ export function hoistImport(
 		code: newCode.code,
 		map: {
 			mappings: newCode.map!.mappings,
+		},
+	};
+}
+
+enum VisitorPhase {
+	Initializing = 'Initializing',
+	Initialized = 'Initialized',
+	Cancelled = 'Cancelled',
+	HoistingCalls = 'HoistingCalls',
+	EnrichingCallsInPlace = 'EnrichingCallsInPlace',
+	DroppingCalls = 'DroppingCalls',
+}
+
+interface Visitor extends recast.types.Visitor<Visitor> {
+	state: {
+		foundNames: string[];
+		astroNode?: NodePath<recast.types.namedTypes.VariableDeclaration>;
+		phase: VisitorPhase;
+	};
+	traverseWithState(this: Context & Visitor, state: VisitorPhase, path: NodePath): void;
+}
+
+function makeVisitor(magicImport: string, currentModule: string): Visitor {
+	return {
+		state: {
+			foundNames: [],
+			phase: VisitorPhase.Initializing,
+		},
+		traverseWithState(state: VisitorPhase, path: NodePath) {
+			const prevState = this.state.phase;
+			this.state.phase = state;
+			try {
+				return this.traverse(path);
+			} finally {
+				this.state.phase = prevState;
+			}
+		},
+		visitImportDeclaration(path) {
+			assert.ok(
+				this.state.phase === VisitorPhase.Initializing,
+				'Unexpected import declaration after initialization'
+			);
+
+			if (path.node.source.type === 'StringLiteral' && path.node.source.value === magicImport) {
+				const defaultSpecifier = path.node.specifiers?.find(
+					(specifier) => specifier.type === 'ImportDefaultSpecifier'
+				);
+				const defaultImport = defaultSpecifier?.local?.name?.toString();
+				if (defaultImport) {
+					this.state.foundNames.push(defaultImport);
+				}
+			}
+
+			return this.traverse(path);
+		},
+		visitVariableDeclaration(path) {
+			if (this.state.phase === VisitorPhase.Initializing && path.node.kind === 'const') {
+				const declaration = path.node.declarations.find(
+					(decl) =>
+						decl.type === 'VariableDeclarator' &&
+						decl.id.type === 'Identifier' &&
+						decl.id.name === 'Astro'
+				);
+				if (declaration) {
+					if (this.state.foundNames.length === 0) {
+						this.state.phase = VisitorPhase.Cancelled;
+						this.abort();
+						return;
+					}
+					this.state.astroNode = path;
+					this.state.phase = VisitorPhase.Initialized;
+				}
+			}
+
+			this.traverse(path);
+		},
+		visitCallExpression(path) {
+			if (path.node.callee.type !== 'Identifier') {
+				this.traverse(path);
+				return;
+			}
+
+			if (path.node.callee.name === '$$createComponent') {
+				assert.ok(this.state.phase === VisitorPhase.Initialized);
+				this.traverseWithState(VisitorPhase.HoistingCalls, path);
+				return;
+			}
+
+			if (this.state.foundNames.includes(path.node.callee.name)) {
+				switch (this.state.phase) {
+					case VisitorPhase.HoistingCalls:
+					case VisitorPhase.EnrichingCallsInPlace:
+					case VisitorPhase.Initialized: {
+						path
+							.get('arguments')
+							.insertAt(
+								0,
+								b.objectExpression([
+									b.objectProperty(
+										b.identifier('bundleFile'),
+										b.memberExpression(
+											b.memberExpression(b.identifier('import'), b.identifier('meta')),
+											b.identifier('url')
+										)
+									),
+									b.objectProperty(b.identifier('sourceFile'), b.stringLiteral(currentModule)),
+								])
+							);
+
+						this.traverseWithState(VisitorPhase.EnrichingCallsInPlace, path);
+						return;
+					}
+					case VisitorPhase.DroppingCalls: {
+						return b.unaryExpression('void', b.numericLiteral(0));
+					}
+					default: {
+						assert.fail('Unexpected phase for call expression');
+					}
+				}
+			} else {
+			}
+
+			this.traverse(path);
+		},
+		visitFunctionDeclaration(path) {
+			switch (this.state.phase) {
+				case VisitorPhase.HoistingCalls:
+					this.traverseWithState(VisitorPhase.DroppingCalls, path);
+					break;
+				default:
+					this.traverse(path);
+			}
+		},
+		visitExpressionStatement(path) {
+			this.traverse(path);
+
+			if (this.state.phase !== VisitorPhase.HoistingCalls) {
+				return;
+			}
+
+			let expression = path.node.expression;
+
+			if (expression.type === 'AwaitExpression' && expression.argument?.type === 'CallExpression') {
+				expression = expression.argument;
+			}
+
+			if (
+				expression.type === 'CallExpression' &&
+				expression.callee.type === 'Identifier' &&
+				this.state.foundNames.includes(expression.callee.name)
+			) {
+				// Hoist it
+				this.state.astroNode!.insertBefore(b.expressionStatement(b.awaitExpression(expression)));
+				// Remove original
+				path.replace();
+			}
 		},
 	};
 }

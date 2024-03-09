@@ -1,0 +1,18 @@
+---
+import customName from 'magic:hoist';
+
+customName('hoisted value');
+
+export function getStaticPaths() {
+	customName('should be extended in-place');
+	return [];
+}
+
+customName('second hoisted value');
+
+function notExported() {
+	customName('should be removed');
+}
+---
+
+<p>Simple page</p>

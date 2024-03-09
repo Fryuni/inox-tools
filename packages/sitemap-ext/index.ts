@@ -32,7 +32,7 @@ export default defineIntegration({
 		priority: z.number().optional(),
 	}),
 	plugins: [addVirtualImportsPlugin, addIntegrationPlugin, hasIntegrationPlugin, routeConfigPlugin],
-	setup: ({ options: { includeByDefault, ...options } }) => {
+	setup: ({ options: { includeByDefault, customPages: _externalPages, ...options } }) => {
 		type InclusionRule =
 			| { type: 'regex'; regex: RegExp; decision: boolean }
 			| { type: 'static'; path: string; decision: boolean };
@@ -58,7 +58,7 @@ export default defineIntegration({
 			}
 		}
 
-		const extraPages: string[] = [];
+		const extraPages: string[] = [...(_externalPages ?? [])];
 
 		let baseUrl!: URL;
 

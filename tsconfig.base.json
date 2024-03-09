@@ -2,12 +2,11 @@
   "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
     "declaration": true,
-    "emitDeclarationOnly": true,
     "strict": true,
     "moduleResolution": "Node16",
     "target": "ES2022",
     "module": "Node16",
-    "esModuleInterop": true,
+    "esModuleInterop": false,
     "skipLibCheck": true,
     "verbatimModuleSyntax": true,
     "stripInternal": true

@@ -1,20 +1,21 @@
 {
-  "name": "@example/declarative-sitemap",
+  "name": "@example/sitemap-ext",
   "private": true,
   "type": "module",
-  "version": "0.0.1",
+  "version": "0.1.0-alpha.2",
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
-    "build": "astro check && astro build",
+    "build": "astro build",
     "preview": "astro preview",
     "astro": "astro"
   },
   "dependencies": {
     "@astrojs/check": "^0.5.5",
     "@astrojs/mdx": "^2.1.1",
+    "@astrojs/node": "^8.2.1",
     "@astrojs/rss": "^4.0.5",
-    "@inox-tools/declarative-sitemap": "workspace:^",
+    "@inox-tools/sitemap-ext": "workspace:^",
     "astro": "^4.4.4",
     "typescript": "^5.3.3"
   }

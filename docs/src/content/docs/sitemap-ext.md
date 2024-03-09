@@ -1,5 +1,6 @@
 ---
 title: Sitemap Extensions
+description: An unofficial extension of the official @astrojs/sitemap integration.
 packageName: '@inox-tools/sitemap-ext'
 ---
 

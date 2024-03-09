@@ -27,13 +27,13 @@ export default defineConfig({
 				{
 					label: 'Sitemap Extensions',
 					link: '/sitemap-ext',
-				},
-				{
-					label: 'Inline Module',
 					badge: {
 						text: 'NEW',
 						variant: 'success',
 					},
+				},
+				{
+					label: 'Inline Module',
 					autogenerate: { directory: 'inline-mod' },
 				},
 			],

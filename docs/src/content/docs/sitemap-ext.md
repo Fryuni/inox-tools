@@ -7,14 +7,14 @@ packageName: '@inox-tools/sitemap-ext'
 An unofficial extension of the official [`@astrojs/sitemap`](https://docs.astro.build/en/guides/integrations-guide/sitemap/) integration that allows:
 
 - Each route to self-declare whether they should be included in the sitemap.
-- Pre-rendered dynamic routes to include only some of their rendered pages in the sitemap.
+- Including only a subset of pages rendered from a dynamic route in the sitemap.
 - On-demand (SSR) routes to include themselves in the sitemap, or some of their known pages if they are dynamic.
 
 The goal of this extension is to provide higher-level functionality and configuration over the official integration. **These extensions are not maintained nor supported by the Astro team.** If some or all of these extensions prove themselves as valuable additions for the users they might be proposed and adopted into the official integration, in that case they would continue to work in this package, but as a thin wrapper or just a re-export from the official package.
 
 ## Installation
 
-To install this integration you just need to replace the
+To install this integration you just need to replace the import from the official `@astrojs/sitemap` integration with `@inox-tools/sitemap-ext`.
 
 ```ts title="astro.config.mjs" del={1} add={2}
 import sitemap from '@astrojs/sitemap';
@@ -126,6 +126,8 @@ sitemap(async ({ addToSitemap }) => {
 #### `setSitemap`
 
 This function receives an array of parameter maps with a boolean to indicate whether each of those parameters describe a route that should be included or excluded from the sitemap.
+
+If the boolean field is not given it defaults to the global [`includeByDefault` option](#includebydefault)
 
 Calling this function from a static route does nothing.
 

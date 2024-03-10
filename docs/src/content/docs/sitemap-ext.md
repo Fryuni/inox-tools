@@ -50,7 +50,7 @@ import sitemap from 'sitemap-ext:config';
 
 sitemap(true); // opt-in
 
-sitemap(true); // opt-out
+sitemap(false); // opt-out
 ---
 ```
 

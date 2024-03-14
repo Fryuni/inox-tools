@@ -126,10 +126,8 @@ function makeVisitor(magicImport: string, currentModule: string): Visitor {
 			}
 		},
 		visitImportDeclaration(path) {
-			assert.ok(
-				this.state.phase === VisitorPhase.Initializing,
-				'Unexpected import declaration after initialization'
-			);
+			// Imports that come after the initialization are not relevant
+			if (this.state.phase !== VisitorPhase.Initializing) return false;
 
 			if (path.node.source.type === 'StringLiteral' && path.node.source.value === magicImport) {
 				const defaultSpecifier = path.node.specifiers?.find(

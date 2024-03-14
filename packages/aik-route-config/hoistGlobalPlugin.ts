@@ -1,6 +1,7 @@
 import * as assert from 'assert';
 import type { NodePath } from 'ast-types/lib/node-path.js';
 import type { Context } from 'ast-types/lib/path-visitor.js';
+import type { AstroIntegrationLogger } from 'astro';
 import * as recast from 'recast';
 import * as parser from 'recast/parsers/typescript.js';
 import type { Plugin, TransformResult } from 'vite';
@@ -9,6 +10,7 @@ const b = recast.types.builders;
 
 type HoistGlobalOptions = {
 	configImport: string;
+	logger: AstroIntegrationLogger;
 };
 
 export function hoistGlobalPlugin(options: HoistGlobalOptions): Plugin {
@@ -31,18 +33,31 @@ export function hoistGlobalPlugin(options: HoistGlobalOptions): Plugin {
 		},
 		transform(code, id) {
 			if (id.endsWith('.astro')) {
-				return hoistImport(options.configImport, id, code);
+				return hoistImport({
+					logger: options.logger,
+					magicImport: options.configImport,
+					currentModule: id,
+					code,
+				});
 			}
 		},
 	};
 }
 
+type HoistOptions = {
+	magicImport: string;
+	currentModule: string;
+	code: string;
+	logger: AstroIntegrationLogger;
+};
+
 /** @internal */
-export function hoistImport(
-	magicImport: string,
-	currentModule: string,
-	code: string
-): TransformResult | null {
+export function hoistImport({
+	magicImport,
+	currentModule,
+	code,
+	logger,
+}: HoistOptions): TransformResult | null {
 	let ast: ReturnType<typeof parser.parse>;
 	try {
 		ast = recast.parse(code, {
@@ -57,10 +72,8 @@ export function hoistImport(
 			},
 		});
 	} catch (e) {
-		/* eslint-disable no-console */
-		console.log('Error on parsing:', e);
-		console.log('Code:', code);
-		/* eslint-enable no-console */
+		logger.error(`Error on parsing: ${e}`);
+		logger.error(`Code: ${code}`);
 		throw e;
 	}
 

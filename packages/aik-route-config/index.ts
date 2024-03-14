@@ -44,6 +44,7 @@ export default definePlugin({
 			addVitePlugin({
 				plugin: hoistGlobalPlugin({
 					configImport: options.importName,
+					logger,
 				}),
 				updateConfig,
 			});

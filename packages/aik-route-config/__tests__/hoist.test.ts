@@ -1,11 +1,16 @@
 import { test, expect } from 'vitest';
-import { loadAstroFixture } from './utils.js';
+import { TestLogger, loadAstroFixture } from './utils.js';
 import { hoistImport } from '../hoistGlobalPlugin.js';
 
 test('Nothing to hoist', async () => {
 	const astroCode = await loadAstroFixture('nothing');
 
-	const result = hoistImport('magic:hoist', '/src/pages/simple.astro', astroCode);
+	const result = hoistImport({
+		magicImport: 'magic:hoist',
+		currentModule: '/src/pages/simple.astro',
+		code: astroCode,
+		logger: new TestLogger(),
+	});
 
 	expect(result).toMatchInlineSnapshot(`null`);
 });
@@ -13,7 +18,12 @@ test('Nothing to hoist', async () => {
 test('hoist simple call', async () => {
 	const astroCode = await loadAstroFixture('simple');
 
-	const result = hoistImport('magic:hoist', '/src/pages/simple.astro', astroCode);
+	const result = hoistImport({
+		magicImport: 'magic:hoist',
+		currentModule: '/src/pages/simple.astro',
+		code: astroCode,
+		logger: new TestLogger(),
+	});
 
 	expect(result?.code).toMatchInlineSnapshot(`
     "import {
@@ -66,7 +76,12 @@ test('hoist simple call', async () => {
 test('hoist awaited call', async () => {
 	const astroCode = await loadAstroFixture('awaited');
 
-	const result = hoistImport('magic:hoist', '/src/pages/simple.astro', astroCode);
+	const result = hoistImport({
+		magicImport: 'magic:hoist',
+		currentModule: '/src/pages/simple.astro',
+		code: astroCode,
+		logger: new TestLogger(),
+	});
 
 	expect(result?.code).toMatchInlineSnapshot(`
     "import {
@@ -119,7 +134,12 @@ test('hoist awaited call', async () => {
 test('hoist calls mixed with other exports and scopes', async () => {
 	const astroCode = await loadAstroFixture('otherExports');
 
-	const result = hoistImport('magic:hoist', '/src/pages/simple.astro', astroCode);
+	const result = hoistImport({
+		magicImport: 'magic:hoist',
+		currentModule: '/src/pages/simple.astro',
+		code: astroCode,
+		logger: new TestLogger(),
+	});
 
 	expect(result?.code).toMatchInlineSnapshot(`
     "import {

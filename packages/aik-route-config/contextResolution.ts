@@ -83,7 +83,7 @@ const integration = defineIntegration({
 
 				// Import SSR components so the hoisted logic gets executed
 				for (const module of ssrComponents) {
-					await import(/* @vite-ignore */ module!).catch(() => { });
+					await import(/* @vite-ignore */ module!).catch(() => {});
 				}
 			},
 		};

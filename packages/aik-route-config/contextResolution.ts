@@ -53,7 +53,9 @@ const integration = defineIntegration({
 					},
 				});
 			},
-			'astro:build:setup': ({ pages }) => {
+			'astro:build:setup': ({ pages, target }) => {
+				if (target !== 'server') return;
+
 				for (const { route } of pages.values()) {
 					const fullComponentPath = fileURLToPath(new URL(route.component, root));
 					const context = componentToContextMapping.get(fullComponentPath);
@@ -81,7 +83,7 @@ const integration = defineIntegration({
 
 				// Import SSR components so the hoisted logic gets executed
 				for (const module of ssrComponents) {
-					await import(/* @vite-ignore */ module!);
+					await import(/* @vite-ignore */ module!).catch(() => { });
 				}
 			},
 		};

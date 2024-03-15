@@ -218,8 +218,8 @@ importers:
         specifier: ^4.3.5
         version: 4.4.4(@types/node@20.11.25)(typescript@5.4.2)
       astro-integration-kit:
-        specifier: ^0.5
-        version: 0.5.0(astro@4.4.4)
+        specifier: ^0.5 || ^0.6
+        version: 0.5.1(astro@4.4.4)
       recast:
         specifier: ^0.23.6
         version: 0.23.6
@@ -3097,34 +3097,6 @@ packages:
       remark-expressive-code: 0.33.4
     dev: false
 
-  /astro-integration-kit@0.5.0(astro@4.4.4):
-    resolution: {integrity: sha512-RbviqerotzLoVBGF8L1aFw5jIP40oWKScRXuzJNp399uDnPMPq7/cIh2x3MIS62U17h7o3d0S3kGt/Ael+tj1g==}
-    peerDependencies:
-      '@vitejs/plugin-react': ^4.2.1
-      astro: ^4.4.1
-      preact: ^10.19.4
-      react: ^18.2.0
-      solid-js: ^1.8.15
-      svelte: ^4.2.11
-      vue: ^3.4.19
-    peerDependenciesMeta:
-      '@vitejs/plugin-react':
-        optional: true
-      preact:
-        optional: true
-      react:
-        optional: true
-      solid-js:
-        optional: true
-      svelte:
-        optional: true
-      vue:
-        optional: true
-    dependencies:
-      astro: 4.4.4(@types/node@20.11.25)(typescript@5.4.2)
-      pathe: 1.1.2
-    dev: false
-
   /astro-integration-kit@0.5.1(astro@4.4.15):
     resolution: {integrity: sha512-ef309UUNOjxUe0jjsDP5O3p+jkt53HAcrKOsWJ2NIgdUTOp5P/YKnAjbatfyu3bAuLFDfj5xhXm/rrwSe9d/hw==}
     peerDependencies:
@@ -3153,6 +3125,35 @@ packages:
       pathe: 1.1.2
       recast: 0.23.6
     dev: true
+
+  /astro-integration-kit@0.5.1(astro@4.4.4):
+    resolution: {integrity: sha512-ef309UUNOjxUe0jjsDP5O3p+jkt53HAcrKOsWJ2NIgdUTOp5P/YKnAjbatfyu3bAuLFDfj5xhXm/rrwSe9d/hw==}
+    peerDependencies:
+      '@vitejs/plugin-react': ^4.2.1
+      astro: ^4.4.1
+      preact: ^10.19.4
+      react: ^18.2.0
+      solid-js: ^1.8.15
+      svelte: ^4.2.11
+      vue: ^3.4.19
+    peerDependenciesMeta:
+      '@vitejs/plugin-react':
+        optional: true
+      preact:
+        optional: true
+      react:
+        optional: true
+      solid-js:
+        optional: true
+      svelte:
+        optional: true
+      vue:
+        optional: true
+    dependencies:
+      astro: 4.4.4(@types/node@20.11.25)(typescript@5.4.2)
+      pathe: 1.1.2
+      recast: 0.23.6
+    dev: false
 
   /astro@4.4.15(@types/node@20.11.25)(typescript@5.4.2):
     resolution: {integrity: sha512-RTiAnlO8hDp6GqMVvaeJxyuCJhHNEho09lHshMNQBqgRabYPOJGW0HZZrbLRGNOqN9I14ivhZIunYGgAaGQpWw==}

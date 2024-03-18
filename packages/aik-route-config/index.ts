@@ -23,12 +23,15 @@ export default definePlugin({
 	name: 'defineRouteConfig',
 	hook: 'astro:config:setup',
 	implementation: (astroConfig) => {
-		const { logger, updateConfig } = astroConfig;
+		const { logger, updateConfig, command } = astroConfig;
 
 		return <T = any>(options: PerRouteConfigOptions<T>): void => {
 			integrate(astroConfig);
 
 			const innerHandler: InnerHandler<T> = async (context, value) => {
+				// Do nothing while running dev or preview server
+				if (command !== 'build') return;
+
 				const outerContext = convertContext(context);
 				if (outerContext) {
 					await options.callbackHandler(outerContext, value);

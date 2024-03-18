@@ -5,6 +5,7 @@ import { Once } from './once.js';
 import { defineIntegration } from 'astro-integration-kit';
 import { addVitePluginPlugin } from 'astro-integration-kit/plugins';
 import { fileURLToPath } from 'node:url';
+import { normalizePath } from 'vite';
 
 export type ConfigContext = {
 	route: string[];
@@ -57,7 +58,7 @@ const integration = defineIntegration({
 				if (target !== 'server') return;
 
 				for (const { route } of pages.values()) {
-					const fullComponentPath = fileURLToPath(new URL(route.component, root));
+					const fullComponentPath = normalizePath(fileURLToPath(new URL(route.component, root)));
 					const context = componentToContextMapping.get(fullComponentPath);
 
 					if (context) {

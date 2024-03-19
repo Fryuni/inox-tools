@@ -5,6 +5,7 @@ import { Once } from './once.js';
 import { defineIntegration } from 'astro-integration-kit';
 import { addVitePluginPlugin } from 'astro-integration-kit/plugins';
 import { fileURLToPath } from 'node:url';
+import { normalizePath } from 'vite';
 
 export type ConfigContext = {
 	route: string[];
@@ -53,9 +54,11 @@ const integration = defineIntegration({
 					},
 				});
 			},
-			'astro:build:setup': ({ pages }) => {
+			'astro:build:setup': ({ pages, target }) => {
+				if (target !== 'server') return;
+
 				for (const { route } of pages.values()) {
-					const fullComponentPath = fileURLToPath(new URL(route.component, root));
+					const fullComponentPath = normalizePath(fileURLToPath(new URL(route.component, root)));
 					const context = componentToContextMapping.get(fullComponentPath);
 
 					if (context) {
@@ -81,7 +84,7 @@ const integration = defineIntegration({
 
 				// Import SSR components so the hoisted logic gets executed
 				for (const module of ssrComponents) {
-					await import(/* @vite-ignore */ module!);
+					await import(/* @vite-ignore */ module!).catch(() => {});
 				}
 			},
 		};

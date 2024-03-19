@@ -1,0 +1,22 @@
+---
+// From:
+// https://github.com/astrolicious/i18n/blob/a69646636ad32e42620b240fe50dff7476ab6606/playground/src/routes/index.astro
+import { t } from 'i18n:astro';
+import Layout from '~/layouts/Layout.astro';
+import sitemap from 'i18n:astro/sitemap';
+
+const title = t('home:title');
+
+sitemap('TEST');
+---
+
+<Layout {title}>
+	<h1>{title}</h1>
+	<p>{t('home:description', { value: '9' })}</p>
+	<span id="span"></span>
+	<script>
+		import { t } from 'i18n:astro';
+
+		document.getElementById('span')!.innerHTML = t('about');
+	</script>
+</Layout>

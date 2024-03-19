@@ -4,6 +4,8 @@
  * https://github.com/withastro/docs/blob/35b56b0a76eb0e2f59c13355a88765f76e45609d/src/components/Version.astro
  */
 
+import { simpleFetch } from '@/utils/fetch';
+
 export interface Props {
 	pkgName: string;
 }
@@ -13,16 +15,15 @@ const { pkgName } = Astro.props as Props;
 async function getVersion() {
 	const url = `https://registry.npmjs.org/${pkgName}/latest`;
 
-	const response = await fetch(url);
-	const json = await response.json();
+	const response = await simpleFetch(url);
 
 	if (!response.ok) {
 		throw new Error(
-			`npm API call failed: GET "${url}" returned status ${response.status}: ${JSON.stringify(json)}`
+			`npm API call failed: GET "${url}" returned status ${response.status}: ${JSON.stringify(response.body)}`
 		);
 	}
 
-	return json.version;
+	return (response.body as { version: string }).version;
 }
 
 const version = import.meta.env.DEV ? '0.0.0-dev' : await getVersion();

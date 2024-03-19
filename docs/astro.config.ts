@@ -13,8 +13,10 @@ export default defineConfig({
 	integrations: [
 		starlight({
 			title: 'Inox Tools',
+			favicon: '/favicon.png',
 			social: {
 				github: 'https://github.com/Fryuni/inox-tools',
+				discord: 'https://discord.com/channels/830184174198718474/1197638002764152843',
 			},
 			components: {
 				Head: './src/components/Head.astro',
@@ -34,7 +36,16 @@ export default defineConfig({
 					},
 				},
 				{
+					label: 'AIK Plugins',
+					collapsed: false,
+					autogenerate: {
+						collapsed: true,
+						directory: 'aik-plugins',
+					},
+				},
+				{
 					label: 'Inline Module',
+					collapsed: true,
 					autogenerate: { directory: 'inline-mod' },
 				},
 			],

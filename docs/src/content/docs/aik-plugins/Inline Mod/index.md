@@ -3,7 +3,7 @@ title: AIK Plugin
 packageName: '@inox-tools/aik-mod'
 sidebar:
   label: Overview
-  order: 2
+  order: 2000
 ---
 
 [Astro Integration Kit](https://astro-integration-kit.netlify.app/) is an **awesome** community project that aims to provide higher-level tools for integration developers while abstracting the low-level details of interacting with Astro and Vite internals.

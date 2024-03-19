@@ -1,5 +1,14 @@
 # @inox-tools/aik-route-config
 
+## 0.1.1
+
+### Patch Changes
+
+- 479abed: Fixes duplication of modules used in both server-side and client-side
+- 479abed: Fix path normalization on context contruction to work on Windows
+- 479abed: Disable warning during dev and preview server
+- 479abed: Fixes incorrect assumption about imports that caused errors on files with import in script blocks
+
 ## 0.1.0
 
 ### Minor Changes

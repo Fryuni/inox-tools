@@ -1,5 +1,5 @@
 ---
-title: AIK Plugin
+title: Inline Virtual Modules
 packageName: '@inox-tools/aik-mod'
 sidebar:
   label: Overview
@@ -8,7 +8,7 @@ sidebar:
 
 [Astro Integration Kit](https://astro-integration-kit.netlify.app/) is an **awesome** community project that aims to provide higher-level tools for integration developers while abstracting the low-level details of interacting with Astro and Vite internals.
 
-Inox Tools' Inline Modules are available as an AIK plugin for a simpler ergonomics on Astro integrations.
+[Inox Tools' Inline Modules](/inline-mod/) are available as an AIK plugin for a simpler ergonomics on Astro integrations.
 
 ## Getting Started
 

@@ -24,29 +24,46 @@ export default defineConfig({
 			},
 			sidebar: [
 				{
-					label: 'Custom Astro Routing',
-					link: '/custom-routing',
-				},
-				{
-					label: 'Sitemap Extensions',
-					link: '/sitemap-ext',
-					badge: {
-						text: 'NEW',
-						variant: 'success',
-					},
+					label: 'Astro Integrations',
+					collapsed: false,
+					items: [
+						{
+							label: 'Custom Astro Routing',
+							link: '/custom-routing',
+						},
+						{
+							label: 'Sitemap Extensions',
+							link: '/sitemap-ext',
+							badge: {
+								text: 'NEW',
+								variant: 'success',
+							},
+						},
+					],
 				},
 				{
 					label: 'AIK Plugins',
 					collapsed: false,
-					autogenerate: {
-						collapsed: true,
-						directory: 'aik-plugins',
-					},
+					items: [
+						{
+							label: 'Inline Module',
+							collapsed: true,
+							autogenerate: {
+								directory: 'aik-plugins/inline-mod',
+							},
+						},
+					],
 				},
 				{
-					label: 'Inline Module',
-					collapsed: true,
-					autogenerate: { directory: 'inline-mod' },
+					label: 'Vite Plugins',
+					collapsed: false,
+					items: [
+						{
+							label: 'Inline Module',
+							collapsed: true,
+							autogenerate: { directory: 'inline-mod' },
+						},
+					],
 				},
 			],
 			plugins: [

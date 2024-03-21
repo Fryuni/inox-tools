@@ -13,9 +13,9 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "docs:dev": "cd docs && pnpm dev",
     "build": "turbo run --filter '@inox-tools/*' build",
     "build:examples": "turbo run --filter '@example/*' build",
+    "docs:dev": "cd docs && pnpm dev",
     "format": "pnpm run format:code && pnpm run lint",
     "format:code": "prettier -w \"**/*\" --ignore-unknown --cache",
     "lint": "eslint . --report-unused-disable-directives --fix",

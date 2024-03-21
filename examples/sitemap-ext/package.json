@@ -1,14 +1,14 @@
 {
   "name": "@example/sitemap-ext",
+  "version": "0.1.2",
   "private": true,
   "type": "module",
-  "version": "0.1.2",
   "scripts": {
-    "dev": "astro dev",
-    "start": "astro dev",
+    "astro": "astro",
     "build": "astro build",
+    "dev": "astro dev",
     "preview": "astro preview",
-    "astro": "astro"
+    "start": "astro dev"
   },
   "dependencies": {
     "@astrojs/check": "^0.5.6",

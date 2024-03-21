@@ -24,10 +24,10 @@
   "dependencies": {
     "typescript": "^5.4.2"
   },
-  "peerDependency": {
-    "astro": ">=3"
-  },
   "devDependencies": {
     "astro": "^4.4.15"
+  },
+  "peerDependency": {
+    "astro": ">=3"
   }
 }

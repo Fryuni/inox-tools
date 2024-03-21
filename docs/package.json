@@ -1,15 +1,15 @@
 {
   "name": "docs",
-  "type": "module",
   "version": "0.0.1",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "astro dev",
-    "start": "astro dev",
-    "validate": "astro check",
+    "astro": "astro",
     "build": "astro build",
+    "dev": "astro dev",
     "preview": "astro preview",
-    "astro": "astro"
+    "start": "astro dev",
+    "validate": "astro check"
   },
   "dependencies": {
     "@astrojs/starlight": "^0.21.1",

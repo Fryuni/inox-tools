@@ -1,14 +1,14 @@
 {
   "name": "@example/custom-routing",
-  "type": "module",
-  "private": true,
   "version": "0.0.1",
+  "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "astro dev",
-    "start": "astro dev",
+    "astro": "astro",
     "build": "astro check && astro build",
+    "dev": "astro dev",
     "preview": "astro preview",
-    "astro": "astro"
+    "start": "astro dev"
   },
   "dependencies": {
     "@astrojs/check": "^0.5.6",

@@ -17,11 +17,11 @@
     "typescript": "^5.4.2",
     "vite": "^5.1.5"
   },
-  "overrides": {
-    "vite": "$vite"
-  },
   "devDependencies": {
     "@inox-tools/aik-mod": "workspace:^",
     "astro-integration-kit": "^0.7.0"
+  },
+  "overrides": {
+    "vite": "$vite"
   }
 }

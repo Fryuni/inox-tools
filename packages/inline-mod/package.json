@@ -26,10 +26,10 @@
   ],
   "scripts": {
     "build": "tsup",
-    "test": "vitest run --coverage",
-    "test:dev": "vitest --coverage.enabled=true",
     "dev": "tsup --watch",
-    "prepublish": "pnpm run build"
+    "prepublish": "pnpm run build",
+    "test": "vitest run --coverage",
+    "test:dev": "vitest --coverage.enabled=true"
   },
   "dependencies": {
     "debug": "^4.3.4",

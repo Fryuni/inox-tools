@@ -13,29 +13,38 @@
   "author": "Luiz Ferraz <luiz@lferraz.com>",
   "type": "module",
   "exports": {
-    ".": "./index.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
   },
   "files": [
     "README.md",
+    "dist",
     "index.ts",
     "virtual.d.ts"
   ],
   "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "prepublish": "pnpm run build",
     "test": "echo 'No tests'"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.1.1",
+    "recast": "^0.23.6",
+    "sitemap": "^7.1.1"
   },
   "devDependencies": {
     "@types/node": "^20.11.25",
-    "astro": "^4.4.15",
+    "@inox-tools/aik-route-config": "workspace:^",
     "astro-integration-kit": "^0.7.0",
+    "astro": "^4.4.15",
+    "tsup": "^8.0.2",
     "typescript": "^5.4.2",
     "vite": "^5.1.5"
   },
   "peerDependencies": {
     "astro": "^4.3.5"
-  },
-  "dependencies": {
-    "@astrojs/sitemap": "^3.1.1",
-    "@inox-tools/aik-route-config": "workspace:^",
-    "sitemap": "^7.1.1"
   }
 }

@@ -23,7 +23,7 @@ export default definePlugin({
 	name: 'defineRouteConfig',
 	hook: 'astro:config:setup',
 	implementation: (astroConfig) => {
-		const { logger, updateConfig, command } = astroConfig;
+		const { logger, updateConfig, config, command } = astroConfig;
 
 		return <T = any>(options: PerRouteConfigOptions<T>): void => {
 			integrate(astroConfig);
@@ -49,7 +49,10 @@ export default definePlugin({
 					configImport: options.importName,
 					logger,
 				}),
+				warnDuplicated: true,
 				updateConfig,
+				config,
+				logger,
 			});
 		};
 	},

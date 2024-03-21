@@ -1,5 +1,11 @@
 # @inox-tools/aik-mod
 
+## 0.3.0
+
+### Minor Changes
+
+- b5a53ab: Bump AIK to version 0.7
+
 ## 0.2.2
 
 ### Patch Changes

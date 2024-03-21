@@ -1,5 +1,12 @@
 # @inox-tools/aik-route-config
 
+## 0.2.0
+
+### Minor Changes
+
+- b5a53ab: Bump AIK to version 0.7
+- a41cf48: Distribute built package
+
 ## 0.1.1
 
 ### Patch Changes

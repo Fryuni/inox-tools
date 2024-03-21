@@ -24,28 +24,26 @@ export default defineConfig({
 			},
 			sidebar: [
 				{
-					label: 'Custom Astro Routing',
-					link: '/custom-routing',
-				},
-				{
-					label: 'Sitemap Extensions',
-					link: '/sitemap-ext',
-					badge: {
-						text: 'NEW',
-						variant: 'success',
-					},
-				},
-				{
-					label: 'AIK Plugins',
+					label: 'Tiny and Cute Integrations',
 					collapsed: false,
-					autogenerate: {
-						collapsed: true,
-						directory: 'aik-plugins',
-					},
+					items: [
+						{
+							label: 'Custom Astro Routing',
+							link: '/custom-routing',
+						},
+						{
+							label: 'Sitemap Extensions',
+							link: '/sitemap-ext',
+							badge: {
+								text: 'NEW',
+								variant: 'success',
+							},
+						},
+					],
 				},
 				{
 					label: 'Inline Module',
-					collapsed: true,
+					collapsed: false,
 					autogenerate: { directory: 'inline-mod' },
 				},
 			],

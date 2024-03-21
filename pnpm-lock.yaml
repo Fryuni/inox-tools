@@ -200,8 +200,8 @@ importers:
         specifier: ^4.4.15
         version: 4.4.15(@types/node@20.11.25)(typescript@5.4.2)
       astro-integration-kit:
-        specifier: ^0.5.1
-        version: 0.5.1(astro@4.4.15)
+        specifier: ^0.6
+        version: 0.6.1(astro@4.4.15)
       tsup:
         specifier: ^8.0.2
         version: 8.0.2(typescript@5.4.2)
@@ -338,7 +338,7 @@ importers:
     devDependencies:
       '@turbo/gen':
         specifier: ^1.12.5
-        version: 1.12.5(@types/node@20.11.25)(typescript@5.4.2)
+        version: 1.12.5(@types/node@20.11.30)(typescript@5.4.2)
       '@types/lodash':
         specifier: ^4.14.202
         version: 4.14.202
@@ -770,7 +770,7 @@ packages:
       '@babel/core': ^7.0.0-0
     dependencies:
       '@babel/core': 7.23.9
-      '@babel/helper-plugin-utils': 7.22.5
+      '@babel/helper-plugin-utils': 7.24.0
     dev: false
 
   /@babel/plugin-syntax-jsx@7.23.3(@babel/core@7.24.0):
@@ -2391,7 +2391,7 @@ packages:
     resolution: {integrity: sha512-vxhUy4J8lyeyinH7Azl1pdd43GJhZH/tP2weN8TntQblOY+A0XbT8DJk1/oCPuOOyg/Ja757rG0CgHcWC8OfMA==}
     dev: true
 
-  /@turbo/gen@1.12.5(@types/node@20.11.25)(typescript@5.4.2):
+  /@turbo/gen@1.12.5(@types/node@20.11.30)(typescript@5.4.2):
     resolution: {integrity: sha512-sEF/iryAcWYqONXcrAyWREUVPA4eba22hxU1yx4b9+Rs9SUNFkM54cDaXEAtzbh/iji428aQpnuxi+SUT7m9zw==}
     hasBin: true
     dependencies:
@@ -2403,7 +2403,7 @@ packages:
       minimatch: 9.0.3
       node-plop: 0.26.3
       proxy-agent: 6.4.0
-      ts-node: 10.9.2(@types/node@20.11.25)(typescript@5.4.2)
+      ts-node: 10.9.2(@types/node@20.11.30)(typescript@5.4.2)
       update-check: 1.5.4
       validate-npm-package-name: 5.0.0
     transitivePeerDependencies:
@@ -2551,6 +2551,12 @@ packages:
     resolution: {integrity: sha512-TBHyJxk2b7HceLVGFcpAUjsa5zIdsPWlR6XHfyGzd0SFu+/NFgQgMAl96MSDZgQDvJAvV6BKsFOrt6zIL09JDw==}
     dependencies:
       undici-types: 5.26.5
+
+  /@types/node@20.11.30:
+    resolution: {integrity: sha512-dHM6ZxwlmuZaRmUPfv1p+KrdD1Dci04FbdEm/9wEMouFqxYoFl5aMkt0VMAUtYRQDyYvD41WJLukhq/ha3YuTw==}
+    dependencies:
+      undici-types: 5.26.5
+    dev: true
 
   /@types/normalize-package-data@2.4.4:
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
@@ -3155,6 +3161,35 @@ packages:
       recast: 0.23.6
     dev: false
 
+  /astro-integration-kit@0.6.1(astro@4.4.15):
+    resolution: {integrity: sha512-N46hRVrUPJyIAABukpSFcXbQB930+Icu5FKaaM+m7X7scFB8zzuQM781yXVGgJb4OyVCfMayfqwNu7bcaYqPew==}
+    peerDependencies:
+      '@vitejs/plugin-react': ^4.2.1
+      astro: ^4.4.1
+      preact: ^10.19.4
+      react: ^18.2.0
+      solid-js: ^1.8.15
+      svelte: ^4.2.11
+      vue: ^3.4.19
+    peerDependenciesMeta:
+      '@vitejs/plugin-react':
+        optional: true
+      preact:
+        optional: true
+      react:
+        optional: true
+      solid-js:
+        optional: true
+      svelte:
+        optional: true
+      vue:
+        optional: true
+    dependencies:
+      astro: 4.4.15(@types/node@20.11.25)(typescript@5.4.2)
+      pathe: 1.1.2
+      recast: 0.23.6
+    dev: true
+
   /astro@4.4.15(@types/node@20.11.25)(typescript@5.4.2):
     resolution: {integrity: sha512-RTiAnlO8hDp6GqMVvaeJxyuCJhHNEho09lHshMNQBqgRabYPOJGW0HZZrbLRGNOqN9I14ivhZIunYGgAaGQpWw==}
     engines: {node: '>=18.14.1', npm: '>=6.14.0'}
@@ -3349,8 +3384,8 @@ packages:
     requiresBuild: true
     optional: true
 
-  /bare-fs@2.2.1:
-    resolution: {integrity: sha512-+CjmZANQDFZWy4PGbVdmALIwmt33aJg8qTkVjClU6X4WmZkTPBDxRHiBn7fpqEWEfF3AC2io++erpViAIQbSjg==}
+  /bare-fs@2.2.2:
+    resolution: {integrity: sha512-X9IqgvyB0/VA5OZJyb5ZstoN62AzD7YxVGog13kkfYWYqJYcK0kcqLZ6TrmH5qr4/8//ejVcX4x/a0UvaogXmA==}
     requiresBuild: true
     dependencies:
       bare-events: 2.2.1
@@ -8456,7 +8491,7 @@ packages:
       pump: 3.0.0
       tar-stream: 3.1.7
     optionalDependencies:
-      bare-fs: 2.2.1
+      bare-fs: 2.2.2
       bare-path: 2.1.0
     optional: true
 
@@ -8624,7 +8659,7 @@ packages:
       code-block-writer: 11.0.3
     dev: true
 
-  /ts-node@10.9.2(@types/node@20.11.25)(typescript@5.4.2):
+  /ts-node@10.9.2(@types/node@20.11.30)(typescript@5.4.2):
     resolution: {integrity: sha512-f0FFpIdcHgn8zcPSbf1dRevwt047YMnaiJM3u2w2RewrB+fob/zePZcrOyQoLMMO7aBIddLcQIEK5dYjkLnGrQ==}
     hasBin: true
     peerDependencies:
@@ -8643,7 +8678,7 @@ packages:
       '@tsconfig/node12': 1.0.11
       '@tsconfig/node14': 1.0.3
       '@tsconfig/node16': 1.0.4
-      '@types/node': 20.11.25
+      '@types/node': 20.11.30
       acorn: 8.11.3
       acorn-walk: 8.3.2
       arg: 4.1.3

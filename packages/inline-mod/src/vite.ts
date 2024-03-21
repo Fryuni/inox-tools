@@ -1,8 +1,9 @@
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
-import { magicFactory } from './closure/inspectCode.js';
 import { InlineModuleError } from './closure/types.js';
 import { inspectInlineMod, type InlineModule, type ModuleOptions } from './inlining.js';
+
+export { factory, asyncFactory } from './index.js';
 
 export type { ModuleOptions };
 
@@ -29,20 +30,6 @@ function register(name: string, modInfoPromise: Promise<InlineModule>): void {
 }
 
 class InlineModulePluginError extends InlineModuleError {}
-
-export function factory<T>(factoryFn: () => T): T {
-	return magicFactory({
-		isAsync: false,
-		fn: factoryFn,
-	});
-}
-
-export function asyncFactory<T>(factoryFn: () => Promise<T>): Promise<T> {
-	return magicFactory({
-		isAsync: true,
-		fn: factoryFn,
-	});
-}
 
 let inlineModuleCounter = 0;
 

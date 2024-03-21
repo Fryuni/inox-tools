@@ -2,7 +2,7 @@
 title: Generated modules
 description: 'What does the generated modules look like?'
 sidebar:
-  order: 10
+  order: 50
 ---
 
 We strive to make the generated module as simple as possible while maininting all the behavior from the original code.

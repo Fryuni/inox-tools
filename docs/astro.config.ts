@@ -24,7 +24,7 @@ export default defineConfig({
 			},
 			sidebar: [
 				{
-					label: 'Astro Integrations',
+					label: 'Tiny and Cute Integrations',
 					collapsed: false,
 					items: [
 						{
@@ -42,28 +42,9 @@ export default defineConfig({
 					],
 				},
 				{
-					label: 'AIK Plugins',
+					label: 'Inline Module',
 					collapsed: false,
-					items: [
-						{
-							label: 'Inline Module',
-							collapsed: true,
-							autogenerate: {
-								directory: 'aik-plugins/inline-mod',
-							},
-						},
-					],
-				},
-				{
-					label: 'Vite Plugins',
-					collapsed: false,
-					items: [
-						{
-							label: 'Inline Module',
-							collapsed: true,
-							autogenerate: { directory: 'inline-mod' },
-						},
-					],
+					autogenerate: { directory: 'inline-mod' },
 				},
 			],
 			plugins: [

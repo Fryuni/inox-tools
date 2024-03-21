@@ -22,7 +22,12 @@ export default defineIntegration({
   plugins: [routeConfigPlugin],
   setup() {
     return {
-      'astro:config:setup': ({ defineRouteConfig }) => {},
+      'astro:config:setup': ({ defineRouteConfig }) => {
+        defineRouteConfig({
+          importName: 'sitemap-ext:config',
+          callbackHandler: (context, configCb: ConfigCallback | boolean) => {},
+        });
+      },
     };
   },
 });

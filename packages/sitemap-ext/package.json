@@ -26,7 +26,7 @@
   "devDependencies": {
     "@types/node": "^20.11.25",
     "astro": "^4.4.15",
-    "astro-integration-kit": "^0.5.1",
+    "astro-integration-kit": "^0.7.0",
     "typescript": "^5.4.2",
     "vite": "^5.1.5"
   },

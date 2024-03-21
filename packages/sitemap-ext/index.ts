@@ -17,20 +17,22 @@ process.setSourceMapsEnabled(true);
 
 export default defineIntegration({
 	name: '@inox-tools/declarative-sitemap',
-	optionsSchema: z.object({
-		includeByDefault: z.boolean().default(false),
-		customPages: z.array(z.string()).optional(),
-		i18n: z
-			.object({
-				defaultLocale: z.string(),
-				locales: z.record(z.string()),
-			})
-			.optional(),
-		entryLimit: z.number().optional(),
-		changefreq: z.nativeEnum(EnumChangefreq).optional(),
-		lastmod: z.date().optional(),
-		priority: z.number().optional(),
-	}),
+	optionsSchema: z
+		.object({
+			includeByDefault: z.boolean().default(false),
+			customPages: z.array(z.string()).optional(),
+			i18n: z
+				.object({
+					defaultLocale: z.string(),
+					locales: z.record(z.string()),
+				})
+				.optional(),
+			entryLimit: z.number().optional(),
+			changefreq: z.nativeEnum(EnumChangefreq).optional(),
+			lastmod: z.date().optional(),
+			priority: z.number().optional(),
+		})
+		.default({}),
 	plugins: [addVirtualImportsPlugin, addIntegrationPlugin, hasIntegrationPlugin, routeConfigPlugin],
 	setup: ({ options: { includeByDefault, customPages: _externalPages, ...options } }) => {
 		type InclusionRule =

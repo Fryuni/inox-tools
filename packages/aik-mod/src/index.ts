@@ -53,7 +53,7 @@ function ensurePluginIsInstalled(options: Pick<HookParams, 'config' | 'updateCon
 type InlineModPlugin = Plugin<
 	'inlineModule',
 	'astro:config:setup',
-	(p: HookParams) => (options: ModuleOptions) => string
+	(options: ModuleOptions) => string
 >;
 
 export const inlineModPlugin: InlineModPlugin = definePlugin({
@@ -71,7 +71,7 @@ export const inlineModPlugin: InlineModPlugin = definePlugin({
 type DefineModPlugin = Plugin<
 	'defineModule',
 	'astro:config:setup',
-	(p: HookParams) => (name: string, options: ModuleOptions) => void
+	(name: string, options: ModuleOptions) => void
 >;
 
 export const defineModPlugin: DefineModPlugin = definePlugin({
@@ -96,7 +96,7 @@ export const defineModPlugin: DefineModPlugin = definePlugin({
 type DefineMiddlewarePlugin = Plugin<
 	'defineMiddleware',
 	'astro:config:setup',
-	(p: HookParams) => (order: 'pre' | 'post', handler: MiddlewareHandler) => void
+	(order: 'pre' | 'post', handler: MiddlewareHandler) => void
 >;
 
 export const defineMiddlewarePlugin: DefineMiddlewarePlugin = definePlugin({

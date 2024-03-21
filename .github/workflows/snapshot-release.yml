@@ -1,4 +1,4 @@
-name: Preview commands
+name: Snapshot release
 
 on:
   issue_comment:
@@ -14,8 +14,8 @@ env:
   FORCE_COLOR: 1
 
 jobs:
-  preview-mode:
-    name: Enter preview mode
+  snapshot-release:
+    name: Create snapshot-release
     if: ${{ github.repository_owner == 'Fryuni' && github.event.issue.pull_request && (contains(github.event.comment.body, '!snapshot') || contains(github.event.comment.body, '/snapshot')) }}
     runs-on: ubuntu-latest
     permissions: 

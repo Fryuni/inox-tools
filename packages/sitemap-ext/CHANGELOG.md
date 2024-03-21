@@ -1,5 +1,11 @@
 # @inox-tools/sitemap-ext
 
+## 0.2.0
+
+### Minor Changes
+
+- a41cf48: Distribute built package
+
 ## 0.1.2
 
 ### Patch Changes

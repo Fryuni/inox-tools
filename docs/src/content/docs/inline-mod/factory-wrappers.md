@@ -32,7 +32,7 @@ inlineModule({
 });
 ```
 
-Now, instead of attempting to serialize the client, the factory will be serialized the result of calling it will be exported:
+Now, instead of attempting to serialize the client, the factory will be serialized and the result of calling it will be exported:
 
 ```js
 import { Storage } from '@google-cloud/storage';

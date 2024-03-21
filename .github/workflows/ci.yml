@@ -63,6 +63,9 @@ jobs:
       - name: Build Packages
         run: pnpm run build
 
+      - name: Build Examples
+        run: pnpm run build:examples
+
   lint:
     name: Lint
     runs-on: ubuntu-latest
@@ -127,4 +130,3 @@ jobs:
 
       - name: Test
         run: pnpm run test
-

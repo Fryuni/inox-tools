@@ -32,14 +32,13 @@
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.1.1",
-    "recast": "^0.23.6",
+    "@inox-tools/aik-route-config": "workspace:^",
+    "astro-integration-kit": "^0.7.1",
     "sitemap": "^7.1.1"
   },
   "devDependencies": {
-    "@inox-tools/aik-route-config": "workspace:^",
     "@types/node": "^20.11.25",
     "astro": "^4.4.15",
-    "astro-integration-kit": "^0.7.0",
     "tsup": "^8.0.2",
     "typescript": "^5.4.2",
     "vite": "^5.1.5"

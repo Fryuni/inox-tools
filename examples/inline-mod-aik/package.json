@@ -19,7 +19,7 @@
   },
   "devDependencies": {
     "@inox-tools/aik-mod": "workspace:^",
-    "astro-integration-kit": "^0.7.0"
+    "astro-integration-kit": "^0.7.1"
   },
   "overrides": {
     "vite": "$vite"

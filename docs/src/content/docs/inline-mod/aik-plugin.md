@@ -73,19 +73,19 @@ import { defineIntegration } from "astro-integration-kit";
 import { defineModulePlugin } from "@inox-tools/aik-mod";
 
 export default defineIntegration({
-    name: "my-integration",
-    plugins: [defineModulePlugin],
-    setup(options) {
-        return {
-            "astro:config:setup": ({ defineModule }) => {
-                defineModule('virtual:my-integration/module', {
-                    defaultExport: 'some value',
-                    constExports: {},
-                    assignExports: {},
-                }),
-            },
-        }
+  name: "my-integration",
+  plugins: [defineModulePlugin],
+  setup(options) {
+    return {
+      "astro:config:setup": ({ defineModule }) => {
+        defineModule('virtual:my-integration/module', {
+          defaultExport: 'some value',
+          constExports: {},
+          assignExports: {},
+        }),
+      },
     }
+  }
 });
 ```
 
@@ -99,17 +99,17 @@ import { defineIntegration } from "astro-integration-kit";
 import { defineMiddlewarePlugin } from "@inox-tools/aik-mod";
 
 export default defineIntegration({
-    name: "my-integration",
-    plugins: [defineMiddlewarePlugin],
-    setup(options) {
-        return {
-            "astro:config:setup": ({ defineMiddleware }) => {
-                defineMiddleware('pre', (context, next) => {
-                    // This runs in the Astro middleware
-                    return next();
-                }),
-            },
-        }
+  name: "my-integration",
+  plugins: [defineMiddlewarePlugin],
+  setup(options) {
+    return {
+      "astro:config:setup": ({ defineMiddleware }) => {
+        defineMiddleware('pre', (context, next) => {
+          // This runs in the Astro middleware
+          return next();
+        }),
+      },
     }
+  }
 });
 ```

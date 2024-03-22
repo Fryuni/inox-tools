@@ -42,11 +42,11 @@ It receives the [definition of the virtual module](/inline-mod/vite-plugin/#inli
 ```ts /inlineModule\b/ {2,7}
 // my-integration.ts
 import { defineIntegration } from 'astro-integration-kit';
-import { inlineModulePlugin } from '@inox-tools/aik-mod';
+import { inlineModPlugin } from '@inox-tools/aik-mod';
 
 export default defineIntegration({
   name: 'my-integration',
-  plugins: [inlineModulePlugin],
+  plugins: [inlineModPlugin],
   setup(options) {
     return {
       'astro:config:setup': ({ inlineModule }) => {
@@ -70,11 +70,11 @@ It receives the [definition of the virtual module](/inline-mod/vite-plugin/#inli
 ```ts /defineModule\b/ {2,7}
 // my-integration.ts
 import { defineIntegration } from 'astro-integration-kit';
-import { defineModulePlugin } from '@inox-tools/aik-mod';
+import { defineModPlugin } from '@inox-tools/aik-mod';
 
 export default defineIntegration({
   name: 'my-integration',
-  plugins: [defineModulePlugin],
+  plugins: [defineModPlugin],
   setup(options) {
     return {
       'astro:config:setup': ({ defineModule }) => {

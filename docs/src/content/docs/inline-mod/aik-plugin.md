@@ -82,7 +82,7 @@ export default defineIntegration({
           defaultExport: 'some value',
           constExports: {},
           assignExports: {},
-        }),
+        });
       },
     }
   }
@@ -107,7 +107,7 @@ export default defineIntegration({
         defineMiddleware('pre', (context, next) => {
           // This runs in the Astro middleware
           return next();
-        }),
+        });
       },
     }
   }

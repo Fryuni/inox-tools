@@ -69,23 +69,23 @@ It receives the [definition of the virtual module](/inline-mod/vite-plugin/#inli
 
 ```ts /defineModule\b/ {2,7}
 // my-integration.ts
-import { defineIntegration } from "astro-integration-kit";
-import { defineModulePlugin } from "@inox-tools/aik-mod";
+import { defineIntegration } from 'astro-integration-kit';
+import { defineModulePlugin } from '@inox-tools/aik-mod';
 
 export default defineIntegration({
-  name: "my-integration",
+  name: 'my-integration',
   plugins: [defineModulePlugin],
   setup(options) {
     return {
-      "astro:config:setup": ({ defineModule }) => {
+      'astro:config:setup': ({ defineModule }) => {
         defineModule('virtual:my-integration/module', {
           defaultExport: 'some value',
           constExports: {},
           assignExports: {},
         });
       },
-    }
-  }
+    };
+  },
 });
 ```
 
@@ -95,21 +95,21 @@ export default defineIntegration({
 
 ```ts /defineMiddleware\b/ {2,7}
 // my-integration.ts
-import { defineIntegration } from "astro-integration-kit";
-import { defineMiddlewarePlugin } from "@inox-tools/aik-mod";
+import { defineIntegration } from 'astro-integration-kit';
+import { defineMiddlewarePlugin } from '@inox-tools/aik-mod';
 
 export default defineIntegration({
-  name: "my-integration",
+  name: 'my-integration',
   plugins: [defineMiddlewarePlugin],
   setup(options) {
     return {
-      "astro:config:setup": ({ defineMiddleware }) => {
+      'astro:config:setup': ({ defineMiddleware }) => {
         defineMiddleware('pre', (context, next) => {
           // This runs in the Astro middleware
           return next();
         });
       },
-    }
-  }
+    };
+  },
 });
 ```

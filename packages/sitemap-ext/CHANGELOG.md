@@ -1,5 +1,11 @@
 # @inox-tools/sitemap-ext
 
+## 0.2.1
+
+### Patch Changes
+
+- 0944d7c: Distribute with AIK as a dependency instead of bundled
+
 ## 0.2.0
 
 ### Minor Changes

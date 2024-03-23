@@ -1,0 +1,31 @@
+diff --git a/dist/shared/core.1a197e9d.d.mts b/dist/shared/core.1a197e9d.d.mts
+index e82d99d71e00d1f611ee2ee690de6ac572dbac39..c41b68b8b2f3aac0cf1ff9a162f3af2797cb7b49 100644
+--- a/dist/shared/core.1a197e9d.d.mts
++++ b/dist/shared/core.1a197e9d.d.mts
+@@ -602,8 +602,10 @@ type LunariaUserRendererConfig = z.input<typeof LunariaRendererConfigSchema>;
+ type GitHistory = {
+     lastChange: string;
+     lastCommitMessage: string;
++    lastCommitHash?: string;
+     lastMajorChange: string;
+     lastMajorCommitMessage: string;
++    lastMajorCommitHash?: string;
+ };
+ type GitHosting = {
+     gitHostingFileURL: string;
+diff --git a/dist/status/index.mjs b/dist/status/index.mjs
+index 828072dae0523cb49bbe72464a866b397923f67b..02e5e7d75bdf529a47a3787c908c4ccd52fa6671 100644
+--- a/dist/status/index.mjs
++++ b/dist/status/index.mjs
+@@ -268,8 +268,10 @@ async function getFileData(filePath, isSourceLocale, isShallowRepo, rootDir, loc
+     git: {
+       lastChange: toUtcString(lastCommit.date),
+       lastCommitMessage: lastCommit.message,
++      lastCommirHash: lastCommit.hash,
+       lastMajorChange: toUtcString(lastMajorCommit.date),
+-      lastMajorCommitMessage: lastMajorCommit.message
++      lastMajorCommitMessage: lastMajorCommit.message,
++      lastMajorCommitHash: lastMajorCommit.hash
+     }
+   };
+ }

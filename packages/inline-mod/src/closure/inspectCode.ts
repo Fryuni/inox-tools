@@ -968,6 +968,12 @@ async function findModuleEntry(obj: any): Promise<Entry<'module' | 'moduleValue'
 		// node_modules that we actually upload with our serialized functions.
 		const modReference = getModuleFromPath(modPath);
 
+		if (mod.exports === undefined) {
+			// Ignore side-effect only native modules
+			cachedModules.add(mod.id);
+			continue;
+		}
+
 		if (mod.exports.default !== undefined && !reverseModuleCache.has(mod.exports.default)) {
 			reverseModuleCache.set(mod.exports.default, {
 				type: 'module',

@@ -23,7 +23,7 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "prepublish": "pnpm run build",
-    "test": "vitest"
+    "test": "echo 'No tests yet'"
   },
   "devDependencies": {
     "@lunariajs/core": "^0.0.31",

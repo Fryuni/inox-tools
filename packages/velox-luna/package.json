@@ -14,6 +14,11 @@
     "velox-luna": "./dist/index.js",
     "@inox-tools/velox-luna": "./dist/index.js"
   },
+  "files": [
+    "README.md",
+    "dist",
+    "src"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",

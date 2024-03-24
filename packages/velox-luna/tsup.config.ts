@@ -11,7 +11,7 @@ export default defineConfig({
 	splitting: true,
 	minify: true,
 	external: [],
-	noExternal: ['@lunariajs/core'],
+	noExternal: ['@lunariajs/core', /.*/],
 	treeshake: 'smallest',
 	tsconfig: 'tsconfig.json',
 });

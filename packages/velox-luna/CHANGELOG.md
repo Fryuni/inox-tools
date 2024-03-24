@@ -1,5 +1,11 @@
 # @inox-tools/velox-luna
 
+## 0.2.0
+
+### Minor Changes
+
+- 12b7a64: Bundle all dependencies for compatibility
+
 ## 0.1.1
 
 ### Patch Changes

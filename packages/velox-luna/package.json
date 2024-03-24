@@ -25,6 +25,18 @@
     "prepublish": "pnpm run build",
     "test": "echo 'No tests yet'"
   },
+  "dependencies": {
+    "@clack/core": "^0.3.3",
+    "fast-glob": "^3.3.1",
+    "get-port": "^7.0.0",
+    "jiti": "^1.21.0",
+    "micromatch": "^4.0.5",
+    "path-to-regexp": "^6.2.1",
+    "picocolors": "^1.0.0",
+    "simple-git": "^3.20.0",
+    "ultramatter": "^0.0.4",
+    "zod": "^3.22.4"
+  },
   "devDependencies": {
     "@lunariajs/core": "^0.0.31",
     "tsup": "^8.0.2",

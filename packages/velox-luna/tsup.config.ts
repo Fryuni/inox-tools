@@ -9,7 +9,7 @@ export default defineConfig({
 	sourcemap: true,
 	clean: true,
 	splitting: true,
-	minify: false,
+	minify: true,
 	external: [],
 	noExternal: ['@lunariajs/core'],
 	treeshake: 'smallest',

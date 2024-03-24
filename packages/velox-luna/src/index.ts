@@ -1,32 +1,41 @@
-import { loadConfig, type LunariaConfig } from '@lunariajs/core/config';
-import { lunaria, type LocalizationStatus } from '@lunariajs/core';
-import { join } from 'node:path';
-import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { parseCommand } from './command.js';
+import { showDiffForFile } from './diff.js';
+import { getCommitRange, getTargetStatus } from './status.js';
 
 async function main() {
-  const { userConfig } = await loadConfig('./lunaria.config.json');
+	const command = parseCommand();
 
-  const status = await getStatus(userConfig);
+	const targetStatus = await getTargetStatus(command);
+	const commitRange = await getCommitRange(targetStatus);
 
-  console.log('localizationStatus', status);
+	await showDiffForFile(targetStatus.sourceFile, commitRange.from);
+
+	/*
+BRANCH_SLUG="i18n/$(echo "$TARGET_FILE" | iconv -t ascii//TRANSLIT | sed -r s/[^a-zA-Z0-9]+/-/g | sed -r s/^-+\|-+$//g | tr A-Z a-z)"
+
+echo "Branch slug: $BRANCH_SLUG"
+
+git checkout main || true
+
+git branch -D "$BRANCH_SLUG" || true
+
+git checkout -b "$BRANCH_SLUG" main
+
+git diff --find-renames "$LATEST_TRANSLATED_COMMIT...HEAD" -- "$ORIGINAL_FILE"
+
+git add "$TRANSLATED_FILE"
+
+git commit -m "i18n($TARGET_LANGUAGE): Update \`$TARGET_FILE\`" -- "$TRANSLATED_FILE"
+
+git push --set-upstream origin "$BRANCH_SLUG"
+  */
 }
 
-async function getStatus(config: LunariaConfig): Promise<LocalizationStatus[]> {
-  const statusPath = join(config.outDir, 'status.json');
+process.setSourceMapsEnabled(true);
 
-  const prebuiltContent = await readFile(statusPath, 'utf-8').catch(() => null);
+main().catch((error) => {
+	// eslint-disable-next-line no-console
+	console.error(error);
 
-  if (prebuiltContent !== null) {
-    return JSON.parse(prebuiltContent);
-  }
-
-  const newProcessedStatus = await lunaria(config);
-
-  // Ensure output directory exists
-  await mkdir(config.outDir, { recursive: true });
-  await writeFile(statusPath, JSON.stringify(newProcessedStatus, null, 2));
-
-  return newProcessedStatus;
-}
-
-await main();
+	process.exit(1);
+});

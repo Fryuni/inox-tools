@@ -10,9 +10,9 @@
   "repository": "https://github.com/Fryuni/inox-tools.git",
   "license": "MIT",
   "author": "Luiz Ferraz <luiz@lferraz.com>",
-  "type": "module",
   "bin": {
-    "velox-luna": "./dist/index.js"
+    "velox-luna": "./dist/index.js",
+    "@inox-tools/velox-luna": "./dist/index.js"
   },
   "scripts": {
     "build": "tsup",

@@ -40,5 +40,10 @@
     "turbo": "^1.12.5",
     "typescript": "^5.4.2"
   },
-  "packageManager": "pnpm@8.15.5+sha256.4b4efa12490e5055d59b9b9fc9438b7d581a6b7af3b5675eb5c5f447cee1a589"
+  "packageManager": "pnpm@8.15.5+sha256.4b4efa12490e5055d59b9b9fc9438b7d581a6b7af3b5675eb5c5f447cee1a589",
+  "pnpm": {
+    "patchedDependencies": {
+      "@lunariajs/core@0.0.31": "patches/@lunariajs__core@0.0.31.patch"
+    }
+  }
 }

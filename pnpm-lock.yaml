@@ -154,6 +154,9 @@ importers:
       '@astrojs/node':
         specifier: ^8.2.3
         version: 8.2.5(astro@4.5.8)
+      '@astrojs/rss':
+        specifier: ^4.0.5
+        version: 4.0.5
       astro:
         specifier: ^4.4.15
         version: 4.5.8(@types/node@20.11.30)(typescript@5.4.3)

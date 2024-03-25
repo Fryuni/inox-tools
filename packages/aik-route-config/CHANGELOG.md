@@ -1,5 +1,11 @@
 # @inox-tools/aik-route-config
 
+## 0.3.0
+
+### Minor Changes
+
+- a81f657: Update to AIK 0.8
+
 ## 0.2.0
 
 ### Minor Changes

@@ -1,5 +1,11 @@
 # @inox-tools/aik-mod
 
+## 0.4.0
+
+### Minor Changes
+
+- a81f657: Update to AIK 0.8
+
 ## 0.3.1
 
 ### Patch Changes

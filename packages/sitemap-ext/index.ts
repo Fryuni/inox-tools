@@ -1,15 +1,10 @@
-import { defineIntegration } from 'astro-integration-kit';
+import { defineIntegration, addIntegration, hasIntegration } from 'astro-integration-kit';
 import routeConfigPlugin from '@inox-tools/aik-route-config';
 import { AstroError } from 'astro/errors';
 import { type RouteData } from 'astro';
 import { EnumChangefreq } from 'sitemap';
 import { z } from 'astro/zod';
 import * as path from 'node:path';
-import {
-	addVirtualImportsPlugin,
-	addIntegrationPlugin,
-	hasIntegrationPlugin,
-} from 'astro-integration-kit/plugins';
 import sitemap from '@astrojs/sitemap';
 import './virtual.d.ts';
 
@@ -33,7 +28,7 @@ export default defineIntegration({
 			priority: z.number().optional(),
 		})
 		.default({}),
-	plugins: [addVirtualImportsPlugin, addIntegrationPlugin, hasIntegrationPlugin, routeConfigPlugin],
+	plugins: [routeConfigPlugin],
 	setup: ({ options: { includeByDefault, customPages: _externalPages, ...options } }) => {
 		type InclusionRule =
 			| { type: 'regex'; regex: RegExp; decision: boolean }
@@ -65,8 +60,10 @@ export default defineIntegration({
 		let baseUrl!: URL;
 
 		return {
-			'astro:config:setup': ({ defineRouteConfig, hasIntegration, addIntegration, config }) => {
-				if (hasIntegration('@astrojs/sitemap')) {
+			'astro:config:setup': (params) => {
+				const { defineRouteConfig, config } = params;
+
+				if (hasIntegration(params, { name: '@astrojs/sitemap' })) {
 					throw new AstroError(
 						'Cannot use both `@inox-tools/declarative-sitemap` and `@astrojs/sitemap` integrations at the same time.',
 						'Remove the `@astrojs/sitemap` integration from your project to use `@inox-tools/declarative-sitemap`.'
@@ -99,8 +96,8 @@ export default defineIntegration({
 							},
 							setSitemap(routeOptions) {
 								for (const route of context.routeData) {
-									for (const { sitemap: decision, params } of routeOptions) {
-										makeDecision(decision ?? includeByDefault, route, [params]);
+									for (const { sitemap: decision, params: routeParams } of routeOptions) {
+										makeDecision(decision ?? includeByDefault, route, [routeParams]);
 									}
 								}
 							},
@@ -119,8 +116,9 @@ export default defineIntegration({
 				});
 
 				// The sitemap integration will run _after_ the build is done, so after the build re-mapping done below.
-				addIntegration(
-					sitemap({
+				addIntegration(params, {
+					ensureUnique: true,
+					integration: sitemap({
 						...options,
 						// This relies on an internal detail of the sitemap integration that the reference
 						// to the array is passed around without being copied.
@@ -137,8 +135,8 @@ export default defineIntegration({
 
 							return ruling?.decision ?? includeByDefault;
 						},
-					})
-				);
+					}),
+				});
 			},
 			'astro:build:done': async ({ pages }) => {
 				const extraPagesSet = new Set<string>(

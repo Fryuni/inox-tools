@@ -143,8 +143,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/aik-mod
       astro-integration-kit:
-        specifier: ^0.7.1
-        version: 0.7.1(astro@4.5.8)
+        specifier: ^0.8.0
+        version: 0.8.0(astro@4.5.8)
 
   examples/inline-mod-astro:
     dependencies:
@@ -208,8 +208,8 @@ importers:
         specifier: ^4.4.15
         version: 4.5.8(@types/node@20.11.30)(typescript@5.4.3)
       astro-integration-kit:
-        specifier: ^0.7.1
-        version: 0.7.1(astro@4.5.8)
+        specifier: ^0.8.0
+        version: 0.8.0(astro@4.5.8)
       tsup:
         specifier: ^8.0.2
         version: 8.0.2(typescript@5.4.3)
@@ -226,8 +226,8 @@ importers:
         specifier: ^4.3.5
         version: 4.5.8(@types/node@20.11.30)(typescript@5.4.3)
       astro-integration-kit:
-        specifier: ~0.7
-        version: 0.7.1(astro@4.5.8)
+        specifier: ~0.8
+        version: 0.8.0(astro@4.5.8)
       recast:
         specifier: ^0.23.6
         version: 0.23.6
@@ -310,8 +310,8 @@ importers:
         specifier: workspace:^
         version: link:../aik-route-config
       astro-integration-kit:
-        specifier: ^0.7.1
-        version: 0.7.1(astro@4.5.8)
+        specifier: ^0.8.0
+        version: 0.8.0(astro@4.5.8)
       sitemap:
         specifier: ^7.1.1
         version: 7.1.1
@@ -2724,8 +2724,8 @@ packages:
       remark-expressive-code: 0.33.5
     dev: false
 
-  /astro-integration-kit@0.7.1(astro@4.5.8):
-    resolution: {integrity: sha512-QiIRvNdESlm7bziuEkWXUJI6uWdQgmeUEOLXkbpuMZrZK8c7DytbGSs3SStpT0b5ITQ1XcDV9r9DAixyW0F2Dg==}
+  /astro-integration-kit@0.8.0(astro@4.5.8):
+    resolution: {integrity: sha512-YTdSYrE6xrYpYWZghUUhsTs6Mt1H+/Mucv2VUPfhHoeY8IS9XbpA2adFEBRMd4n+sFd8W490gCUtjmWxnhEs9Q==}
     peerDependencies:
       '@astrojs/db': ^0.9.0
       '@vitejs/plugin-react': ^4.2.1

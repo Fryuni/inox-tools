@@ -1,5 +1,4 @@
-import { definePlugin } from 'astro-integration-kit';
-import { addVitePlugin } from 'astro-integration-kit/utilities';
+import { definePlugin, addVitePlugin } from 'astro-integration-kit';
 import { hoistGlobalPlugin } from './hoistGlobalPlugin.js';
 import { integrate, convertContext } from './contextResolution.js';
 import type { ConfigContext, InnerContext } from './contextResolution.js';
@@ -22,11 +21,11 @@ const globalHandlers: Map<string, InnerHandler<any>> = ((globalThis as any)[
 export default definePlugin({
 	name: 'defineRouteConfig',
 	hook: 'astro:config:setup',
-	implementation: (astroConfig) => {
-		const { logger, updateConfig, config, command } = astroConfig;
+	implementation: (params) => {
+		const { logger, command } = params;
 
 		return <T = any>(options: PerRouteConfigOptions<T>): void => {
-			integrate(astroConfig);
+			integrate(params);
 
 			const innerHandler: InnerHandler<T> = async (context, value) => {
 				// Do nothing while running dev or preview server
@@ -44,15 +43,12 @@ export default definePlugin({
 
 			globalHandlers.set(options.importName, innerHandler);
 
-			addVitePlugin({
+			addVitePlugin(params, {
 				plugin: hoistGlobalPlugin({
 					configImport: options.importName,
 					logger,
 				}),
 				warnDuplicated: true,
-				updateConfig,
-				config,
-				logger,
 			});
 		};
 	},

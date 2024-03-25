@@ -43,6 +43,6 @@
   },
   "peerDependencies": {
     "astro": "^4.3.5",
-    "astro-integration-kit": "~0.7"
+    "astro-integration-kit": "~0.8"
   }
 }

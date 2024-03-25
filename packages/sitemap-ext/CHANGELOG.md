@@ -1,5 +1,13 @@
 # @inox-tools/sitemap-ext
 
+## 0.2.2
+
+### Patch Changes
+
+- a81f657: Update to AIK 0.8
+- Updated dependencies [a81f657]
+  - @inox-tools/aik-route-config@0.3.0
+
 ## 0.2.1
 
 ### Patch Changes

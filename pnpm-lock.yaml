@@ -200,6 +200,9 @@ importers:
       '@inox-tools/inline-mod':
         specifier: workspace:^
         version: link:../inline-mod
+      astro-integration-kit:
+        specifier: ~0.8
+        version: 0.8.0(astro@4.5.8)
     devDependencies:
       '@types/node':
         specifier: ^20.11.25
@@ -207,9 +210,6 @@ importers:
       astro:
         specifier: ^4.4.15
         version: 4.5.8(@types/node@20.11.30)(typescript@5.4.3)
-      astro-integration-kit:
-        specifier: ^0.8.0
-        version: 0.8.0(astro@4.5.8)
       tsup:
         specifier: ^8.0.2
         version: 8.0.2(typescript@5.4.3)

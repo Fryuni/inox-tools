@@ -33,7 +33,7 @@
   "dependencies": {
     "@astrojs/sitemap": "^3.1.1",
     "@inox-tools/aik-route-config": "workspace:^",
-    "astro-integration-kit": "^0.7.1",
+    "astro-integration-kit": "^0.8.0",
     "sitemap": "^7.1.1"
   },
   "devDependencies": {

@@ -1,9 +1,7 @@
 import type { HookParameters, RouteData } from 'astro';
 import * as path from 'node:path';
-import { addIntegration } from 'astro-integration-kit/utilities';
 import { Once } from './once.js';
-import { defineIntegration } from 'astro-integration-kit';
-import { addVitePluginPlugin } from 'astro-integration-kit/plugins';
+import { defineIntegration, addIntegration, addVitePlugin } from 'astro-integration-kit';
 import { fileURLToPath } from 'node:url';
 import { normalizePath } from 'vite';
 
@@ -27,30 +25,32 @@ const componentToContextMapping = new Map<string, ConfigContext>();
 
 const integration = defineIntegration({
 	name: '@inox-tools/aik-route-config/context-resolution',
-	plugins: [addVitePluginPlugin],
 	setup: () => {
 		let root!: URL;
 
 		return {
-			'astro:config:setup': ({ addVitePlugin, config }) => {
+			'astro:config:setup': (params) => {
+				const { config } = params;
 				root = config.root;
 
-				addVitePlugin({
-					name: '@inox-tools/aik-route-config/context-resolution',
-					async writeBundle(outputOptions, bundle) {
-						const basePath = outputOptions.dir!;
+				addVitePlugin(params, {
+					plugin: {
+						name: '@inox-tools/aik-route-config/context-resolution',
+						async writeBundle(outputOptions, bundle) {
+							const basePath = outputOptions.dir!;
 
-						for (const chunk of Object.values(bundle)) {
-							if (chunk.type !== 'chunk') continue;
+							for (const chunk of Object.values(bundle)) {
+								if (chunk.type !== 'chunk') continue;
 
-							const fileName = path.join(basePath, chunk.fileName);
+								const fileName = path.join(basePath, chunk.fileName);
 
-							for (const id of chunk.moduleIds) {
-								if (id.endsWith('.astro')) {
-									componentToChunkMapping.set(id, fileName);
+								for (const id of chunk.moduleIds) {
+									if (id.endsWith('.astro')) {
+										componentToChunkMapping.set(id, fileName);
+									}
 								}
 							}
-						}
+						},
 					},
 				});
 			},
@@ -97,14 +97,9 @@ type IntegrateParams = HookParameters<'astro:config:setup'>;
 
 export function integrate(params: IntegrateParams) {
 	integrateOnce.do(() => {
-		addIntegration({
-			config: params.config,
-			logger: params.logger,
-			updateConfig: params.updateConfig,
+		addIntegration(params, {
 			integration: integration(),
-			options: {
-				ensureUnique: true,
-			},
+			ensureUnique: true,
 		});
 	});
 }

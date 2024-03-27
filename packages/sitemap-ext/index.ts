@@ -7,6 +7,7 @@ import { z } from 'astro/zod';
 import * as path from 'node:path';
 import sitemap from '@astrojs/sitemap';
 import './virtual.d.ts';
+import { inspect } from 'node:util';
 
 process.setSourceMapsEnabled(true);
 
@@ -47,11 +48,11 @@ export default defineIntegration({
 					for (const routeParam of routeParams) {
 						const pathName = route.generate(routeParam);
 
-						inclusions.push({ type: 'static', path: pathName, decision });
+						inclusions.push({ type: 'static', path: onlyLeadingSlash(pathName), decision });
 					}
 				}
 			} else {
-				inclusions.push({ type: 'static', path: route.pathname, decision });
+				inclusions.push({ type: 'static', path: onlyLeadingSlash(route.pathname), decision });
 			}
 		}
 
@@ -61,7 +62,7 @@ export default defineIntegration({
 
 		return {
 			'astro:config:setup': (params) => {
-				const { defineRouteConfig, config } = params;
+				const { defineRouteConfig, logger, config } = params;
 
 				if (hasIntegration(params, { name: '@astrojs/sitemap' })) {
 					throw new AstroError(
@@ -103,6 +104,7 @@ export default defineIntegration({
 							},
 						};
 
+						logger.debug('Running sitemap config callback:' + inspect({ context, configCb }));
 						if (typeof configCb === 'boolean') {
 							if (configCb) {
 								hooks.addToSitemap();
@@ -125,13 +127,15 @@ export default defineIntegration({
 						customPages: extraPages,
 						filter: (page) => {
 							const url = new URL(page);
-							const route = path.relative(config.base, url.pathname);
+							const route = onlyLeadingSlash(path.relative(config.base, url.pathname));
 
 							const ruling = inclusions.find(
 								(r) =>
 									(r.type === 'static' && r.path === route) ||
 									(r.type === 'regex' && r.regex.test(route))
 							);
+
+							logger.debug(`Ruling for ${route}: ${inspect(ruling ?? includeByDefault)}`);
 
 							return ruling?.decision ?? includeByDefault;
 						},
@@ -161,4 +165,8 @@ export default defineIntegration({
 
 function trimSlashes(input: string): string {
 	return input.replace(/^\/+|\/+$/g, '');
+}
+
+function onlyLeadingSlash(input: string): string {
+	return '/' + trimSlashes(input);
 }

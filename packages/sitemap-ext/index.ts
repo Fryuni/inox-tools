@@ -33,7 +33,7 @@ export default defineIntegration({
 	setup: ({ options: { includeByDefault, customPages: _externalPages, ...options } }) => {
 		type InclusionRule =
 			| { type: 'regex'; regex: RegExp; decision: boolean }
-			| { type: 'static'; path: string; decision: boolean };
+			| { type: 'static'; path: string; comparePath: string; decision: boolean; static: boolean };
 
 		const inclusions: InclusionRule[] = [];
 		function makeDecision(
@@ -48,11 +48,23 @@ export default defineIntegration({
 					for (const routeParam of routeParams) {
 						const pathName = route.generate(routeParam);
 
-						inclusions.push({ type: 'static', path: onlyLeadingSlash(pathName), decision });
+						inclusions.push({
+							type: 'static',
+							path: pathName,
+							comparePath: onlyLeadingSlash(pathName),
+							decision,
+							static: false,
+						});
 					}
 				}
 			} else {
-				inclusions.push({ type: 'static', path: onlyLeadingSlash(route.pathname), decision });
+				inclusions.push({
+					type: 'static',
+					path: route.pathname,
+					comparePath: onlyLeadingSlash(route.pathname),
+					decision,
+					static: true,
+				});
 			}
 		}
 
@@ -83,7 +95,7 @@ export default defineIntegration({
 
 				defineRouteConfig({
 					importName: 'sitemap-ext:config',
-					callbackHandler: (context, configCb: ConfigCallback | boolean) => {
+					callbackHandler: async (context, configCb: ConfigCallback | boolean) => {
 						const hooks: Parameters<ConfigCallback>[0] = {
 							removeFromSitemap(routeParams) {
 								for (const route of context.routeData) {
@@ -112,7 +124,7 @@ export default defineIntegration({
 								hooks.removeFromSitemap();
 							}
 						} else {
-							configCb(hooks);
+							await configCb(hooks);
 						}
 					},
 				});
@@ -131,7 +143,7 @@ export default defineIntegration({
 
 							const ruling = inclusions.find(
 								(r) =>
-									(r.type === 'static' && r.path === route) ||
+									(r.type === 'static' && r.comparePath === route) ||
 									(r.type === 'regex' && r.regex.test(route))
 							);
 
@@ -146,7 +158,8 @@ export default defineIntegration({
 				const extraPagesSet = new Set<string>(
 					inclusions
 						.filter(
-							(i): i is InclusionRule & { type: 'static' } => i.type === 'static' && i.decision
+							(i): i is InclusionRule & { type: 'static' } =>
+								i.type === 'static' && i.decision && !i.static
 						)
 						.map((i) => trimSlashes(i.path))
 				);

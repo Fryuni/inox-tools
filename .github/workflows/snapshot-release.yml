@@ -10,8 +10,8 @@ defaults:
 
 env:
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-  TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
-  FORCE_COLOR: 1
+  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+  FORCE_COLOR: true
 
 jobs:
   snapshot-release:

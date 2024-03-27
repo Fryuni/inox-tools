@@ -20,7 +20,9 @@ export default defineConfig({
 		'./virtual.d.ts',
 		'vite',
 	],
-	noExternal: [],
+	noExternal: [
+		// '@inox-tools/aik-route-config',
+	],
 	treeshake: 'smallest',
 	tsconfig: 'tsconfig.json',
 });

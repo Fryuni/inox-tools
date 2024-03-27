@@ -4,6 +4,7 @@ import { Once } from './once.js';
 import { defineIntegration, addIntegration, addVitePlugin } from 'astro-integration-kit';
 import { fileURLToPath } from 'node:url';
 import { normalizePath } from 'vite';
+import { inspect } from 'node:util';
 
 export type ConfigContext = {
 	route: string[];
@@ -73,7 +74,7 @@ const integration = defineIntegration({
 					}
 				}
 			},
-			'astro:build:ssr': async ({ manifest: { routes } }) => {
+			'astro:build:ssr': async ({ logger, manifest: { routes } }) => {
 				const ssrComponents = routes
 					.map((r) => r.routeData)
 					.filter((r) => r.type === 'page')
@@ -84,7 +85,9 @@ const integration = defineIntegration({
 
 				// Import SSR components so the hoisted logic gets executed
 				for (const module of ssrComponents) {
-					await import(/* @vite-ignore */ module!).catch(() => {});
+					await import(/* @vite-ignore */ module!).catch((error) => {
+						logger.error(`Failed to import SSR component: ${module!} ${inspect(error)}`);
+					});
 				}
 			},
 		};

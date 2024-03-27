@@ -1,5 +1,14 @@
 # @inox-tools/sitemap-ext
 
+## 0.2.3
+
+### Patch Changes
+
+- a1c57c9: Fixes bug causing duplicated SSR entries with static paths on the sitemap
+- 520e3bb: Fixes handling of projects with a base with a trailing slash
+- Updated dependencies [1a47034]
+  - @inox-tools/aik-route-config@0.3.1
+
 ## 0.2.2
 
 ### Patch Changes

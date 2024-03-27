@@ -1,5 +1,11 @@
 # @inox-tools/aik-route-config
 
+## 0.3.1
+
+### Patch Changes
+
+- 1a47034: Adds a log message on errors to import SSR modules during build time
+
 ## 0.3.0
 
 ### Minor Changes

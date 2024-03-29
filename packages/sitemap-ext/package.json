@@ -31,17 +31,17 @@
     "test": "echo 'No tests'"
   },
   "dependencies": {
-    "@astrojs/sitemap": "^3.1.1",
+    "@astrojs/sitemap": "^3.1.2",
     "@inox-tools/aik-route-config": "workspace:^",
     "astro-integration-kit": "^0.8.0",
     "sitemap": "^7.1.1"
   },
   "devDependencies": {
-    "@types/node": "^20.11.25",
-    "astro": "^4.4.15",
+    "@types/node": "^20.11.30",
+    "astro": "^4.5.12",
     "tsup": "^8.0.2",
-    "typescript": "^5.4.2",
-    "vite": "^5.1.5"
+    "typescript": "^5.4.3",
+    "vite": "^5.2.7"
   },
   "peerDependencies": {
     "astro": "^4.3.5"

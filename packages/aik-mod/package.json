@@ -32,11 +32,11 @@
     "@inox-tools/inline-mod": "workspace:^"
   },
   "devDependencies": {
-    "@types/node": "^20.11.25",
-    "astro": "^4.4.15",
+    "@types/node": "^20.11.30",
+    "astro": "^4.5.12",
     "tsup": "^8.0.2",
-    "typescript": "^5.4.2",
-    "vite": "^5.1.5"
+    "typescript": "^5.4.3",
+    "vite": "^5.2.7"
   },
   "peerDependencies": {
     "astro": "^4.3.5",

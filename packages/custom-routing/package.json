@@ -25,7 +25,7 @@
     "typescript": "^5.4.2"
   },
   "devDependencies": {
-    "astro": "^4.4.15"
+    "astro": "^4.5.12"
   },
   "peerDependency": {
     "astro": ">=3"

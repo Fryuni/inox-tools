@@ -21,11 +21,9 @@
     "build": "echo 'no build'",
     "test": "echo 'no test'"
   },
-  "dependencies": {
-    "typescript": "^5.4.2"
-  },
   "devDependencies": {
-    "astro": "^4.5.12"
+    "astro": "^4.5.12",
+    "typescript": "^5.4.2"
   },
   "peerDependency": {
     "astro": ">=3"

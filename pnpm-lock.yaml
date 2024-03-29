@@ -202,7 +202,7 @@ importers:
         version: link:../inline-mod
       astro-integration-kit:
         specifier: ~0.8
-        version: 0.8.0(astro@4.5.8)
+        version: 0.8.0(astro@4.5.12)
     devDependencies:
       '@types/node':
         specifier: ^20.11.30
@@ -255,14 +255,13 @@ importers:
         version: 1.4.0(@types/node@20.11.30)(@vitest/ui@1.4.0)
 
   packages/custom-routing:
-    dependencies:
-      typescript:
-        specifier: ^5.4.3
-        version: 5.4.3
     devDependencies:
       astro:
         specifier: ^4.5.12
         version: 4.5.12(@types/node@20.11.30)(typescript@5.4.3)
+      typescript:
+        specifier: ^5.4.2
+        version: 5.4.3
 
   packages/inline-mod:
     dependencies:

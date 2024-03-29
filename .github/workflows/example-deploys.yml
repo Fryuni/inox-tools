@@ -1,0 +1,79 @@
+name: Deploy Examples
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  merge_group:
+  pull_request:
+    paths-ignore:
+      - "**/*.md"
+      - ".github/ISSUE_TEMPLATE/**"
+
+# Automatically cancel older in-progress jobs on the same branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request_target' && github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+  FORCE_COLOR: true
+  ASTRO_TELEMETRY_DISABLED: true
+  # 7 GiB by default on GitHub, setting to 6 GiB
+  # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
+  NODE_OPTIONS: --max-old-space-size=6144
+
+jobs:
+  cloudflare:
+    name: 'Deploy "${{ matrix.example }}" to Cloudflare'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    strategy:
+      matrix:
+        example:
+        - sitemap-ext
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v2
+
+      - name: Setup Node
+        uses: actions/setup-node@main
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - uses: schnerring/cloudflare-pages-branch-alias-action@v1
+        id: pages-branch-alias
+        with:
+          # git-branch input
+          git-branch: ${{ github.head_ref }}
+
+      - name: Build Packages
+        run: pnpm -w build
+
+      - name: Build to Cloudflare
+        run: ./examples/deploy-cloudflare.sh ${{ matrix.example }}
+        env:
+          DEPLOY_SITE: "https://${{ steps.pages-branch-alias.outputs.branch-alias }}.inox-tools-ex-${{ matrix.example }}.pages.dev"
+
+      - name: Discard all git changes
+        run: git restore .
+
+      - name: Publish to Cloudflare Pages
+        run: pnpm dlx wrangler pages deploy dist --project-name 'inox-tools-ex-${{ matrix.example }}' --branch '${{ github.head_ref }}'
+        working-directory: examples/${{ matrix.example }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

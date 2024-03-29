@@ -38,6 +38,7 @@ jobs:
       matrix:
         example:
         - sitemap-ext
+        - custom-routing
     steps:
       - name: Checkout
         uses: actions/checkout@v4

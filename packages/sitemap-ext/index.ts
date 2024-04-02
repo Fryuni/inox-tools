@@ -70,11 +70,14 @@ export default defineIntegration({
 
 		const extraPages: string[] = [...(_externalPages ?? [])];
 
+		let trailingSlash = false;
+
 		let baseUrl!: URL;
 
 		return {
 			'astro:config:setup': (params) => {
 				const { defineRouteConfig, logger, config } = params;
+				trailingSlash = config.trailingSlash !== 'never';
 
 				if (hasIntegration(params, { name: '@astrojs/sitemap' })) {
 					throw new AstroError(
@@ -169,7 +172,8 @@ export default defineIntegration({
 				}
 
 				for (const page of extraPagesSet) {
-					extraPages.push(new URL(page, baseUrl).toString());
+					const url = trimSlashes(new URL(page, baseUrl).toString());
+					extraPages.push(trailingSlash ? url + '/' : url);
 				}
 			},
 		};

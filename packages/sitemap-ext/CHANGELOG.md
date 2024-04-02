@@ -1,5 +1,11 @@
 # @inox-tools/sitemap-ext
 
+## 0.2.4
+
+### Patch Changes
+
+- 7e3a1c0: Fixes generation of dynamic SSR URLs to behave the same as the official sitemap integration regarding `trailingSlash` configuration
+
 ## 0.2.3
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @inox-tools/inline-mod
 
+## 0.3.0
+
+### Minor Changes
+
+- b25ba12: Remove dependency on TypeScript
+
 ## 0.2.1
 
 ### Patch Changes

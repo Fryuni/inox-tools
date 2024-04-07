@@ -1,5 +1,11 @@
 # @inox-tools/sitemap-ext
 
+## 0.2.5
+
+### Patch Changes
+
+- f28ad0a: Fixes package name in error message
+
 ## 0.2.4
 
 ### Patch Changes

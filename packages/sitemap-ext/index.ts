@@ -81,8 +81,8 @@ export default defineIntegration({
 
 				if (hasIntegration(params, { name: '@astrojs/sitemap' })) {
 					throw new AstroError(
-						'Cannot use both `@inox-tools/declarative-sitemap` and `@astrojs/sitemap` integrations at the same time.',
-						'Remove the `@astrojs/sitemap` integration from your project to use `@inox-tools/declarative-sitemap`.'
+						'Cannot use both `@inox-tools/sitemap-ext` and `@astrojs/sitemap` integrations at the same time.',
+						'Remove the `@astrojs/sitemap` integration from your project to use `@inox-tools/sitemap-ext`.'
 					);
 				}
 

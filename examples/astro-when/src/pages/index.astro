@@ -1,0 +1,30 @@
+---
+import { whenAmI } from '@it-astro:when';
+---
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<title>Astro When</title>
+	</head>
+	<body>
+		<h1>Astro</h1>
+		<p>Running on: {whenAmI}</p>
+		<hr />
+		<p>Other pages:</p>
+		<ul>
+			<li><a href="/prerender/">Opting in to prerendering</a></li>
+			<li><a href="/on-demand/">Opting out of prerendering</a></li>
+		</ul>
+		<hr />
+		<p id="clientRender"></p>
+	</body>
+</html>
+
+<script>
+	import { whenAmI } from '@it-astro:when';
+
+	document.getElementById('clientRender')!.textContent = `Client render: ${whenAmI}`;
+</script>

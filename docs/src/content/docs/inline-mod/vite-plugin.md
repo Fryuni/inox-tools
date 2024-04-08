@@ -42,7 +42,7 @@ export default () => {
 
 Along with the plugin, there are different functions to define virtual modules.
 
-All of them accept normal values and [factory wrappers](/inline-mod/factory-wrappers/) as values to be included in the virtual modules.
+All of them accept normal values and [factory wrappers](/inline-mod/factory-wrappers) as values to be included in the virtual modules.
 
 ### `inlineModule`
 

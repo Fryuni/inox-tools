@@ -31,13 +31,13 @@ export default defineIntegration({
 
 Each functionality is provided as a separate AIK plugin that you can use.
 
-All of them accept normal values and [factory wrappers](/inline-mod/factory-wrappers/) as values to be included in the virtual modules.
+All of them accept normal values and [factory wrappers](/inline-mod/factory-wrappers) as values to be included in the virtual modules.
 
 ### `inlineModule`
 
 `inlineModule` allows you to define a module inline, returning the name of the defined module.
 
-It receives the [definition of the virtual module](/inline-mod/vite-plugin/#inlinemodule).
+It receives the [definition of the virtual module](/inline-mod/vite-plugin#inlinemodule).
 
 ```ts /inlineModule\b/ {2,7}
 // my-integration.ts
@@ -65,7 +65,7 @@ export default defineIntegration({
 
 `defineModule` allows you to define a module inline with a given import name.
 
-It receives the [definition of the virtual module](/inline-mod/vite-plugin/#inlinemodule).
+It receives the [definition of the virtual module](/inline-mod/vite-plugin#inlinemodule).
 
 ```ts /defineModule\b/ {2,7}
 // my-integration.ts

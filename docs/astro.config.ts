@@ -10,6 +10,7 @@ const SITE =
 // https://astro.build/config
 export default defineConfig({
 	site: SITE,
+	trailingSlash: 'never',
 	integrations: [
 		starlight({
 			title: 'Inox Tools',
@@ -34,6 +35,10 @@ export default defineConfig({
 						{
 							label: 'Sitemap Extensions',
 							link: '/sitemap-ext',
+						},
+						{
+							label: 'Astro When',
+							link: '/astro-when',
 							badge: {
 								text: 'NEW',
 								variant: 'success',

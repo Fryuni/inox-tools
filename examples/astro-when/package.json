@@ -1,5 +1,6 @@
 {
-  "name": "when",
+  "name": "@examples/astro-when",
+  "private": true,
   "type": "module",
   "version": "0.0.1",
   "scripts": {

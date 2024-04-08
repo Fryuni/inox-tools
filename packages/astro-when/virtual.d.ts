@@ -7,5 +7,5 @@ declare module '@it-astro:when' {
 		DevServer = 'devServer',
 	}
 
-	export const currentCycle: When;
+	export const whenAmI: When;
 }

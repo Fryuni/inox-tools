@@ -6,15 +6,16 @@ const RESOLVED_MODULE_ID = `\x00${VIRTUAL_MODULE_ID}`;
 
 // Globally indicate to the virtual module that it is in the same context as the build system.
 const key = Symbol.for('astro:when/buildContext');
-(globalThis as any)[key] = true;
 
 export default defineIntegration({
 	name: '@inox-tools/astro-when',
-	optionsSchema: z.never(),
+	optionsSchema: z.never().optional(),
 	setup: () => ({
 		'astro:config:setup': (params) => {
 			const outputMode = params.config.output;
 			const command = params.command;
+
+			(globalThis as any)[key] = command === 'build';
 
 			addVitePlugin(params, {
 				plugin: {
@@ -38,20 +39,20 @@ export default defineIntegration({
             `;
 
 						if (options?.ssr !== true) {
-							return `${preamble} export const currentCycle = When.Client;`;
+							return `${preamble} export const whenAmI = When.Client;`;
 						}
 
 						if (command === 'dev') {
-							return `${preamble} export const currentCycle = When.DevServer;`;
+							return `${preamble} export const whenAmI = When.DevServer;`;
 						}
 
 						if (outputMode === 'static') {
-							return `${preamble} export const currentCycle = When.StaticBuild;`;
+							return `${preamble} export const whenAmI = When.StaticBuild;`;
 						}
 
 						return `${preamble}
               const isBuildContext = Symbol.for('astro:when/buildContext');
-              export const currentCycle = globalThis[isBuildContext] ? When.Prerender : When.Server;
+              export const whenAmI = globalThis[isBuildContext] ? When.Prerender : When.Server;
             `;
 					},
 				},

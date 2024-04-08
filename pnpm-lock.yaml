@@ -254,6 +254,28 @@ importers:
         specifier: ^1.4.0
         version: 1.4.0(@types/node@20.11.30)(@vitest/ui@1.4.0)
 
+  packages/astro-when:
+    dependencies:
+      astro-integration-kit:
+        specifier: ^0.9.0
+        version: 0.9.0(astro@4.5.12)
+    devDependencies:
+      '@types/node':
+        specifier: ^20.11.30
+        version: 20.11.30
+      astro:
+        specifier: ^4.5.12
+        version: 4.5.12(@types/node@20.11.30)(typescript@5.4.3)
+      tsup:
+        specifier: ^8.0.2
+        version: 8.0.2(typescript@5.4.3)
+      typescript:
+        specifier: ^5.4.3
+        version: 5.4.3
+      vite:
+        specifier: ^5.2.7
+        version: 5.2.7(@types/node@20.11.30)
+
   packages/custom-routing:
     devDependencies:
       astro:
@@ -452,7 +474,7 @@ packages:
       remark-parse: 11.0.0
       remark-rehype: 11.1.0
       remark-smartypants: 2.1.0
-      shiki: 1.2.0
+      shiki: 1.2.1
       unified: 11.0.4
       unist-util-remove-position: 5.0.0
       unist-util-visit: 5.0.0
@@ -2939,6 +2961,41 @@ packages:
         optional: true
     dependencies:
       astro: 4.5.8(@types/node@20.11.30)(typescript@5.4.3)
+      pathe: 1.1.2
+      recast: 0.23.6
+    dev: false
+
+  /astro-integration-kit@0.9.0(astro@4.5.12):
+    resolution: {integrity: sha512-/x9ws0ZX8n8QqzLhn4AM4kuKIH9SOn4CoecftwwszRuYdcyp2AwGkSuEkCNs/z31tJc++qM/jtMC/gFFBsAXLQ==}
+    peerDependencies:
+      '@astrojs/db': ^0.9.0
+      '@vitejs/plugin-react': ^4.2.1
+      astro: ^4.4.1
+      preact: ^10.19.4
+      react: ^18.2.0
+      react-dom: ^18.2.0
+      solid-js: ^1.8.15
+      svelte: ^4.2.11
+      vue: ^3.4.19
+    peerDependenciesMeta:
+      '@astrojs/db':
+        optional: true
+      '@vitejs/plugin-react':
+        optional: true
+      preact:
+        optional: true
+      react:
+        optional: true
+      react-dom:
+        optional: true
+      solid-js:
+        optional: true
+      svelte:
+        optional: true
+      vue:
+        optional: true
+    dependencies:
+      astro: 4.5.12(@types/node@20.11.30)(typescript@5.4.3)
       pathe: 1.1.2
       recast: 0.23.6
     dev: false

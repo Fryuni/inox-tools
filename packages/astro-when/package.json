@@ -1,0 +1,45 @@
+{
+  "name": "@inox-tools/astro-when",
+  "version": "0.0.0",
+  "description": "Integration that informs when in Astro's lifecycle the code is running",
+  "keywords": [
+    "lifecycle",
+    "astro-integration",
+    "astro"
+  ],
+  "repository": "https://github.com/Fryuni/inox-tools.git",
+  "license": "MIT",
+  "author": "Luiz Ferraz <luiz@lferraz.com>",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "README.md",
+    "dist",
+    "src",
+    "virtual.d.ts"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "prepublish": "pnpm run build",
+    "test": "echo 'No tests'"
+  },
+  "dependencies": {
+    "astro-integration-kit": "^0.9.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.30",
+    "astro": "^4.5.12",
+    "tsup": "^8.0.2",
+    "typescript": "^5.4.3",
+    "vite": "^5.2.7"
+  },
+  "peerDependencies": {
+    "astro": "^4"
+  }
+}

@@ -84,6 +84,24 @@ importers:
         specifier: ~5.4.3
         version: 5.4.4
 
+  examples/astro-when:
+    dependencies:
+      '@astrojs/check':
+        specifier: ^0.5.10
+        version: 0.5.10(prettier-plugin-astro@0.13.0)(prettier@3.2.5)(typescript@5.4.4)
+      '@astrojs/node':
+        specifier: ^8.2.5
+        version: 8.2.5(astro@4.5.16)
+      '@inox-tools/astro-when':
+        specifier: workspace:^
+        version: link:../../packages/astro-when
+      astro:
+        specifier: ^4.5.16
+        version: 4.5.16(@types/node@20.12.5)(typescript@5.4.4)
+      typescript:
+        specifier: ^5.4.4
+        version: 5.4.4
+
   examples/custom-routing:
     dependencies:
       '@astrojs/check':
@@ -193,24 +211,6 @@ importers:
         version: 4.5.16(@types/node@20.12.5)(typescript@5.4.4)
       typescript:
         specifier: ^5.4.3
-        version: 5.4.4
-
-  examples/when:
-    dependencies:
-      '@astrojs/check':
-        specifier: ^0.5.10
-        version: 0.5.10(prettier-plugin-astro@0.13.0)(prettier@3.2.5)(typescript@5.4.4)
-      '@astrojs/node':
-        specifier: ^8.2.5
-        version: 8.2.5(astro@4.5.16)
-      '@inox-tools/astro-when':
-        specifier: workspace:^
-        version: link:../../packages/astro-when
-      astro:
-        specifier: ^4.5.16
-        version: 4.5.16(@types/node@20.12.5)(typescript@5.4.4)
-      typescript:
-        specifier: ^5.4.4
         version: 5.4.4
 
   packages/aik-mod:

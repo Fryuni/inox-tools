@@ -33,13 +33,13 @@
   },
   "devDependencies": {
     "@types/node": "^20.11.30",
-    "astro": "^4.5.12",
+    "astro": "^4.5.17",
     "tsup": "^8.0.2",
     "typescript": "^5.4.3",
     "vite": "^5.2.7"
   },
   "peerDependencies": {
     "astro": "^4.3.5",
-    "astro-integration-kit": "~0.8"
+    "astro-integration-kit": "~0.10"
   }
 }

@@ -20,36 +20,39 @@ const globalHandlers: Map<string, InnerHandler<any>> = ((globalThis as any)[
 
 export default definePlugin({
 	name: 'defineRouteConfig',
-	hook: 'astro:config:setup',
-	implementation: (params) => {
-		const { logger, command } = params;
+	setup: () => {
+		return {
+			'astro:config:setup': (params) => ({
+				defineRouteConfig: <T = any>(options: PerRouteConfigOptions<T>): void => {
+					const { logger, command } = params;
 
-		return <T = any>(options: PerRouteConfigOptions<T>): void => {
-			integrate(params);
+					integrate(params);
 
-			const innerHandler: InnerHandler<T> = async (context, value) => {
-				// Do nothing while running dev or preview server
-				if (command !== 'build') return;
+					const innerHandler: InnerHandler<T> = async (context, value) => {
+						// Do nothing while running dev or preview server
+						if (command !== 'build') return;
 
-				const outerContext = convertContext(context);
-				if (outerContext) {
-					await options.callbackHandler(outerContext, value);
-				} else {
-					logger.warn(
-						`Trying to set a route config for a file that is not a page: ${context.sourceFile}`
-					);
-				}
-			};
+						const outerContext = convertContext(context);
+						if (outerContext) {
+							await options.callbackHandler(outerContext, value);
+						} else {
+							logger.warn(
+								`Trying to set a route config for a file that is not a page: ${context.sourceFile}`
+							);
+						}
+					};
 
-			globalHandlers.set(options.importName, innerHandler);
+					globalHandlers.set(options.importName, innerHandler);
 
-			addVitePlugin(params, {
-				plugin: hoistGlobalPlugin({
-					configImport: options.importName,
-					logger,
-				}),
-				warnDuplicated: true,
-			});
+					addVitePlugin(params, {
+						plugin: hoistGlobalPlugin({
+							configImport: options.importName,
+							logger,
+						}),
+						warnDuplicated: true,
+					});
+				},
+			}),
 		};
 	},
 });

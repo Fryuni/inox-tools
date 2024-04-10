@@ -4,7 +4,7 @@ import vitePlugin, {
 	type ModuleOptions,
 } from '@inox-tools/inline-mod/vite';
 import type { HookParameters, MiddlewareHandler } from 'astro';
-import { definePlugin, type Plugin } from 'astro-integration-kit';
+import { definePlugin } from 'astro-integration-kit';
 import { AstroError } from 'astro/errors';
 import type { PluginOption } from 'vite';
 
@@ -50,70 +50,42 @@ function ensurePluginIsInstalled(options: Pick<HookParams, 'config' | 'updateCon
 	};
 }
 
-type InlineModPlugin = Plugin<
-	'inlineModule',
-	'astro:config:setup',
-	(options: ModuleOptions) => string
->;
+export default definePlugin({
+	name: '@inox-tools/aik-mod',
+	setup: () => {
+		return {
+			'astro:config:setup': ({ config, addMiddleware, updateConfig, logger }) => {
+				const ensurePlugin = ensurePluginIsInstalled({ config, updateConfig });
 
-export const inlineModPlugin: InlineModPlugin = definePlugin({
-	name: 'inlineModule',
-	hook: 'astro:config:setup',
-	implementation: ({ config, updateConfig }) => {
-		const ensurePlugin = ensurePluginIsInstalled({ config, updateConfig });
-		return (options: ModuleOptions) => {
-			ensurePlugin();
-			return inlineModule(options);
-		};
-	},
-});
-
-type DefineModPlugin = Plugin<
-	'defineModule',
-	'astro:config:setup',
-	(name: string, options: ModuleOptions) => void
->;
-
-export const defineModPlugin: DefineModPlugin = definePlugin({
-	name: 'defineModule',
-	hook: 'astro:config:setup',
-	implementation: ({ config, updateConfig, logger }) => {
-		const ensurePlugin = ensurePluginIsInstalled({ config, updateConfig });
-		return (name: string, options: ModuleOptions) => {
-			if (name.startsWith('astro:')) {
-				throw new AstroError(
-					`${logger.label} is trying to declare a module with a reserved name: ${name}`,
-					'The astro: prefix for virtual modules is reserved for Astro core. Please use a different name.'
-				);
-			}
-
-			ensurePlugin();
-			return defineModule(name, options);
-		};
-	},
-});
-
-type DefineMiddlewarePlugin = Plugin<
-	'defineMiddleware',
-	'astro:config:setup',
-	(order: 'pre' | 'post', handler: MiddlewareHandler) => void
->;
-
-export const defineMiddlewarePlugin: DefineMiddlewarePlugin = definePlugin({
-	name: 'defineMiddleware',
-	hook: 'astro:config:setup',
-	implementation: ({ config, updateConfig, addMiddleware }) => {
-		const ensurePlugin = ensurePluginIsInstalled({ config, updateConfig });
-		return (order: 'pre' | 'post', handler: MiddlewareHandler) => {
-			ensurePlugin();
-			addMiddleware({
-				order,
-				entrypoint: inlineModule({
-					constExports: {
-						onRequest: handler,
+				return {
+					inlineModule: (options: ModuleOptions) => {
+						ensurePlugin();
+						return inlineModule(options);
 					},
-				}),
-			});
+					defineModule: (name: string, options: ModuleOptions) => {
+						if (name.startsWith('astro:')) {
+							throw new AstroError(
+								`${logger.label} is trying to declare a module with a reserved name: ${name}`,
+								'The astro: prefix for virtual modules is reserved for Astro core. Please use a different name.'
+							);
+						}
+
+						ensurePlugin();
+						return defineModule(name, options);
+					},
+					defineMiddleware: (order: 'pre' | 'post', handler: MiddlewareHandler) => {
+						ensurePlugin();
+						addMiddleware({
+							order,
+							entrypoint: inlineModule({
+								constExports: {
+									onRequest: handler,
+								},
+							}),
+						});
+					},
+				};
+			},
 		};
 	},
 });

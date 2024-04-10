@@ -34,7 +34,7 @@
     "vite": "^5.2.7"
   },
   "devDependencies": {
-    "@astrojs/compiler": "^2.7.0",
+    "@astrojs/compiler": "^2.7.1",
     "@vitest/coverage-v8": "^1.4.0",
     "ast-types": "^0.14.2",
     "tsup": "^8.0.2",
@@ -43,6 +43,6 @@
   },
   "peerDependencies": {
     "astro": "^4.3.5",
-    "astro-integration-kit": "~0.8"
+    "astro-integration-kit": "~0.10"
   }
 }

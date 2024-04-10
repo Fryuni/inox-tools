@@ -12,9 +12,9 @@
     "validate": "astro check"
   },
   "dependencies": {
-    "@astrojs/starlight": "^0.21.2",
+    "@astrojs/starlight": "^0.21.5",
     "@vercel/analytics": "^1.2.2",
-    "astro": "^4.5.12",
+    "astro": "^4.5.17",
     "sharp": "^0.33.3",
     "starlight-links-validator": "^0.7.1"
   },

@@ -9,7 +9,7 @@ sidebar:
 
 Add the plugin to your `withPlugins` call:
 
-```ts ins={3,13-15} ins=/\S(aikMod)/ ins=/defineMiddleware(?= )/
+```ts ins={3,13-16} ins=/\S(aikMod)/ ins=/defineMiddleware(?= )/
 // my-integration.ts
 import { defineIntegration, withPlugins } from 'astro-integration-kit';
 import aikMod from '@inox-tools/aik-mod';
@@ -103,7 +103,7 @@ export default defineIntegration({
 
 `defineMiddleware` allows you to define an Astro middleware inline.
 
-```ts ins=/defineMiddleware(?= )/ ins={13-17}
+```ts ins=/defineMiddleware(?= )/ ins={13-16}
 // my-integration.ts
 import { defineIntegration, withPlugins } from 'astro-integration-kit';
 import aikMod from '@inox-tools/aik-mod';

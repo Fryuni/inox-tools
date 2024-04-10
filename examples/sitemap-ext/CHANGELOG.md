@@ -1,5 +1,11 @@
 # @example/sitemap-ext
 
+## 0.1.8
+
+### Patch Changes
+
+- @inox-tools/sitemap-ext@0.2.6
+
 ## 0.1.7
 
 ### Patch Changes

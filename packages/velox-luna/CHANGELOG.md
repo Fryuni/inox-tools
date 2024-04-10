@@ -1,5 +1,11 @@
 # @inox-tools/velox-luna
 
+## 0.3.0
+
+### Minor Changes
+
+- 49a8d88: Bump Lunaria Core
+
 ## 0.2.0
 
 ### Minor Changes

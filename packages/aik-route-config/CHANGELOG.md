@@ -1,5 +1,11 @@
 # @inox-tools/aik-route-config
 
+## 0.4.0
+
+### Minor Changes
+
+- 49a8d88: Bump minimal AIK version to 0.10
+
 ## 0.3.1
 
 ### Patch Changes

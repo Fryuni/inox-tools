@@ -1,5 +1,11 @@
 # @inox-tools/aik-mod
 
+## 0.5.0
+
+### Minor Changes
+
+- 49a8d88: Bump minimal AIK version to 0.10
+
 ## 0.4.0
 
 ### Minor Changes

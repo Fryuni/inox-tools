@@ -1,5 +1,38 @@
 # @inox-tools/aik-mod
 
+## 0.5.0
+
+### Minor Changes
+
+- 49a8d88: Bump minimal AIK version to 0.10
+
+## 0.4.0
+
+### Minor Changes
+
+- a81f657: Update to AIK 0.8
+
+## 0.3.1
+
+### Patch Changes
+
+- Updated dependencies [e70cea1]
+  - @inox-tools/inline-mod@1.3.1
+
+## 0.3.0
+
+### Minor Changes
+
+- b5a53ab: Bump AIK to version 0.7
+
+## 0.2.2
+
+### Patch Changes
+
+- 9b8b5a0: Expand supported versions of AIK up to 0.6
+- Updated dependencies [9b8b5a0]
+  - @inox-tools/inline-mod@1.3.0
+
 ## 0.2.1
 
 ### Patch Changes

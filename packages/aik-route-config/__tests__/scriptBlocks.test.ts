@@ -1,6 +1,6 @@
 import { test, expect } from 'vitest';
 import { TestLogger, loadAstroFixture } from './utils.js';
-import { hoistImport } from '../hoistGlobalPlugin.js';
+import { hoistImport } from '../src/hoistGlobalPlugin.js';
 
 test('ignore script blocks', async () => {
 	const astroCode = await loadAstroFixture('scriptBlock');

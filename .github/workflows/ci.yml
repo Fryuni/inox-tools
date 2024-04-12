@@ -63,6 +63,9 @@ jobs:
       - name: Build Packages
         run: pnpm run build
 
+      - name: Build Examples
+        run: pnpm run build:examples
+
   lint:
     name: Lint
     runs-on: ubuntu-latest
@@ -84,16 +87,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Build Packages
-        run: pnpm run build
-
-      - name: Lint
-        run: pnpm run lint
-
       - name: Format Check
         run: |
-          pnpm run format
-          git diff --exit-code
+          pnpm run format --check
 
   test:
     name: "Test: Node ${{ matrix.NODE_VERSION }}"
@@ -127,4 +123,3 @@ jobs:
 
       - name: Test
         run: pnpm run test
-

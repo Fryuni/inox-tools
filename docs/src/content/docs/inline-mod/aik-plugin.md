@@ -1,0 +1,128 @@
+---
+title: AIK Plugin
+packageName: '@inox-tools/aik-mod'
+sidebar:
+  order: 11
+---
+
+## Getting Started
+
+Add the plugin to your `withPlugins` call:
+
+```ts ins={3,13-16} ins=/\S(aikMod)/ ins=/defineMiddleware(?= )/
+// my-integration.ts
+import { defineIntegration, withPlugins } from 'astro-integration-kit';
+import aikMod from '@inox-tools/aik-mod';
+
+export default defineIntegration({
+  name: 'my-integration',
+  setup: ({ name }) => {
+    return withPlugins({
+      name,
+      plugins: [aikMod],
+      hooks: {
+        'astro:config:setup': ({ defineMiddleware }) => {
+          defineMiddleware('pre', (context, next) => {
+            // Your inline middleware
+            return next();
+          });
+        },
+      },
+    });
+  },
+});
+```
+
+## API
+
+The plugin exposes multiple entrypoints, all of them accept normal values and [factory wrappers](/inline-mod/factory-wrappers) as values to be included in the virtual modules.
+
+### `inlineModule`
+
+`inlineModule` allows you to define a module inline, returning the name of the defined module.
+
+It receives the [definition of the virtual module](/inline-mod/vite-plugin#inlinemodule).
+
+```ts ins=/inlineModule(?= )/ ins={13-17}
+// my-integration.ts
+import { defineIntegration, withPlugins } from 'astro-integration-kit';
+import aikMod from '@inox-tools/aik-mod';
+
+export default defineIntegration({
+  name: 'my-integration',
+  setup: ({ name }) => {
+    return withPlugins({
+      name,
+      plugins: [aikMod],
+      hooks: {
+        'astro:config:setup': ({ inlineModule }) => {
+          const moduleName = inlineModule({
+            defaultExport: 'some value',
+            constExports: {},
+            assignExports: {},
+          });
+        },
+      },
+    });
+  },
+});
+```
+
+### `defineModule`
+
+`defineModule` allows you to define a module inline with a given import name.
+
+It receives the [definition of the virtual module](/inline-mod/vite-plugin#inlinemodule).
+
+```ts ins=/defineModule(?= )/ ins={13-17}
+// my-integration.ts
+import { defineIntegration, withPlugins } from 'astro-integration-kit';
+import aikMod from '@inox-tools/aik-mod';
+
+export default defineIntegration({
+  name: 'my-integration',
+  setup: ({ name }) => {
+    return withPlugins({
+      name,
+      plugins: [aikMod],
+      hooks: {
+        'astro:config:setup': ({ defineModule }) => {
+          defineModule('virtual:my-integration/module', {
+            defaultExport: 'some value',
+            constExports: {},
+            assignExports: {},
+          });
+        },
+      },
+    });
+  },
+});
+```
+
+### `defineMiddleware`
+
+`defineMiddleware` allows you to define an Astro middleware inline.
+
+```ts ins=/defineMiddleware(?= )/ ins={13-16}
+// my-integration.ts
+import { defineIntegration, withPlugins } from 'astro-integration-kit';
+import aikMod from '@inox-tools/aik-mod';
+
+export default defineIntegration({
+  name: 'my-integration',
+  setup: ({ name }) => {
+    return withPlugins({
+      name,
+      plugins: [aikMod],
+      hooks: {
+        'astro:config:setup': ({ defineMiddleware }) => {
+          defineMiddleware('pre', (context, next) => {
+            // This runs in the Astro middleware
+            return next();
+          });
+        },
+      },
+    });
+  },
+});
+```

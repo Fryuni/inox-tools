@@ -1,6 +1,6 @@
 {
   "name": "@inox-tools/sitemap-ext",
-  "version": "0.1.2",
+  "version": "0.2.6",
   "description": "Higher level extension over Astro's official sitemap integration",
   "keywords": [
     "sitemap",
@@ -13,29 +13,37 @@
   "author": "Luiz Ferraz <luiz@lferraz.com>",
   "type": "module",
   "exports": {
-    ".": "./index.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
   },
   "files": [
     "README.md",
+    "dist",
     "index.ts",
     "virtual.d.ts"
   ],
   "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "prepublish": "pnpm run build",
     "test": "echo 'No tests'"
   },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.1.2",
+    "@inox-tools/aik-route-config": "workspace:^",
+    "astro-integration-kit": "^0.10.0",
+    "sitemap": "^7.1.1"
+  },
   "devDependencies": {
-    "@types/node": "^20.11.25",
-    "astro": "^4.4.15",
-    "astro-integration-kit": "^0.5.1",
-    "typescript": "^5.4.2",
-    "vite": "^5.1.5"
+    "@types/node": "^20.11.30",
+    "astro": "^4.5.17",
+    "tsup": "^8.0.2",
+    "typescript": "^5.4.3",
+    "vite": "^5.2.7"
   },
   "peerDependencies": {
     "astro": "^4.3.5"
-  },
-  "dependencies": {
-    "@astrojs/sitemap": "^3.1.1",
-    "@inox-tools/aik-route-config": "workspace:^",
-    "sitemap": "^7.1.1"
   }
 }

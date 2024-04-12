@@ -1,6 +1,6 @@
 {
   "name": "@inox-tools/custom-routing",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Define custom routing instead of Astro's default file-based routing.",
   "keywords": [
     "astro-integration",
@@ -21,13 +21,11 @@
     "build": "echo 'no build'",
     "test": "echo 'no test'"
   },
-  "dependencies": {
+  "devDependencies": {
+    "astro": "^4.5.17",
     "typescript": "^5.4.2"
   },
   "peerDependency": {
     "astro": ">=3"
-  },
-  "devDependencies": {
-    "astro": "^4.4.15"
   }
 }

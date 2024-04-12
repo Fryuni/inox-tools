@@ -5,7 +5,7 @@ import { strictCustomRouting } from '@inox-tools/custom-routing';
 
 // https://astro.build/config
 export default defineConfig({
-	site: 'https://example.com',
+	site: process.env.DEPLOY_SITE ?? 'https://example.com',
 	integrations: [
 		mdx(),
 		sitemap(),

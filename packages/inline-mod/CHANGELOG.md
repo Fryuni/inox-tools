@@ -1,5 +1,17 @@
 # @inox-tools/inline-mod
 
+## 1.3.1
+
+### Patch Changes
+
+- e70cea1: Fixes crash when a non-exporting module is in the graph
+
+## 1.3.0
+
+### Minor Changes
+
+- 9b8b5a0: Expose factory wrappers on package root
+
 ## 1.2.1
 
 ### Patch Changes

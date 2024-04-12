@@ -1,5 +1,30 @@
 # @inox-tools/aik-route-config
 
+## 0.4.0
+
+### Minor Changes
+
+- 49a8d88: Bump minimal AIK version to 0.10
+
+## 0.3.1
+
+### Patch Changes
+
+- 1a47034: Adds a log message on errors to import SSR modules during build time
+
+## 0.3.0
+
+### Minor Changes
+
+- a81f657: Update to AIK 0.8
+
+## 0.2.0
+
+### Minor Changes
+
+- b5a53ab: Bump AIK to version 0.7
+- a41cf48: Distribute built package
+
 ## 0.1.1
 
 ### Patch Changes

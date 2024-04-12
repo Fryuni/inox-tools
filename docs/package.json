@@ -1,25 +1,25 @@
 {
   "name": "docs",
-  "type": "module",
   "version": "0.0.1",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "astro dev",
-    "start": "astro dev",
-    "validate": "astro check",
+    "astro": "astro",
     "build": "astro build",
+    "dev": "astro dev",
     "preview": "astro preview",
-    "astro": "astro"
+    "start": "astro dev",
+    "validate": "astro check"
   },
   "dependencies": {
-    "@astrojs/starlight": "^0.21.1",
+    "@astrojs/starlight": "^0.21.5",
     "@vercel/analytics": "^1.2.2",
-    "astro": "^4.4.15",
-    "sharp": "^0.33.2",
-    "starlight-links-validator": "^0.6.0"
+    "astro": "^4.5.17",
+    "sharp": "^0.33.3",
+    "starlight-links-validator": "^0.7.1"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.5.6",
-    "typescript": "~5.4.2"
+    "@astrojs/check": "^0.5.10",
+    "typescript": "~5.4.3"
   }
 }

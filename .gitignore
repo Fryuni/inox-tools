@@ -53,5 +53,4 @@ node_modules/
 dist/
 build/
 .inox-tools/
-*.js
 *.js.map

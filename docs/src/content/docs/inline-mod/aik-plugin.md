@@ -35,7 +35,7 @@ export default defineIntegration({
 
 ## API
 
-The plugin exposes multiple entrypoints, all of them accept normal values and [factory wrappers](/inline-mod/factory-wrappers) as values to be included in the virtual modules.
+The plugin exposes multiple entrypoints, all of them accept normal values, [factory wrappers](/inline-mod/factory-wrappers) and [lazy values](/inline-mod/lazy/) as values to be included in the virtual modules.
 
 ### `inlineModule`
 

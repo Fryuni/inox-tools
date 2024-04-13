@@ -8,7 +8,13 @@ import { definePlugin } from 'astro-integration-kit';
 import { AstroError } from 'astro/errors';
 import type { PluginOption } from 'vite';
 
-export { asyncFactory, factory } from '@inox-tools/inline-mod';
+export {
+	asyncFactory,
+	factory,
+	lazyValue,
+	type LazyValue,
+	type ResolvedLazyValue,
+} from '@inox-tools/inline-mod';
 
 type HookParams = HookParameters<'astro:config:setup'>;
 

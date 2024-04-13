@@ -284,6 +284,14 @@ class Inspector {
 			};
 		}
 
+		const lazyValue = tryExtractLazyValue(value);
+		if (lazyValue) {
+			console.log('Detected lazy value');
+			const resolvedValue = await lazyValue;
+			console.log('Resolved lazy value', resolvedValue);
+			return this.inspect(resolvedValue);
+		}
+
 		if (this.doNotCapture(value)) {
 			log('Value should skip capture');
 			return Entry.json();
@@ -1148,6 +1156,54 @@ export function magicFactory<T extends Record<any, any>>({
 function tryExtractMagicFactory(value: any): MagicPlaceholder[typeof factorySymbol] | undefined {
 	if (factorySymbol in value) {
 		return value[factorySymbol];
+	}
+}
+
+const lazyValueSymbol = Symbol('inox-tool/lazy-value');
+
+export interface LazyValue<T> {
+	[lazyValueSymbol]: Promise<T>;
+	resolved: boolean;
+	resolve(this: LazyValue<T>, value: T): asserts this is ResolvedLazyValue<T>;
+}
+
+export type ResolvedLazyValue<T> = {
+	[lazyValueSymbol]: Promise<T>;
+	resolved: true;
+	resolve: never;
+};
+
+const lazyProxyHandler: ProxyHandler<LazyValue<any>> = {
+	set: () => {
+		throw new Error('Cannot set properties on a lazy value');
+	},
+};
+
+export function makeLazyValue<T>(): LazyValue<T> {
+	let resolve: (value: T) => void;
+	const promise = new Promise<T>((_resolve) => {
+		resolve = _resolve;
+	});
+
+	const target: LazyValue<T> = {
+		[lazyValueSymbol]: promise,
+		resolved: false,
+		resolve(value) {
+			if (target.resolved) {
+				throw new Error('A lazy value can only be resolved once.');
+			}
+
+			resolve(value);
+			target.resolved = true;
+		},
+	};
+
+	return new Proxy<LazyValue<T>>(target, lazyProxyHandler);
+}
+
+function tryExtractLazyValue(value: any): Promise<unknown> | undefined {
+	if (lazyValueSymbol in value) {
+		return value[lazyValueSymbol];
 	}
 }
 

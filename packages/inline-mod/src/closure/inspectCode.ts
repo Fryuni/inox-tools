@@ -1153,7 +1153,9 @@ export function magicFactory<T extends Record<any, any>>({
 	) as unknown as T;
 }
 
-function tryExtractMagicFactory(value: any): MagicPlaceholder[typeof factorySymbol] | undefined {
+function tryExtractMagicFactory(
+	value: any
+): MagicPlaceholder<any>[typeof factorySymbol] | undefined {
 	if (factorySymbol in value) {
 		return value[factorySymbol];
 	}

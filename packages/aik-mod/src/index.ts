@@ -60,7 +60,9 @@ export default definePlugin({
 	name: '@inox-tools/aik-mod',
 	setup: () => {
 		return {
-			'astro:config:setup': ({ config, addMiddleware, updateConfig, logger }) => {
+			'astro:config:setup': (params: HookParameters<'astro:config:setup'>) => {
+				const { config, addMiddleware, updateConfig, logger } = params;
+
 				const ensurePlugin = ensurePluginIsInstalled({ config, updateConfig });
 
 				return {

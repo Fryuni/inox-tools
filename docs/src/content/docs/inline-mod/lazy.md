@@ -4,7 +4,7 @@ sidebar:
   order: 2
 ---
 
-Sometimes you can only get a valye after the module where it should be serialized to is created. When using the [AIK Plugin](/inline-mod/aik-plugin/), for example, you can only define an inline module during the `astro:config:setup` hook, but you might want to serialize a value from other hooks.
+Sometimes you can only get a valye after the module where it should be serialized to is created. When using the [AIK Plugin](/inline-mod/aik-plugin), for example, you can only define an inline module during the `astro:config:setup` hook, but you might want to serialize a value from other hooks.
 
 ```ts
 import { lazyValue } from '@inox-tools/inline-mod';

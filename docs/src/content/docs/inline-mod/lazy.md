@@ -10,13 +10,13 @@ Sometimes you can only get a valye after the module where it should be serialize
 import { lazyValue } from '@inox-tools/inline-mod';
 import { defineModule } from '@inox-tools/inline-mod/vite';
 
-const remoteValue = lazyValue();
+const value = lazyValue();
 
 defineModule('virtual:your-plugin/config', {
   constExports: { value },
 });
 
-remoteValue.set('hello');
+value.set('hello');
 ```
 
 :::danger[VERY ADVANCED]

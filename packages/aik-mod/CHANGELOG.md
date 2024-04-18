@@ -1,5 +1,13 @@
 # @inox-tools/aik-mod
 
+## 0.5.1
+
+### Patch Changes
+
+- 0523723: Fixes a type issue with `DeepPartial`
+
+  The `DeepPartial` type utility from `astro` was being inlined in the `aik-mod` package without being exported, preventing integrations using `aik-mod` from having a named type.
+
 ## 0.5.0
 
 ### Minor Changes

@@ -14,9 +14,9 @@
     "@astrojs/check": "^0.5.10",
     "@astrojs/node": "^8.2.5",
     "@astrojs/rss": "^4.0.5",
-    "astro": "^4.5.17",
-    "typescript": "^5.4.3",
-    "vite": "^5.2.7"
+    "astro": "^4.6.3",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.9"
   },
   "devDependencies": {
     "@inox-tools/inline-mod": "link:../../packages/inline-mod"

@@ -1,5 +1,7 @@
-import { defineIntegration, addVitePlugin } from 'astro-integration-kit';
+import { defineIntegration, addVitePlugin, type HookParameters } from 'astro-integration-kit';
 import { z } from 'astro/zod';
+
+type HookParams = HookParameters<'astro:config:setup'>;
 
 const VIRTUAL_MODULE_ID = '@it-astro:when';
 const RESOLVED_MODULE_ID = `\x00${VIRTUAL_MODULE_ID}`;
@@ -11,24 +13,25 @@ export default defineIntegration({
 	name: '@inox-tools/astro-when',
 	optionsSchema: z.never().optional(),
 	setup: () => ({
-		'astro:config:setup': (params) => {
-			const outputMode = params.config.output;
-			const command = params.command;
+		hooks: {
+			'astro:config:setup': (params: HookParams) => {
+				const outputMode = params.config.output;
+				const command = params.command;
 
-			(globalThis as any)[key] = command === 'build';
+				(globalThis as any)[key] = command === 'build';
 
-			addVitePlugin(params, {
-				plugin: {
-					name: '@inox-tools/astro-when',
-					resolveId(id) {
-						if (id === VIRTUAL_MODULE_ID) {
-							return RESOLVED_MODULE_ID;
-						}
-					},
-					load(id, options) {
-						if (id !== RESOLVED_MODULE_ID) return;
+				addVitePlugin(params, {
+					plugin: {
+						name: '@inox-tools/astro-when',
+						resolveId(id) {
+							if (id === VIRTUAL_MODULE_ID) {
+								return RESOLVED_MODULE_ID;
+							}
+						},
+						load(id, options) {
+							if (id !== RESOLVED_MODULE_ID) return;
 
-						const preamble = `
+							const preamble = `
               export const When = {
                 Client: 'client',
                 Server: 'server',
@@ -38,25 +41,26 @@ export default defineIntegration({
               };
             `;
 
-						if (options?.ssr !== true) {
-							return `${preamble} export const whenAmI = When.Client;`;
-						}
+							if (options?.ssr !== true) {
+								return `${preamble} export const whenAmI = When.Client;`;
+							}
 
-						if (command === 'dev') {
-							return `${preamble} export const whenAmI = When.DevServer;`;
-						}
+							if (command === 'dev') {
+								return `${preamble} export const whenAmI = When.DevServer;`;
+							}
 
-						if (outputMode === 'static') {
-							return `${preamble} export const whenAmI = When.StaticBuild;`;
-						}
+							if (outputMode === 'static') {
+								return `${preamble} export const whenAmI = When.StaticBuild;`;
+							}
 
-						return `${preamble}
+							return `${preamble}
               const isBuildContext = Symbol.for('astro:when/buildContext');
               export const whenAmI = globalThis[isBuildContext] ? When.Prerender : When.Server;
             `;
+						},
 					},
-				},
-			});
+				});
+			},
 		},
 	}),
 });

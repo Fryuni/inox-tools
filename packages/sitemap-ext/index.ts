@@ -6,7 +6,7 @@ import {
 } from 'astro-integration-kit';
 import routeConfigPlugin from '@inox-tools/aik-route-config';
 import { AstroError } from 'astro/errors';
-import { type RouteData } from 'astro';
+import { type AstroIntegration, type RouteData } from 'astro';
 import { EnumChangefreq } from 'sitemap';
 import { z } from 'astro/zod';
 import * as path from 'node:path';
@@ -184,7 +184,7 @@ export default defineIntegration({
 					}
 				},
 			},
-		});
+		}) as AstroIntegration;
 	},
 });
 

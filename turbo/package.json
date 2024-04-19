@@ -8,6 +8,6 @@
     "@turbo/gen": "^1.13.0",
     "@types/lodash": "^4.17.0",
     "lodash": "^4.17.21",
-    "typescript": "^5.4.3"
+    "typescript": "^5.4.5"
   }
 }

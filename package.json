@@ -25,12 +25,10 @@
     "@changesets/changelog-github": "^0.5.0",
     "@changesets/cli": "^2.27.1",
     "@types/node": "^20.11.30",
-    "esbuild": "^0.20.2",
-    "organize-imports-cli": "^0.10.0",
     "prettier": "^3.2.5",
     "prettier-plugin-astro": "^0.13.0",
     "turbo": "^1.13.0",
-    "typescript": "^5.4.3"
+    "typescript": "^5.4.5"
   },
   "packageManager": "pnpm@8.15.6+sha256.01c01eeb990e379b31ef19c03e9d06a14afa5250b82e81303f88721c99ff2e6f"
 }

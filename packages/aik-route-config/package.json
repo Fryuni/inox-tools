@@ -1,6 +1,6 @@
 {
   "name": "@inox-tools/aik-route-config",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "",
   "keywords": [
     "aik",
@@ -31,18 +31,18 @@
   },
   "dependencies": {
     "recast": "^0.23.6",
-    "vite": "^5.2.7"
+    "vite": "^5.2.9"
   },
   "devDependencies": {
     "@astrojs/compiler": "^2.7.1",
-    "@vitest/coverage-v8": "^1.4.0",
+    "@vitest/coverage-v8": "^1.5.0",
     "ast-types": "^0.14.2",
     "tsup": "^8.0.2",
-    "typescript": "^5.4.3",
-    "vitest": "^1.4.0"
+    "typescript": "^5.4.5",
+    "vitest": "^1.5.0"
   },
   "peerDependencies": {
     "astro": "^4.3.5",
-    "astro-integration-kit": "~0.10"
+    "astro-integration-kit": "~0.10 || ~0.11"
   }
 }

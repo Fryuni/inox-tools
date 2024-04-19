@@ -1,5 +1,11 @@
 # @inox-tools/aik-route-config
 
+## 0.4.1
+
+### Patch Changes
+
+- f36933d: The `DeepPartial` type utility from `astro` was being inlined in the `aik-route-config` package without being exported, preventing integrations using `aik-route-config` from having a named type.
+
 ## 0.4.0
 
 ### Minor Changes

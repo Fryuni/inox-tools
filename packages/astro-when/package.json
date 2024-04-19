@@ -30,14 +30,14 @@
     "test": "echo 'No tests'"
   },
   "dependencies": {
-    "astro-integration-kit": "^0.10.0"
+    "astro-integration-kit": "^0.11.0"
   },
   "devDependencies": {
     "@types/node": "^20.11.30",
-    "astro": "^4.5.17",
+    "astro": "^4.6.3",
     "tsup": "^8.0.2",
-    "typescript": "^5.4.3",
-    "vite": "^5.2.7"
+    "typescript": "^5.4.5",
+    "vite": "^5.2.9"
   },
   "peerDependencies": {
     "astro": "^4"

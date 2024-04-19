@@ -1,7 +1,9 @@
-import { definePlugin, addVitePlugin } from 'astro-integration-kit';
+import { definePlugin, addVitePlugin, type HookParameters } from 'astro-integration-kit';
 import { hoistGlobalPlugin } from './hoistGlobalPlugin.js';
 import { integrate, convertContext } from './contextResolution.js';
 import type { ConfigContext, InnerContext } from './contextResolution.js';
+
+type HookParams = HookParameters<'astro:config:setup'>;
 
 type ConfigHandler<T> = (context: ConfigContext, value: T) => Promise<void> | void;
 
@@ -22,7 +24,7 @@ export default definePlugin({
 	name: 'defineRouteConfig',
 	setup: () => {
 		return {
-			'astro:config:setup': (params) => ({
+			'astro:config:setup': (params: HookParams) => ({
 				defineRouteConfig: <T = any>(options: PerRouteConfigOptions<T>): void => {
 					const { logger, command } = params;
 

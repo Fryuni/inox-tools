@@ -1,5 +1,11 @@
 # @inox-tools/inline-mod
 
+## 0.3.1
+
+### Patch Changes
+
+- 8a4ed54: Bump all dependencies
+
 ## 0.3.0
 
 ### Minor Changes

@@ -1,5 +1,16 @@
 # @inox-tools/aik-mod
 
+## 0.5.2
+
+### Patch Changes
+
+- 8a4ed54: Bump all dependencies
+- 8a4ed54: Expand support for AIK 0.11
+- 7cc941f: Implements new `lazyValue` utility
+- Updated dependencies [8a4ed54]
+- Updated dependencies [7cc941f]
+  - @inox-tools/inline-mod@1.4.0
+
 ## 0.5.1
 
 ### Patch Changes

@@ -1,5 +1,12 @@
 # @inox-tools/aik-route-config
 
+## 0.4.2
+
+### Patch Changes
+
+- 8a4ed54: Bump all dependencies
+- 8a4ed54: Expand support for AIK 0.11
+
 ## 0.4.1
 
 ### Patch Changes

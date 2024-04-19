@@ -1,5 +1,15 @@
 # @inox-tools/inline-mod
 
+## 1.4.0
+
+### Minor Changes
+
+- 7cc941f: Implements new `lazyValue` utility
+
+### Patch Changes
+
+- 8a4ed54: Bump all dependencies
+
 ## 1.3.1
 
 ### Patch Changes

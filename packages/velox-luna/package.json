@@ -1,6 +1,6 @@
 {
   "name": "@inox-tools/velox-luna",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Accelerate your i18n translation work on Lunaria projects",
   "keywords": [
     "lunaria",

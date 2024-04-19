@@ -1,6 +1,6 @@
 ---
-"@inox-tools/aik-route-config": minor
-"@inox-tools/aik-mod": minor
+"@inox-tools/aik-route-config": patch
+"@inox-tools/aik-mod": patch
 ---
 
 Expand support for AIK 0.11

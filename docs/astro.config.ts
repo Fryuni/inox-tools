@@ -47,9 +47,20 @@ export default defineConfig({
 					],
 				},
 				{
-					label: 'Inline Module',
+					label: 'AIK Plugins',
 					collapsed: false,
-					autogenerate: { directory: 'inline-mod' },
+					autogenerate: { directory: 'aik-plugins' },
+				},
+				{
+					label: 'Big Things',
+					collapsed: false,
+					items: [
+						{
+							label: 'Inline Module',
+							collapsed: true,
+							autogenerate: { directory: 'inline-mod' },
+						},
+					],
 				},
 			],
 			plugins: [

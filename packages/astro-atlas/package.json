@@ -1,0 +1,57 @@
+{
+  "name": "@inox-tools/astro-atlas",
+  "version": "0.0.0",
+  "description": "TBD",
+  "keywords": [
+    "routing",
+    "astro-integration",
+    "astro"
+  ],
+  "repository": "https://github.com/Fryuni/inox-tools.git",
+  "license": "MIT",
+  "author": "Luiz Ferraz <luiz@lferraz.com>",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./internal/state": {
+      "types": "./dist/state.d.ts",
+      "default": "./dist/state.js"
+    },
+    "./internal/middleware": {
+      "types": "./dist/middleware.d.ts",
+      "default": "./dist/middleware.js"
+    },
+    "./internal/types": {
+      "types": "./dist/types.d.ts",
+      "default": "./dist/types.js"
+    }
+  },
+  "files": [
+    "README.md",
+    "dist",
+    "src",
+    "virtual.d.ts"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "prepublish": "pnpm run build",
+    "test": "echo 'No tests'"
+  },
+  "dependencies": {
+    "astro-integration-kit": "^0.11.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.30",
+    "astro": "^4.6.3",
+    "tsup": "^8.0.2",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.9"
+  },
+  "peerDependencies": {
+    "astro": "^4"
+  }
+}

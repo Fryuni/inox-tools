@@ -1,0 +1,19 @@
+{
+  "name": "@examples/astro-atlas",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/check": "^0.5.10",
+    "@astrojs/node": "^8.2.5",
+    "@inox-tools/astro-atlas": "workspace:^",
+    "astro": "^4.6.0",
+    "typescript": "^5.4.5"
+  }
+}

@@ -61,6 +61,24 @@ importers:
         specifier: ~5.4.5
         version: 5.4.5
 
+  examples/astro-atlas:
+    dependencies:
+      '@astrojs/check':
+        specifier: ^0.5.10
+        version: 0.5.10(prettier-plugin-astro@0.13.0)(prettier@3.2.5)(typescript@5.4.5)
+      '@astrojs/node':
+        specifier: ^8.2.5
+        version: 8.2.5(astro@4.6.3)
+      '@inox-tools/astro-atlas':
+        specifier: workspace:^
+        version: link:../../packages/astro-atlas
+      astro:
+        specifier: ^4.6.0
+        version: 4.6.3(@types/node@20.12.7)(typescript@5.4.5)
+      typescript:
+        specifier: ^5.4.5
+        version: 5.4.5
+
   examples/astro-when:
     dependencies:
       '@astrojs/check':
@@ -251,6 +269,28 @@ importers:
       vitest:
         specifier: ^1.5.0
         version: 1.5.0(@types/node@20.12.7)(@vitest/ui@1.5.0)
+
+  packages/astro-atlas:
+    dependencies:
+      astro-integration-kit:
+        specifier: ^0.11.0
+        version: 0.11.0(astro@4.6.3)
+    devDependencies:
+      '@types/node':
+        specifier: ^20.11.30
+        version: 20.12.7
+      astro:
+        specifier: ^4.6.3
+        version: 4.6.3(@types/node@20.12.7)(typescript@5.4.5)
+      tsup:
+        specifier: ^8.0.2
+        version: 8.0.2(typescript@5.4.5)
+      typescript:
+        specifier: ^5.4.5
+        version: 5.4.5
+      vite:
+        specifier: ^5.2.9
+        version: 5.2.9(@types/node@20.12.7)
 
   packages/astro-when:
     dependencies:

@@ -1,8 +1,8 @@
 ---
 "@inox-tools/aik-route-config": minor
 "@example/inline-mod-aik": minor
-"@inox-tools/sitemap-ext": minor
-"@inox-tools/astro-when": minor
+"@inox-tools/sitemap-ext": patch
+"@inox-tools/astro-when": patch
 "@inox-tools/aik-mod": minor
 ---
 

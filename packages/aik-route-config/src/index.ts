@@ -3,8 +3,6 @@ import { hoistGlobalPlugin } from './hoistGlobalPlugin.js';
 import { integrate, convertContext } from './contextResolution.js';
 import type { ConfigContext, InnerContext } from './contextResolution.js';
 
-type HookParams = HookParameters<'astro:config:setup'>;
-
 type ConfigHandler<T> = (context: ConfigContext, value: T) => Promise<void> | void;
 
 type InnerHandler<T> = (context: InnerContext, value: T) => Promise<void>;
@@ -24,7 +22,7 @@ export default definePlugin({
 	name: 'defineRouteConfig',
 	setup: () => {
 		return {
-			'astro:config:setup': (params: HookParams) => ({
+			'astro:config:setup': (params) => ({
 				defineRouteConfig: <T = any>(options: PerRouteConfigOptions<T>): void => {
 					const { logger, command } = params;
 

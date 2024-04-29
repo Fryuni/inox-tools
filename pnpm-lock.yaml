@@ -132,8 +132,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/aik-mod
       astro-integration-kit:
-        specifier: ^0.11.0
-        version: 0.11.0(astro@4.6.3)
+        specifier: ^0.13.0
+        version: 0.13.1(astro@4.6.3)
 
   examples/inline-mod-astro:
     dependencies:
@@ -190,8 +190,8 @@ importers:
         specifier: workspace:^
         version: link:../inline-mod
       astro-integration-kit:
-        specifier: ~0.10 || ~0.11
-        version: 0.11.0(astro@4.6.3)
+        specifier: ~0.13
+        version: 0.13.1(astro@4.6.3)
     devDependencies:
       '@types/node':
         specifier: ^20.11.30
@@ -215,8 +215,8 @@ importers:
         specifier: ^4.3.5
         version: 4.6.3(@types/node@20.12.7)(typescript@5.4.5)
       astro-integration-kit:
-        specifier: ~0.10 || ~0.11
-        version: 0.11.0(astro@4.6.3)
+        specifier: ~0.13
+        version: 0.13.1(astro@4.6.3)
       recast:
         specifier: ^0.23.6
         version: 0.23.6
@@ -246,8 +246,8 @@ importers:
   packages/astro-when:
     dependencies:
       astro-integration-kit:
-        specifier: ^0.11.0
-        version: 0.11.0(astro@4.6.3)
+        specifier: ^0.13.0
+        version: 0.13.1(astro@4.6.3)
     devDependencies:
       '@types/node':
         specifier: ^20.11.30
@@ -320,8 +320,8 @@ importers:
         specifier: workspace:^
         version: link:../aik-route-config
       astro-integration-kit:
-        specifier: ^0.11.0
-        version: 0.11.0(astro@4.6.3)
+        specifier: ^0.13.0
+        version: 0.13.1(astro@4.6.3)
       sitemap:
         specifier: ^7.1.1
         version: 7.1.1
@@ -2524,34 +2524,13 @@ packages:
       remark-expressive-code: 0.33.5
     dev: false
 
-  /astro-integration-kit@0.11.0(astro@4.6.3):
-    resolution: {integrity: sha512-P41igJUY63W6iWq6Rtw0FnERVUdJhkpAa9jothRQ+AXl56B/6PMes/jcYPo3Zr6KwlMPT8TOHMoasHL0CfqglQ==}
+  /astro-integration-kit@0.13.1(astro@4.6.3):
+    resolution: {integrity: sha512-c/VEvRXJdnKa7/Y4s9CYr81L7Vvue7Bijtgp2TKuf9etCXiMDzEzQ3C5RdjMCzRI68VlKuVblfnLmY4iWizFdg==}
     peerDependencies:
-      '@astrojs/db': ^0.9.0
-      '@vitejs/plugin-react': ^4.2.1
+      '@astrojs/db': ^0.9 || ^0.10
       astro: ^4.4.1
-      preact: ^10.19.4
-      react: ^18.2.0
-      react-dom: ^18.2.0
-      solid-js: ^1.8.15
-      svelte: ^4.2.11
-      vue: ^3.4.19
     peerDependenciesMeta:
       '@astrojs/db':
-        optional: true
-      '@vitejs/plugin-react':
-        optional: true
-      preact:
-        optional: true
-      react:
-        optional: true
-      react-dom:
-        optional: true
-      solid-js:
-        optional: true
-      svelte:
-        optional: true
-      vue:
         optional: true
     dependencies:
       astro: 4.6.3(@types/node@20.12.7)(typescript@5.4.5)

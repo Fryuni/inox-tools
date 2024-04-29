@@ -16,8 +16,6 @@ export {
 	type ResolvedLazyValue,
 } from '@inox-tools/inline-mod';
 
-type HookParams = HookParameters<'astro:config:setup'>;
-
 process.setSourceMapsEnabled(true);
 
 function hasPlugin(pluginList: PluginOption[], pluginName: string): boolean {
@@ -37,7 +35,9 @@ function hasPlugin(pluginList: PluginOption[], pluginName: string): boolean {
 	});
 }
 
-function ensurePluginIsInstalled(options: Pick<HookParams, 'config' | 'updateConfig'>): () => void {
+function ensurePluginIsInstalled(
+	options: Pick<HookParameters<'astro:config:setup'>, 'config' | 'updateConfig'>
+): () => void {
 	const { config, updateConfig } = options;
 	if (hasPlugin(config.vite?.plugins || [], '@inox-tools/inline-mod')) {
 		return () => {};
@@ -60,7 +60,7 @@ export default definePlugin({
 	name: '@inox-tools/aik-mod',
 	setup: () => {
 		return {
-			'astro:config:setup': (params: HookParameters<'astro:config:setup'>) => {
+			'astro:config:setup': (params) => {
 				const { config, addMiddleware, updateConfig, logger } = params;
 
 				const ensurePlugin = ensurePluginIsInstalled({ config, updateConfig });

@@ -1,7 +1,5 @@
-import { defineIntegration, addVitePlugin, type HookParameters } from 'astro-integration-kit';
+import { defineIntegration, addVitePlugin } from 'astro-integration-kit';
 import { z } from 'astro/zod';
-
-type HookParams = HookParameters<'astro:config:setup'>;
 
 const VIRTUAL_MODULE_ID = '@it-astro:when';
 const RESOLVED_MODULE_ID = `\x00${VIRTUAL_MODULE_ID}`;
@@ -14,7 +12,7 @@ export default defineIntegration({
 	optionsSchema: z.never().optional(),
 	setup: () => ({
 		hooks: {
-			'astro:config:setup': (params: HookParams) => {
+			'astro:config:setup': (params) => {
 				const outputMode = params.config.output;
 				const command = params.command;
 

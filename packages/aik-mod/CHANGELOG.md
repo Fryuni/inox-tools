@@ -1,5 +1,11 @@
 # @inox-tools/aik-mod
 
+## 0.6.0
+
+### Minor Changes
+
+- b6d23ab: Updates the minimum supported version of Astro Integration Kit to `0.13.0`
+
 ## 0.5.2
 
 ### Patch Changes

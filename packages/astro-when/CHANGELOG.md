@@ -1,5 +1,11 @@
 # @inox-tools/astro-when
 
+## 0.1.2
+
+### Patch Changes
+
+- b6d23ab: Updates the minimum supported version of Astro Integration Kit to `0.13.0`
+
 ## 0.1.1
 
 ### Patch Changes

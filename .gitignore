@@ -37,6 +37,7 @@ node_modules/
 .cache/
 .cache
 .turbo/
+/turbo/cache-key.json
 .pnpm-store
 .parcel-cache
 

@@ -26,8 +26,9 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "prepublish": "pnpm run build",
-    "test": "vitest",
-    "validate": "tsc"
+    "validate": "tsc",
+    "test": "vitest run --coverage",
+    "test:dev": "vitest --coverage.enabled=true"
   },
   "dependencies": {
     "recast": "^0.23.6",

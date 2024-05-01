@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "debug": "^4.3.4",
+    "@inox-tools/utils": "workspace:^",
     "typescript": "^5.4.5"
   },
   "devDependencies": {

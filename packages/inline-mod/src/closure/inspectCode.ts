@@ -2,7 +2,7 @@ import * as modules from 'node:module';
 import * as upath from 'node:path';
 import { getLogger } from '../log.js';
 import { Entry, EntryRegistry } from './entry.js';
-import { Lazy } from './lazy.js';
+import { Lazy } from '@inox-tools/utils/lazy';
 import { getModuleFromPath } from './package.js';
 import {
 	parseFunction,

@@ -1,6 +1,6 @@
 import type { Entry } from './closure/entry.js';
 import { getInspector } from './closure/inspectCode.js';
-import { Lazy } from './closure/lazy.js';
+import { Lazy } from '@inox-tools/utils/lazy';
 import { serializeModule, type ModEntry, type SerializedModule } from './closure/serialization.js';
 import { getLogger } from './log.js';
 
@@ -43,12 +43,12 @@ export async function inspectInlineMod(options: ModuleOptions): Promise<InlineMo
 		defaultExport: await maybeInspect(options.defaultExport),
 		assignExports: options.assignExports
 			? Object.fromEntries(
-					await Promise.all(
-						Object.entries(options.assignExports).map(
-							async ([key, value]) => [key, await inspector.inspect(value)] as const
-						)
+				await Promise.all(
+					Object.entries(options.assignExports).map(
+						async ([key, value]) => [key, await inspector.inspect(value)] as const
 					)
 				)
+			)
 			: undefined,
 	};
 

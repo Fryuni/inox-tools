@@ -34,7 +34,7 @@ importers:
     dependencies:
       '@astrojs/starlight':
         specifier: ^0.21.5
-        version: 0.21.5(astro@4.6.3)
+        version: 0.21.5(astro@4.6.3(@types/node@20.12.7)(typescript@5.4.5))
       '@vercel/analytics':
         specifier: ^1.2.2
         version: 1.2.2
@@ -46,7 +46,7 @@ importers:
         version: 0.33.3
       starlight-links-validator:
         specifier: ^0.8.0
-        version: 0.8.0(@astrojs/starlight@0.21.5)(astro@4.6.3)
+        version: 0.8.0(@astrojs/starlight@0.21.5(astro@4.6.3(@types/node@20.12.7)(typescript@5.4.5)))(astro@4.6.3(@types/node@20.12.7)(typescript@5.4.5))
     devDependencies:
       '@astrojs/check':
         specifier: ^0.5.10
@@ -62,7 +62,7 @@ importers:
         version: 0.5.10(prettier-plugin-astro@0.13.0)(prettier@3.2.5)(typescript@5.4.5)
       '@astrojs/node':
         specifier: ^8.2.5
-        version: 8.2.5(astro@4.6.3)
+        version: 8.2.5(astro@4.6.3(@types/node@20.12.7)(typescript@5.4.5))
       '@inox-tools/astro-when':
         specifier: workspace:^
         version: link:../../packages/astro-when
@@ -80,7 +80,7 @@ importers:
         version: 0.5.10(prettier-plugin-astro@0.13.0)(prettier@3.2.5)(typescript@5.4.5)
       '@astrojs/mdx':
         specifier: ^2.3.1
-        version: 2.3.1(astro@4.6.3)
+        version: 2.3.1(astro@4.6.3(@types/node@20.12.7)(typescript@5.4.5))
       '@astrojs/rss':
         specifier: ^4.0.5
         version: 4.0.5
@@ -117,7 +117,7 @@ importers:
         version: 0.5.10(prettier-plugin-astro@0.13.0)(prettier@3.2.5)(typescript@5.4.5)
       '@astrojs/node':
         specifier: ^8.2.5
-        version: 8.2.5(astro@4.6.3)
+        version: 8.2.5(astro@4.6.3(@types/node@20.12.7)(typescript@5.4.5))
       astro:
         specifier: ^4.6.3
         version: 4.6.3(@types/node@20.12.7)(typescript@5.4.5)
@@ -133,7 +133,7 @@ importers:
         version: link:../../packages/aik-mod
       astro-integration-kit:
         specifier: ^0.13.0
-        version: 0.13.1(astro@4.6.3)
+        version: 0.13.1(astro@4.6.3(@types/node@20.12.7)(typescript@5.4.5))
 
   examples/inline-mod-astro:
     dependencies:
@@ -142,7 +142,7 @@ importers:
         version: 0.5.10(prettier-plugin-astro@0.13.0)(prettier@3.2.5)(typescript@5.4.5)
       '@astrojs/node':
         specifier: ^8.2.5
-        version: 8.2.5(astro@4.6.3)
+        version: 8.2.5(astro@4.6.3(@types/node@20.12.7)(typescript@5.4.5))
       '@astrojs/rss':
         specifier: ^4.0.5
         version: 4.0.5
@@ -167,10 +167,10 @@ importers:
         version: 0.5.10(prettier-plugin-astro@0.13.0)(prettier@3.2.5)(typescript@5.4.5)
       '@astrojs/mdx':
         specifier: ^2.3.1
-        version: 2.3.1(astro@4.6.3)
+        version: 2.3.1(astro@4.6.3(@types/node@20.12.7)(typescript@5.4.5))
       '@astrojs/node':
         specifier: ^8.2.5
-        version: 8.2.5(astro@4.6.3)
+        version: 8.2.5(astro@4.6.3(@types/node@20.12.7)(typescript@5.4.5))
       '@astrojs/rss':
         specifier: ^4.0.5
         version: 4.0.5
@@ -191,7 +191,7 @@ importers:
         version: link:../inline-mod
       astro-integration-kit:
         specifier: ~0.13
-        version: 0.13.1(astro@4.6.3)
+        version: 0.13.1(astro@4.6.3(@types/node@20.12.7)(typescript@5.4.5))
     devDependencies:
       '@types/node':
         specifier: ^20.11.30
@@ -201,7 +201,7 @@ importers:
         version: 4.6.3(@types/node@20.12.7)(typescript@5.4.5)
       tsup:
         specifier: ^8.0.2
-        version: 8.0.2(typescript@5.4.5)
+        version: 8.0.2(postcss@8.4.38)(ts-node@10.9.2(@types/node@20.12.7)(typescript@5.4.5))(typescript@5.4.5)
       typescript:
         specifier: ^5.4.5
         version: 5.4.5
@@ -216,7 +216,7 @@ importers:
         version: 4.6.3(@types/node@20.12.7)(typescript@5.4.5)
       astro-integration-kit:
         specifier: ~0.13
-        version: 0.13.1(astro@4.6.3)
+        version: 0.13.1(astro@4.6.3(@types/node@20.12.7)(typescript@5.4.5))
       recast:
         specifier: ^0.23.6
         version: 0.23.6
@@ -229,13 +229,13 @@ importers:
         version: 2.7.1
       '@vitest/coverage-v8':
         specifier: ^1.5.0
-        version: 1.5.0(vitest@1.5.0)
+        version: 1.5.0(vitest@1.5.0(@types/node@20.12.7)(@vitest/ui@1.5.0))
       ast-types:
         specifier: ^0.14.2
         version: 0.14.2
       tsup:
         specifier: ^8.0.2
-        version: 8.0.2(typescript@5.4.5)
+        version: 8.0.2(postcss@8.4.38)(ts-node@10.9.2(@types/node@20.12.7)(typescript@5.4.5))(typescript@5.4.5)
       typescript:
         specifier: ^5.4.5
         version: 5.4.5
@@ -247,7 +247,7 @@ importers:
     dependencies:
       astro-integration-kit:
         specifier: ^0.13.0
-        version: 0.13.1(astro@4.6.3)
+        version: 0.13.1(astro@4.6.3(@types/node@20.12.7)(typescript@5.4.5))
     devDependencies:
       '@types/node':
         specifier: ^20.11.30
@@ -257,7 +257,7 @@ importers:
         version: 4.6.3(@types/node@20.12.7)(typescript@5.4.5)
       tsup:
         specifier: ^8.0.2
-        version: 8.0.2(typescript@5.4.5)
+        version: 8.0.2(postcss@8.4.38)(ts-node@10.9.2(@types/node@20.12.7)(typescript@5.4.5))(typescript@5.4.5)
       typescript:
         specifier: ^5.4.5
         version: 5.4.5
@@ -276,6 +276,9 @@ importers:
 
   packages/inline-mod:
     dependencies:
+      '@inox-tools/utils':
+        specifier: workspace:^
+        version: link:../utils
       debug:
         specifier: ^4.3.4
         version: 4.3.4
@@ -294,7 +297,7 @@ importers:
         version: 4.1.12
       '@vitest/coverage-v8':
         specifier: ^1.5.0
-        version: 1.5.0(vitest@1.5.0)
+        version: 1.5.0(vitest@1.5.0(@types/node@20.12.7)(@vitest/ui@1.5.0))
       '@vitest/ui':
         specifier: ^1.5.0
         version: 1.5.0(vitest@1.5.0)
@@ -303,7 +306,7 @@ importers:
         version: 4.0.2
       tsup:
         specifier: ^8.0.2
-        version: 8.0.2(typescript@5.4.5)
+        version: 8.0.2(postcss@8.4.38)(ts-node@10.9.2(@types/node@20.12.7)(typescript@5.4.5))(typescript@5.4.5)
       upath:
         specifier: ^2.0.1
         version: 2.0.1
@@ -321,7 +324,7 @@ importers:
         version: link:../aik-route-config
       astro-integration-kit:
         specifier: ^0.13.0
-        version: 0.13.1(astro@4.6.3)
+        version: 0.13.1(astro@4.6.3(@types/node@20.12.7)(typescript@5.4.5))
       sitemap:
         specifier: ^7.1.1
         version: 7.1.1
@@ -334,13 +337,43 @@ importers:
         version: 4.6.3(@types/node@20.12.7)(typescript@5.4.5)
       tsup:
         specifier: ^8.0.2
-        version: 8.0.2(typescript@5.4.5)
+        version: 8.0.2(postcss@8.4.38)(ts-node@10.9.2(@types/node@20.12.7)(typescript@5.4.5))(typescript@5.4.5)
       typescript:
         specifier: ^5.4.5
         version: 5.4.5
       vite:
         specifier: ^5.2.9
         version: 5.2.9(@types/node@20.12.7)
+
+  packages/utils:
+    devDependencies:
+      '@types/node':
+        specifier: ^20
+        version: 20.12.7
+      '@vitest/coverage-v8':
+        specifier: ^1.5.0
+        version: 1.5.0(vitest@1.5.0(@types/node@20.12.7)(@vitest/ui@1.5.0))
+      '@vitest/ui':
+        specifier: ^1.5.0
+        version: 1.5.0(vitest@1.5.0)
+      astro:
+        specifier: ^4
+        version: 4.6.3(@types/node@20.12.7)(typescript@5.4.5)
+      jest-extended:
+        specifier: ^4.0.2
+        version: 4.0.2
+      tsup:
+        specifier: ^8
+        version: 8.0.2(postcss@8.4.38)(ts-node@10.9.2(@types/node@20.12.7)(typescript@5.4.5))(typescript@5.4.5)
+      typescript:
+        specifier: ^5
+        version: 5.4.5
+      vite:
+        specifier: ^5
+        version: 5.2.9(@types/node@20.12.7)
+      vitest:
+        specifier: ^1.5.0
+        version: 1.5.0(@types/node@20.12.7)(@vitest/ui@1.5.0)
 
   packages/velox-luna:
     devDependencies:
@@ -349,7 +382,7 @@ importers:
         version: 0.0.32
       tsup:
         specifier: ^8.0.2
-        version: 8.0.2(typescript@5.4.5)
+        version: 8.0.2(postcss@8.4.38)(ts-node@10.9.2(@types/node@20.12.7)(typescript@5.4.5))(typescript@5.4.5)
       typescript:
         specifier: ^5.4.5
         version: 5.4.5
@@ -4724,8 +4757,6 @@ snapshots:
       '@volar/language-service': 2.1.6
       '@volar/typescript': 2.1.6
       fast-glob: 3.3.2
-      prettier: 3.2.5
-      prettier-plugin-astro: 0.13.0
       volar-service-css: 0.0.34(@volar/language-service@2.1.6)
       volar-service-emmet: 0.0.34(@volar/language-service@2.1.6)
       volar-service-html: 0.0.34(@volar/language-service@2.1.6)
@@ -4734,6 +4765,9 @@ snapshots:
       volar-service-typescript-twoslash-queries: 0.0.34(@volar/language-service@2.1.6)
       vscode-html-languageservice: 5.2.0
       vscode-uri: 3.0.8
+    optionalDependencies:
+      prettier: 3.2.5
+      prettier-plugin-astro: 0.13.0
     transitivePeerDependencies:
       - typescript
 
@@ -4760,7 +4794,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@astrojs/mdx@2.3.1(astro@4.6.3)':
+  '@astrojs/mdx@2.3.1(astro@4.6.3(@types/node@20.12.7)(typescript@5.4.5))':
     dependencies:
       '@astrojs/markdown-remark': 5.1.0
       '@mdx-js/mdx': 3.0.1
@@ -4781,7 +4815,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@astrojs/node@8.2.5(astro@4.6.3)':
+  '@astrojs/node@8.2.5(astro@4.6.3(@types/node@20.12.7)(typescript@5.4.5))':
     dependencies:
       astro: 4.6.3(@types/node@20.12.7)(typescript@5.4.5)
       send: 0.18.0
@@ -4804,15 +4838,15 @@ snapshots:
       stream-replace-string: 2.0.0
       zod: 3.22.5
 
-  '@astrojs/starlight@0.21.5(astro@4.6.3)':
+  '@astrojs/starlight@0.21.5(astro@4.6.3(@types/node@20.12.7)(typescript@5.4.5))':
     dependencies:
-      '@astrojs/mdx': 2.3.1(astro@4.6.3)
+      '@astrojs/mdx': 2.3.1(astro@4.6.3(@types/node@20.12.7)(typescript@5.4.5))
       '@astrojs/sitemap': 3.1.4
       '@pagefind/default-ui': 1.1.0
       '@types/hast': 3.0.4
       '@types/mdast': 4.0.3
       astro: 4.6.3(@types/node@20.12.7)(typescript@5.4.5)
-      astro-expressive-code: 0.33.5(astro@4.6.3)
+      astro-expressive-code: 0.33.5(astro@4.6.3(@types/node@20.12.7)(typescript@5.4.5))
       bcp-47: 2.1.0
       hast-util-from-html: 2.0.1
       hast-util-select: 6.0.2
@@ -5768,7 +5802,7 @@ snapshots:
     dependencies:
       server-only: 0.0.1
 
-  '@vitest/coverage-v8@1.5.0(vitest@1.5.0)':
+  '@vitest/coverage-v8@1.5.0(vitest@1.5.0(@types/node@20.12.7)(@vitest/ui@1.5.0))':
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@bcoe/v8-coverage': 0.2.3
@@ -5998,13 +6032,13 @@ snapshots:
 
   astring@1.8.6: {}
 
-  astro-expressive-code@0.33.5(astro@4.6.3):
+  astro-expressive-code@0.33.5(astro@4.6.3(@types/node@20.12.7)(typescript@5.4.5)):
     dependencies:
       astro: 4.6.3(@types/node@20.12.7)(typescript@5.4.5)
       hast-util-to-html: 8.0.4
       remark-expressive-code: 0.33.5
 
-  astro-integration-kit@0.13.1(astro@4.6.3):
+  astro-integration-kit@0.13.1(astro@4.6.3(@types/node@20.12.7)(typescript@5.4.5)):
     dependencies:
       astro: 4.6.3(@types/node@20.12.7)(typescript@5.4.5)
       pathe: 1.1.2
@@ -6070,7 +6104,7 @@ snapshots:
       unist-util-visit: 5.0.0
       vfile: 6.0.1
       vite: 5.2.9(@types/node@20.12.7)
-      vitefu: 0.2.5(vite@5.2.9)
+      vitefu: 0.2.5(vite@5.2.9(@types/node@20.12.7))
       which-pm: 2.1.1
       yargs-parser: 21.1.1
       zod: 3.22.5
@@ -8571,10 +8605,13 @@ snapshots:
 
   possible-typed-array-names@1.0.0: {}
 
-  postcss-load-config@4.0.2:
+  postcss-load-config@4.0.2(postcss@8.4.38)(ts-node@10.9.2(@types/node@20.12.7)(typescript@5.4.5)):
     dependencies:
       lilconfig: 3.1.1
       yaml: 2.4.1
+    optionalDependencies:
+      postcss: 8.4.38
+      ts-node: 10.9.2(@types/node@20.12.7)(typescript@5.4.5)
 
   postcss-nested@6.0.1(postcss@8.4.38):
     dependencies:
@@ -9180,9 +9217,9 @@ snapshots:
 
   stackback@0.0.2: {}
 
-  starlight-links-validator@0.8.0(@astrojs/starlight@0.21.5)(astro@4.6.3):
+  starlight-links-validator@0.8.0(@astrojs/starlight@0.21.5(astro@4.6.3(@types/node@20.12.7)(typescript@5.4.5)))(astro@4.6.3(@types/node@20.12.7)(typescript@5.4.5)):
     dependencies:
-      '@astrojs/starlight': 0.21.5(astro@4.6.3)
+      '@astrojs/starlight': 0.21.5(astro@4.6.3(@types/node@20.12.7)(typescript@5.4.5))
       astro: 4.6.3(@types/node@20.12.7)(typescript@5.4.5)
       github-slugger: 2.0.0
       hast-util-from-html: 2.0.1
@@ -9451,14 +9488,14 @@ snapshots:
       yn: 3.1.1
 
   tsconfck@3.0.3(typescript@5.4.5):
-    dependencies:
+    optionalDependencies:
       typescript: 5.4.5
 
   tslib@1.14.1: {}
 
   tslib@2.6.2: {}
 
-  tsup@8.0.2(typescript@5.4.5):
+  tsup@8.0.2(postcss@8.4.38)(ts-node@10.9.2(@types/node@20.12.7)(typescript@5.4.5))(typescript@5.4.5):
     dependencies:
       bundle-require: 4.0.2(esbuild@0.19.12)
       cac: 6.7.14
@@ -9468,12 +9505,14 @@ snapshots:
       execa: 5.1.1
       globby: 11.1.0
       joycon: 3.1.1
-      postcss-load-config: 4.0.2
+      postcss-load-config: 4.0.2(postcss@8.4.38)(ts-node@10.9.2(@types/node@20.12.7)(typescript@5.4.5))
       resolve-from: 5.0.0
       rollup: 4.14.3
       source-map: 0.8.0-beta.0
       sucrase: 3.35.0
       tree-kill: 1.2.2
+    optionalDependencies:
+      postcss: 8.4.38
       typescript: 5.4.5
     transitivePeerDependencies:
       - supports-color
@@ -9768,25 +9807,23 @@ snapshots:
 
   vite@5.2.9(@types/node@20.12.7):
     dependencies:
-      '@types/node': 20.12.7
       esbuild: 0.20.2
       postcss: 8.4.38
       rollup: 4.14.3
     optionalDependencies:
+      '@types/node': 20.12.7
       fsevents: 2.3.3
 
-  vitefu@0.2.5(vite@5.2.9):
-    dependencies:
+  vitefu@0.2.5(vite@5.2.9(@types/node@20.12.7)):
+    optionalDependencies:
       vite: 5.2.9(@types/node@20.12.7)
 
   vitest@1.5.0(@types/node@20.12.7)(@vitest/ui@1.5.0):
     dependencies:
-      '@types/node': 20.12.7
       '@vitest/expect': 1.5.0
       '@vitest/runner': 1.5.0
       '@vitest/snapshot': 1.5.0
       '@vitest/spy': 1.5.0
-      '@vitest/ui': 1.5.0(vitest@1.5.0)
       '@vitest/utils': 1.5.0
       acorn-walk: 8.3.2
       chai: 4.4.1
@@ -9803,6 +9840,9 @@ snapshots:
       vite: 5.2.9(@types/node@20.12.7)
       vite-node: 1.5.0(@types/node@20.12.7)
       why-is-node-running: 2.2.2
+    optionalDependencies:
+      '@types/node': 20.12.7
+      '@vitest/ui': 1.5.0(vitest@1.5.0)
     transitivePeerDependencies:
       - less
       - lightningcss
@@ -9814,42 +9854,47 @@ snapshots:
 
   volar-service-css@0.0.34(@volar/language-service@2.1.6):
     dependencies:
-      '@volar/language-service': 2.1.6
       vscode-css-languageservice: 6.2.13
       vscode-languageserver-textdocument: 1.0.11
       vscode-uri: 3.0.8
+    optionalDependencies:
+      '@volar/language-service': 2.1.6
 
   volar-service-emmet@0.0.34(@volar/language-service@2.1.6):
     dependencies:
-      '@volar/language-service': 2.1.6
       '@vscode/emmet-helper': 2.9.2
       vscode-html-languageservice: 5.2.0
+    optionalDependencies:
+      '@volar/language-service': 2.1.6
 
   volar-service-html@0.0.34(@volar/language-service@2.1.6):
     dependencies:
-      '@volar/language-service': 2.1.6
       vscode-html-languageservice: 5.2.0
       vscode-languageserver-textdocument: 1.0.11
       vscode-uri: 3.0.8
+    optionalDependencies:
+      '@volar/language-service': 2.1.6
 
   volar-service-prettier@0.0.34(@volar/language-service@2.1.6)(prettier@3.2.5):
     dependencies:
+      vscode-uri: 3.0.8
+    optionalDependencies:
       '@volar/language-service': 2.1.6
       prettier: 3.2.5
-      vscode-uri: 3.0.8
 
   volar-service-typescript-twoslash-queries@0.0.34(@volar/language-service@2.1.6):
-    dependencies:
+    optionalDependencies:
       '@volar/language-service': 2.1.6
 
   volar-service-typescript@0.0.34(@volar/language-service@2.1.6):
     dependencies:
-      '@volar/language-service': 2.1.6
       path-browserify: 1.0.1
       semver: 7.6.0
       typescript-auto-import-cache: 0.3.2
       vscode-languageserver-textdocument: 1.0.11
       vscode-nls: 5.2.0
+    optionalDependencies:
+      '@volar/language-service': 2.1.6
 
   vscode-css-languageservice@6.2.13:
     dependencies:

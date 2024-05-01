@@ -2,42 +2,37 @@
   "name": "@inox-tools/utils",
   "version": "0.0.0",
   "description": "A collection of utilities used throughout Inox Tools",
-  "keywords": [
-    "lifecycle",
-    "astro-integration",
-    "astro"
-  ],
+  "keywords": ["utilities"],
   "license": "MIT",
   "author": "Luiz Ferraz <luiz@lferraz.com>",
   "type": "module",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
+    "./*": {
+      "types": "./dist/*.d.ts",
+      "default": "./dist/*.js"
     }
   },
   "files": [
+    "README.md",
     "dist",
-    "src",
-    "virtual.d.ts"
+    "src"
   ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
     "prepublish": "pnpm run build",
-    "test": "echo 'No tests'"
-  },
-  "dependencies": {
-    "astro-integration-kit": "^0.12"
+    "test": "vitest run --coverage",
+    "test:dev": "vitest --coverage.enabled=true"
   },
   "devDependencies": {
     "@types/node": "^20",
+    "@vitest/coverage-v8": "^1.5.0",
+    "@vitest/ui": "^1.5.0",
+    "jest-extended": "^4.0.2",
     "astro": "^4",
     "tsup": "^8",
     "typescript": "^5",
-    "vite": "^5"
-  },
-  "peerDependencies": {
-    "astro": "^4"
+    "vite": "^5",
+    "vitest": "^1.5.0"
   }
 }

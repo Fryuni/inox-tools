@@ -1,18 +1,16 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
-	entry: ['src/index.ts'],
+	entry: ['src/*.ts'],
 	format: ['esm'],
 	target: 'node18',
-	bundle: true,
-	dts: {
-		banner: '/// <reference path="../virtual.d.ts" />\n',
-	},
+	bundle: false,
 	sourcemap: true,
 	clean: true,
-	splitting: true,
-	minify: false,
-	external: ['astro', 'astro-integration-kit', './virtual.d.ts', 'vite'],
+	splitting: false,
+	minify: true,
+	dts: true,
+	external: [],
 	noExternal: [],
 	treeshake: 'smallest',
 	tsconfig: 'tsconfig.json',

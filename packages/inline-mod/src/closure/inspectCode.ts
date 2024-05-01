@@ -2,7 +2,7 @@ import * as modules from 'node:module';
 import * as upath from 'node:path';
 import { getLogger } from '../log.js';
 import { Entry, EntryRegistry } from './entry.js';
-import { Lazy } from './lazy.js';
+import { Lazy } from '@inox-tools/utils/lazy';
 import { getModuleFromPath } from './package.js';
 import {
 	parseFunction,
@@ -118,7 +118,7 @@ class Inspector {
 	// a serialized function for each of those, we can emit them a single time.
 	private readonly simpleFunctions: Entry<'function'>[] = [];
 
-	public constructor(private readonly serialize: (o: unknown) => boolean) {}
+	public constructor(private readonly serialize: (o: unknown) => boolean) { }
 
 	public async inspect(
 		value: unknown,
@@ -1247,7 +1247,7 @@ class GlobalCache {
 		// these values can be cached once and reused across avery run.
 
 		// Add entries to allow proper serialization over generators and iterators.
-		const emptyGenerator = function* (): any {};
+		const emptyGenerator = function*(): any { };
 
 		this.cache.addUnchecked(Object.getPrototypeOf(emptyGenerator), {
 			type: 'expr',

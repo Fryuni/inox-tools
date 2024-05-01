@@ -19,16 +19,22 @@
     "format": "prettier -w \"**/*\" --ignore-unknown --cache",
     "release": "pnpm run build && changeset publish",
     "test": "turbo run test --concurrency=1",
-    "version": "changeset version && pnpm install && pnpm format"
+    "version": "changeset version && pnpm install && pnpm format",
+    "prepare": "husky install"
   },
   "devDependencies": {
     "@changesets/changelog-github": "^0.5.0",
     "@changesets/cli": "^2.27.1",
     "@types/node": "^20.11.30",
+    "husky": "^9.0.11",
+    "lint-staged": "^15.2.2",
     "prettier": "^3.2.5",
     "prettier-plugin-astro": "^0.13.0",
     "turbo": "^1.13.0",
     "typescript": "^5.4.5"
   },
-  "packageManager": "pnpm@9.0.6+sha256.0624e30eff866cdeb363b15061bdb7fd9425b17bc1bb42c22f5f4efdea21f6b3"
+  "packageManager": "pnpm@9.0.6+sha256.0624e30eff866cdeb363b15061bdb7fd9425b17bc1bb42c22f5f4efdea21f6b3",
+  "lint-staged": {
+    "*.--cache": "prettier --write"
+  }
 }

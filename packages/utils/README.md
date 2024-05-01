@@ -11,4 +11,3 @@ A collection of utilities used throughout Inox Tools
 ```js
 npm i -D @inox-tools/utils
 ```
-

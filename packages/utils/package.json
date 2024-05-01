@@ -2,7 +2,9 @@
   "name": "@inox-tools/utils",
   "version": "0.0.0",
   "description": "A collection of utilities used throughout Inox Tools",
-  "keywords": ["utilities"],
+  "keywords": [
+    "utilities"
+  ],
   "license": "MIT",
   "author": "Luiz Ferraz <luiz@lferraz.com>",
   "type": "module",

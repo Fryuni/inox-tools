@@ -43,12 +43,12 @@ export async function inspectInlineMod(options: ModuleOptions): Promise<InlineMo
 		defaultExport: await maybeInspect(options.defaultExport),
 		assignExports: options.assignExports
 			? Object.fromEntries(
-				await Promise.all(
-					Object.entries(options.assignExports).map(
-						async ([key, value]) => [key, await inspector.inspect(value)] as const
+					await Promise.all(
+						Object.entries(options.assignExports).map(
+							async ([key, value]) => [key, await inspector.inspect(value)] as const
+						)
 					)
 				)
-			)
 			: undefined,
 	};
 

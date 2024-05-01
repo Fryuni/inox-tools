@@ -1,0 +1,43 @@
+{
+  "name": "@inox-tools/utils",
+  "version": "0.0.0",
+  "description": "A collection of utilities used throughout Inox Tools",
+  "keywords": [
+    "lifecycle",
+    "astro-integration",
+    "astro"
+  ],
+  "license": "MIT",
+  "author": "Luiz Ferraz <luiz@lferraz.com>",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "virtual.d.ts"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "prepublish": "pnpm run build",
+    "test": "echo 'No tests'"
+  },
+  "dependencies": {
+    "astro-integration-kit": "^0.12"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "astro": "^4",
+    "tsup": "^8",
+    "typescript": "^5",
+    "vite": "^5"
+  },
+  "peerDependencies": {
+    "astro": "^4"
+  }
+}

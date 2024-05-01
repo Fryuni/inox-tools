@@ -1,4 +1,4 @@
 import { writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-await writeFile(join(import.meta.dirname, 'cache-key.json'), JSON.stringify(process.versions), 'utf-8');
+await writeFile(fileURLToPath(new URL('cache-key.json', import.meta.url)), JSON.stringify(process.versions), 'utf-8');

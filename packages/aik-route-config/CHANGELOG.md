@@ -1,5 +1,11 @@
 # @inox-tools/aik-route-config
 
+## 0.5.1
+
+### Patch Changes
+
+- 8f3f236: Fixes error on unexpected compiled Astro component structure
+
 ## 0.5.0
 
 ### Minor Changes

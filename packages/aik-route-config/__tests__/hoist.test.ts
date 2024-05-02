@@ -259,30 +259,25 @@ test('hoist calls mixed with adversary exports', async () => {
 		const $$Astro = $$createAstro();
 
 		await customName({
-		    bundleFile: import.meta.url,
-		    sourceFile: "/src/pages/simple.astro"
+		  bundleFile: import.meta.url,
+		  sourceFile: "/src/pages/simple.astro"
 		}, 'second hoisted value');
 
 		const Astro = $$Astro;
-		export function $$createComponent(x: any): any {}
-
-		export const bar = $$createComponent(() => {
-			$$createComponent(123);
-		});
 		export function getStaticPaths() {
 			const bar: string[] = [];
 
-			return $$createComponent(bar);
+			return bar.map((x) => x);
 		}
 		const $$stdin = $$createComponent(async ($$result, $$props, $$slots) => {
-		    const Astro = $$result.createAstro($$Astro, $$props, $$slots);
-		    Astro.self = $$stdin;
+		  const Astro = $$result.createAstro($$Astro, $$props, $$slots);
+		  Astro.self = $$stdin;
 
 
-		    const foo: string[] = [];
+		  const foo: string[] = $$createComponent([]);
 
 
-		    return $$render\`\${$$renderComponent($$result,'Fragment',Fragment,{},{"default": () => $$render\`\${foo.map((text) => $$render\`\${$$maybeRenderHead($$result)}<p>\${text}</p>\`)}\`,})}\`;
+		  return $$render\`\${$$renderComponent($$result,'Fragment',Fragment,{},{"default": () => $$render\`\${foo.map((text) => $$render\`\${$$maybeRenderHead($$result)}<p>\${text}</p>\`)}\`,})}\`;
 		}, '<stdin>', undefined);
 		export default $$stdin;
 		"

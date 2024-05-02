@@ -1,0 +1,22 @@
+---
+import customName from 'magic:hoist';
+
+export function $$createComponent(x: any): any {}
+export const bar = $$createComponent(() => {
+	$$createComponent(123);
+});
+
+export function getStaticPaths() {
+	const bar: string[] = [];
+
+	return $$createComponent(bar);
+}
+
+customName('second hoisted value');
+
+const foo: string[] = [];
+---
+
+<>
+	{foo.map((text) => <p>{text}</p>)}
+</>

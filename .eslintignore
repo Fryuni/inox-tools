@@ -1,8 +1,0 @@
-**/*.d.ts
-**/dist/
-packages/**/*.min.js
-packages/**/dist/**/*
-examples/**/*
-/turbo/
-.github
-.changeset

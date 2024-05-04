@@ -1,6 +1,6 @@
 import type { HookParameters, RouteData } from 'astro';
 import * as path from 'node:path';
-import { Once } from './once.js';
+import { Once } from '@inox-tools/utils/once';
 import { defineIntegration, addIntegration, addVitePlugin } from 'astro-integration-kit';
 import { fileURLToPath } from 'node:url';
 import { normalizePath } from 'vite';

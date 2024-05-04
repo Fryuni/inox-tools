@@ -1,4 +1,4 @@
-import { definePlugin, addVitePlugin, type HookParameters } from 'astro-integration-kit';
+import { definePlugin, addVitePlugin } from 'astro-integration-kit';
 import { hoistGlobalPlugin } from './hoistGlobalPlugin.js';
 import { integrate, convertContext } from './contextResolution.js';
 import type { ConfigContext, InnerContext } from './contextResolution.js';

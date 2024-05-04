@@ -68,7 +68,7 @@ importers:
         version: 0.5.10(prettier-plugin-astro@0.13.0)(prettier@3.2.5)(typescript@5.4.5)
       '@astrojs/node':
         specifier: ^8.2.5
-        version: 8.2.5(astro@4.6.3)
+        version: 8.2.5(astro@4.6.3(@types/node@20.12.7)(typescript@5.4.5))
       '@inox-tools/astro-atlas':
         specifier: workspace:^
         version: link:../../packages/astro-atlas
@@ -273,8 +273,8 @@ importers:
   packages/astro-atlas:
     dependencies:
       astro-integration-kit:
-        specifier: ^0.11.0
-        version: 0.11.0(astro@4.6.3)
+        specifier: ^0.13.0
+        version: 0.13.1(astro@4.6.3(@types/node@20.12.7)(typescript@5.4.5))
     devDependencies:
       '@types/node':
         specifier: ^20.11.30
@@ -284,7 +284,7 @@ importers:
         version: 4.6.3(@types/node@20.12.7)(typescript@5.4.5)
       tsup:
         specifier: ^8.0.2
-        version: 8.0.2(typescript@5.4.5)
+        version: 8.0.2(postcss@8.4.38)(ts-node@10.9.2(@types/node@20.12.7)(typescript@5.4.5))(typescript@5.4.5)
       typescript:
         specifier: ^5.4.5
         version: 5.4.5

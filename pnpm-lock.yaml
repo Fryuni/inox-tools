@@ -274,7 +274,7 @@ importers:
         specifier: ^5.2.9
         version: 5.2.9(@types/node@20.12.7)
 
-  packages/content-inject:
+  packages/content-utils:
     dependencies:
       astro-integration-kit:
         specifier: ^0.12

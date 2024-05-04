@@ -1,4 +1,5 @@
-declare module '@it-astro:content-inject' {
-  export const externalCollections: (colection: any) => any;
-  export const darculaColorCollection: (c: any) => any;
+declare module '@it-astro:content/injector' {
+	import type { defineCollection } from 'astro:content';
+	export type CollectionConfig = ReturnType<typeof defineCollection>;
+	export const injectedCollections: Record<string, CollectionConfig>;
 }

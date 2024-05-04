@@ -16,6 +16,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./runtime/*": {
+      "types": "./dist/runtime/*.d.ts",
+      "default": "./dist/runtime/*.js"
     }
   },
   "files": [
@@ -30,7 +34,10 @@
     "test": "echo 'No tests'"
   },
   "dependencies": {
-    "astro-integration-kit": "^0.12"
+    "@inox-tools/utils": "workspace:^",
+    "astro-integration-kit": "^0.13",
+    "estree-walker": "^3.0.3",
+    "magic-string": "^0.30.10"
   },
   "devDependencies": {
     "@types/node": "^20",

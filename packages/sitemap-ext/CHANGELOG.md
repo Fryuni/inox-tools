@@ -1,5 +1,20 @@
 # @inox-tools/sitemap-ext
 
+## 0.2.10
+
+### Patch Changes
+
+- Updated dependencies [8f3f236]
+  - @inox-tools/aik-route-config@0.5.1
+
+## 0.2.9
+
+### Patch Changes
+
+- b6d23ab: Updates the minimum supported version of Astro Integration Kit to `0.13.0`
+- Updated dependencies [b6d23ab]
+  - @inox-tools/aik-route-config@0.5.0
+
 ## 0.2.8
 
 ### Patch Changes

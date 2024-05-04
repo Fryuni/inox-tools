@@ -1,6 +1,6 @@
 {
   "name": "@inox-tools/aik-route-config",
-  "version": "0.4.2",
+  "version": "0.5.1",
   "description": "",
   "keywords": [
     "aik",
@@ -26,8 +26,9 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "prepublish": "pnpm run build",
-    "test": "vitest",
-    "validate": "tsc"
+    "validate": "tsc",
+    "test": "vitest run --coverage",
+    "test:dev": "vitest --coverage.enabled=true"
   },
   "dependencies": {
     "recast": "^0.23.6",
@@ -43,6 +44,6 @@
   },
   "peerDependencies": {
     "astro": "^4.3.5",
-    "astro-integration-kit": "~0.10 || ~0.11"
+    "astro-integration-kit": "~0.13"
   }
 }

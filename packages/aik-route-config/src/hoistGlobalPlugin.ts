@@ -77,7 +77,7 @@ export function hoistImport({
 		throw e;
 	}
 
-	const visitor = makeVisitor(magicImport, currentModule);
+	const visitor = makeVisitor(magicImport, currentModule, logger);
 	recast.visit(ast, visitor);
 
 	if (visitor.state.phase === VisitorPhase.Cancelled) return null;
@@ -107,14 +107,23 @@ interface Visitor extends recast.types.Visitor<Visitor> {
 		astroNode?: NodePath<recast.types.namedTypes.VariableDeclaration>;
 		phase: VisitorPhase;
 	};
+	warnUnexpectedStructure(this: Context & Visitor, message: string): void;
 	traverseWithState(this: Context & Visitor, state: VisitorPhase, path: NodePath): void;
 }
 
-function makeVisitor(magicImport: string, currentModule: string): Visitor {
+function makeVisitor(
+	magicImport: string,
+	currentModule: string,
+	logger: AstroIntegrationLogger
+): Visitor {
 	return {
 		state: {
 			foundNames: [],
 			phase: VisitorPhase.Initializing,
+		},
+		warnUnexpectedStructure(message) {
+			logger.warn(`Detected Astro module with unexpected structure. Module "${currentModule}" ${message}.
+Please send a report on https://github.com/Fryuni/inox-tools/issues/new with the module for reproduction`);
 		},
 		traverseWithState(state: VisitorPhase, path: NodePath) {
 			const prevState = this.state.phase;
@@ -169,9 +178,23 @@ function makeVisitor(magicImport: string, currentModule: string): Visitor {
 			}
 
 			if (path.node.callee.name === '$$createComponent') {
-				assert.ok(this.state.phase === VisitorPhase.Initialized);
-				this.traverseWithState(VisitorPhase.HoistingCalls, path);
-				return;
+				switch (this.state.phase) {
+					case VisitorPhase.Initializing:
+						this.warnUnexpectedStructure('missing an $$Astro declaration before $$createComponent');
+						return this.abort();
+					case VisitorPhase.Initialized:
+						this.traverseWithState(VisitorPhase.HoistingCalls, path);
+						return;
+					case VisitorPhase.Cancelled:
+						assert.fail('Hoisting continued after abortion.');
+					case VisitorPhase.HoistingCalls:
+						this.warnUnexpectedStructure('has nested $$createComponent declarations');
+						return false;
+					case VisitorPhase.EnrichingCallsInPlace:
+					case VisitorPhase.DroppingCalls:
+						this.warnUnexpectedStructure('has more than one $$createComponent declarations');
+						return false;
+				}
 			}
 
 			if (this.state.foundNames.includes(path.node.callee.name)) {

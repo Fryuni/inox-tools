@@ -1,5 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": ["turbo/cache-key.json"],
   "pipeline": {
     "build": {
       "dependsOn": ["^build"],

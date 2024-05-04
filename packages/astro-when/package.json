@@ -1,6 +1,6 @@
 {
   "name": "@inox-tools/astro-when",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Integration that informs when in Astro's lifecycle the code is running",
   "keywords": [
     "lifecycle",
@@ -30,7 +30,7 @@
     "test": "echo 'No tests'"
   },
   "dependencies": {
-    "astro-integration-kit": "^0.11.0"
+    "astro-integration-kit": "^0.13.0"
   },
   "devDependencies": {
     "@types/node": "^20.11.30",

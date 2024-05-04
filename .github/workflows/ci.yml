@@ -37,7 +37,7 @@ jobs:
     timeout-minutes: 3
     strategy:
       matrix:
-        NODE_VERSION: [18, 20]
+        NODE_VERSION: [18, 20, 22]
       fail-fast: true
     steps:
       # # Disable crlf so all OS can share the same Turbo cache
@@ -98,7 +98,7 @@ jobs:
     needs: build
     strategy:
       matrix:
-        NODE_VERSION: [18, 20]
+        NODE_VERSION: [18, 20, 22]
       fail-fast: false
     env:
       NODE_VERSION: ${{ matrix.NODE_VERSION }}

@@ -1,6 +1,6 @@
 {
   "name": "@example/inline-mod-aik",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -19,7 +19,7 @@
   },
   "devDependencies": {
     "@inox-tools/aik-mod": "workspace:^",
-    "astro-integration-kit": "^0.11.0"
+    "astro-integration-kit": "^0.13.0"
   },
   "overrides": {
     "vite": "$vite"

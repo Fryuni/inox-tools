@@ -1,6 +1,6 @@
 import type { Entry } from './closure/entry.js';
 import { getInspector } from './closure/inspectCode.js';
-import { Lazy } from './closure/lazy.js';
+import { Lazy } from '@inox-tools/utils/lazy';
 import { serializeModule, type ModEntry, type SerializedModule } from './closure/serialization.js';
 import { getLogger } from './log.js';
 

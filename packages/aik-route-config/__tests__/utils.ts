@@ -16,14 +16,16 @@ export async function loadAstroFixture(name: string) {
 	return result.code;
 }
 
+export type TestMessage = {
+	level: 'info' | 'warn' | 'error' | 'debug';
+	message: string;
+	label: string;
+};
+
 export class TestLogger implements AstroIntegrationLogger {
 	public constructor(
 		public label = 'root',
-		public messages: Array<{
-			level: 'info' | 'warn' | 'error' | 'debug';
-			message: string;
-			label: string;
-		}> = []
+		public messages: TestMessage[] = []
 	) {}
 
 	public get options(): never {

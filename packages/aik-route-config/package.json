@@ -31,6 +31,7 @@
     "test:dev": "vitest --coverage.enabled=true"
   },
   "dependencies": {
+    "@inox-tools/utils": "workspace:^",
     "recast": "^0.23.6",
     "vite": "^5.2.9"
   },

@@ -5,25 +5,40 @@ import MagicString from 'magic-string';
 
 export const entrypoints: string[] = [];
 
-const VIRTUAL_MODULE = '@it-astro:content/injector';
-const RESOLVED_VIRTUAL_MODULE = `\0${VIRTUAL_MODULE}`;
+const INJECTOR_VIRTUAL_MODULE = '@it-astro:content/injector';
+const RESOLVED_INJECTOR_VIRTUAL_MODULE = `\0${INJECTOR_VIRTUAL_MODULE}`;
+
+const CONTENT_VIRTUAL_MODULE = '@it-astro:content';
+const RESOLVED_CONTENT_VIRTUAL_MODULE = `\0${CONTENT_VIRTUAL_MODULE}`;
 
 export const plugin = (configFile: string): Plugin => ({
 	name: '@inox-tools/content-utils/injector',
 	resolveId(id) {
-		if (id === VIRTUAL_MODULE) return RESOLVED_VIRTUAL_MODULE;
+		switch (id) {
+			case INJECTOR_VIRTUAL_MODULE:
+				return RESOLVED_INJECTOR_VIRTUAL_MODULE;
+			case CONTENT_VIRTUAL_MODULE:
+				return RESOLVED_CONTENT_VIRTUAL_MODULE;
+		}
 	},
 	load(id) {
-		if (id !== RESOLVED_VIRTUAL_MODULE) return;
-
-		return [
-			...entrypoints.map(
-				(entrypoint, index) => `import {collections as __collections${index}} from '${entrypoint}';`
-			),
-			'export const injectedCollections = {',
-			...entrypoints.map((_, index) => `...__collections${index},`),
-			'};',
-		].join('\n');
+		switch (id) {
+			case RESOLVED_INJECTOR_VIRTUAL_MODULE:
+				return [
+					...entrypoints.map(
+						(entrypoint, index) =>
+							`import {collections as __collections${index}} from '${entrypoint}';`
+					),
+					'export const injectedCollections = {',
+					...entrypoints.map((_, index) => `...__collections${index},`),
+					'};',
+				].join('\n');
+			case RESOLVED_CONTENT_VIRTUAL_MODULE:
+				return [
+					'export {defineCollection} from "@inox-tools/content-utils/runtime/fancyContent";',
+					'export {z, reference} from "astro:content";',
+				].join('\n');
+		}
 	},
 	transform(code, id) {
 		if (id !== configFile) return;

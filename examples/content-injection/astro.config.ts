@@ -3,5 +3,5 @@ import integration from './integration';
 
 // https://astro.build/config
 export default defineConfig({
-  integrations: [integration()],
+	integrations: [integration()],
 });

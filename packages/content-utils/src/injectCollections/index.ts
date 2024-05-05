@@ -1,13 +1,9 @@
 import { Once } from '@inox-tools/utils/once';
-import {
-	addVitePlugin,
-	createResolver,
-	defineUtility,
-	type HookParameters,
-} from 'astro-integration-kit';
-import { existsSync, writeFileSync, mkdirSync } from 'fs';
+import { addVitePlugin, defineUtility, type HookParameters } from 'astro-integration-kit';
+import { writeFileSync, mkdirSync } from 'fs';
 import { plugin, entrypoints } from './plugin.js';
-import { fileURLToPath } from 'url';
+import { resolveContentPaths } from '../internal/resolver.js';
+import { seedCollections } from '../seedCollections.js';
 
 export type Options = {
 	/**
@@ -16,10 +12,15 @@ export type Options = {
 	 * This module should be resolvable from the root of the Astro project and must export a `collections` object.
 	 */
 	entrypoint: string;
+
+	/**
+	 * Seed collections using this template if they are not present.
+	 *
+	 * @see {seedCollections}
+	 */
+	seedTemplateDirectory?: string;
 };
 
-// https://github.com/withastro/astro/blob/fd508a0f/packages/astro/src/content/utils.ts#L456
-const possibleConfigs = ['config.mjs', 'config.js', 'config.mts', 'config.ts'];
 const installPluginOnce = new Once();
 
 /**
@@ -33,20 +34,14 @@ export const injectCollections = defineUtility('astro:config:setup')((
 ) => {
 	const logger = params.logger.fork('@inox-tools/content-utils');
 
-	const resolver = createResolver(fileURLToPath(params.config.srcDir));
+	const contentPaths = resolveContentPaths(params.config);
 
-	const existingConfig = possibleConfigs
-		.map((configPath) => resolver.resolve(`content/${configPath}`))
-		.find((configPath) => existsSync(configPath));
-
-	const configFile = existingConfig ?? resolver.resolve('content/config.ts');
-
-	if (existingConfig === undefined) {
+	if (!contentPaths.configExists) {
 		// Create the `<srcDir>/content/config.ts` file if it doesn't exist,
 		// otherwise there is no module to modify in the Vite lifecycle.
 
-		mkdirSync(resolver.resolve('content'), { recursive: true });
-		writeFileSync(configFile, 'export const collections = {};');
+		mkdirSync(contentPaths.contentPath, { recursive: true });
+		writeFileSync(contentPaths.configPath, 'export const collections = {};');
 	}
 
 	// Install the plugin only once regardless of how many integrations use the utility
@@ -55,10 +50,16 @@ export const injectCollections = defineUtility('astro:config:setup')((
 	//   export const collections = withCollections(withCollections(withCollections(...)));
 	installPluginOnce.do(() => {
 		addVitePlugin(params, {
-			plugin: plugin({ configFile, logger }),
+			plugin: plugin({ configFile: contentPaths.configPath, logger }),
 			warnDuplicated: true,
 		});
 	});
 
 	entrypoints.push(options.entrypoint);
+
+	if (options.seedTemplateDirectory) {
+		seedCollections(params, {
+			templateDirectory: options.seedTemplateDirectory,
+		});
+	}
 });

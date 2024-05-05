@@ -39,8 +39,11 @@ export type FancyCollection<S extends BaseSchema = BaseSchema> = <E extends Base
 	options?: CollectionExtensionOptions<E>
 ) => ExtendedCollection<S, E>;
 
-export const FANCY_COLLECTION_MARKER = Symbol('@inox-tools/content-utils/fancyCollection');
-
+/**
+ * Define a collection from an integration that can be extended by users of the integration.
+ *
+ * Also known as a FancyCollection 💅
+ */
 export function defineCollection<S extends BaseSchema>(
 	config: CollectionConfig<S>
 ): FancyCollection<S> {
@@ -80,4 +83,30 @@ export function defineCollection<S extends BaseSchema>(
 	return Object.assign(fn, {
 		[FANCY_COLLECTION_MARKER]: true,
 	});
+}
+
+const FANCY_COLLECTION_MARKER = Symbol('@inox-tools/content-utils/fancyCollection');
+
+type DerivedCollection = {
+	[FANCY_COLLECTION_MARKER]: FancyCollection;
+};
+
+function isDerivedCollection(something: any): something is DerivedCollection {
+	return typeof something[FANCY_COLLECTION_MARKER] === 'function';
+}
+
+/**
+ * Guard checking that a value is a FancyCollection.
+ */
+export function isFancyCollection(something: any): something is FancyCollection {
+	return something[FANCY_COLLECTION_MARKER] === true;
+}
+
+/**
+ * Extract the original FancyCollection from a value, if it was derived from one.
+ *
+ * If the value was not derived from a FancyCollection, return null;
+ */
+export function tryGetOriginalFancyCollection(something: any): FancyCollection | null {
+	return isDerivedCollection(something) ? something[FANCY_COLLECTION_MARKER] : null;
 }

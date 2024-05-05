@@ -1,7 +1,12 @@
 import { injectedCollections, type CollectionConfig } from '@it-astro:content/injector';
-import { FANCY_COLLECTION_MARKER, type FancyCollection } from './fancyContent.js';
+import { isFancyCollection, tryGetOriginalFancyCollection } from './fancyContent.js';
 import { AstroError } from 'astro/errors';
 
+/**
+ * Extend the given collection map with collections defined by integrations.
+ *
+ * @throws AstroError when conflicts are detected between collections.
+ */
 export function injectCollections(
 	collections: Record<string, CollectionConfig>
 ): Record<string, CollectionConfig> {
@@ -9,7 +14,9 @@ export function injectCollections(
 		const injectedCollection = injectedCollections[key];
 		if (injectedCollection === undefined) continue;
 
-		if (!isExtendedCollection(collection)) {
+		const originFancyCollection = tryGetOriginalFancyCollection(collection);
+
+		if (originFancyCollection === null) {
 			throw new AstroError(
 				// TODO: Report which integration added the collection.
 				`Content collection "${key}" overrides a collection injected by an integration.`,
@@ -17,9 +24,9 @@ export function injectCollections(
 			);
 		}
 
-		const originFn = collection[FANCY_COLLECTION_MARKER];
+		// TODO: Detect when two different integrations collide
 
-		if (!Object.is(originFn, injectedCollection)) {
+		if (!Object.is(originFancyCollection, injectedCollection)) {
 			throw new AstroError(
 				// TODO: Report which integration added the collection.
 				`Content collection "${key}" extends from one an injected collection, but overrides a different collection.`,
@@ -28,28 +35,18 @@ export function injectCollections(
 		}
 	}
 
-	const resolvedInjectedCollections: Record<string, CollectionConfig> = {};
-
-	for (const [key, value] of Object.entries(injectedCollections)) {
-		if (collections[key] !== undefined) continue;
-
-		resolvedInjectedCollections[key] = isFancyCollection(value) ? value() : value;
-	}
-
-	return {
-		...resolvedInjectedCollections,
+	const combinedCollections = {
+		...injectedCollections,
 		...collections,
 	};
-}
 
-type ExtendedCollection = {
-	[FANCY_COLLECTION_MARKER]: Function;
-};
+	const resolvedCollections: Record<string, CollectionConfig> = {};
 
-function isExtendedCollection(something: any): something is ExtendedCollection {
-	return typeof something[FANCY_COLLECTION_MARKER] === 'function';
-}
+	for (const [key, value] of Object.entries(combinedCollections)) {
+		if (collections[key] !== undefined) continue;
 
-function isFancyCollection(something: any): something is FancyCollection {
-	return something[FANCY_COLLECTION_MARKER] === true;
+		resolvedCollections[key] = isFancyCollection(value) ? value() : value;
+	}
+
+	return resolvedCollections;
 }

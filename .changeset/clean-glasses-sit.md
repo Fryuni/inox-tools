@@ -2,4 +2,4 @@
 "@inox-tools/content-utils": patch
 ---
 
-Add `seedCollections` utility and `seedTemplate` option to `injectContent`.
+Add `seedCollections` utility and `seedTemplateDirectory` option to `injectCollections`.

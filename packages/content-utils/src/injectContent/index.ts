@@ -10,6 +10,11 @@ import { plugin, entrypoints } from './plugin.js';
 import { fileURLToPath } from 'url';
 
 export type Options = {
+	/**
+	 * Module to be imported with the configured collections.
+	 *
+	 * This module should be resolvable from the root of the Astro project and must export a `collections` object.
+	 */
 	entrypoint: string;
 };
 

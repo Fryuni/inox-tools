@@ -47,6 +47,16 @@ export default defineConfig({
 					],
 				},
 				{
+					label: 'Funny little utilities',
+					collapsed: false,
+					items: [
+						{
+							label: 'Content Collections',
+							link: '/content-utils',
+						},
+					],
+				},
+				{
 					label: 'Inline Module',
 					collapsed: false,
 					autogenerate: { directory: 'inline-mod' },

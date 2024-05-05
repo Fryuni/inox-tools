@@ -3,7 +3,6 @@ import {
 	addVitePlugin,
 	createResolver,
 	defineUtility,
-	watchDirectory,
 	type HookParameters,
 } from 'astro-integration-kit';
 import { existsSync, writeFileSync, mkdirSync } from 'fs';
@@ -42,8 +41,6 @@ export const injectContent = defineUtility('astro:config:setup')((
 			warnDuplicated: true,
 		});
 	});
-
-	watchDirectory(params, import.meta.dirname);
 
 	entrypoints.push(options.entrypoint);
 });

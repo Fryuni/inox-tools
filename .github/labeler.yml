@@ -23,5 +23,8 @@ pkg/inline-mod:
 pkg/sitemap-ext:
 - 'packages/sitemap-ext/**'
 
+pkg/content-utils:
+- 'packages/content-utils/**'
+
 pkg/velox-luna:
 - 'packages/velox-luna/**'

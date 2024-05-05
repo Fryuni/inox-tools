@@ -9,6 +9,7 @@ export default defineIntegration({
         'astro:config:setup': (params) => {
           injectCollections(params, {
             entrypoint: './src/integration/config.ts',
+            seedTemplateDirectory: './src/integration',
           });
         },
       },

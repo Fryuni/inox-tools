@@ -7,5 +7,10 @@ export const collections = {
 			title: z.string(),
 		}),
 	}),
-	integrationDocs: integrationCollections.integrationDocs(),
+	integrationDocs: integrationCollections.integrationDocs({
+		extends: ({ image }) =>
+			z.object({
+				card: image(),
+			}),
+	}),
 };

@@ -81,8 +81,6 @@ export const plugin = (configFile: string): Plugin => ({
 			},
 		});
 
-		console.log('Transformed code:\n', s.toString());
-
 		return {
 			code: s.toString(),
 			map: s.generateMap(),

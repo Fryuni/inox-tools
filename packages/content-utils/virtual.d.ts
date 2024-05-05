@@ -12,6 +12,8 @@ declare module '@it-astro:content' {
 
 declare module '@it-astro:content/injector' {
 	import type { defineCollection } from 'astro:content';
+	import type { FancyCollection } from '@inox-tools/content-utils/runtime/fancyContent';
+
 	export type CollectionConfig = ReturnType<typeof defineCollection>;
-	export const injectedCollections: Record<string, CollectionConfig>;
+	export const injectedCollections: Record<string, CollectionConfig | FancyCollection>;
 }

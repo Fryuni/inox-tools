@@ -3,7 +3,7 @@ import { getCollection } from 'astro:content';
 
 const entries = await getCollection('integrationDocs');
 entries.map((entry) => {
-	console.log(entry.data.title);
+	console.log(entry.data.card);
 });
 ---
 

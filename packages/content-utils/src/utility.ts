@@ -10,6 +10,8 @@ import { existsSync, writeFileSync, mkdirSync } from 'fs';
 import { plugin, entrypoints } from './plugin.js';
 import { fileURLToPath } from 'url';
 
+// TODO: Reorganize this files, this looks like a dumpster
+
 export type Options = {
 	entrypoint: string;
 };

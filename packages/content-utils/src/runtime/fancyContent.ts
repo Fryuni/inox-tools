@@ -35,24 +35,31 @@ export type ExtendedCollection<S extends BaseSchema, E extends BaseSchema> =
 		? CollectionConfig<ExtendedSchema<S, E>>
 		: CollectionConfig<S>;
 
-export type FancyCollection<S extends BaseSchema> = <E extends BaseSchema>(
+export type FancyCollection<S extends BaseSchema = BaseSchema> = <E extends BaseSchema>(
 	options?: CollectionExtensionOptions<E>
 ) => ExtendedCollection<S, E>;
+
+export const FANCY_COLLECTION_MARKER = Symbol('@inox-tools/content-utils/fancyCollection');
 
 export function defineCollection<S extends BaseSchema>(
 	config: CollectionConfig<S>
 ): FancyCollection<S> {
 	const definedConfig = defineNative(config);
 
-	return <E extends BaseSchema>(
+	const fn = <E extends BaseSchema>(
 		options?: CollectionExtensionOptions<E>
 	): ExtendedCollection<S, E> => {
-		if (options?.extends === undefined) return definedConfig as ExtendedCollection<S, E>;
+		const fancyMarker = {
+			[FANCY_COLLECTION_MARKER]: fn,
+		};
+
+		if (options?.extends === undefined)
+			return Object.assign(definedConfig as ExtendedCollection<S, E>, fancyMarker);
 
 		// Make TS not forget about type narrowing;
 		const { extends: extendSchema } = options;
 
-		return {
+		const config = {
 			...definedConfig,
 			schema: (context) => {
 				const userSchema =
@@ -66,5 +73,11 @@ export function defineCollection<S extends BaseSchema>(
 				return baseSchema === undefined ? userSchema : baseSchema.and(userSchema);
 			},
 		} as ExtendedCollection<S, E>;
+
+		return Object.assign(config, fancyMarker);
 	};
+
+	return Object.assign(fn, {
+		[FANCY_COLLECTION_MARKER]: true,
+	});
 }

@@ -27,7 +27,7 @@ const installPluginOnce = new Once();
  *
  * Collections defined here can be overriden by the project.
  */
-export const injectContent = defineUtility('astro:config:setup')((
+export const injectCollections = defineUtility('astro:config:setup')((
 	params: HookParameters<'astro:config:setup'>,
 	options: Options
 ) => {

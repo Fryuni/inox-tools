@@ -1,1 +1,1 @@
-export * from './injectContent/index.js';
+export * from './injectCollections/index.js';

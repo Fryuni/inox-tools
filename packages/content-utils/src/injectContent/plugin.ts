@@ -2,6 +2,8 @@ import type { Plugin } from 'vite';
 import { walk, type Node } from 'estree-walker';
 import * as assert from 'node:assert';
 import MagicString from 'magic-string';
+import type { AstroIntegrationLogger } from 'astro';
+import { AstroError } from 'astro/errors';
 
 export const entrypoints: string[] = [];
 
@@ -11,7 +13,12 @@ const RESOLVED_INJECTOR_VIRTUAL_MODULE = `\0${INJECTOR_VIRTUAL_MODULE}`;
 const CONTENT_VIRTUAL_MODULE = '@it-astro:content';
 const RESOLVED_CONTENT_VIRTUAL_MODULE = `\0${CONTENT_VIRTUAL_MODULE}`;
 
-export const plugin = (configFile: string): Plugin => ({
+type Options = {
+	configFile: string;
+	logger: AstroIntegrationLogger;
+};
+
+export const plugin = ({ configFile, logger }: Options): Plugin => ({
 	name: '@inox-tools/content-utils/injector',
 	resolveId(id) {
 		switch (id) {
@@ -59,6 +66,8 @@ export const plugin = (configFile: string): Plugin => ({
 			s.update(start, end, newCode);
 		}
 
+		// This imports the collection injection under a name unconditionally because the plugin is never injected
+		// more than once. If this guarantee changes this line would require some logic to ensure a unique identifier.
 		s.prepend(
 			`import {injectCollections as $$inox_tools__injectCollection} from '@inox-tools/content-utils/runtime/injector';`
 		);
@@ -68,12 +77,23 @@ export const plugin = (configFile: string): Plugin => ({
 				if (parent?.type !== 'ExportNamedDeclaration' || node.type !== 'VariableDeclaration')
 					return;
 
+				if (node.kind !== 'const') {
+					logger.warn(
+						'Exporting collections config using "let" may have unintended consequences. ' +
+							`Prefer "export const collections" in your "${configFile}".`
+					);
+				}
+
 				const collectionDeclaration = node.declarations.find((value) => {
 					return value.id.type === 'Identifier' && value.id.name === 'collections';
 				});
 
-				// TODO: Maybe this should be an error.
-				if (collectionDeclaration?.init == null) return;
+				if (collectionDeclaration?.init == null) {
+					throw new AstroError(
+						'Exported collections is not initialized.',
+						`Change your ${configFile} to initialize the value of "collections".`
+					);
+				}
 
 				const sourceInit = collectionDeclaration.init;
 

@@ -1,0 +1,52 @@
+{
+  "name": "@inox-tools/content-utils",
+  "version": "0.0.0",
+  "description": "Utilities to work with content collections on an Astro project from an integration or library.",
+  "keywords": [
+    "lifecycle",
+    "astro-integration",
+    "astro",
+    "withastro",
+    "content-collection"
+  ],
+  "license": "MIT",
+  "author": "Luiz Ferraz <luiz@lferraz.com>",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./runtime/*": {
+      "types": "./dist/runtime/*.d.ts",
+      "default": "./dist/runtime/*.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "virtual.d.ts"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "prepublish": "pnpm run build",
+    "test": "echo 'No tests'"
+  },
+  "dependencies": {
+    "@inox-tools/utils": "workspace:^",
+    "astro-integration-kit": "^0.13",
+    "estree-walker": "^3.0.3",
+    "magic-string": "^0.30.10"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "astro": "^4",
+    "tsup": "^8",
+    "typescript": "^5",
+    "vite": "^5"
+  },
+  "peerDependencies": {
+    "astro": "^4"
+  }
+}

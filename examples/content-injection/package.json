@@ -1,0 +1,19 @@
+{
+  "name": "content-injection",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/check": "^0.5.10",
+    "@inox-tools/content-utils": "workspace:^",
+    "astro": "^4.6.3",
+    "astro-integration-kit": "^0.13",
+    "typescript": "^5.4.5"
+  }
+}

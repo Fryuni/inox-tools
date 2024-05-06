@@ -39,10 +39,6 @@ export default defineConfig({
 						{
 							label: 'Astro When',
 							link: '/astro-when',
-							badge: {
-								text: 'NEW',
-								variant: 'success',
-							},
 						},
 					],
 				},
@@ -53,6 +49,10 @@ export default defineConfig({
 						{
 							label: 'Content Collections',
 							link: '/content-utils',
+							badge: {
+								text: 'NEW',
+								variant: 'success',
+							},
 						},
 					],
 				},

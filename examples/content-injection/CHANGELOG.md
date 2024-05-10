@@ -1,5 +1,12 @@
 # @example/content-injection
 
+## 0.0.4
+
+### Patch Changes
+
+- Updated dependencies [150a2b8]
+  - @inox-tools/content-utils@0.2.1
+
 ## 0.0.3
 
 ### Patch Changes

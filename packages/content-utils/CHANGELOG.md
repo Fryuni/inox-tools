@@ -1,5 +1,11 @@
 # @inox-tools/content-utils
 
+## 0.2.1
+
+### Patch Changes
+
+- 150a2b8: Fix resolution of manually defined fancy collections
+
 ## 0.2.0
 
 ### Minor Changes

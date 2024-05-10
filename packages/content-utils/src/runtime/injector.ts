@@ -43,8 +43,6 @@ export function injectCollections(
 	const resolvedCollections: Record<string, CollectionConfig> = {};
 
 	for (const [key, value] of Object.entries(combinedCollections)) {
-		if (collections[key] !== undefined) continue;
-
 		resolvedCollections[key] = isFancyCollection(value) ? value() : value;
 	}
 

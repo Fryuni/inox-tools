@@ -151,12 +151,16 @@ Please send a report on https://github.com/Fryuni/inox-tools/issues/new with the
 			return this.traverse(path);
 		},
 		visitVariableDeclaration(path) {
-			if (this.state.phase === VisitorPhase.Initializing && path.node.kind === 'const') {
+			if (this.state.astroNode === undefined && path.node.kind === 'const') {
 				const declaration = path.node.declarations.find(
 					(decl) =>
-						decl.type === 'VariableDeclarator' &&
-						decl.id.type === 'Identifier' &&
-						decl.id.name === 'Astro'
+						(decl.type === 'VariableDeclarator' &&
+							decl.id.type === 'Identifier' &&
+							decl.id.name === 'Astro') ||
+						(decl.type === 'VariableDeclarator' &&
+							decl.init?.type === 'CallExpression' &&
+							decl.init.callee.type === 'Identifier' &&
+							decl.init.callee.name === '$$createComponent')
 				);
 				if (declaration) {
 					if (this.state.foundNames.length === 0) {
@@ -180,8 +184,6 @@ Please send a report on https://github.com/Fryuni/inox-tools/issues/new with the
 			if (path.node.callee.name === '$$createComponent') {
 				switch (this.state.phase) {
 					case VisitorPhase.Initializing:
-						this.warnUnexpectedStructure('missing an $$Astro declaration before $$createComponent');
-						return this.abort();
 					case VisitorPhase.Initialized:
 						this.traverseWithState(VisitorPhase.HoistingCalls, path);
 						return;
@@ -238,6 +240,8 @@ Please send a report on https://github.com/Fryuni/inox-tools/issues/new with the
 				case VisitorPhase.HoistingCalls:
 					this.traverseWithState(VisitorPhase.DroppingCalls, path);
 					break;
+				case VisitorPhase.Initializing:
+					this.state.phase = VisitorPhase.Initialized;
 				default:
 					this.traverse(path);
 			}

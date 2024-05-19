@@ -49,6 +49,10 @@ export default defineConfig({
 						{
 							label: 'Content Collections',
 							link: '/content-utils',
+						},
+						{
+							label: 'Modular Station',
+							link: '/modular-station',
 							badge: {
 								text: 'NEW',
 								variant: 'success',

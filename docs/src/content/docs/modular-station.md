@@ -59,7 +59,7 @@ If you don't use [Astro Integration Kit](https://astro-integration-kit.netlify.a
 
 On your `astro:config:setup` or `astro:config:done` hooks you can get the API from the provided `AstroConfig` like so:
 
-```ts title="my-integration.ts" ins={7-9}
+```ts title="my-integration.ts" ins={8-10}
 import otherIntegration from 'other-integration';
 
 export default () => {
@@ -88,7 +88,7 @@ You can call `asOptionalPlugin` on integrations using Modular Station to get an 
 
 Contrary to the method without AIK, this allows the API to be used on any hook:
 
-```ts title="my-integration.ts" ins={7-9}
+```ts title="my-integration.ts" ins={2,7} {9-14}
 import { withPlugins } from 'astro-integration-kit';
 import otherIntegration from 'other-integration';
 
@@ -112,7 +112,7 @@ export default () => {
 
 You can call `asPlugin` on integrations using Modular Station to get an AIK Plugin that exposes that integration's API under a name of your choosing. If the integration is not present, it will be added using the provided options. You must always provide the options even if it is already installed because that check happens later.
 
-```ts title="my-integration.ts" ins={7-9}
+```ts title="my-integration.ts" ins={2,7} {9-14}
 import { withPlugins } from 'astro-integration-kit';
 import otherIntegration from 'other-integration';
 

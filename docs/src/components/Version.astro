@@ -5,6 +5,33 @@
  */
 
 import { simpleFetch } from '@/utils/fetch';
+import { Lazy } from '@inox-tools/utils/lazy';
+import { join } from 'node:path';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
+
+export const localPackages = Lazy.of(() => {
+	const packagesDir = new URL('../../../packages/', import.meta.url);
+
+	const entries = readdirSync(packagesDir, {
+		recursive: false,
+		encoding: 'utf-8',
+		withFileTypes: true,
+	});
+
+	const packages = new Map<string, string>();
+
+	for (const entry of entries) {
+		if (!entry.isDirectory()) continue;
+
+		const packageJsonPath = join(entry.parentPath, entry.name, 'package.json');
+		if (!existsSync(packageJsonPath)) continue;
+		const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
+
+		packages.set(packageJson.name, packageJson.version);
+	}
+
+	return packages;
+});
 
 export interface Props {
 	pkgName: string;
@@ -13,6 +40,8 @@ export interface Props {
 const { pkgName } = Astro.props as Props;
 
 async function getVersion() {
+	if (localPackages.get().has(pkgName)) return localPackages.get().get(pkgName);
+
 	const url = `https://registry.npmjs.org/${pkgName}/latest`;
 
 	const response = await simpleFetch(url);

@@ -6,7 +6,7 @@ export type AstroIntegration = NativeIntegration;
 
 type HookNames = keyof Required<AstroIntegration['hooks']>;
 
-export type IntegrationFactory<
+type IntegrationFactory<
 	TOptions extends any[],
 	TApi extends Record<string, any> = Record<string, never>,
 > = (...args: TOptions) => AstroIntegration & TApi;
@@ -57,18 +57,21 @@ export type IntegrationApi<TOptions extends any[], TApi> = {
 	): Plugin<TAttr, AllHookPlugin<TAttr, TApi | null>>;
 };
 
+/**
+ * An integration that exposes APIs for peer integrations to use.
+ */
 export type NeighborIntegration<
 	TOptions extends any[],
 	TApi extends Record<string, any> = Record<string, never>,
 > = IntegrationFactory<TOptions, TApi> & IntegrationApi<TOptions, TApi>;
 
-// Source: https://www.totaltypescript.com/concepts/the-prettify-helper
-export type Prettify<T> = {
-	[K in keyof T]: T[K];
-} & {};
-
 const TARGET_HOOKS = Symbol('@inox-tools/modular-station:targetHooks');
 
+/**
+ * An API restricted to some hooks.
+ *
+ * Accessing this API from any other hooks will fail at runtime.
+ */
 export type HookLimitedApi<THook, TApi> = TApi & {
 	[TARGET_HOOKS]: THook[];
 };

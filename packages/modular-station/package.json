@@ -1,0 +1,46 @@
+{
+  "name": "@inox-tools/modular-station",
+  "version": "0.0.0",
+  "description": "Simplifying Astro integrations with a flexible docking system.",
+  "keywords": [
+    "astro-integration",
+    "astro"
+  ],
+  "license": "MIT",
+  "author": "Luiz Ferraz <luiz@lferraz.com>",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "virtual.d.ts"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "prepublish": "pnpm run build",
+    "test": "echo 'No tests'"
+  },
+  "dependencies": {
+    "@inox-tools/utils": "workspace:^",
+    "astro-integration-kit": "~0.13"
+  },
+  "devDependencies": {
+    "@astrojs/compiler": "^2.7.1",
+    "@types/node": "^20",
+    "@vitest/coverage-v8": "^1.5.0",
+    "astro": "^4",
+    "tsup": "^8",
+    "typescript": "^5",
+    "vite": "^5",
+    "vitest": "^1.5.0"
+  },
+  "peerDependencies": {
+    "astro": "^4.3.5"
+  }
+}

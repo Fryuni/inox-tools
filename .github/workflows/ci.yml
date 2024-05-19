@@ -123,3 +123,27 @@ jobs:
 
       - name: Test
         run: pnpm run test
+
+  duplicated-packages:
+    name: Check for duplicated dependencies
+    runs-on: ubuntu-latest
+    env:
+      NODE_VERSION: 22
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v2
+
+      - name: Setup node@${{ matrix.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Check duplicated dependencies
+        run: pnpm dedupe --prefer-offline --check

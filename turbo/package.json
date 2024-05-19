@@ -5,8 +5,8 @@
   "license": "MIT",
   "author": "Luiz Ferraz <luiz@lferraz.com>",
   "devDependencies": {
-    "@turbo/gen": "^1.13.0",
-    "@types/lodash": "^4.17.0",
+    "@turbo/gen": "^1.13.3",
+    "@types/lodash": "^4.17.4",
     "lodash": "^4.17.21",
     "typescript": "^5.4.5"
   }

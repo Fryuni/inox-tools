@@ -12,14 +12,14 @@
     "validate": "astro check"
   },
   "dependencies": {
-    "@astrojs/starlight": "^0.22.1",
+    "@astrojs/starlight": "^0.23.1",
     "@vercel/analytics": "^1.2.2",
-    "astro": "^4.6.3",
-    "sharp": "^0.33.3",
+    "astro": "^4.8.6",
+    "sharp": "^0.33.4",
     "starlight-links-validator": "^0.8.0"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.5.10",
+    "@astrojs/check": "^0.7.0",
     "typescript": "~5.4.5"
   }
 }

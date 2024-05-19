@@ -103,8 +103,7 @@ const configValue = configFunction();
 ## License
 
 Because this is a port and derivation of part of an idea that is within some existing code,
-the appropriate licensing for this is somewhat confusing. This section describes all that
-I currenly know about it.
+the appropriate licensing for this is somewhat confusing.
 
 The original code by Pulumi Corporation is licensed under the Apache 2.0 license.  
 All the code made by me is licensed under the MIT license.

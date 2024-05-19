@@ -22,7 +22,7 @@
     "test": "echo 'no test'"
   },
   "devDependencies": {
-    "astro": "^4.6.3",
+    "astro": "^4.8.6",
     "typescript": "^5.4.5"
   },
   "peerDependency": {

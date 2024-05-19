@@ -4,10 +4,14 @@
 
 # Utils
 
-A collection of utilities used throughout Inox Tools
+A collection of utilities used throughout Inox Tools.
 
 ## Install
 
 ```js
 npm i -D @inox-tools/utils
 ```
+
+### License
+
+These utilities are available under the MIT license.

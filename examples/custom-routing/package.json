@@ -11,11 +11,11 @@
     "start": "astro dev"
   },
   "dependencies": {
-    "@astrojs/check": "^0.5.10",
-    "@astrojs/mdx": "^2.3.1",
-    "@astrojs/rss": "^4.0.5",
+    "@astrojs/check": "^0.7.0",
+    "@astrojs/mdx": "^3.0.0",
+    "@astrojs/rss": "^4.0.6",
     "@astrojs/sitemap": "^3.1.4",
-    "astro": "^4.6.3",
+    "astro": "^4.8.6",
     "typescript": "^5.4.5"
   },
   "devDependencies": {

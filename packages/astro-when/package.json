@@ -30,11 +30,11 @@
     "test": "echo 'No tests'"
   },
   "dependencies": {
-    "astro-integration-kit": "^0.13.0"
+    "astro-integration-kit": "^0.13.3"
   },
   "devDependencies": {
-    "@types/node": "^20.11.30",
-    "astro": "^4.6.3",
+    "@types/node": "^20.12.12",
+    "astro": "^4.8.6",
     "tsup": "^8.0.2",
     "typescript": "^5.4.5",
     "vite": "^5.2.9"

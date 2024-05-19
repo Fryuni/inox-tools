@@ -8,4 +8,4 @@ Integration that informs when in Astro's lifecycle the code is running.
 
 ### License
 
-Astro Sitemap Extended is available under the MIT license.
+Astro When is available under the MIT license.

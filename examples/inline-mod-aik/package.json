@@ -11,15 +11,15 @@
     "start": "astro dev"
   },
   "dependencies": {
-    "@astrojs/check": "^0.5.10",
+    "@astrojs/check": "^0.7.0",
     "@astrojs/node": "^8.2.5",
-    "astro": "^4.6.3",
+    "astro": "^4.8.6",
     "typescript": "^5.4.5",
     "vite": "^5.2.9"
   },
   "devDependencies": {
     "@inox-tools/aik-mod": "workspace:^",
-    "astro-integration-kit": "^0.13.0"
+    "astro-integration-kit": "^0.13.3"
   },
   "overrides": {
     "vite": "$vite"

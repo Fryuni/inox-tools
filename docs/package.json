@@ -12,6 +12,7 @@
     "validate": "astro check"
   },
   "dependencies": {
+    "@inox-tools/utils": "workspace:^",
     "@astrojs/starlight": "^0.23.1",
     "@vercel/analytics": "^1.2.2",
     "astro": "^4.8.6",

@@ -1,32 +1,21 @@
 import type { AstroConfig, AstroIntegration as NativeIntegration } from 'astro';
-import { defineIntegration as aikDefiner, definePlugin, type Plugin } from 'astro-integration-kit';
-import { z } from 'astro/zod';
+import { definePlugin, type Plugin } from 'astro-integration-kit';
+import { AstroError } from 'astro/errors';
 
 export type AstroIntegration = NativeIntegration;
 
-export type IntegrationSetupFn<
-	Options extends z.ZodTypeAny,
-	TApi extends Record<Exclude<string, 'hooks'>, any> = Record<string, never>,
-> = (params: { name: string; options: z.output<Options> }) => Omit<AstroIntegration, 'name'> & TApi;
-
-type IntegrationOptions<TOptionsSchema extends z.ZodTypeAny> = [z.input<TOptionsSchema>] extends [
-	never,
-]
-	? []
-	: undefined extends z.input<TOptionsSchema>
-		? [options?: z.input<TOptionsSchema>]
-		: [options: z.input<TOptionsSchema>];
+type HookNames = keyof Required<AstroIntegration['hooks']>;
 
 export type IntegrationFactory<
-	TOptionsSchema extends z.ZodTypeAny,
+	TOptions extends any[],
 	TApi extends Record<string, any> = Record<string, never>,
-> = (...args: IntegrationOptions<TOptionsSchema>) => AstroIntegration & TApi;
+> = (...args: TOptions) => AstroIntegration & TApi;
 
 type AllHookPlugin<TName extends string, TApi> = {
 	[Hook in keyof Required<AstroIntegration['hooks']>]: Record<TName, TApi>;
 };
 
-export type IntegrationApi<TName extends string, TOptionsSchema extends z.ZodTypeAny, TApi> = {
+export type IntegrationApi<TOptions extends any[], TApi> = {
 	/**
 	 * Type guard for checking if the integration is an instance of this integration.
 	 */
@@ -53,8 +42,8 @@ export type IntegrationApi<TName extends string, TOptionsSchema extends z.ZodTyp
 	 */
 	asPlugin<TAttr extends string>(
 		attr: TAttr,
-		...args: IntegrationOptions<TOptionsSchema>
-	): Plugin<TName, AllHookPlugin<TAttr, TApi>>;
+		...args: TOptions
+	): Plugin<TAttr, AllHookPlugin<TAttr, TApi>>;
 
 	/**
 	 * Use this integration API as an optional Astro Integration Kit plugin.
@@ -65,108 +54,164 @@ export type IntegrationApi<TName extends string, TOptionsSchema extends z.ZodTyp
 	 */
 	asOptionalPlugin<TAttr extends string>(
 		attr: TAttr
-	): Plugin<TName, AllHookPlugin<TAttr, TApi | null>>;
+	): Plugin<TAttr, AllHookPlugin<TAttr, TApi | null>>;
 };
 
 export type NeighborIntegration<
-	TName extends string,
-	TOptionsSchema extends z.ZodTypeAny = z.ZodNever,
+	TOptions extends any[],
 	TApi extends Record<string, any> = Record<string, never>,
-> = IntegrationFactory<TOptionsSchema, TApi> & IntegrationApi<TName, TOptionsSchema, TApi>;
+> = IntegrationFactory<TOptions, TApi> & IntegrationApi<TOptions, TApi>;
 
 // Source: https://www.totaltypescript.com/concepts/the-prettify-helper
 export type Prettify<T> = {
 	[K in keyof T]: T[K];
 } & {};
 
+const TARGET_HOOKS = Symbol('@inox-tools/modular-station:targetHooks');
+
+export type HookLimitedApi<THook, TApi> = TApi & {
+	[TARGET_HOOKS]: THook[];
+};
+
+function isHookLimited(api: object): api is HookLimitedApi<HookNames, object> {
+	return TARGET_HOOKS in api;
+}
+
 /**
- * Define an Astro Integration with extra APIs for other peer integrations.
+ * Specify on which hooks this API may be called.
+ */
+export function onHook<THook extends HookNames, TApi extends object>(
+	hooks: THook | THook[],
+	api: TApi
+): HookLimitedApi<THook, TApi> {
+	return Object.assign(api, {
+		[TARGET_HOOKS]: typeof hooks === 'string' ? [hooks] : hooks,
+	});
+}
+
+function protectApi<TAttr extends string, TApi extends Record<string, any>>(
+	currentHook: HookNames,
+	attr: TAttr,
+	api: TApi
+): Record<TAttr, TApi> {
+	return {
+		[attr]: new Proxy(api, {
+			get(target, prop, receiver) {
+				const val: unknown = Reflect.get(target, prop, receiver);
+
+				if (typeof val !== 'object' || val === null) return val;
+
+				const allowedHooks: HookNames[] = isHookLimited(val)
+					? val[TARGET_HOOKS]
+					: ['astro:config:setup'];
+
+				if (!allowedHooks.includes(currentHook)) {
+					throw new AstroError(
+						`API \`${attr}.${prop.toString()}\` is not available on hook "${currentHook}".`
+					);
+				}
+
+				return val;
+			},
+		}),
+	} as Record<TAttr, TApi>;
+}
+
+/**
+ * Expose extra APIs from an integration for other integrations to use.
  *
  * @see NeighborIntegration
  */
-export function defineIntegration<
-	TName extends string,
-	TOptionsSchema extends z.ZodTypeAny = z.ZodNever,
+export function withApi<
+	TOptions extends any[],
 	TApi extends Record<string, any> = Record<string, never>,
->(params: {
-	name: TName;
-	optionsSchema?: TOptionsSchema;
-	setup: IntegrationSetupFn<TOptionsSchema, TApi>;
-}): NeighborIntegration<TName, TOptionsSchema, Prettify<Omit<TApi, keyof AstroIntegration>>> {
-	const factory = aikDefiner(params);
+>(factory: (...args: TOptions) => AstroIntegration & TApi): NeighborIntegration<TOptions, TApi> {
+	const integrationSymbol = Symbol(factory.name);
 
-	const integrationSymbol = Symbol(params.name);
-
-	const wrapper: IntegrationFactory<TOptionsSchema, TApi> = (...args) => {
+	const wrapper: IntegrationFactory<TOptions, TApi> = (...args) => {
+		// Add a marker to the result of the factory so we can find it among all the installed integrations.
 		return Object.assign(factory(...args) as any, { [integrationSymbol]: true });
 	};
 
-	const api: IntegrationApi<TName, TOptionsSchema, TApi> = {
+	const api: IntegrationApi<TOptions, TApi> = {
 		is: (integration: any): integration is AstroIntegration & TApi =>
+			// `integrationSymbol` is a non-exposed unique symbol, so it can only be present where
+			// the wrapper function above included it.
+			// Therefore an object matching this must be an integration constructed from that.
 			integration[integrationSymbol] === true,
 		fromIntegrations: (integrations) => integrations.find(api.is) ?? null,
 		fromConfig: (config) => api.fromIntegrations(config.integrations),
 		asOptionalPlugin: <TAttr extends string>(attr: TAttr) =>
 			definePlugin({
-				name: params.name,
+				name: attr,
 				setup() {
-					const pluginApi = { [attr]: null } as any;
+					const pluginApi: any = null;
 
 					return {
 						'astro:config:setup': ({ config }) => {
 							pluginApi[attr] = api.fromConfig(config);
 
-							return pluginApi;
+							return protectApi('astro:config:setup', attr, pluginApi);
 						},
 						'astro:config:done': ({ config }) => {
 							pluginApi[attr] = api.fromConfig(config);
 
-							return pluginApi;
+							return protectApi('astro:config:done', attr, pluginApi);
 						},
-						'astro:build:setup': () => pluginApi,
-						'astro:build:start': () => pluginApi,
-						'astro:build:ssr': () => pluginApi,
-						'astro:build:done': () => pluginApi,
-						'astro:build:generated': () => pluginApi,
-						'astro:server:setup': () => pluginApi,
-						'astro:server:start': () => pluginApi,
-						'astro:server:done': () => pluginApi,
+						'astro:build:setup': () => protectApi('astro:build:setup', attr, pluginApi),
+						'astro:build:start': () => protectApi('astro:build:start', attr, pluginApi),
+						'astro:build:ssr': () => protectApi('astro:build:ssr', attr, pluginApi),
+						'astro:build:done': () => protectApi('astro:build:done', attr, pluginApi),
+						'astro:build:generated': () => protectApi('astro:build:generated', attr, pluginApi),
+						'astro:server:setup': () => protectApi('astro:server:setup', attr, pluginApi),
+						'astro:server:start': () => protectApi('astro:server:start', attr, pluginApi),
+						'astro:server:done': () => protectApi('astro:server:done', attr, pluginApi),
 					};
 				},
 			}),
-		asPlugin: <TAttr extends string>(attr: TAttr, ...args: IntegrationOptions<TOptionsSchema>) =>
+		asPlugin: <TAttr extends string>(attr: TAttr, ...args: TOptions) =>
 			definePlugin({
-				name: params.name,
+				name: attr,
 				setup() {
 					const pluginApi = { [attr]: null } as any;
 
 					return {
 						'astro:config:setup': ({ config, updateConfig }) => {
 							let instance = api.fromConfig(config);
+
 							if (instance === null) {
-								instance = wrapper(...args);
+								// If there is no instance of the integration currently installed, instantiate one
+								// using the given options and install it.
+								const fullIntegration = wrapper(...args);
 								updateConfig({
-									integrations: [instance],
+									integrations: [fullIntegration],
 								});
+
+								// Also add the integration to the current configuration in case the API is used
+								// twice in the same consumer integration under different names.
+								config.integrations.push(fullIntegration);
+
+								// Use the new integration as the API.
+								instance = fullIntegration;
 							}
 
 							pluginApi[attr] = instance;
 
-							return pluginApi;
+							return protectApi('astro:config:setup', attr, pluginApi);
 						},
 						'astro:config:done': ({ config }) => {
 							pluginApi[attr] = api.fromConfig(config);
 
-							return pluginApi;
+							return protectApi('astro:config:done', attr, pluginApi);
 						},
-						'astro:build:setup': () => pluginApi,
-						'astro:build:start': () => pluginApi,
-						'astro:build:ssr': () => pluginApi,
-						'astro:build:done': () => pluginApi,
-						'astro:build:generated': () => pluginApi,
-						'astro:server:setup': () => pluginApi,
-						'astro:server:start': () => pluginApi,
-						'astro:server:done': () => pluginApi,
+						'astro:build:setup': () => protectApi('astro:build:setup', attr, pluginApi),
+						'astro:build:start': () => protectApi('astro:build:start', attr, pluginApi),
+						'astro:build:ssr': () => protectApi('astro:build:ssr', attr, pluginApi),
+						'astro:build:done': () => protectApi('astro:build:done', attr, pluginApi),
+						'astro:build:generated': () => protectApi('astro:build:generated', attr, pluginApi),
+						'astro:server:setup': () => protectApi('astro:server:setup', attr, pluginApi),
+						'astro:server:start': () => protectApi('astro:server:start', attr, pluginApi),
+						'astro:server:done': () => protectApi('astro:server:done', attr, pluginApi),
 					};
 				},
 			}),

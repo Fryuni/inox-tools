@@ -30,7 +30,7 @@ export default withApi((options: Options) => {
 });
 ```
 
-With that, you can now expose APIs beside your hooks:
+With this, you can now expose APIs alongside your hooks:
 
 ```ts title="my-integration.ts" ins={10-12}
 import { withApi } from '@inox-tools/modular-station';

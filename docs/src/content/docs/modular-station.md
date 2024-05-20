@@ -76,7 +76,7 @@ export default () => {
 };
 ```
 
-The API might be `null` if the integration is not present. In that case you can instantiate and add the integration yourself if you need the functionality. If it is optional, then just use the optional API.
+The API might be `null` if the integration is not present. If needed, you can instantiate and add the integration yourself or use the optional API.
 
 ### With Astro Integration Kit (the fun way)
 

@@ -20,6 +20,9 @@ pkg/custom-routing:
 pkg/inline-mod:
 - 'packages/inline-mod/**'
 
+pkg/modular-station:
+- 'packages/modular-station/**'
+
 pkg/sitemap-ext:
 - 'packages/sitemap-ext/**'
 

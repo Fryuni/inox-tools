@@ -55,7 +55,7 @@ By default, accessing your API from any hook besides `astro:config:setup` using 
 
 If you have an API that also works when called from other hooks, you can wrap them with `onHook` to declare which hooks are supported. For example, if you expose a method to register information that is only used on `astro:build:start` you can allow it to be used on any hook before that:
 
-```ts title="my-integration.ts" ins={10-12}
+```ts title="my-integration.ts" ins={11-13}
 import { withApi, onHook } from '@inox-tools/modular-station';
 
 export default withApi((options: Options) => {

@@ -34,8 +34,8 @@
     "turbo": "^1.13.3",
     "typescript": "^5.4.5"
   },
-  "packageManager": "pnpm@9.0.6+sha256.0624e30eff866cdeb363b15061bdb7fd9425b17bc1bb42c22f5f4efdea21f6b3",
+  "packageManager": "pnpm@9.1.2+sha256.19c17528f9ca20bd442e4ca42f00f1b9808a9cb419383cd04ba32ef19322aba7",
   "lint-staged": {
-    "*.--cache": "prettier --write"
+    "*.{js,ts,jsx,tsx,astro,json,md,mdx}": "prettier --write"
   }
 }

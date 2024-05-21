@@ -49,6 +49,33 @@ export default withApi((options: Options) => {
 });
 ```
 
+### `onHook`
+
+By default, accessing your API from any hook besides `astro:config:setup` using the AIK plugin will throw an error. This is because that is the only hook where nearly everything can be done in Astro's lifecycle.
+
+If you have an API that also works when called from other hooks, you can wrap them with `onHook` to declare which hooks are supported. For example, if you expose a method to register information that is only used on `astro:build:start` you can allow it to be used on any hook before that:
+
+```ts title="my-integration.ts" ins={10-12}
+import { withApi, onHook } from '@inox-tools/modular-station';
+
+export default withApi((options: Options) => {
+  const sharedState = ...;
+
+  return {
+    hooks: {
+      // ... using the shared state
+    },
+    addSomething: onHook([
+      'astro:config:setup',
+      'astro:config:done',
+      'astro:build:setup',
+    ], (thing: string) {
+      // add the thing to shared state
+    }),
+  };
+});
+```
+
 ## How to use as a consumer
 
 To use the APIs provided by an integration on your own, you have multiple options.

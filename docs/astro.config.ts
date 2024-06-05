@@ -14,6 +14,7 @@ export default defineConfig({
 	integrations: [
 		starlight({
 			title: 'Inox Tools',
+			credits: true,
 			favicon: '/favicon.png',
 			social: {
 				github: 'https://github.com/Fryuni/inox-tools',

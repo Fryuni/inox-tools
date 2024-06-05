@@ -16,7 +16,7 @@
     "@astrojs/node": "^8.2.5",
     "@astrojs/rss": "^4.0.6",
     "@inox-tools/sitemap-ext": "workspace:^",
-    "astro": "^4.8.6",
+    "astro": "^4.9.3",
     "typescript": "^5.4.5"
   }
 }

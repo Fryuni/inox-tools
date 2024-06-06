@@ -297,6 +297,9 @@ importers:
 
   packages/content-utils:
     dependencies:
+      '@inox-tools/modular-station':
+        specifier: workspace:^
+        version: link:../modular-station
       '@inox-tools/utils':
         specifier: workspace:^
         version: link:../utils

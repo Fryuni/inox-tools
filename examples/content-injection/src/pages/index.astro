@@ -1,10 +1,17 @@
 ---
+import { getLatestCommitDate, getOldestCommitDate } from '@it-astro:content/git';
 import { getCollection } from 'astro:content';
 
-const entries = await getCollection('integrationDocs');
-entries.map((entry) => {
-	console.log(entry.data.card);
-});
+const entries = await getCollection('blog');
+
+const dates = await Promise.all(
+	entries.map(async (entry) => {
+		const latest = await getLatestCommitDate(entry);
+		const oldest = await getOldestCommitDate(entry);
+
+		return [entry, latest, oldest] as const;
+	})
+);
 ---
 
 <html lang="en">
@@ -17,5 +24,18 @@ entries.map((entry) => {
 	</head>
 	<body>
 		<h1>Astro</h1>
+		<ul>
+			{
+				dates.map(([entry, latest, oldest]) => (
+					<li>
+						Entry "{entry.slug}" of collection "{entry.collection}":
+						<ul>
+							<li>Latest: {latest}</li>
+							<li>Oldest: {oldest}</li>
+						</ul>
+					</li>
+				))
+			}
+		</ul>
 	</body>
 </html>

@@ -1,4 +1,4 @@
-import type { AstroConfig, AstroIntegration as NativeIntegration } from 'astro';
+import type { AstroConfig, HookParameters, AstroIntegration as NativeIntegration } from 'astro';
 import { definePlugin, type Plugin } from 'astro-integration-kit';
 import { AstroError } from 'astro/errors';
 
@@ -15,11 +15,23 @@ type AllHookPlugin<TName extends string, TApi> = {
 	[Hook in keyof Required<AstroIntegration['hooks']>]: Record<TName, TApi>;
 };
 
+export type IntegrationFromSetup = Pick<
+	HookParameters<'astro:config:setup'>,
+	'config' | 'updateConfig'
+>;
+
 export type IntegrationApi<TOptions extends any[], TApi> = {
 	/**
 	 * Type guard for checking if the integration is an instance of this integration.
 	 */
 	is(integration: AstroIntegration): integration is AstroIntegration & TApi;
+
+	/**
+	 * Get the instance of this integration API from the Astro config in the `astro:config:setup` hook.
+	 *
+	 * Automatically installs the integration if it is not already installed.
+	 */
+	fromSetup(params: IntegrationFromSetup, ...args: TOptions): TApi;
 
 	/**
 	 * Get the instance of this integration API from the Astro config.
@@ -144,6 +156,27 @@ export function withApi<
 			integration[integrationSymbol] === true,
 		fromIntegrations: (integrations) => integrations.find(api.is) ?? null,
 		fromConfig: (config) => api.fromIntegrations(config.integrations),
+		fromSetup: ({ config, updateConfig }, ...args) => {
+			let instance = api.fromConfig(config);
+
+			if (instance === null) {
+				// If there is no instance of the integration currently installed, instantiate one
+				// using the given options and install it.
+				const fullIntegration = wrapper(...args);
+				updateConfig({
+					integrations: [fullIntegration],
+				});
+
+				// Also add the integration to the current configuration in case the API is used
+				// twice in the same consumer integration under different names.
+				config.integrations.push(fullIntegration);
+
+				// Use the new integration as the API.
+				instance = fullIntegration;
+			}
+
+			return instance;
+		},
 		asOptionalPlugin: <TAttr extends string>(attr: TAttr) =>
 			definePlugin({
 				name: attr,
@@ -179,26 +212,8 @@ export function withApi<
 					const pluginApi = { [attr]: null } as any;
 
 					return {
-						'astro:config:setup': ({ config, updateConfig }) => {
-							let instance = api.fromConfig(config);
-
-							if (instance === null) {
-								// If there is no instance of the integration currently installed, instantiate one
-								// using the given options and install it.
-								const fullIntegration = wrapper(...args);
-								updateConfig({
-									integrations: [fullIntegration],
-								});
-
-								// Also add the integration to the current configuration in case the API is used
-								// twice in the same consumer integration under different names.
-								config.integrations.push(fullIntegration);
-
-								// Use the new integration as the API.
-								instance = fullIntegration;
-							}
-
-							pluginApi[attr] = instance;
+						'astro:config:setup': (params) => {
+							pluginApi[attr] = api.fromSetup(params, ...args);
 
 							return protectApi('astro:config:setup', attr, pluginApi);
 						},

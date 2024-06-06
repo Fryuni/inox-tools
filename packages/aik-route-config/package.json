@@ -39,7 +39,7 @@
     "@astrojs/compiler": "^2.8.0",
     "@vitest/coverage-v8": "^1.6.0",
     "ast-types": "^0.14.2",
-    "tsup": "^8.0.2",
+    "tsup": "^8.1.0",
     "typescript": "^5.4.5",
     "vitest": "^1.6.0"
   },

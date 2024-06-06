@@ -27,14 +27,14 @@
     "test:dev": "vitest --coverage.enabled=true"
   },
   "devDependencies": {
-    "@types/node": "^20.12.12",
+    "@types/node": "^20.14.2",
     "@vitest/coverage-v8": "^1.6.0",
     "@vitest/ui": "^1.6.0",
     "astro": "^4.9.3",
     "jest-extended": "^4.0.2",
-    "tsup": "^8",
+    "tsup": "^8.1.0",
     "typescript": "^5",
-    "vite": "^5",
+    "vite": "^5.2.12",
     "vitest": "^1.6.0"
   }
 }

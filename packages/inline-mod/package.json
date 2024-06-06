@@ -42,7 +42,7 @@
     "@vitest/coverage-v8": "^1.6.0",
     "@vitest/ui": "^1.6.0",
     "jest-extended": "^4.0.2",
-    "tsup": "^8.0.2",
+    "tsup": "^8.1.0",
     "upath": "^2.0.1",
     "vitest": "^1.6.0"
   },

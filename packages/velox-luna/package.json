@@ -26,8 +26,8 @@
     "test": "echo 'No tests yet'"
   },
   "devDependencies": {
-    "@lunariajs/core": "^0.0.32",
-    "tsup": "^8.0.2",
+    "@lunariajs/core": "^0.1.0",
+    "tsup": "^8.1.0",
     "typescript": "^5.4.5",
     "vitest": "^1.6.0"
   }

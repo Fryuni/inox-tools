@@ -40,11 +40,11 @@
     "magic-string": "^0.30.10"
   },
   "devDependencies": {
-    "@types/node": "^20.12.12",
+    "@types/node": "^20.14.2",
     "astro": "^4.9.3",
-    "tsup": "^8",
+    "tsup": "^8.1.0",
     "typescript": "^5",
-    "vite": "^5"
+    "vite": "^5.2.12"
   },
   "peerDependencies": {
     "astro": "^4"

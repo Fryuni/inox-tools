@@ -37,11 +37,11 @@
     "sitemap": "^7.1.1"
   },
   "devDependencies": {
-    "@types/node": "^20.12.12",
+    "@types/node": "^20.14.2",
     "astro": "^4.9.3",
-    "tsup": "^8.0.2",
+    "tsup": "^8.1.0",
     "typescript": "^5.4.5",
-    "vite": "^5.2.9"
+    "vite": "^5.2.12"
   },
   "peerDependencies": {
     "astro": "^4.3.5"

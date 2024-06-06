@@ -2,10 +2,8 @@ import type { Plugin } from 'vite';
 import { walk, type Node } from 'estree-walker';
 import * as assert from 'node:assert';
 import MagicString from 'magic-string';
-import type { AstroIntegrationLogger } from 'astro';
 import { AstroError } from 'astro/errors';
-
-export const entrypoints: string[] = [];
+import type { IntegrationState } from './state.js';
 
 const INJECTOR_VIRTUAL_MODULE = '@it-astro:content/injector';
 const RESOLVED_INJECTOR_VIRTUAL_MODULE = `\0${INJECTOR_VIRTUAL_MODULE}`;
@@ -13,12 +11,11 @@ const RESOLVED_INJECTOR_VIRTUAL_MODULE = `\0${INJECTOR_VIRTUAL_MODULE}`;
 const CONTENT_VIRTUAL_MODULE = '@it-astro:content';
 const RESOLVED_CONTENT_VIRTUAL_MODULE = `\0${CONTENT_VIRTUAL_MODULE}`;
 
-type Options = {
-	configFile: string;
-	logger: AstroIntegrationLogger;
-};
-
-export const plugin = ({ configFile, logger }: Options): Plugin => ({
+export const plugin = ({
+	logger,
+	injectedCollectionsEntrypoints: entrypoints,
+	contentPaths: { configPath: configFile },
+}: IntegrationState): Plugin => ({
 	name: '@inox-tools/content-utils/injector',
 	resolveId(id) {
 		switch (id) {

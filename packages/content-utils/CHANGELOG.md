@@ -1,5 +1,17 @@
 # @inox-tools/content-utils
 
+## 0.3.0
+
+### Minor Changes
+
+- 6a42c82: Refactor internals to use `@inox-tools/modular-station`
+
+### Patch Changes
+
+- 8830650: Replace package entrypoints for virtual modules with absolute filepaths
+- Updated dependencies [665b483]
+  - @inox-tools/modular-station@0.1.1
+
 ## 0.2.1
 
 ### Patch Changes

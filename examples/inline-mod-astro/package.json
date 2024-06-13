@@ -12,11 +12,11 @@
   },
   "dependencies": {
     "@astrojs/check": "^0.7.0",
-    "@astrojs/node": "^8.2.5",
+    "@astrojs/node": "^8.3.0",
     "@astrojs/rss": "^4.0.6",
-    "astro": "^4.9.3",
+    "astro": "^4.10.2",
     "typescript": "^5.4.5",
-    "vite": "^5.2.9"
+    "vite": "^5.2.13"
   },
   "devDependencies": {
     "@inox-tools/inline-mod": "link:../../packages/inline-mod"

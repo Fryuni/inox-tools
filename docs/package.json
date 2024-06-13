@@ -12,10 +12,10 @@
     "validate": "astro check"
   },
   "dependencies": {
-    "@astrojs/starlight": "^0.24.0",
+    "@astrojs/starlight": "^0.24.2",
     "@inox-tools/utils": "workspace:^",
     "@vercel/analytics": "^1.3.1",
-    "astro": "^4.9.3",
+    "astro": "^4.10.2",
     "sharp": "^0.33.4",
     "starlight-links-validator": "^0.9.0"
   },

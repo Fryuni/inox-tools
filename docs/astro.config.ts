@@ -11,6 +11,11 @@ const SITE =
 export default defineConfig({
 	site: SITE,
 	trailingSlash: 'never',
+	server: {
+		port: !!process.env.PORT
+		? parseInt(process.env.PORT)
+		: 3000,
+	},
 	integrations: [
 		starlight({
 			title: 'Inox Tools',

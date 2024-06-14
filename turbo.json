@@ -2,6 +2,11 @@
   "$schema": "https://turbo.build/schema.json",
   "globalDependencies": ["turbo/cache-key.json"],
   "pipeline": {
+    "dev": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"],
+      "outputMode": "new-only"
+    },
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**"],

@@ -4,6 +4,11 @@ import * as assert from 'node:assert';
 import MagicString from 'magic-string';
 import { AstroError } from 'astro/errors';
 import type { IntegrationState } from './state.js';
+import { fileURLToPath } from 'node:url';
+import { dirname, resolve } from 'node:path';
+
+const thisFile = fileURLToPath(import.meta.url);
+const thisDir = dirname(thisFile);
 
 const INJECTOR_VIRTUAL_MODULE = '@it-astro:content/injector';
 const RESOLVED_INJECTOR_VIRTUAL_MODULE = `\0${INJECTOR_VIRTUAL_MODULE}`;
@@ -39,7 +44,7 @@ export const injectorPlugin = ({
 				].join('\n');
 			case RESOLVED_CONTENT_VIRTUAL_MODULE:
 				return [
-					'export {defineCollection} from "@inox-tools/content-utils/runtime/fancyContent";',
+					`export {defineCollection} from ${JSON.stringify(resolve(thisDir, 'runtime/fancyContent.js'))};`,
 					'export {z, reference} from "astro:content";',
 				].join('\n');
 		}
@@ -66,7 +71,7 @@ export const injectorPlugin = ({
 		// This imports the collection injection under a name unconditionally because the plugin is never injected
 		// more than once. If this guarantee changes this line would require some logic to ensure a unique identifier.
 		s.prepend(
-			`import {injectCollections as $$inox_tools__injectCollection} from '@inox-tools/content-utils/runtime/injector';`
+			`import {injectCollections as $$inox_tools__injectCollection} from ${JSON.stringify(resolve(thisDir, 'runtime/injector.js'))};`
 		);
 
 		walk(ast, {

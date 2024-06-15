@@ -1,7 +1,7 @@
 {
   "name": "@example/content-injection",
   "type": "module",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "private": true,
   "scripts": {
     "dev": "astro dev",
@@ -13,7 +13,7 @@
   "dependencies": {
     "@astrojs/check": "^0.7.0",
     "@inox-tools/content-utils": "workspace:^",
-    "astro": "^4.9.3",
+    "astro": "^4.10.2",
     "astro-integration-kit": "^0.13.3",
     "typescript": "^5.4.5"
   }

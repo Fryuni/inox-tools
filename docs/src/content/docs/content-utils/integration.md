@@ -1,7 +1,7 @@
 ---
-title: Content Collections Utilities
+title: Integration Collections
 packageName: '@inox-tools/content-utils'
-description: Utilities to work with content collections on an Astro project from an integration or library.
+description: Utilities to work with content collections on an Astro project from an integration.
 ---
 
 ## Collection Injection
@@ -23,16 +23,16 @@ import { defineIntegration } from 'astro-integration-kit';
 import { injectCollections } from '@inox-tools/content-utils';
 
 export default defineIntegration({
-	name: 'my-integration',
-	setup: () => ({
-		hooks: {
-			'astro:config:setup': (params) => {
-				injectCollections(params, {
-					entrypoint: '@my/package/collections',
-				});
-			},
-		},
-	}),
+  name: 'my-integration',
+  setup: () => ({
+    hooks: {
+      'astro:config:setup': (params) => {
+        injectCollections(params, {
+          entrypoint: '@my/package/collections',
+        });
+      },
+    },
+  }),
 });
 ```
 
@@ -72,13 +72,13 @@ import { defineCollection, z } from 'astro:content';
 import { defineCollection, z } from '@it-astro:content';
 
 export const collections = {
-	darculaColors: defineCollection({
-		type: 'data',
-		schema: z.object({
-			light: z.string(),
-			dark: z.string(),
-		}),
-	}),
+  darculaColors: defineCollection({
+    type: 'data',
+    schema: z.object({
+      light: z.string(),
+      dark: z.string(),
+    }),
+  }),
 };
 ```
 
@@ -89,11 +89,11 @@ import { defineCollection, z } from 'astro:content';
 import { collections as integrationCollections } from '@my/integration/collections';
 
 export const collections = {
-	darculaColors: integrationCollections.darculaColors({
-		extend: z.object({
-			accent: z.string(),
-		}),
-	}),
+  darculaColors: integrationCollections.darculaColors({
+    extend: z.object({
+      accent: z.string(),
+    }),
+  }),
 };
 ```
 
@@ -128,19 +128,19 @@ import { defineIntegration, createResolver } from 'astro-integration-kit';
 import { seedCollections } from '@inox-tools/content-utils';
 
 export default defineIntegration({
-	name: 'my-integration',
-	setup: () => {
-		const { resolve } = createResolver(import.meta.url);
+  name: 'my-integration',
+  setup: () => {
+    const { resolve } = createResolver(import.meta.url);
 
-		return {
-			hooks: {
-				'astro:config:setup': (params) => {
-					seedCollections(params, {
-						templateDirectory: resolve('./collectionTemplates'),
-					});
-				},
-			},
-		};
-	},
+    return {
+      hooks: {
+        'astro:config:setup': (params) => {
+          seedCollections(params, {
+            templateDirectory: resolve('./collectionTemplates'),
+          });
+        },
+      },
+    };
+  },
 });
 ```

@@ -38,6 +38,8 @@ Git is only necessary during build, so you can deploy your site anywhere. Even o
 
    const entry = await getEntry('blog', slug);
    const creationDate = await getOldestCommitDate('blog', slug);
+   // OR
+   const creationDate = await getOldestCommitDate(entry);
    ---
    ```
 

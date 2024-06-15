@@ -17,9 +17,7 @@ export const gitTimeDevPlugin = ({ contentPaths: { contentPath } }: IntegrationS
 import {setContentPath} from '@inox-tools/content-utils/runtime/git';
 import {getLatestCommitDate, getOldestCommitDate} from '@inox-tools/content-utils/runtime/liveGit';
 
-console.log('This is running');
 setContentPath(${JSON.stringify(contentPath)});
-console.log('This is also running');
 
 export {getLatestCommitDate, getOldestCommitDate};
 `;
@@ -38,8 +36,6 @@ export const gitTimeBuildPlugin = ({
 
 		liveGit.setContentPath(contentPath);
 		const trackedFiles = liveGit.getAllTrackedCommitDates();
-
-		console.log(trackedFiles);
 
 		return `
 import {getEntry} from 'astro:content';

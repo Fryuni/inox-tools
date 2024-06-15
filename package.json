@@ -17,24 +17,24 @@
     "build:examples": "turbo run --filter '@example/*' build",
     "docs:dev": "cd docs && pnpm dev",
     "format": "prettier -w \"**/*\" --ignore-unknown --cache",
+    "postinstall": "node ./turbo/cache-key.mjs",
     "release": "pnpm run build && changeset publish",
     "test": "turbo run test --concurrency=1",
-    "version": "changeset version && pnpm install && pnpm format",
-    "postinstall": "node ./turbo/cache-key.mjs"
+    "version": "changeset version && pnpm install && pnpm format"
+  },
+  "lint-staged": {
+    "*.{js,ts,jsx,tsx,astro,json,md,mdx}": "prettier --write"
   },
   "devDependencies": {
     "@changesets/changelog-github": "^0.5.0",
     "@changesets/cli": "^2.27.5",
     "@types/node": "^20.14.2",
     "husky": "^9.0.11",
-    "turbo": "^1.13.3",
-    "lint-staged": "^15.2.5",
+    "lint-staged": "^15.2.7",
     "prettier": "^3.3.1",
     "prettier-plugin-astro": "^0.14.0",
+    "turbo": "^2.0.4",
     "typescript": "^5.4.5"
   },
-  "packageManager": "pnpm@9.1.2+sha256.19c17528f9ca20bd442e4ca42f00f1b9808a9cb419383cd04ba32ef19322aba7",
-  "lint-staged": {
-    "*.{js,ts,jsx,tsx,astro,json,md,mdx}": "prettier --write"
-  }
+  "packageManager": "pnpm@9.3.0+sha256.e1f9e8d1a16607a46dd3c158b5f7a7dc7945501d1c6222d454d63d033d1d918f"
 }

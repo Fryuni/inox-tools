@@ -1,14 +1,14 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "globalDependencies": ["turbo/cache-key.json"],
-  "pipeline": {
+  "tasks": {
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**"],
-      "outputMode": "new-only"
+      "outputLogs": "new-only"
     },
     "test": {
-      "outputMode": "new-only"
+      "outputLogs": "new-only"
     }
   }
 }

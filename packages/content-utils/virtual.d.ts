@@ -19,10 +19,8 @@ declare module '@it-astro:content/injector' {
 }
 
 declare module '@it-astro:content/git' {
-	import type { getEntry } from 'astro:content';
-
 	type EntryKey =
-		| [string, string]
+		| [collection: string, idOrSlug: string]
 		| [{ collection: string; id: string }]
 		| [{ collection: string; slug: string }];
 

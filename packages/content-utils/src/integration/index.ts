@@ -3,8 +3,9 @@ import { emptyState } from './state.js';
 import { resolveContentPaths } from '../internal/resolver.js';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { addVitePlugin, type HookParameters } from 'astro-integration-kit';
-import { plugin as injectorPlugin } from './injectorPlugin.js';
+import { injectorPlugin } from './injectorPlugin.js';
 import { seedCollections, type SeedCollectionsOptions } from './seedCollections.js';
+import { gitTimeBuildPlugin, gitTimeDevPlugin } from './gitTimePlugin.js';
 
 export type InjectCollectionOptions = {
 	/**
@@ -75,6 +76,11 @@ export const integration = withApi(() => {
 
 				addVitePlugin(params, {
 					plugin: injectorPlugin(state),
+					warnDuplicated: true,
+				});
+
+				addVitePlugin(params, {
+					plugin: params.command === 'dev' ? gitTimeDevPlugin(state) : gitTimeBuildPlugin(state),
 					warnDuplicated: true,
 				});
 

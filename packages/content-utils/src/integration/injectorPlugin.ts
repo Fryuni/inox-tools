@@ -16,7 +16,7 @@ const RESOLVED_INJECTOR_VIRTUAL_MODULE = `\0${INJECTOR_VIRTUAL_MODULE}`;
 const CONTENT_VIRTUAL_MODULE = '@it-astro:content';
 const RESOLVED_CONTENT_VIRTUAL_MODULE = `\0${CONTENT_VIRTUAL_MODULE}`;
 
-export const plugin = ({
+export const injectorPlugin = ({
 	logger,
 	injectedCollectionsEntrypoints: entrypoints,
 	contentPaths: { configPath: configFile },

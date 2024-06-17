@@ -48,10 +48,6 @@ export default defineConfig({
 					collapsed: false,
 					items: [
 						{
-							label: 'Content Collections',
-							link: '/content-utils',
-						},
-						{
 							label: 'Modular Station',
 							link: '/modular-station',
 							badge: {
@@ -60,6 +56,13 @@ export default defineConfig({
 							},
 						},
 					],
+				},
+				{
+					label: 'Content Utilities',
+					collapsed: false,
+					autogenerate: {
+						directory: 'content-utils',
+					},
 				},
 				{
 					label: 'Inline Module',
@@ -74,4 +77,7 @@ export default defineConfig({
 			],
 		}),
 	],
+	redirects: {
+		'/content-utils': '/content-utils/integration',
+	},
 });

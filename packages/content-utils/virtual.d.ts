@@ -17,3 +17,24 @@ declare module '@it-astro:content/injector' {
 	export type CollectionConfig = ReturnType<typeof defineCollection>;
 	export const injectedCollections: Record<string, CollectionConfig | FancyCollection>;
 }
+
+declare module '@it-astro:content/git' {
+	type EntryKey =
+		| [collection: string, idOrSlug: string]
+		| [{ collection: string; id: string }]
+		| [{ collection: string; slug: string }];
+
+	/**
+	 * Retrieve the latest commit that changed a Content Collection Entry.
+	 *
+	 * If the entry was never committed, returns a memoized `new Date()`.
+	 */
+	export function getLatestCommitDate(...args: EntryKey): Promise<Date>;
+
+	/**
+	 * Retrieve the oldest commit that changed a Content Collection Entry.
+	 *
+	 * If the entry was never committed, returns a memoized `new Date()`.
+	 */
+	export function getOldestCommitDate(...args: EntryKey): Promise<Date>;
+}

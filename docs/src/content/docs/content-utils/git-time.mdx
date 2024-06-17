@@ -1,0 +1,58 @@
+---
+title: Git Times
+packageName: '@inox-tools/content-utils'
+description: Get creation and update time for your content from your git history.
+---
+
+import { Steps } from '@astrojs/starlight/components';
+
+When writing a content rich site a common requirement is to show when some content was published and when it was last updated. Instead of tracking this manually for each entry in your content collections, this library allows you to retrieve those dates from your Git history.
+
+Git is only necessary during build, so you can deploy your site anywhere. Even on platforms that don't provide Git, access to binaries or native modules (yes, even on Cloudflare).
+
+## How to use
+
+<Steps>
+
+1. Install `@inox-tools/content-utils`:
+
+   ```sh title="Terminal - <project root>"
+   astro add @inox-tools/content-utils
+   ```
+
+2. Import the time getter you want from `@it-astro:content/git`:
+
+   ```astro title="src/pages/blog/[...slug].astro"
+   ---
+   import { getLatestCommitDate, getOldestCommitDate } from '@it-astro:content/git';
+   ---
+   ```
+
+3. Get the time from any collection entry using the same signature as Astro's [`getEntry`](https://docs.astro.build/en/reference/api-reference/#getentry):
+
+   ```astro title="src/pages/blog/[...slug].astro"
+   ---
+   import { getOldestCommitDate } from '@it-astro:content/git';
+
+   const { slug } = Astro.params;
+
+   const entry = await getEntry('blog', slug);
+   const creationDate = await getOldestCommitDate('blog', slug);
+   // OR
+   const creationDate = await getOldestCommitDate(entry);
+   ---
+   ```
+
+</Steps>
+
+## API
+
+### `getLatestCommitDate`
+
+Returns the commit time of the last commit that changed the selected entry.  
+If the entry has not been commited yet, this function returns the current time.
+
+### `getOldestCommitDate`
+
+Returns the commit time of the first commit that created the selected entry.  
+If the entry has not been commited yet, this function returns the current time.

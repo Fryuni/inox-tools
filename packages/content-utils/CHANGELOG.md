@@ -1,5 +1,11 @@
 # @inox-tools/content-utils
 
+## 0.4.0
+
+### Minor Changes
+
+- a62c2a7: Add module to retrieve Git times for collection entries
+
 ## 0.3.0
 
 ### Minor Changes

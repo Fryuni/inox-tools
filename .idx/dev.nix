@@ -16,11 +16,16 @@
     # Search for the extensions you want on https://open-vsx.org/ and use "publisher.id"
     extensions = [
       "vscodevim.vim"
+      "usernamehw.errorlens"
+      "waderyan.gitblame"
+      # "rust-lang.rust-analyzer"
+      # "ziglang.vscode-zig"
+      # "qwtel.sqlite-viewer"
     ];
 
     # Enable previews
     previews = {
-      enable = true;
+      enable = false;
       previews = {
         web = {
           # Example: run "npm run dev" with PORT set to IDX's defined port for previews,

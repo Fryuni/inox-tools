@@ -1,19 +1,18 @@
 import type { AstroConfig, HookParameters, AstroIntegration as NativeIntegration } from 'astro';
-import { definePlugin, type Plugin } from 'astro-integration-kit';
 import { AstroError } from 'astro/errors';
+import {
+	DEFAULT_HOOK_FACTORY,
+	allHooksPlugin,
+	type AllHooksPlugin,
+	type HookNames,
+} from './allHooksPlugin.js';
 
 export type AstroIntegration = NativeIntegration;
-
-type HookNames = keyof Required<AstroIntegration['hooks']>;
 
 type IntegrationFactory<
 	TOptions extends any[],
 	TApi extends Record<string, any> = Record<string, never>,
 > = (...args: TOptions) => AstroIntegration & TApi;
-
-type AllHookPlugin<TName extends string, TApi> = {
-	[Hook in keyof Required<AstroIntegration['hooks']>]: Record<TName, TApi>;
-};
 
 export type IntegrationFromSetup = Pick<
 	HookParameters<'astro:config:setup'>,
@@ -55,7 +54,7 @@ export type IntegrationApi<TOptions extends any[], TApi> = {
 	asPlugin<TAttr extends string>(
 		attr: TAttr,
 		...args: TOptions
-	): Plugin<TAttr, AllHookPlugin<TAttr, TApi>>;
+	): AllHooksPlugin<TAttr, Record<TAttr, TApi>>;
 
 	/**
 	 * Use this integration API as an optional Astro Integration Kit plugin.
@@ -66,7 +65,7 @@ export type IntegrationApi<TOptions extends any[], TApi> = {
 	 */
 	asOptionalPlugin<TAttr extends string>(
 		attr: TAttr
-	): Plugin<TAttr, AllHookPlugin<TAttr, TApi | null>>;
+	): AllHooksPlugin<TAttr, Record<TAttr, TApi | null>>;
 };
 
 /**
@@ -178,7 +177,7 @@ export function withApi<
 			return instance;
 		},
 		asOptionalPlugin: <TAttr extends string>(attr: TAttr) =>
-			definePlugin({
+			allHooksPlugin({
 				name: attr,
 				setup() {
 					const pluginApi: any = null;
@@ -194,19 +193,20 @@ export function withApi<
 
 							return protectApi('astro:config:done', attr, pluginApi);
 						},
-						'astro:build:setup': () => protectApi('astro:build:setup', attr, pluginApi),
-						'astro:build:start': () => protectApi('astro:build:start', attr, pluginApi),
-						'astro:build:ssr': () => protectApi('astro:build:ssr', attr, pluginApi),
-						'astro:build:done': () => protectApi('astro:build:done', attr, pluginApi),
-						'astro:build:generated': () => protectApi('astro:build:generated', attr, pluginApi),
-						'astro:server:setup': () => protectApi('astro:server:setup', attr, pluginApi),
-						'astro:server:start': () => protectApi('astro:server:start', attr, pluginApi),
-						'astro:server:done': () => protectApi('astro:server:done', attr, pluginApi),
+						[DEFAULT_HOOK_FACTORY]: (hookName) => {
+							if (pluginApi === null) {
+								throw new AstroError(
+									`API ${attr} is not available on hook ${hookName} because it is being executed before "astro:config:setup".`
+								);
+							}
+
+							return () => protectApi(hookName, attr, pluginApi);
+						},
 					};
 				},
 			}),
 		asPlugin: <TAttr extends string>(attr: TAttr, ...args: TOptions) =>
-			definePlugin({
+			allHooksPlugin({
 				name: attr,
 				setup() {
 					const pluginApi = { [attr]: null } as any;
@@ -222,14 +222,7 @@ export function withApi<
 
 							return protectApi('astro:config:done', attr, pluginApi);
 						},
-						'astro:build:setup': () => protectApi('astro:build:setup', attr, pluginApi),
-						'astro:build:start': () => protectApi('astro:build:start', attr, pluginApi),
-						'astro:build:ssr': () => protectApi('astro:build:ssr', attr, pluginApi),
-						'astro:build:done': () => protectApi('astro:build:done', attr, pluginApi),
-						'astro:build:generated': () => protectApi('astro:build:generated', attr, pluginApi),
-						'astro:server:setup': () => protectApi('astro:server:setup', attr, pluginApi),
-						'astro:server:start': () => protectApi('astro:server:start', attr, pluginApi),
-						'astro:server:done': () => protectApi('astro:server:done', attr, pluginApi),
+						[DEFAULT_HOOK_FACTORY]: (hookName) => () => protectApi(hookName, attr, pluginApi),
 					};
 				},
 			}),

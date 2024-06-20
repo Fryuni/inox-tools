@@ -1,5 +1,5 @@
 import type { AstroIntegration } from 'astro';
-import { definePlugin } from 'astro-integration-kit';
+import { DEFAULT_HOOK_FACTORY, allHooksPlugin } from './allHooksPlugin.js';
 
 export type AsyncHooks = {
 	[K in keyof Required<AstroLibs.Hooks>]: NonNullable<AstroLibs.Hooks[K]> extends (
@@ -58,7 +58,7 @@ export interface PluginApi {
 	execLibHookSync<K extends SyncHooks>(hook: K, ...params: Parameters<AstroLibs.Hooks[K]>): void;
 }
 
-export const hookProviderPlugin = definePlugin({
+export const hookProviderPlugin = allHooksPlugin({
 	name: 'hook-provider',
 	setup() {
 		let integrations: AstroIntegration[];
@@ -79,14 +79,7 @@ export const hookProviderPlugin = definePlugin({
 
 				return pluginApi;
 			},
-			'astro:build:setup': () => pluginApi,
-			'astro:build:start': () => pluginApi,
-			'astro:build:ssr': () => pluginApi,
-			'astro:build:done': () => pluginApi,
-			'astro:build:generated': () => pluginApi,
-			'astro:server:setup': () => pluginApi,
-			'astro:server:start': () => pluginApi,
-			'astro:server:done': () => pluginApi,
+			[DEFAULT_HOOK_FACTORY]: () => () => pluginApi,
 		};
 	},
 });

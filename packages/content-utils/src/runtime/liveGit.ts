@@ -14,7 +14,7 @@ export async function getLatestCommitDate(...args: Parameters<typeof getEntry>):
 		return cached;
 	}
 
-	const date = getCommitDate(file, 'latest');
+	const date = await getCommitDate(file, 'latest');
 	memoizedLatest.set(file, date);
 	return date;
 }
@@ -31,7 +31,7 @@ export async function getOldestCommitDate(...args: Parameters<typeof getEntry>):
 		return cached;
 	}
 
-	const date = getCommitDate(file, 'oldest');
+	const date = await getCommitDate(file, 'oldest');
 	memoizedOldest.set(file, date);
 	return date;
 }

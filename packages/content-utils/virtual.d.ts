@@ -19,7 +19,7 @@ declare module '@it-astro:content/injector' {
 }
 
 declare module '@it-astro:content/git' {
-	type EntryKey =
+	export type EntryKey =
 		| [collection: string, idOrSlug: string]
 		| [{ collection: string; id: string }]
 		| [{ collection: string; slug: string }];
@@ -37,4 +37,19 @@ declare module '@it-astro:content/git' {
 	 * If the entry was never committed, returns a memoized `new Date()`.
 	 */
 	export function getOldestCommitDate(...args: EntryKey): Promise<Date>;
+}
+
+declare namespace AstroIntegrationKit {
+	export interface ExtraHooks {
+		'@it-astro:content:gitCommitResolved'?: (params: {
+			age: 'oldest' | 'latest';
+			file: string;
+			resolvedDate: Date;
+			overrideDate: (newDate: Date) => void;
+		}) => Promise<void>;
+		'@it-astro:content:gitTrackedListResolved'?: (params: {
+			trackedFiles: string[];
+			ignoreFiles: (files: string[]) => void;
+		}) => Promise<void>;
+	}
 }

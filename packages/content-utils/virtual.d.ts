@@ -46,10 +46,10 @@ declare namespace AstroIntegrationKit {
 			file: string;
 			resolvedDate: Date;
 			overrideDate: (newDate: Date) => void;
-		}) => Promise<void>;
+		}) => Promise<void> | void;
 		'@it-astro:content:gitTrackedListResolved'?: (params: {
 			trackedFiles: string[];
 			ignoreFiles: (files: string[]) => void;
-		}) => Promise<void>;
+		}) => Promise<void> | void;
 	}
 }

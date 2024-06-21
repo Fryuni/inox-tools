@@ -11,9 +11,8 @@ export function setContentPath(path: string) {
 	contentPath = path;
 }
 
-const commitResolvedHook: HookTrigger<'@it-astro:content:gitCommitResolved'> = (globalThis as any)[
-	Symbol.for('@inox-tools/content-utils:triggers/gitCommitResolved')
-];
+const getCommitResolvedHook = (): HookTrigger<'@it-astro:content:gitCommitResolved'> =>
+	(globalThis as any)[Symbol.for('@inox-tools/content-utils:triggers/gitCommitResolved')];
 
 /**
  * @internal
@@ -47,7 +46,7 @@ export async function getCommitDate(file: string, age: 'oldest' | 'latest'): Pro
 
 	let resolvedDate = new Date(Number(match.groups.timestamp) * 1000);
 
-	await commitResolvedHook({
+	await getCommitResolvedHook()({
 		resolvedDate,
 		age,
 		file,
@@ -59,9 +58,8 @@ export async function getCommitDate(file: string, age: 'oldest' | 'latest'): Pro
 	return resolvedDate;
 }
 
-const trackedListResolvedHook: HookTrigger<'@it-astro:content:gitTrackedListResolved'> = (
-	globalThis as any
-)[Symbol.for('@inox-tools/content-utils:triggers/gitTrackedListResolved')];
+const getTrackedListResolvedHook = (): HookTrigger<'@it-astro:content:gitTrackedListResolved'> =>
+	(globalThis as any)[Symbol.for('@inox-tools/content-utils:triggers/gitTrackedListResolved')];
 
 /**
  * @internal
@@ -80,7 +78,7 @@ export async function listGitTrackedFiles(): Promise<string[]> {
 	const output = result.stdout.trim();
 	let files = output.split('\n');
 
-	await trackedListResolvedHook({
+	await getTrackedListResolvedHook()({
 		trackedFiles: Array.from(files),
 		ignoreFiles: (ignore) => {
 			for (const file of ignore) {

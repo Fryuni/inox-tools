@@ -7,6 +7,10 @@
       "outputs": ["dist/**"],
       "outputLogs": "new-only"
     },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
     "test": {
       "outputLogs": "new-only"
     }

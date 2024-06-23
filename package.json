@@ -14,6 +14,7 @@
   "main": "index.js",
   "scripts": {
     "build": "turbo run --filter '@inox-tools/*' build",
+    "dev": "turbo run --filter '@inox-tools/*' dev",
     "build:examples": "turbo run --filter '@example/*' build",
     "docs:dev": "cd docs && pnpm dev",
     "format": "prettier -w \"**/*\" --ignore-unknown --cache",

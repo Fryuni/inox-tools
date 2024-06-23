@@ -36,7 +36,7 @@
   "dependencies": {
     "@inox-tools/modular-station": "workspace:^",
     "@inox-tools/utils": "workspace:^",
-    "astro-integration-kit": "^0.13.3",
+    "astro-integration-kit": "^0.14.0",
     "estree-walker": "^3.0.3",
     "magic-string": "^0.30.10"
   },

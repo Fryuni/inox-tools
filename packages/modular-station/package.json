@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@inox-tools/utils": "workspace:^",
-    "astro-integration-kit": "~0.13"
+    "astro-integration-kit": "~0.14.0"
   },
   "devDependencies": {
     "@astrojs/compiler": "^2.7.1",

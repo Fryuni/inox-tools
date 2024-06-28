@@ -12,9 +12,9 @@
   },
   "dependencies": {
     "@astrojs/check": "^0.7.0",
-    "@astrojs/node": "^8.3.0",
+    "@astrojs/node": "^8.3.2",
     "@inox-tools/astro-when": "workspace:^",
-    "astro": "^4.10.2",
-    "typescript": "^5.4.5"
+    "astro": "^4.11.3",
+    "typescript": "^5.5.2"
   }
 }

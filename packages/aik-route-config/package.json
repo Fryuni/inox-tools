@@ -36,11 +36,11 @@
     "vite": "^5.2.9"
   },
   "devDependencies": {
-    "@astrojs/compiler": "^2.8.0",
+    "@astrojs/compiler": "^2.8.1",
     "@vitest/coverage-v8": "^1.6.0",
     "ast-types": "^0.14.2",
     "tsup": "^8.1.0",
-    "typescript": "^5.4.5",
+    "typescript": "^5.5.2",
     "vitest": "^1.6.0"
   },
   "peerDependencies": {

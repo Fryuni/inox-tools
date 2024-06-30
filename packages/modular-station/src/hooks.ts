@@ -26,7 +26,7 @@ export async function runHook<K extends keyof ExtendedHooks>(
 	paramsFactory: (logger: AstroIntegrationLogger) => Parameters<ExtendedHooks[K]>
 ): Promise<void> {
 	for (const integration of integrations) {
-		const logger = baseLogger.fork(`${baseLogger.label}/${integration.name}`);
+		const logger = baseLogger.fork(integration.name);
 
 		await getHook(hook, integration.hooks)?.(...paramsFactory(logger));
 	}

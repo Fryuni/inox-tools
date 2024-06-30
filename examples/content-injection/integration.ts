@@ -12,13 +12,12 @@ export default defineIntegration({
 						seedTemplateDirectory: './src/integration',
 					});
 				},
-				'@it-astro:content:gitTrackedListResolved': ({ trackedFiles }) => {
-					console.log('Content utils tracking files:', trackedFiles);
+				'@it-astro:content:gitTrackedListResolved': ({ trackedFiles, logger }) => {
+					logger.info('Content utils tracking files: ' + trackedFiles);
 				},
-				'@it-astro:content:gitCommitResolved': ({ file, age, resolvedDate }) => {
-					console.log(
-						`Content utils resolved the ${age} commit date for file ${file} as:`,
-						resolvedDate
+				'@it-astro:content:gitCommitResolved': ({ file, age, resolvedDate, logger }) => {
+					logger.warn(
+						`Content utils resolved the ${age} commit date for file ${file} as: ${resolvedDate}`
 					);
 				},
 			},

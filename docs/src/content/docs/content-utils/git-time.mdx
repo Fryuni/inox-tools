@@ -56,3 +56,98 @@ If the entry has not been commited yet, this function returns the current time.
 
 Returns the commit time of the first commit that created the selected entry.  
 If the entry has not been commited yet, this function returns the current time.
+
+## Hooks
+
+Integrations can hook into the lifecycle of the content collections git times, this allows you to:
+
+- Ignore some collection entries;
+- Override times for entries.
+
+### `@it/content:git:listed`
+
+This hook is called on `astro build` once the collection entries tracked by Git are listed.
+
+```ts
+// your-integration/index.ts
+import { defineIntegration } from 'astro-integration-kit';
+import '@inox-tools/content-utils';
+
+export default defineIntegration({
+	name: 'your-integration',
+	setup() {
+		return {
+			hooks: {
+				'@it/content:git:listed': ({ trackedFiles, ignoreFiles, logger }) => {
+					// your code
+				},
+			},
+		};
+	},
+});
+```
+
+#### `trackedFiles`
+
+**Type:** `string[]`
+
+List of all content collection entry files that are tracked by Git. The values are in
+
+#### `ignoreFiles`
+
+**Type:** `(files: string[]) => void`
+
+A callback to exclude files from tracking. Values that is not on [`trackedFiles`](#trackedfiles) are ignored.
+
+#### `logger`
+
+**Type:** `AstroIntegrationLogger`
+
+[A standard `AstroIntegrationLogger`](https://docs.astro.build/en/reference/integrations-reference/#astrointegrationlogger), configured the same as for the official Astro hooks.
+
+### `@it/content:git:resolved`
+
+This hook is called twice for each tracked content collection entry, once for each git time that is resolved (oldest and latest).
+
+```ts
+// your-integration/index.ts
+import { defineIntegration } from 'astro-integration-kit';
+import '@inox-tools/content-utils';
+
+export default defineIntegration({
+	name: 'your-integration',
+	setup() {
+		return {
+			hooks: {
+				'@it/content:git:resolved': ({ age, file, resolvedDate, overrideDate, logger }) => {
+					// your code
+				},
+			},
+		};
+	},
+});
+```
+
+#### `age`
+
+**Type:** `'oldest' | 'latest'`
+
+Which age of the entry is being resolved, `oldest`, `latest`.
+
+#### `file`
+
+**Type:** `string`
+
+Absolute path to the content collection entry file.
+
+#### `resolvedDate`
+
+**Type:** `Date`
+
+Date resolved from the Git history.
+
+#### `overrideDate`
+
+**Type:** `(newDate: Date) => void`
+
+Callback function to override the resolved date.

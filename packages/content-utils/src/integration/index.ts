@@ -85,11 +85,11 @@ export const integration = withApi(
 
 						(globalThis as any)[
 							Symbol.for('@inox-tools/content-utils:triggers/gitTrackedListResolved')
-						] = params.hooks.getTrigger('@it-astro:content:gitTrackedListResolved');
+						] = params.hooks.getTrigger('@it/content:git:listed');
 
 						(globalThis as any)[
 							Symbol.for('@inox-tools/content-utils:triggers/gitCommitResolved')
-						] = params.hooks.getTrigger('@it-astro:content:gitCommitResolved');
+						] = params.hooks.getTrigger('@it/content:git:resolved');
 
 						addVitePlugin(params, {
 							plugin:

@@ -11,7 +11,7 @@ export function setContentPath(path: string) {
 	contentPath = path;
 }
 
-const getCommitResolvedHook = (): HookTrigger<'@it-astro:content:gitCommitResolved'> =>
+const getCommitResolvedHook = (): HookTrigger<'@it/content:git:resolved'> =>
 	(globalThis as any)[Symbol.for('@inox-tools/content-utils:triggers/gitCommitResolved')];
 
 /**
@@ -61,7 +61,7 @@ export async function getCommitDate(file: string, age: 'oldest' | 'latest'): Pro
 	return resolvedDate;
 }
 
-const getTrackedListResolvedHook = (): HookTrigger<'@it-astro:content:gitTrackedListResolved'> =>
+const getTrackedListResolvedHook = (): HookTrigger<'@it/content:git:listed'> =>
 	(globalThis as any)[Symbol.for('@inox-tools/content-utils:triggers/gitTrackedListResolved')];
 
 /**

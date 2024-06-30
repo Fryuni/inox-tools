@@ -41,14 +41,14 @@ declare module '@it-astro:content/git' {
 
 declare namespace AstroIntegrationKit {
 	export interface ExtraHooks {
-		'@it-astro:content:gitCommitResolved'?: (params: {
+		'@it/content:git:resolved'?: (params: {
 			logger: import('astro').AstroIntegrationLogger;
 			age: 'oldest' | 'latest';
 			file: string;
 			resolvedDate: Date;
 			overrideDate: (newDate: Date) => void;
 		}) => Promise<void> | void;
-		'@it-astro:content:gitTrackedListResolved'?: (params: {
+		'@it/content:git:listed'?: (params: {
 			logger: import('astro').AstroIntegrationLogger;
 			trackedFiles: string[];
 			ignoreFiles: (files: string[]) => void;

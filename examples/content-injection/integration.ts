@@ -12,7 +12,7 @@ export default defineIntegration({
 						seedTemplateDirectory: './src/integration',
 					});
 				},
-				'@it-astro:content:gitTrackedListResolved': ({ trackedFiles, logger }) => {
+				'@it-astro:content:gitTrackedListResolved': ({ trackedFiles, ignoreFiles, logger }) => {
 					logger.info('Content utils tracking files: ' + trackedFiles);
 				},
 				'@it-astro:content:gitCommitResolved': ({ file, age, resolvedDate, logger }) => {

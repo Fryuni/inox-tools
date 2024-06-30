@@ -17,7 +17,7 @@ import { inspect } from 'node:util';
 process.setSourceMapsEnabled(true);
 
 export default defineIntegration({
-	name: '@inox-tools/declarative-sitemap',
+	name: '@inox-tools/sitemap-ext',
 	optionsSchema: z
 		.object({
 			includeByDefault: z.boolean().default(false),

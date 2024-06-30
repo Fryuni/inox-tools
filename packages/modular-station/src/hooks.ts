@@ -64,7 +64,7 @@ export const hookProviderPlugin = allHooksPlugin({
 
 		const pluginApi: PluginApi = {
 			hooks: {
-				runHook: (hook, params) => runHook(integrations, logger, hook, params),
+				run: (hook, params) => runHook(integrations, logger, hook, params),
 				getTrigger: (hook) => (params) => runHook(integrations, logger, hook, params),
 			},
 		};

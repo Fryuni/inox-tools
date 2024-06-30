@@ -46,14 +46,17 @@ export async function getCommitDate(file: string, age: 'oldest' | 'latest'): Pro
 
 	let resolvedDate = new Date(Number(match.groups.timestamp) * 1000);
 
-	await getCommitResolvedHook()({
-		resolvedDate,
-		age,
-		file,
-		overrideDate: (newDate) => {
-			resolvedDate = newDate;
+	await getCommitResolvedHook()((logger) => [
+		{
+			logger,
+			resolvedDate,
+			age,
+			file,
+			overrideDate: (newDate) => {
+				resolvedDate = newDate;
+			},
 		},
-	});
+	]);
 
 	return resolvedDate;
 }
@@ -72,23 +75,25 @@ export async function listGitTrackedFiles(): Promise<string[]> {
 
 	if (result.error) {
 		return [];
-		// throw new Error(`Failed to retrieve list of git tracked files in "${contentPath}"`);
 	}
 
 	const output = result.stdout.trim();
 	let files = output.split('\n');
 
-	await getTrackedListResolvedHook()({
-		trackedFiles: Array.from(files),
-		ignoreFiles: (ignore) => {
-			for (const file of ignore) {
-				const index = files.indexOf(file);
-				if (index !== -1) {
-					files.splice(index, 1);
+	await getTrackedListResolvedHook()((logger) => [
+		{
+			logger,
+			trackedFiles: Array.from(files),
+			ignoreFiles: (ignore) => {
+				for (const file of ignore) {
+					const index = files.indexOf(file);
+					if (index !== -1) {
+						files.splice(index, 1);
+					}
 				}
-			}
+			},
 		},
-	});
+	]);
 
 	return files;
 }

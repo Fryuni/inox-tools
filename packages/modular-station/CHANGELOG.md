@@ -1,5 +1,16 @@
 # @inox-tools/modular-station
 
+## 0.2.0
+
+### Minor Changes
+
+- ebc7aa3: Bump Astro Integration Kit version
+- 70c0205: Simplified and refactored hook provider plugin
+
+### Patch Changes
+
+- eeab371: Extends API and hooks functionality to unofficial hooks and future hooks
+
 ## 0.1.1
 
 ### Patch Changes

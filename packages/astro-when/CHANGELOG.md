@@ -1,5 +1,11 @@
 # @inox-tools/astro-when
 
+## 0.1.3
+
+### Patch Changes
+
+- ebc7aa3: Bump Astro Integration Kit version
+
 ## 0.1.2
 
 ### Patch Changes

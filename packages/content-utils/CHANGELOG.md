@@ -1,5 +1,19 @@
 # @inox-tools/content-utils
 
+## 0.5.0
+
+### Minor Changes
+
+- ebc7aa3: Bump Astro Integration Kit version
+- 70c0205: Add support for inter-integration hooks on collections Git lifecycle
+
+### Patch Changes
+
+- Updated dependencies [ebc7aa3]
+- Updated dependencies [70c0205]
+- Updated dependencies [eeab371]
+  - @inox-tools/modular-station@0.2.0
+
 ## 0.4.0
 
 ### Minor Changes

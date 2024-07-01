@@ -1,13 +1,23 @@
+import type { HookTrigger } from '@inox-tools/modular-station';
 import { spawnSync } from 'node:child_process';
 import { basename, dirname, join, sep, resolve } from 'node:path';
 
 let contentPath: string = '';
 
+/**
+ * @internal
+ */
 export function setContentPath(path: string) {
 	contentPath = path;
 }
 
-export function getCommitDate(file: string, age: 'oldest' | 'latest'): Date {
+const getCommitResolvedHook = (): HookTrigger<'@it/content:git:resolved'> =>
+	(globalThis as any)[Symbol.for('@inox-tools/content-utils:triggers/gitCommitResolved')];
+
+/**
+ * @internal
+ */
+export async function getCommitDate(file: string, age: 'oldest' | 'latest'): Promise<Date> {
 	const args = ['log', '--format=%ct', '--max-count=1'];
 
 	if (age === 'oldest') {
@@ -34,11 +44,30 @@ export function getCommitDate(file: string, age: 'oldest' | 'latest'): Date {
 		return new Date();
 	}
 
-	const timestamp = Number(match.groups.timestamp);
-	return new Date(timestamp * 1000);
+	let resolvedDate = new Date(Number(match.groups.timestamp) * 1000);
+
+	await getCommitResolvedHook()((logger) => [
+		{
+			logger,
+			resolvedDate,
+			age,
+			file,
+			overrideDate: (newDate) => {
+				resolvedDate = newDate;
+			},
+		},
+	]);
+
+	return resolvedDate;
 }
 
-export function listGitTrackedFiles(): string[] {
+const getTrackedListResolvedHook = (): HookTrigger<'@it/content:git:listed'> =>
+	(globalThis as any)[Symbol.for('@inox-tools/content-utils:triggers/gitTrackedListResolved')];
+
+/**
+ * @internal
+ */
+export async function listGitTrackedFiles(): Promise<string[]> {
 	const result = spawnSync('git', ['ls-files'], {
 		cwd: resolve(contentPath),
 		encoding: 'utf-8',
@@ -46,11 +75,27 @@ export function listGitTrackedFiles(): string[] {
 
 	if (result.error) {
 		return [];
-		// throw new Error(`Failed to retrieve list of git tracked files in "${contentPath}"`);
 	}
 
 	const output = result.stdout.trim();
-	return output.split('\n');
+	let files = output.split('\n');
+
+	await getTrackedListResolvedHook()((logger) => [
+		{
+			logger,
+			trackedFiles: Array.from(files),
+			ignoreFiles: (ignore) => {
+				for (const file of ignore) {
+					const index = files.indexOf(file);
+					if (index !== -1) {
+						files.splice(index, 1);
+					}
+				}
+			},
+		},
+	]);
+
+	return files;
 }
 
 type TrackedCommits = {
@@ -58,12 +103,24 @@ type TrackedCommits = {
 	latest: [string, Date][];
 };
 
-export function getAllTrackedCommitDates(): TrackedCommits {
-	const trackedFiles = listGitTrackedFiles();
+/**
+ * @internal
+ */
+export async function getAllTrackedCommitDates(): Promise<TrackedCommits> {
+	const trackedFiles = await listGitTrackedFiles();
 
-	// Replace the first occurrence of the separator so it doesn't get partially normalized when mixin Windows and Unix-like systems.
-	return {
-		oldest: trackedFiles.map((file) => [file.replace(sep, ':'), getCommitDate(file, 'oldest')]),
-		latest: trackedFiles.map((file) => [file.replace(sep, ':'), getCommitDate(file, 'latest')]),
+	const result: TrackedCommits = {
+		oldest: [],
+		latest: [],
 	};
+
+	for (const file of trackedFiles) {
+		// Replace the first occurrence of the separator so it doesn't get partially normalized when mixin Windows and Unix-like systems.
+		const name = file.replace(sep, ':');
+
+		result.oldest.push([name, await getCommitDate(file, 'oldest')]);
+		result.latest.push([name, await getCommitDate(file, 'latest')]);
+	}
+
+	return result;
 }

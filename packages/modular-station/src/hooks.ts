@@ -1,81 +1,84 @@
-import type { AstroIntegration } from 'astro';
+import type { Hooks } from 'astro-integration-kit';
+import type { AstroIntegration, AstroIntegrationLogger } from 'astro';
 import { DEFAULT_HOOK_FACTORY, allHooksPlugin } from './allHooksPlugin.js';
 
-export type AsyncHooks = {
-	[K in keyof Required<AstroLibs.Hooks>]: NonNullable<AstroLibs.Hooks[K]> extends (
-		...params: any[]
-	) => Promise<any>
-		? K
-		: never;
-}[keyof AstroLibs.Hooks];
+type ToHookFunction<F> = F extends (...params: infer P) => any
+	? (...params: P) => Promise<void> | void
+	: never;
 
-export type SyncHooks = {
-	[K in keyof Required<AstroLibs.Hooks>]: NonNullable<AstroLibs.Hooks[K]> extends (
-		...params: any[]
-	) => Promise<any>
-		? never
-		: K;
-}[keyof AstroLibs.Hooks];
+type ExtendedHooks = {
+	[H in keyof Required<Hooks>]: ToHookFunction<NonNullable<Hooks[H]>>;
+};
 
-export async function execLibHook<K extends AsyncHooks>(
+function getHook<K extends keyof ExtendedHooks>(
+	hookName: K,
+	hookMap?: Partial<ExtendedHooks>
+): Function | undefined {
+	const hook = hookMap?.[hookName];
+
+	return typeof hook === 'function' ? hook : undefined;
+}
+
+export async function runHook<K extends keyof ExtendedHooks>(
 	integrations: AstroIntegration[],
+	baseLogger: AstroIntegrationLogger,
 	hook: K,
-	...params: Parameters<AstroLibs.Hooks[K]>
+	paramsFactory: (logger: AstroIntegrationLogger) => Parameters<ExtendedHooks[K]>
 ): Promise<void> {
 	for (const integration of integrations) {
-		const libHooks = integration.libHooks;
-		if (!libHooks) continue;
+		const logger = baseLogger.fork(integration.name);
 
-		const hookImpl = libHooks[hook];
-		if (!hookImpl) continue;
-
-		await (hookImpl as Function)(structuredClone(params));
+		await getHook(hook, integration.hooks)?.(...paramsFactory(logger));
 	}
 }
 
-export function execLibHookSync<K extends SyncHooks>(
-	integrations: AstroIntegration[],
-	hook: K,
-	...params: Parameters<AstroLibs.Hooks[K]>
-): void {
-	for (const integration of integrations) {
-		const libHooks = integration.libHooks;
-		if (!libHooks) continue;
+export type PluginApi = {
+	hooks: {
+		/**
+		 * Execute a hook on all integrations.
+		 */
+		run<K extends keyof ExtendedHooks>(
+			hook: K,
+			paramsFactory: (logger: AstroIntegrationLogger) => Parameters<ExtendedHooks[K]>
+		): Promise<void>;
 
-		const hookImpl = libHooks[hook];
-		if (!hookImpl) continue;
+		/**
+		 * Returns a function that, when called, triggers a hook on all integrations.
+		 */
+		getTrigger<K extends keyof ExtendedHooks>(hook: K): HookTrigger<K>;
+	};
+};
 
-		(hookImpl as Function)(structuredClone(params));
-	}
-}
-
-export interface PluginApi {
-	[k: string]: unknown;
-	execLibHook<K extends AsyncHooks>(
-		hook: K,
-		...params: Parameters<AstroLibs.Hooks[K]>
-	): Promise<void>;
-	execLibHookSync<K extends SyncHooks>(hook: K, ...params: Parameters<AstroLibs.Hooks[K]>): void;
-}
+/**
+ * A function that triggers a hook on all integrations when called.
+ */
+export type HookTrigger<K extends keyof ExtendedHooks> = (
+	paramsFactory: (logger: AstroIntegrationLogger) => Parameters<ExtendedHooks[K]>
+) => Promise<void>;
 
 export const hookProviderPlugin = allHooksPlugin({
 	name: 'hook-provider',
 	setup() {
+		let logger: AstroIntegrationLogger;
 		let integrations: AstroIntegration[];
 
 		const pluginApi: PluginApi = {
-			execLibHook: async (hook, ...params) => execLibHook(integrations, hook, ...params),
-			execLibHookSync: (hook, ...params) => execLibHookSync(integrations, hook, ...params),
+			hooks: {
+				run: (hook, params) => runHook(integrations, logger, hook, params),
+				getTrigger: (hook) => (params) => runHook(integrations, logger, hook, params),
+			},
 		};
 
 		return {
-			'astro:config:setup': ({ config }) => {
+			'astro:config:setup': ({ config, logger: hookLogger }) => {
 				integrations = config.integrations;
+				logger = hookLogger;
 
 				return pluginApi;
 			},
-			'astro:config:done': ({ config }) => {
+			'astro:config:done': ({ config, logger: hookLogger }) => {
 				integrations = config.integrations;
+				logger = hookLogger;
 
 				return pluginApi;
 			},
@@ -83,15 +86,3 @@ export const hookProviderPlugin = allHooksPlugin({
 		};
 	},
 });
-
-declare global {
-	namespace AstroLibs {
-		interface Hooks {}
-	}
-}
-
-declare module 'astro' {
-	export interface AstroIntegration {
-		libHooks?: AstroLibs.Hooks;
-	}
-}

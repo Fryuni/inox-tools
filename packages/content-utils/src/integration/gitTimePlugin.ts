@@ -31,11 +31,11 @@ export const gitTimeBuildPlugin = ({
 	resolveId(id) {
 		if (id === MODULE_ID) return RESOLVED_MODULE_ID;
 	},
-	load(id, { ssr } = {}) {
+	async load(id, { ssr } = {}) {
 		if (id !== RESOLVED_MODULE_ID || !ssr) return;
 
 		liveGit.setContentPath(contentPath);
-		const trackedFiles = liveGit.getAllTrackedCommitDates();
+		const trackedFiles = await liveGit.getAllTrackedCommitDates();
 
 		return `
 import {getEntry} from 'astro:content';

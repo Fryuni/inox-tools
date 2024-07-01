@@ -1,5 +1,11 @@
 # @inox-tools/aik-route-config
 
+## 0.6.0
+
+### Minor Changes
+
+- ebc7aa3: Bump Astro Integration Kit version
+
 ## 0.5.3
 
 ### Patch Changes

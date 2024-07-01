@@ -1,5 +1,11 @@
 # @inox-tools/aik-mod
 
+## 0.7.0
+
+### Minor Changes
+
+- ebc7aa3: Bump Astro Integration Kit version
+
 ## 0.6.2
 
 ### Patch Changes

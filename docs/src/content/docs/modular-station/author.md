@@ -1,5 +1,5 @@
 ---
-title: Modular Station
+title: Modular Station - Author
 packageName: '@inox-tools/modular-station'
 description: Simplifying Astro integrations with a flexible docking system.
 ---

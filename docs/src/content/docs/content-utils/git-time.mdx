@@ -30,7 +30,7 @@ Git is only necessary during build, so you can deploy your site anywhere. Even o
 
 3. Get the time from any collection entry using the same signature as Astro's [`getEntry`](https://docs.astro.build/en/reference/api-reference/#getentry):
 
-   ```astro title="src/pages/blog/[...slug].astro"
+   ```astro title="src/pages/blog/[...slug].astro" ins={2,7,9}
    ---
    import { getOldestCommitDate } from '@it-astro:content/git';
 
@@ -68,7 +68,7 @@ Integrations can hook into the lifecycle of the content collections git times, t
 
 This hook is called on `astro build` once the collection entries tracked by Git are listed.
 
-```ts
+```ts ins={3,10-12}
 // your-integration/index.ts
 import { defineIntegration } from 'astro-integration-kit';
 import '@inox-tools/content-utils';
@@ -109,7 +109,7 @@ A callback to exclude files from tracking. Values that is not on [`trackedFiles`
 
 This hook is called twice for each tracked content collection entry, once for each git time that is resolved (oldest and latest).
 
-```ts
+```ts ins={3,10-12}
 // your-integration/index.ts
 import { defineIntegration } from 'astro-integration-kit';
 import '@inox-tools/content-utils';

@@ -1,7 +1,9 @@
 ---
-title: Modular Station - Author
+title: Modular Station - API
 packageName: '@inox-tools/modular-station'
-description: Simplifying Astro integrations with a flexible docking system.
+description: Utilities for providing APIs between integrations
+sidebar:
+  label: API
 ---
 
 :::tip

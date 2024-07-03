@@ -72,6 +72,6 @@ export default defineConfig({
 	],
 	redirects: {
 		'/content-utils': '/content-utils/integration',
-		'/modular-station': '/modular-station/author',
+		'/modular-station': '/modular-station/api',
 	},
 });

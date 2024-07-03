@@ -42,6 +42,9 @@ const { pkgName } = Astro.props as Props;
 async function getVersion() {
 	if (localPackages.get().has(pkgName)) return localPackages.get().get(pkgName);
 
+	// Do not reach for NPM while in development
+	if (import.meta.env.DEV) return '0.0.0-dev';
+
 	const url = `https://registry.npmjs.org/${pkgName}/latest`;
 
 	const response = await simpleFetch(url);
@@ -55,7 +58,7 @@ async function getVersion() {
 	return (response.body as { version: string }).version;
 }
 
-const version = import.meta.env.DEV ? '0.0.0-dev' : await getVersion();
+const version = await getVersion();
 ---
 
 <span>v{version}</span>

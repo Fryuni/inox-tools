@@ -44,18 +44,11 @@ export default defineConfig({
 					],
 				},
 				{
-					label: 'Funny little utilities',
+					label: 'Modular Station',
 					collapsed: false,
-					items: [
-						{
-							label: 'Modular Station',
-							link: '/modular-station',
-							badge: {
-								text: 'NEW',
-								variant: 'success',
-							},
-						},
-					],
+					autogenerate: {
+						directory: 'modular-station',
+					},
 				},
 				{
 					label: 'Content Utilities',
@@ -79,5 +72,6 @@ export default defineConfig({
 	],
 	redirects: {
 		'/content-utils': '/content-utils/integration',
+		'/modular-station': '/modular-station/api',
 	},
 });

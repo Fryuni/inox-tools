@@ -56,7 +56,7 @@ declare global {
 
 Source integrations can trigger hooks using the Hook Provider Plugin, which does the heavy lifting of:
 
-- Properly collecting the target ingrations in use on the Astro project, including integrations added dynamically;
+- Properly collecting the target integrations in use on the Astro project, including integrations added dynamically;
 - Instantiating the logger to be passed to each target integration such that it matches the logger passed in the official hooks;
 - Calling the appropriate hook for each integration in the same order as Astro's official hooks.
 

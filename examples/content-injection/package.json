@@ -13,8 +13,8 @@
   "dependencies": {
     "@astrojs/check": "^0.7.0",
     "@inox-tools/content-utils": "workspace:^",
-    "astro": "^4.11.3",
+    "astro": "^4.11.5",
     "astro-integration-kit": "^0.14.0",
-    "typescript": "^5.5.2"
+    "typescript": "^5.5.3"
   }
 }

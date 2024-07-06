@@ -15,13 +15,19 @@ function customRoutingInner({ strict, routes }: Options): AstroIntegration {
 	return {
 		name: '@inox-tools/custom-routing',
 		hooks: {
-			'astro:config:setup': ({ injectRoute }) => {
+			'astro:config:setup': ({ injectRoute, updateConfig }) => {
 				for (const [route, handle] of Object.entries(routes)) {
 					injectRoute({
 						entrypoint: handle,
 						pattern: route,
 					});
 				}
+
+				updateConfig({
+					experimental: {
+						globalRoutePriority: true,
+					},
+				});
 			},
 			...(strict && {
 				'astro:build:setup': ({ vite, pages }) => {

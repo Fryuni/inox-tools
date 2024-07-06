@@ -1,6 +1,8 @@
-import type { Hooks } from 'astro-integration-kit';
+import type { HookParameters, Hooks } from 'astro-integration-kit';
 import type { AstroIntegration, AstroIntegrationLogger } from 'astro';
 import { DEFAULT_HOOK_FACTORY, allHooksPlugin } from './allHooksPlugin.js';
+import { Once } from '@inox-tools/utils/once';
+import { setGlobal } from './globalHooks.js';
 
 type ToHookFunction<F> = F extends (...params: infer P) => any
 	? (...params: P) => Promise<void> | void
@@ -86,3 +88,45 @@ export const hookProviderPlugin = allHooksPlugin({
 		};
 	},
 });
+
+const pregisterOnce = new Once();
+const globalHookIntegrationName = '@inox-tools/modular-station/global-hooks';
+const versionMarker = Symbol(globalHookIntegrationName);
+
+type MarkedIntegration = AstroIntegration & {
+	[versionMarker]: true;
+};
+
+export const registerGlobalHooks = (params: HookParameters<'astro:config:setup'>) => {
+	// Register immediately so hooks can be triggered from calls within the current hook
+	setGlobal(params.logger, params.config.integrations);
+
+	if (
+		params.config.integrations.some(
+			(i) =>
+				i.name === globalHookIntegrationName &&
+				// Check for a version marker so duplicate dependencies
+				// of incompatible versions don't conflict
+				versionMarker in i &&
+				i[versionMarker] === true
+		)
+	) {
+		// Global hooks already registered
+		return;
+	}
+
+	const integration: MarkedIntegration = {
+		name: globalHookIntegrationName,
+		[versionMarker]: true,
+		hooks: {
+			'astro:config:setup': (params) => {
+				setGlobal(params.logger, params.config.integrations);
+			},
+			'astro:config:done': (params) => {
+				setGlobal(params.logger, params.config.integrations);
+			},
+		},
+	};
+
+	params.config.integrations.push(integration);
+};

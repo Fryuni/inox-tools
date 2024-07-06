@@ -1,6 +1,6 @@
-import type { HookTrigger } from '@inox-tools/modular-station';
 import { spawnSync } from 'node:child_process';
 import { basename, dirname, join, sep, resolve } from 'node:path';
+import { hooks } from '@inox-tools/modular-station/hooks';
 
 let contentPath: string = '';
 
@@ -10,9 +10,6 @@ let contentPath: string = '';
 export function setContentPath(path: string) {
 	contentPath = path;
 }
-
-const getCommitResolvedHook = (): HookTrigger<'@it/content:git:resolved'> =>
-	(globalThis as any)[Symbol.for('@inox-tools/content-utils:triggers/gitCommitResolved')];
 
 /**
  * @internal
@@ -46,7 +43,7 @@ export async function getCommitDate(file: string, age: 'oldest' | 'latest'): Pro
 
 	let resolvedDate = new Date(Number(match.groups.timestamp) * 1000);
 
-	await getCommitResolvedHook()((logger) => [
+	await hooks.run('@it/content:git:resolved', (logger) => [
 		{
 			logger,
 			resolvedDate,
@@ -60,9 +57,6 @@ export async function getCommitDate(file: string, age: 'oldest' | 'latest'): Pro
 
 	return resolvedDate;
 }
-
-const getTrackedListResolvedHook = (): HookTrigger<'@it/content:git:listed'> =>
-	(globalThis as any)[Symbol.for('@inox-tools/content-utils:triggers/gitTrackedListResolved')];
 
 /**
  * @internal
@@ -80,7 +74,7 @@ export async function listGitTrackedFiles(): Promise<string[]> {
 	const output = result.stdout.trim();
 	let files = output.split('\n');
 
-	await getTrackedListResolvedHook()((logger) => [
+	await hooks.run('@it/content:git:listed', (logger) => [
 		{
 			logger,
 			trackedFiles: Array.from(files),

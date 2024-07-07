@@ -9,6 +9,17 @@
 ## Install
 
 ```js
-npm i -D @inox-tools/{{ dashCase name }}
+npm i @inox-tools/{{ dashCase name }}
 ```
 
+Add the integration to your `astro.config.mjs`:
+
+```js
+// astro.config.mjs
+import { defineConfig } from 'astro'
+import {{ camelCase name }} from '@inox-tools/{{ dashCase name }}';
+
+export default defineConfig({
+    integrations: [{{ camelCase name }}({})]
+})
+```

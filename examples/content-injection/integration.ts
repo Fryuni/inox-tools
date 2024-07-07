@@ -1,4 +1,5 @@
 import { injectCollections } from '@inox-tools/content-utils';
+import { runtimeLogger } from '@inox-tools/runtime-logger';
 import { defineIntegration } from 'astro-integration-kit';
 
 export default defineIntegration({
@@ -7,6 +8,9 @@ export default defineIntegration({
 		return {
 			hooks: {
 				'astro:config:setup': (params) => {
+					runtimeLogger(params, {
+						name: 'test-integration',
+					});
 					injectCollections(params, {
 						entrypoint: './src/integration/config.ts',
 						seedTemplateDirectory: './src/integration',

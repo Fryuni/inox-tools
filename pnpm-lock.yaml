@@ -90,6 +90,9 @@ importers:
       '@inox-tools/content-utils':
         specifier: workspace:^
         version: link:../../packages/content-utils
+      '@inox-tools/runtime-logger':
+        specifier: workspace:^
+        version: link:../../packages/runtime-logger
       astro:
         specifier: ^4.11.5
         version: 4.11.5(@types/node@20.14.10)(typescript@5.5.3)
@@ -410,6 +413,46 @@ importers:
         version: 5.3.3(@types/node@20.14.10)
       vitest:
         specifier: ^1.6.0
+        version: 1.6.0(@types/node@20.14.10)(@vitest/ui@1.6.0)
+
+  packages/runtime-logger:
+    dependencies:
+      '@inox-tools/modular-station':
+        specifier: workspace:^
+        version: link:../modular-station
+      '@inox-tools/utils':
+        specifier: workspace:^
+        version: link:../utils
+      astro-integration-kit:
+        specifier: ^0.14
+        version: 0.14.0(astro@4.11.5(@types/node@20.14.10)(typescript@5.5.3))
+    devDependencies:
+      '@types/node':
+        specifier: ^20
+        version: 20.14.10
+      '@vitest/coverage-v8':
+        specifier: ^1
+        version: 1.6.0(vitest@1.6.0(@types/node@20.14.10)(@vitest/ui@1.6.0))
+      '@vitest/ui':
+        specifier: ^1
+        version: 1.6.0(vitest@1.6.0)
+      astro:
+        specifier: ^4
+        version: 4.11.5(@types/node@20.14.10)(typescript@5.5.3)
+      jest-extended:
+        specifier: ^4
+        version: 4.0.2
+      tsup:
+        specifier: ^8
+        version: 8.1.0(postcss@8.4.39)(ts-node@10.9.2(@types/node@20.14.10)(typescript@5.5.3))(typescript@5.5.3)
+      typescript:
+        specifier: ^5
+        version: 5.5.3
+      vite:
+        specifier: ^5
+        version: 5.3.3(@types/node@20.14.10)
+      vitest:
+        specifier: ^1
         version: 1.6.0(@types/node@20.14.10)(@vitest/ui@1.6.0)
 
   packages/sitemap-ext:

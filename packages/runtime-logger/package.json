@@ -1,0 +1,50 @@
+{
+  "name": "@inox-tools/runtime-logger",
+  "version": "0.0.0",
+  "description": "Expose Astro Integration Logger at runtime for consistent output",
+  "keywords": [
+    "astro-integration",
+    "withastro",
+    "astro"
+  ],
+  "license": "MIT",
+  "author": "Luiz Ferraz <luiz@lferraz.com>",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "virtual.d.ts"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "prepublish": "pnpm run build",
+    "test": "vitest run --coverage",
+    "test:dev": "vitest --coverage.enabled=true"
+  },
+  "dependencies": {
+    "astro-integration-kit": "^0.14",
+    "@inox-tools/utils": "workspace:^",
+    "@inox-tools/modular-station": "workspace:^"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@vitest/coverage-v8": "^1",
+    "@vitest/ui": "^1",
+    "jest-extended": "^4",
+    "astro": "^4",
+    "tsup": "^8",
+    "typescript": "^5",
+    "vite": "^5",
+    "vitest": "^1"
+  },
+  "peerDependencies": {
+    "astro": "^4"
+  }
+}

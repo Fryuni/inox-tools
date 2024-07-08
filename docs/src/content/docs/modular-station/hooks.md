@@ -52,7 +52,48 @@ declare global {
 }
 ```
 
+### Registering and triggering hooks
+
+Source integrations can trigger hooks using the global hooks API. To do so, they must first call the `registerGlobalHooks` function as early as possible on their `astro:config:setup` hook with the hook parameters.
+
+```ts title="source-integration/index.ts" ins={1,7}
+import { registerGlobalHooks } from '@inox-tools/modular-station';
+
+export function (): AstroIntegration => ({
+  name: 'source-integration',
+  hooks: {
+    'astro:config:setup': (params) => {
+      registerGlobalHooks(params);
+    }
+  }
+});
+```
+
+With that in place the hooks can be triggered by the `hooks` API exported from `@inox-tools/modular-station/hooks`:
+
+```ts title="source-integration/some-module.ts"
+import { hooks } from '@inox-tools/modular-station/hooks';
+
+hooks.run(
+  // Hook name
+  'source:integration:hook',
+  // Callback to make the arguments for each target integration
+  // Receives the logger for the target integration
+  (logger) => ['param', { from: 'source' }, logger]
+);
+```
+
+The global hooks API can be called from anywhere, including integration code, virtual modules, normal project files and TS modules.
+
+Calling the hooks API from the server runtime or from client-side code is a no-op. The observed behavior is the same as if the hook wasn't implemented by any integration, but no error will be thrown. If you want to detect when and where you code is running, you can use the [Astro When](/astro-when) Inox Tool.
+
 ### Hook provider plugin
+
+:::caution[For advanced authors]
+Using the hooks provider instead of the global hooks trigger provides advanced control without any inherit global state, but requires you to manage the transferring of function references between integration code running at config time and module code running at build/render time inside of bundled code.
+
+If you are not familiar with the shared module graph between the Astro builder, integration code, virtual modules and Astro project files, you should use the [global hooks triggering](#registering-and-triggering-hooks).
+:::
 
 Source integrations can trigger hooks using the Hook Provider Plugin, which does the heavy lifting of:
 
@@ -61,6 +102,8 @@ Source integrations can trigger hooks using the Hook Provider Plugin, which does
 - Calling the appropriate hook for each integration in the same order as Astro's official hooks.
 
 The Hook Provider Plugin is a special kind of [Astro Integration Kit plugin](https://astro-integration-kit.netlify.app/core/with-plugins/) that provides the most effective implementation of the hook triggering mechanism for _all_ your hooks, even other custom hooks in case your source integration is a target of some other integration.
+
+The `hooks` property injected by this plugin has the same API as the [global hooks API](#registering-and-triggering-hooks).
 
 ```ts title="source-integration/index.ts" ins={2,9,12-18}
 import { defineIntegration, withPlugins } from 'astro-integration-kit';

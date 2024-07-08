@@ -26,9 +26,7 @@ export const devLoggerPlugin = (loggers: Map<string, AstroIntegrationLogger>): P
 			if (!loggers.has(loggerName)) return;
 
 			return `
-console.log(Symbol.for('${pluginName}'));
-
-const logger = globalThis[Symbol.for('${pluginName}')].get('${loggerName}');
+const logger = globalThis[Symbol.for(${JSON.stringify(pluginName)})].get(${JSON.stringify(loggerName)});
 
 export { logger };
 `;

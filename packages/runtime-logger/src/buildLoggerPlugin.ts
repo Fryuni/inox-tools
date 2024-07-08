@@ -28,14 +28,14 @@ export const buildLoggerPlugin = (loggers: Map<string, AstroIntegrationLogger>):
 			if (logger === undefined) return;
 
 			return `
-import { baseLogger } from '${INTERNAL_MODULE}';
+import { baseLogger } from ${JSON.stringify(INTERNAL_MODULE)};
 
-const buildLogger = globalThis[Symbol.for('${pluginName}')]?.get('${loggerName}');
+const buildLogger = globalThis[Symbol.for(${JSON.stringify(pluginName)})]?.get(${JSON.stringify(loggerName)});
 
-const logger = buildLogger ?? baseLogger.fork('${logger.label}');
+const logger = buildLogger ?? baseLogger.fork(${JSON.stringify(logger.label)});
 
 if (buildLogger === undefined) {
-	logger.options.level = '${logger.options.level}';
+	logger.options.level = ${JSON.stringify(logger.options.level)};
 }
 
 export { logger };

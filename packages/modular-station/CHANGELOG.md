@@ -1,5 +1,13 @@
 # @inox-tools/modular-station
 
+## 0.2.1
+
+### Patch Changes
+
+- fe6f703: Add a global hook API for custom hooks without using an AIK plugin.
+
+  This allows for simpler and more intuitive implementations of hooks outside of main lifecycle in the implementations of official Astro hooks.
+
 ## 0.2.0
 
 ### Minor Changes

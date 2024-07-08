@@ -21,7 +21,7 @@
     "starlight-package-managers": "^0.6.0"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.7.0",
+    "@astrojs/check": "^0.8.0",
     "typescript": "~5.5.3"
   }
 }

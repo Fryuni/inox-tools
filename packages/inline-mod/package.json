@@ -39,12 +39,12 @@
   "devDependencies": {
     "@faker-js/faker": "^8.4.1",
     "@types/debug": "^4.1.12",
-    "@vitest/coverage-v8": "^1.6.0",
-    "@vitest/ui": "^1.6.0",
+    "@vitest/coverage-v8": "^2.0.0",
+    "@vitest/ui": "^2.0.0",
     "jest-extended": "^4.0.2",
     "tsup": "^8.1.0",
     "upath": "^2.0.1",
-    "vitest": "^1.6.0"
+    "vitest": "^2.0.0"
   },
   "peerDependencies": {
     "vite": "^4 || ^5"

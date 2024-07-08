@@ -1,8 +1,11 @@
 ---
 import { getLatestCommitDate, getOldestCommitDate } from '@it-astro:content/git';
 import { getCollection } from 'astro:content';
+import { logger } from '@it-astro:logger:test-integration';
 
 const entries = await getCollection('blog');
+
+logger.info(`Retrieved ${entries.length} entries`);
 
 const dates = await Promise.all(
 	entries.map(async (entry) => {

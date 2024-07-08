@@ -1,0 +1,48 @@
+---
+title: Runtime Logger
+packageName: '@inox-tools/runtime-logger'
+description: Access your Astro Integration Logger from the runtime of your integration.
+---
+
+Astro provides [a logger (typed `AstroIntegrationLogger`)](https://docs.astro.build/en/reference/integrations-reference/#astrointegrationlogger) configured for each integration on all the official [integration hooks](https://docs.astro.build/en/reference/integrations-reference/#hooks). But this logger is only accessible on the code configuring the integration, not for any runtime modules defined by it.
+
+This integration allows you to access the logger from the runtime of your integration.
+
+## Installing the integration
+
+import { PackageManagers } from 'starlight-package-managers';
+
+<PackageManagers pkg="@inox-tools/runtime-logger" />
+
+## Using the integration
+
+To enable this, you need to register your integration to have a runtime logger under some name:
+
+```ts title="your-integration/index.ts" ins={1,7-9}
+import { runtimeLogger } from '@inox-tools/runtime-logger';
+
+export default () => ({
+	name: 'your-integration',
+	hooks: {
+		'astro:config:setup': (params) => {
+			runtimeLogger(params, {
+				name: 'your-integration',
+			});
+		},
+	},
+});
+```
+
+With that in place, your runtime code can now access the logger by importing the generated module `@it-astro:logger:<name>`:
+
+```astro title="injected-route.astro"
+---
+import { logger } from '@it-astro:logger:your-integration';
+
+logger.info('Hello World!');
+---
+```
+
+## License
+
+Astro Runtime Logger is available under the MIT license.

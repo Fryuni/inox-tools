@@ -41,6 +41,10 @@ export default defineConfig({
 							label: 'Astro When',
 							link: '/astro-when',
 						},
+						{
+							label: 'Runtime Logger',
+							link: '/runtime-logger',
+						},
 					],
 				},
 				{

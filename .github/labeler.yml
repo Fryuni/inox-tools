@@ -17,6 +17,9 @@ pkg/aik-route-config:
 pkg/custom-routing:
 - 'packages/custom-routing/**'
 
+pkg/runtime-logger:
+- 'packages/runtime-logger/**'
+
 pkg/inline-mod:
 - 'packages/inline-mod/**'
 

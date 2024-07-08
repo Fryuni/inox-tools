@@ -1,5 +1,14 @@
 # @example/content-injection
 
+## 0.0.8
+
+### Patch Changes
+
+- Updated dependencies [fe6f703]
+- Updated dependencies [30bb61a]
+  - @inox-tools/content-utils@0.5.1
+  - @inox-tools/runtime-logger@0.1.0
+
 ## 0.0.7
 
 ### Patch Changes

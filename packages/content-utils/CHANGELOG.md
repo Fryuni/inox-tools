@@ -1,5 +1,13 @@
 # @inox-tools/content-utils
 
+## 0.5.1
+
+### Patch Changes
+
+- fe6f703: Simplify internal hook wiring using Modular Station's global hooks
+- Updated dependencies [fe6f703]
+  - @inox-tools/modular-station@0.2.1
+
 ## 0.5.0
 
 ### Minor Changes

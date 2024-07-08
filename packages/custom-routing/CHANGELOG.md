@@ -1,5 +1,11 @@
 # @inox-tools/inline-mod
 
+## 0.3.2
+
+### Patch Changes
+
+- 452585a: fix: Enable global routing priority so custom routing mix correctly with file-based routes
+
 ## 0.3.1
 
 ### Patch Changes

@@ -8,7 +8,6 @@
 **/fixtures
 **/vendor
 **/.vercel
-/turbo/
 
 # Directories
 .github

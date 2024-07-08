@@ -1,8 +1,8 @@
-import { withApi, onHook, hookProviderPlugin } from '@inox-tools/modular-station';
+import { withApi, onHook, registerGlobalHooks } from '@inox-tools/modular-station';
 import { emptyState } from './state.js';
 import { resolveContentPaths } from '../internal/resolver.js';
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { addVitePlugin, withPlugins, defineIntegration } from 'astro-integration-kit';
+import { addVitePlugin, defineIntegration } from 'astro-integration-kit';
 import { injectorPlugin } from './injectorPlugin.js';
 import { seedCollections, type SeedCollectionsOptions } from './seedCollections.js';
 import { gitTimeBuildPlugin, gitTimeDevPlugin } from './gitTimePlugin.js';
@@ -61,12 +61,11 @@ export const integration = withApi(
 				),
 			};
 
-			return withPlugins({
-				name,
-				plugins: [hookProviderPlugin],
+			return {
 				hooks: {
 					'astro:config:setup': (params) => {
 						state.logger = params.logger;
+						registerGlobalHooks(params);
 
 						state.contentPaths = resolveContentPaths(params.config);
 
@@ -83,14 +82,6 @@ export const integration = withApi(
 							warnDuplicated: true,
 						});
 
-						(globalThis as any)[
-							Symbol.for('@inox-tools/content-utils:triggers/gitTrackedListResolved')
-						] = params.hooks.getTrigger('@it/content:git:listed');
-
-						(globalThis as any)[
-							Symbol.for('@inox-tools/content-utils:triggers/gitCommitResolved')
-						] = params.hooks.getTrigger('@it/content:git:resolved');
-
 						addVitePlugin(params, {
 							plugin:
 								params.command === 'dev' ? gitTimeDevPlugin(state) : gitTimeBuildPlugin(state),
@@ -103,7 +94,7 @@ export const integration = withApi(
 					},
 				},
 				...api,
-			});
+			};
 		},
 	})
 );

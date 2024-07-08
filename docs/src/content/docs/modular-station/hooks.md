@@ -71,7 +71,7 @@ export function (): AstroIntegration => ({
 
 With that in place the hooks can be triggered by the `hooks` API exported from `@inox-tools/modular-station/hooks`:
 
-```ts title="source-integration/some-module.ts" ins={1,7}
+```ts title="source-integration/some-module.ts"
 import { hooks } from '@inox-tools/modular-station/hooks';
 
 hooks.run(

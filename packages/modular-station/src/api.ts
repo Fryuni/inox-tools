@@ -6,6 +6,7 @@ import {
 	type AllHooksPlugin,
 	type HookNames,
 } from './allHooksPlugin.js';
+import type { Prettify } from '@inox-tools/utils/types';
 
 export type AstroIntegration = NativeIntegration;
 
@@ -139,7 +140,9 @@ function protectApi<TAttr extends string, TApi extends Record<string, any>>(
 export function withApi<
 	TOptions extends any[],
 	TApi extends Record<string, any> = Record<string, never>,
->(factory: (...args: TOptions) => AstroIntegration & TApi): NeighborIntegration<TOptions, TApi> {
+>(
+	factory: (...args: TOptions) => AstroIntegration & TApi
+): NeighborIntegration<TOptions, Prettify<Omit<TApi, 'hooks'>>> {
 	const integrationSymbol = Symbol(factory.name);
 
 	const wrapper: IntegrationFactory<TOptions, TApi> = (...args) => {

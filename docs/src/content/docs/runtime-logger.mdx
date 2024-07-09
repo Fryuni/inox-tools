@@ -1,22 +1,80 @@
 ---
 title: Runtime Logger
 packageName: '@inox-tools/runtime-logger'
-description: Access your Astro Integration Logger from the runtime of your integration.
+description: Access an Astro Integration Logger from the runtime of a project.
 ---
 
 Astro provides [a logger (typed `AstroIntegrationLogger`)](https://docs.astro.build/en/reference/integrations-reference/#astrointegrationlogger) configured for each integration on all the official [integration hooks](https://docs.astro.build/en/reference/integrations-reference/#hooks). But this logger is only accessible on the code configuring the integration, not for any runtime modules defined by it.
 
-This integration allows you to access the logger from the runtime of your integration.
+This package allows you to access Astro's built-in logger from the runtime of a project.
 
-## Installing the integration
+## Installing the dependency
 
 import { PackageManagers } from 'starlight-package-managers';
 
 <PackageManagers pkg="@inox-tools/runtime-logger" />
 
-## Using the integration
+## For projects
 
-To enable this, you need to register your integration to have a runtime logger under some name:
+Projects can install the integration included in this package to get a runtime logger for each file in their project:
+
+```ts title="astro.config.mjs" ins={1,4}
+import runtimeLogger from '@inox-tools/runtime-logger';
+
+export default defineConfig({
+	integrations: [runtimeLogger()],
+});
+```
+
+With that integration installed, you can import a logger from `@it-astro:logger` from anywhere in your project. The returned logger will be named after the file that imported it.
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+<Tabs>
+
+    <TabItem label="Page">
+
+```astro title="src/pages/index.astro"
+---
+import { logger } from '@it-astro:logger';
+
+// Logger will be named 'pages/index.astro'
+logger.info('Hello World!');
+---
+```
+
+    </TabItem>
+    <TabItem label="Component">
+
+```astro title="src/component/Header.astro"
+---
+import { logger } from '@it-astro:logger';
+
+// Logger will be named 'component/Header.astro'
+logger.info('Hello World!');
+---
+```
+
+    </TabItem>
+    <TabItem label="TS Module">
+
+```astro title="src/middleware.ts"
+---
+import { logger } from '@it-astro:logger';
+
+// Logger will be named 'middleware.ts'
+logger.info('Hello World!');
+---
+```
+
+    </TabItem>
+
+</Tabs>
+
+## For integrations
+
+Integrations can register their own loggers to be used by the runtime using the `runtimeLogger` utility.
+The utility takes the parameters of `astro:config:setup` and the name of the module where the logger will be made available at runtime:
 
 ```ts title="your-integration/index.ts" ins={1,7-9}
 import { runtimeLogger } from '@inox-tools/runtime-logger';

@@ -1,10 +1,16 @@
 import { withApi } from '@inox-tools/modular-station';
-import { addVitePlugin, defineUtility, type HookParameters } from 'astro-integration-kit';
+import {
+	addVitePlugin,
+	defineIntegration,
+	defineUtility,
+	type HookParameters,
+} from 'astro-integration-kit';
 import { z } from 'astro/zod';
 import { buildLoggerPlugin } from './buildLoggerPlugin.js';
 import { loggerInternalsPlugin } from './internalPlugin.js';
 import { devLoggerPlugin } from './devLoggerPlugin.js';
 import type { AstroIntegrationLogger } from 'astro';
+import { fileURLToPath } from 'url';
 
 const schema = z
 	.object({
@@ -12,11 +18,11 @@ const schema = z
 	})
 	.strict();
 
-const integration = withApi(() => {
+const internalIntegration = withApi(() => {
 	const loggers = new Map<string, AstroIntegrationLogger>();
 
 	return {
-		name: '@inox-tools/runtime-logger',
+		name: '@inox-tools/runtime-logger/internal',
 		hooks: {
 			'astro:config:setup': (params) => {
 				switch (params.command) {
@@ -49,7 +55,25 @@ export const runtimeLogger = defineUtility('astro:config:setup')((
 	params: HookParameters<'astro:config:setup'>,
 	options: z.infer<typeof schema>
 ) => {
-	const api = integration.fromSetup(params);
+	const api = internalIntegration.fromSetup(params);
 
 	api.addLogger(options.name, params.logger);
+});
+
+export default defineIntegration({
+	name: '@inox-tools/runtime-logger',
+	setup: () => ({
+		hooks: {
+			'astro:config:setup': async (params) => {
+				runtimeLogger(params, { name: '__project' });
+
+				addVitePlugin(params, {
+					plugin: (await import('./projectLoggerPlugin.js')).projectLoggerPlugin(
+						fileURLToPath(params.config.srcDir)
+					),
+					warnDuplicated: true,
+				});
+			},
+		},
+	}),
 });

@@ -89,7 +89,6 @@ export const hookProviderPlugin = allHooksPlugin({
 	},
 });
 
-const pregisterOnce = new Once();
 const globalHookIntegrationName = '@inox-tools/modular-station/global-hooks';
 const versionMarker = Symbol(globalHookIntegrationName);
 

@@ -44,6 +44,10 @@ export default defineConfig({
 						{
 							label: 'Runtime Logger',
 							link: '/runtime-logger',
+							badge: {
+								text: 'NEW',
+								variant: 'success',
+							},
 						},
 					],
 				},

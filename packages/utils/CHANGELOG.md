@@ -1,5 +1,11 @@
 # @inox-tools/utils
 
+## 0.1.2
+
+### Patch Changes
+
+- f133739: Add `Prettify` utility type
+
 ## 0.1.1
 
 ### Patch Changes

@@ -1,5 +1,14 @@
 # @inox-tools/modular-station
 
+## 0.2.2
+
+### Patch Changes
+
+- 0920491: Fixes global hooks state not being properly set during `astro dev`
+- f133739: Fix type inference on `withApi` utility
+- Updated dependencies [f133739]
+  - @inox-tools/utils@0.1.2
+
 ## 0.2.1
 
 ### Patch Changes

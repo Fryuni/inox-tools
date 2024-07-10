@@ -12,6 +12,12 @@ If an integration you are using pointed you here, you can skip to [How to use as
 
 This utility allows you, as an integration author, to expose APIs for other integrations that might be in use alogside yours. Instead of requiring them to call `addIntegration` instantiating yours, which has multiple limitations, they can use the API from your integration regardless of how it was installed.
 
+## Installing the dependency
+
+import { PackageManagers } from 'starlight-package-managers';
+
+<PackageManagers pkg="@inox-tools/modular-station" />
+
 ## How to use as an author
 
 Assuming you already have an integration, you can just wrap it in the `withApi` function to give it superpowers:
@@ -92,16 +98,16 @@ On your `astro:config:setup` or `astro:config:done` hooks you can get the API fr
 import otherIntegration from 'other-integration';
 
 export default () => {
-  return {
-    name: 'my-integration',
-    hooks: {
-      'astro:config:setup': ({ config }) => {
-        const api = otherIntegration.fromConfig(config);
+	return {
+		name: 'my-integration',
+		hooks: {
+			'astro:config:setup': ({ config }) => {
+				const api = otherIntegration.fromConfig(config);
 
-        api?.addSomething();
-      },
-    },
-  };
+				api?.addSomething();
+			},
+		},
+	};
 };
 ```
 

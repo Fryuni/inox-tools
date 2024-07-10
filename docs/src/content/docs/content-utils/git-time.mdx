@@ -14,13 +14,13 @@ Git is only necessary during build, so you can deploy your site anywhere. Even o
 
 ## How to use
 
+import { PackageManagers } from 'starlight-package-managers';
+
 <Steps>
 
 1. Install `@inox-tools/content-utils`:
 
-   ```sh title="Terminal - <project root>"
-   astro add @inox-tools/content-utils
-   ```
+   <PackageManagers type="exec" pkg="astro" args="add @inox-tools/content-utils" />
 
 2. Import the time getter you want from `@it-astro:content/git`:
 

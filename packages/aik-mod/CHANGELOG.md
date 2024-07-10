@@ -1,5 +1,11 @@
 # @inox-tools/aik-mod
 
+## 0.7.1
+
+### Patch Changes
+
+- @inox-tools/inline-mod@1.4.3
+
 ## 0.7.0
 
 ### Minor Changes

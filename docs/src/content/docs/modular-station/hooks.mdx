@@ -16,6 +16,12 @@ To avoid confusion, throughout this page you'll see these terms to refer to the 
 - **Source** integration: the integration that defines the name and type of the hook and provide the arguments to call it.
 - **Target** integration: the integration that implements the hook that is called with the arguments provided by the source integration.
 
+## Installing the dependency
+
+import { PackageManagers } from 'starlight-package-managers';
+
+<PackageManagers pkg="@inox-tools/modular-station" />
+
 ## As a source integration
 
 ### Type safety
@@ -30,13 +36,13 @@ Source integrations can declare the types for their hooks by augmenting the inte
 
 ```ts title="types.d.ts"
 declare namespace AstroIntegrationKit {
-  export interface ExtraHooks {
-    'source:integration:hook'?: (
-      hook: string,
-      params: Record<string, any>,
-      logger: AstroIntegrationLogger
-    ) => Promise<void> | void;
-  }
+	export interface ExtraHooks {
+		'source:integration:hook'?: (
+			hook: string,
+			params: Record<string, any>,
+			logger: AstroIntegrationLogger
+		) => Promise<void> | void;
+	}
 }
 ```
 
@@ -44,11 +50,11 @@ That augmentation can also be done inline on any TypeScript file by surrounding 
 
 ```ts title="source-integration/index.ts"
 declare global {
-  namespace AstroIntegrationKit {
-    export interface ExtraHooks {
-      // ...
-    }
-  }
+	namespace AstroIntegrationKit {
+		export interface ExtraHooks {
+			// ...
+		}
+	}
 }
 ```
 
@@ -75,11 +81,11 @@ With that in place the hooks can be triggered by the `hooks` API exported from `
 import { hooks } from '@inox-tools/modular-station/hooks';
 
 hooks.run(
-  // Hook name
-  'source:integration:hook',
-  // Callback to make the arguments for each target integration
-  // Receives the logger for the target integration
-  (logger) => ['param', { from: 'source' }, logger]
+	// Hook name
+	'source:integration:hook',
+	// Callback to make the arguments for each target integration
+	// Receives the logger for the target integration
+	(logger) => ['param', { from: 'source' }, logger]
 );
 ```
 
@@ -110,24 +116,24 @@ import { defineIntegration, withPlugins } from 'astro-integration-kit';
 import { hookProviderPlugin } from '@inox-tools/modular-station';
 
 export default defineIntegration({
-  name: 'source-integration',
-  setup({ name }) {
-    return withPlugins({
-      name,
-      plugins: [hookProviderPlugin],
-      hooks: {
-        'astro:server:setup': ({ hooks }) => {
-          hooks.run(
-            // Hook name
-            'source:integration:hook',
-            // Callback to make the arguments for each target integration
-            // Receives the logger for the target integration
-            (logger) => ['param', { from: 'source' }, logger]
-          );
-        },
-      },
-    });
-  },
+	name: 'source-integration',
+	setup({ name }) {
+		return withPlugins({
+			name,
+			plugins: [hookProviderPlugin],
+			hooks: {
+				'astro:server:setup': ({ hooks }) => {
+					hooks.run(
+						// Hook name
+						'source:integration:hook',
+						// Callback to make the arguments for each target integration
+						// Receives the logger for the target integration
+						(logger) => ['param', { from: 'source' }, logger]
+					);
+				},
+			},
+		});
+	},
 });
 ```
 
@@ -157,17 +163,17 @@ import { defineIntegration } from 'astro-integration-kit';
 import source from 'source-integration';
 
 export default defineIntegration({
-  name: 'target-integration',
-  setup() {
-    return {
-      hooks: {
-        // other hooks using the integration
-        'source:integration:hook': (hook, params) => {
-          // hook params are property typed
-        },
-      },
-    };
-  },
+	name: 'target-integration',
+	setup() {
+		return {
+			hooks: {
+				// other hooks using the integration
+				'source:integration:hook': (hook, params) => {
+					// hook params are property typed
+				},
+			},
+		};
+	},
 });
 ```
 

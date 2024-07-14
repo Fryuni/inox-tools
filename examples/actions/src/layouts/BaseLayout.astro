@@ -1,0 +1,66 @@
+---
+import '@fontsource/atkinson-hyperlegible/400.css';
+import '@fontsource/atkinson-hyperlegible/700.css';
+import '@fontsource/ranga/400.css';
+import '@fontsource/ranga/700.css';
+import 'open-props/easings';
+import './tailwind.css';
+import ranga400url from '@fontsource/ranga/files/ranga-latin-400-normal.woff2?url';
+import ranga700url from '@fontsource/ranga/files/ranga-latin-700-normal.woff2?url';
+import atkinson400url from '@fontsource/atkinson-hyperlegible/files/atkinson-hyperlegible-latin-400-normal.woff2?url';
+import atkinson700url from '@fontsource/atkinson-hyperlegible/files/atkinson-hyperlegible-latin-700-normal.woff2?url';
+import type { MarkdownHeading, ImageMetadata } from 'astro';
+import { ViewTransitions } from 'astro:transitions';
+
+type Props = {
+	title?: string;
+	description?: string;
+	image?: ImageMetadata;
+	headings?: MarkdownHeading[];
+};
+const {
+	title = 'Ben Holmes',
+	description = 'The whiteboard guy at Astro that codes kinda well.',
+	headings,
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta name="author" content="Ben Holmes" />
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:site" content="@bholmesdev" />
+		<meta name="twitter:creator" content="@bholmesdev" />
+		<meta name="description" content={description} />
+		<meta property="og:url" content={Astro.url} />
+		<meta property="og:site_name" content="Ben Holmes" />
+		<meta property="og:title" />
+		<meta property="og:description" />
+		<link rel="icon" type="image/png" href="/favicon.png" />
+		<link rel="preload" href={atkinson400url} as="font" crossorigin="anonymous" />
+		<link rel="preload" href={atkinson700url} as="font" crossorigin="anonymous" />
+		<link rel="preload" href={ranga400url} as="font" crossorigin="anonymous" />
+		<link rel="preload" href={ranga700url} as="font" crossorigin="anonymous" />
+		<ViewTransitions fallback="none" />
+
+		<slot name="head" />
+		<title>{title}</title>
+	</head>
+	<body class="bg-gray-950 text-white text-base">
+		<div class="min-h-[80dvh]">
+			<slot />
+		</div>
+		<style is:global>
+			h1 {
+				font-family: var(--font-family-heading);
+			}
+
+			button {
+				cursor: pointer;
+			}
+		</style>
+	</body>
+</html>

@@ -1,0 +1,15 @@
+---
+import { Newsletter } from '~/components/Newsletter';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import LikeButton from '~/components/LikeButton.astro';
+---
+
+<BaseLayout>
+	<main class="max-w-prose mx-auto flex flex-col gap-8">
+		<h1 class="text-7xl">Actions Playground</h1>
+
+		<LikeButton postSlug="example" />
+
+		<Newsletter />
+	</main>
+</BaseLayout>

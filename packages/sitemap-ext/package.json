@@ -31,19 +31,19 @@
     "test": "echo 'No tests'"
   },
   "dependencies": {
-    "@astrojs/sitemap": "^3.1.4",
+    "@astrojs/sitemap": "catalog:",
     "@inox-tools/aik-route-config": "workspace:^",
-    "astro-integration-kit": "^0.14.0",
-    "sitemap": "^8.0.0"
+    "astro-integration-kit": "catalog:",
+    "sitemap": "catalog:"
   },
   "devDependencies": {
-    "@types/node": "^20.14.10",
-    "astro": "^4.11.5",
-    "tsup": "^8.1.0",
-    "typescript": "^5.5.3",
-    "vite": "^5.3.3"
+    "@types/node": "catalog:",
+    "astro": "catalog:",
+    "tsup": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:"
   },
   "peerDependencies": {
-    "astro": "^4.3.5"
+    "astro": "catalog:min"
   }
 }

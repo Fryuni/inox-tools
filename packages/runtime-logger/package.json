@@ -29,22 +29,22 @@
     "test": "echo 'No tests'"
   },
   "dependencies": {
-    "astro-integration-kit": "^0.14",
+    "@inox-tools/modular-station": "workspace:^",
     "@inox-tools/utils": "workspace:^",
-    "@inox-tools/modular-station": "workspace:^"
+    "astro-integration-kit": "catalog:"
   },
   "devDependencies": {
-    "@types/node": "^20",
-    "@vitest/coverage-v8": "^1",
-    "@vitest/ui": "^1",
-    "jest-extended": "^4",
-    "astro": "^4",
-    "tsup": "^8",
-    "typescript": "^5",
-    "vite": "^5",
-    "vitest": "^1"
+    "@types/node": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "@vitest/ui": "catalog:",
+    "astro": "catalog:",
+    "jest-extended": "catalog:",
+    "tsup": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
   },
   "peerDependencies": {
-    "astro": "^4"
+    "astro": "catalog:min"
   }
 }

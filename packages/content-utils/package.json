@@ -36,18 +36,18 @@
   "dependencies": {
     "@inox-tools/modular-station": "workspace:^",
     "@inox-tools/utils": "workspace:^",
-    "astro-integration-kit": "^0.14.0",
-    "estree-walker": "^3.0.3",
-    "magic-string": "^0.30.10"
+    "astro-integration-kit": "catalog:",
+    "estree-walker": "catalog:",
+    "magic-string": "catalog:"
   },
   "devDependencies": {
-    "@types/node": "^20.14.10",
-    "astro": "^4.11.5",
-    "tsup": "^8.1.0",
-    "typescript": "^5.5.3",
-    "vite": "^5.3.3"
+    "@types/node": "catalog:",
+    "astro": "catalog:",
+    "tsup": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:"
   },
   "peerDependencies": {
-    "astro": "^4"
+    "astro": "catalog:min"
   }
 }

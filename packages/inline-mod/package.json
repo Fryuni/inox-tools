@@ -33,21 +33,21 @@
   },
   "dependencies": {
     "@inox-tools/utils": "workspace:^",
-    "debug": "^4.3.4",
-    "typescript": "^5.4.5"
+    "debug": "catalog:",
+    "typescript": "catalog:"
   },
   "devDependencies": {
-    "@faker-js/faker": "^8.4.1",
-    "@types/debug": "^4.1.12",
-    "@vitest/coverage-v8": "^2.0.0",
-    "@vitest/ui": "^2.0.0",
-    "jest-extended": "^4.0.2",
-    "tsup": "^8.1.0",
-    "upath": "^2.0.1",
-    "vitest": "^2.0.0"
+    "@faker-js/faker": "catalog:",
+    "@types/debug": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "@vitest/ui": "catalog:",
+    "jest-extended": "catalog:",
+    "tsup": "catalog:",
+    "upath": "catalog:",
+    "vitest": "catalog:"
   },
   "peerDependencies": {
-    "vite": "^4 || ^5"
+    "vite": "catalog:min"
   },
   "peerDependenciesMeta": {
     "vite": {

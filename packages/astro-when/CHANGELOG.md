@@ -1,5 +1,11 @@
 # @inox-tools/astro-when
 
+## 0.1.4
+
+### Patch Changes
+
+- f4c2ddb: Migrate to pnpm catalogs for consistency across packages
+
 ## 0.1.3
 
 ### Patch Changes

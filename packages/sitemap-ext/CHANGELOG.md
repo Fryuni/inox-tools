@@ -1,5 +1,13 @@
 # @inox-tools/sitemap-ext
 
+## 0.2.15
+
+### Patch Changes
+
+- f4c2ddb: Migrate to pnpm catalogs for consistency across packages
+- Updated dependencies [f4c2ddb]
+  - @inox-tools/aik-route-config@0.6.2
+
 ## 0.2.14
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @inox-tools/aik-mod
 
+## 0.7.2
+
+### Patch Changes
+
+- f4c2ddb: Migrate to pnpm catalogs for consistency across packages
+- Updated dependencies [f4c2ddb]
+  - @inox-tools/inline-mod@1.4.4
+
 ## 0.7.1
 
 ### Patch Changes

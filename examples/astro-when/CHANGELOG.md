@@ -1,5 +1,12 @@
 # @examples/astro-when
 
+## 0.0.6
+
+### Patch Changes
+
+- Updated dependencies [f4c2ddb]
+  - @inox-tools/astro-when@0.1.4
+
 ## 0.0.5
 
 ### Patch Changes

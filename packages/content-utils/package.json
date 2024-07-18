@@ -1,6 +1,6 @@
 {
   "name": "@inox-tools/content-utils",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "Utilities to work with content collections on an Astro project from an integration or library.",
   "keywords": [
     "lifecycle",

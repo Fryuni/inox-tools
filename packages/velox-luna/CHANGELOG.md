@@ -1,5 +1,11 @@
 # @inox-tools/velox-luna
 
+## 0.3.2
+
+### Patch Changes
+
+- f4c2ddb: Migrate to pnpm catalogs for consistency across packages
+
 ## 0.3.1
 
 ### Patch Changes

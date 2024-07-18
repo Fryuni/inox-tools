@@ -1,6 +1,6 @@
 {
   "name": "@inox-tools/custom-routing",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Define custom routing instead of Astro's default file-based routing.",
   "keywords": [
     "astro-integration",

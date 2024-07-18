@@ -1,5 +1,12 @@
 # @inox-tools/utils
 
+## 0.1.3
+
+### Patch Changes
+
+- b4d7a16: Fixes `Once` utility and add support for async callbacks
+- f4c2ddb: Migrate to pnpm catalogs for consistency across packages
+
 ## 0.1.2
 
 ### Patch Changes

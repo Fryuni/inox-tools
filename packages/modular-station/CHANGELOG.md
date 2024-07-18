@@ -1,5 +1,14 @@
 # @inox-tools/modular-station
 
+## 0.2.3
+
+### Patch Changes
+
+- f4c2ddb: Migrate to pnpm catalogs for consistency across packages
+- Updated dependencies [b4d7a16]
+- Updated dependencies [f4c2ddb]
+  - @inox-tools/utils@0.1.3
+
 ## 0.2.2
 
 ### Patch Changes

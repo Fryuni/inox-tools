@@ -2,6 +2,9 @@
 
 set -exo pipefail
 
+PROJECT_ROOT=$(git rev-parse --show-toplevel)
+cd "$PROJECT_ROOT"
+
 corepack use pnpm@latest
 
 # Upgrade all prod dependencies
@@ -14,5 +17,5 @@ git restore packages
 pnpm upgrade -rLD
 pnpm dedupe
 
-git add '**/package.json' package.json pnpm-lock.yaml
+git add '**/package.json' package.json pnpm-lock.yaml pnpm-workspace.yaml
 git commit -m "chore: Upgrade dependencies"

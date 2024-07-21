@@ -11,11 +11,11 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/check": "^0.8.1",
+    "@astrojs/check": "^0.8.2",
     "@inox-tools/content-utils": "workspace:^",
     "@inox-tools/runtime-logger": "workspace:^",
-    "astro": "^4.11.5",
-    "astro-integration-kit": "^0.14.0",
+    "astro": "^4.12.2",
+    "astro-integration-kit": "^0.15.0",
     "typescript": "^5.5.3"
   }
 }

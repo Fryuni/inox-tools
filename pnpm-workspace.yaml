@@ -15,7 +15,7 @@ catalog:
   magic-string: ^0.30.10
   recast: ^0.23.7
   upath: ^2.0.1
-  tsup: ^8.1.0
+  tsup: 8.1.0
   typescript: ^5.5.3
   vite: ^5.3.3
   vitest: ^2.0.2

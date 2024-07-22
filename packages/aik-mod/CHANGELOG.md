@@ -1,5 +1,16 @@
 # @inox-tools/aik-mod
 
+## 0.8.0
+
+### Minor Changes
+
+- 0f6cde2: Bump Astro version to 4.12
+
+### Patch Changes
+
+- Updated dependencies [0f6cde2]
+  - @inox-tools/inline-mod@1.5.0
+
 ## 0.7.2
 
 ### Patch Changes

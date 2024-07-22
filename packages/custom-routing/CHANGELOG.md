@@ -1,5 +1,11 @@
 # @inox-tools/inline-mod
 
+## 0.4.0
+
+### Minor Changes
+
+- 0f6cde2: Bump Astro version to 4.12
+
 ## 0.3.3
 
 ### Patch Changes

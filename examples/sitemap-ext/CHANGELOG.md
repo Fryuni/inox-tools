@@ -1,5 +1,12 @@
 # @example/sitemap-ext
 
+## 0.1.18
+
+### Patch Changes
+
+- Updated dependencies [0f6cde2]
+  - @inox-tools/sitemap-ext@0.3.0
+
 ## 0.1.17
 
 ### Patch Changes

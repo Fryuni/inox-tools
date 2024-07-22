@@ -1,5 +1,11 @@
 # @inox-tools/astro-when
 
+## 0.2.0
+
+### Minor Changes
+
+- 0f6cde2: Bump Astro version to 4.12
+
 ## 0.1.4
 
 ### Patch Changes

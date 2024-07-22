@@ -1,5 +1,16 @@
 # @inox-tools/content-utils
 
+## 0.6.0
+
+### Minor Changes
+
+- 0f6cde2: Bump Astro version to 4.12
+
+### Patch Changes
+
+- Updated dependencies [0f6cde2]
+  - @inox-tools/modular-station@0.3.0
+
 ## 0.5.3
 
 ### Patch Changes

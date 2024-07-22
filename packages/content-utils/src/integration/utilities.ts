@@ -1,6 +1,7 @@
-import { defineUtility, type HookParameters } from 'astro-integration-kit';
+import { defineUtility } from 'astro-integration-kit';
 import type { SeedCollectionsOptions } from './seedCollections.js';
 import { type InjectCollectionOptions, integration } from './index.js';
+import type { HookParameters } from 'astro';
 
 /**
  * Inject a content collection definition alongside the project.

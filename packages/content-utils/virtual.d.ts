@@ -39,8 +39,8 @@ declare module '@it-astro:content/git' {
 	export function getOldestCommitDate(...args: EntryKey): Promise<Date>;
 }
 
-declare namespace AstroIntegrationKit {
-	export interface ExtraHooks {
+declare namespace Astro {
+	export interface IntegrationHooks {
 		'@it/content:git:resolved'?: (params: {
 			logger: import('astro').AstroIntegrationLogger;
 			age: 'oldest' | 'latest';

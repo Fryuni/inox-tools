@@ -8,6 +8,8 @@
     "module": "Node16",
     "esModuleInterop": false,
     "skipLibCheck": true,
+    "declarationMap": true,
+    "allowImportingTsExtensions": false,
     "verbatimModuleSyntax": true,
     "stripInternal": true
   }

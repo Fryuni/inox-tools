@@ -1,15 +1,10 @@
 import { withApi } from '@inox-tools/modular-station';
-import {
-	addVitePlugin,
-	defineIntegration,
-	defineUtility,
-	type HookParameters,
-} from 'astro-integration-kit';
+import { addVitePlugin, defineIntegration, defineUtility } from 'astro-integration-kit';
 import { z } from 'astro/zod';
 import { buildLoggerPlugin } from './buildLoggerPlugin.js';
 import { loggerInternalsPlugin } from './internalPlugin.js';
 import { devLoggerPlugin } from './devLoggerPlugin.js';
-import type { AstroIntegrationLogger } from 'astro';
+import type { AstroIntegrationLogger, HookParameters } from 'astro';
 import { fileURLToPath } from 'url';
 
 const schema = z

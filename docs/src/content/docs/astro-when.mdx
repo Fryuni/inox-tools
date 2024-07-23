@@ -14,18 +14,7 @@ This integration is needed during build time only, so you can install it as a de
 
 import { PackageManagers } from 'starlight-package-managers';
 
-<PackageManagers pkg="@inox-tools/astro-when" />
-
-Then add it to your Astro config:
-
-```ts ins={2,5}
-// astro.config.mjs
-import astroWhen from '@inox-tools/astro-when';
-
-export default defineConfig({
-	integrations: [astroWhen()],
-});
-```
+<PackageManagers type="exec" pkg="astro" args="add @inox-tools/astro-when" />
 
 ## How to use
 

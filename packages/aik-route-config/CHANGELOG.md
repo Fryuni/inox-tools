@@ -1,5 +1,11 @@
 # @inox-tools/aik-route-config
 
+## 0.7.0
+
+### Minor Changes
+
+- 03369f7: Bump Astro version to 4.12
+
 ## 0.6.2
 
 ### Patch Changes

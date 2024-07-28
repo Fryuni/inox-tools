@@ -1,0 +1,45 @@
+---
+import warpInfo from '@it-astro:star-warp:config';
+
+export const prerender = true;
+---
+
+<script is:inline define:vars={{ warpInfo }}>
+	const search = new URLSearchParams(window.location.search);
+	const query = search.get('q');
+
+	console.log({ warpInfo, search, query });
+
+	function navigate(page) {
+		const nextUrl = new URL(page, window.location.href);
+		nextUrl.search = window.location.search;
+		nextUrl.searchParams.delete('q');
+
+		if (warpInfo.trailingSlash === 'never') {
+			nextUrl.pathname = nextUrl.pathname.replace(/\/+$/, '');
+		}
+
+		window.location.href = nextUrl.toString();
+	}
+
+	async function searchWarp() {
+		const pagefind = await import('/pagefind/pagefind.js');
+
+		const {
+			results: [searchResult],
+		} = await pagefind.search(query);
+		if (!searchResult) {
+			return navigate('/404');
+		}
+
+		const { url: searchTarget } = await searchResult.data();
+
+		navigate(searchTarget);
+	}
+
+	if (warpInfo.env === 'prod') {
+		searchWarp();
+	} else {
+		navigate('/');
+	}
+</script>

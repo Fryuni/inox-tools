@@ -1,4 +1,5 @@
 import { defineConfig } from 'astro/config';
+import starWarp from '@inox-tools/star-warp';
 import starlight from '@astrojs/starlight';
 import starlightLinksValidator from 'starlight-links-validator';
 
@@ -77,6 +78,7 @@ export default defineConfig({
 				}),
 			],
 		}),
+		starWarp(),
 	],
 	redirects: {
 		'/content-utils': '/content-utils/integration',

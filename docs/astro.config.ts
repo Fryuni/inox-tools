@@ -5,7 +5,7 @@ import starlightLinksValidator from 'starlight-links-validator';
 const SITE =
 	process.env.VERCEL_ENV !== 'production' && process.env.VERCEL_URL
 		? `https://${process.env.VERCEL_URL}`
-		: 'https://inox-tools.vercel.app';
+		: 'https://inox-tools.fryuni.dev';
 
 // https://astro.build/config
 export default defineConfig({

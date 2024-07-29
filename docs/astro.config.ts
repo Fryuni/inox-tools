@@ -76,9 +76,9 @@ export default defineConfig({
 				starlightLinksValidator({
 					errorOnRelativeLinks: true,
 				}),
+				starWarp(),
 			],
 		}),
-		starWarp(),
 	],
 	redirects: {
 		'/content-utils': '/content-utils/integration',

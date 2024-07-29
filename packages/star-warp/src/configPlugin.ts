@@ -10,8 +10,7 @@ const RESOLVED_MODULE_ID = '\x00@it-astro:star-warp:config';
 
 export function makePlugin(config: Config): Plugin {
 	return {
-		name: '@inox-tools/star-warp/plugin',
-		// enforce: 'post',
+		name: '@inox-tools/star-warp/configPlugin',
 		resolveId(id) {
 			if (id === MODULE_ID) return RESOLVED_MODULE_ID;
 		},

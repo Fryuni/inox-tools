@@ -1,10 +1,11 @@
 {
   "name": "@inox-tools/star-warp",
   "version": "0.0.0",
-  "description": "Starlight warp-drive search",
+  "description": "Warp-drive search for Astro sites using Pagefind",
   "keywords": [
     "astro-integration",
     "withastro",
+    "starlight",
     "astro"
   ],
   "license": "MIT",
@@ -15,12 +16,12 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./components/*.astro": "./components/*.astro"
+    "./routes/*": "./routes/*"
   },
   "files": [
     "dist",
     "src",
-    "components",
+    "routes",
     "virtual.d.ts"
   ],
   "scripts": {
@@ -31,21 +32,22 @@
     "test:dev": "vitest --coverage.enabled=true"
   },
   "dependencies": {
-    "astro-integration-kit": "^0.14",
+    "astro-integration-kit": "catalog:",
     "@inox-tools/utils": "workspace:^"
   },
   "devDependencies": {
-    "@types/node": "^20",
-    "@vitest/coverage-v8": "^1",
-    "@vitest/ui": "^1",
-    "jest-extended": "^4",
-    "astro": "^4",
-    "tsup": "^8",
-    "typescript": "^5",
-    "vite": "^5",
-    "vitest": "^1"
+    "@types/node": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "@vitest/ui": "catalog:",
+    "jest-extended": "catalog:",
+    "astro": "catalog:",
+    "tsup": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
   },
   "peerDependencies": {
+    "@astrojs/starlight": ">=0.16 <0.26",
     "astro": "^4"
   }
 }

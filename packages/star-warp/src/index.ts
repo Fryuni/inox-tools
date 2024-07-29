@@ -1,18 +1,59 @@
 import { defineIntegration, addVitePlugin } from 'astro-integration-kit';
 import { z } from 'astro/zod';
-import { makePlugin } from './plugin.js';
+import { makePlugin } from './configPlugin.js';
+import type { AstroIntegration } from 'astro';
+import { makeOpenSearchPlugin } from './openSearchPlugin.js';
 
 export default defineIntegration({
 	name: '@inox-tools/star-warp',
-	optionsSchema: z.never().optional(),
-	setup() {
+	optionsSchema: z
+		.object({
+			pattern: z.string().default('warp'),
+			openSearch: z
+				.object({
+					enabled: z.boolean().optional(),
+					title: z.string().optional(),
+					description: z.string().optional(),
+				})
+				.default({}),
+		})
+		.default({}),
+	setup({ name, options }) {
 		const config = {
 			env: 'dev',
 			trailingSlash: 'ignore',
 		};
 
-		return {
+		const comboIntegration = {
+			name,
 			hooks: {
+				setup: (params: any) => {
+					const { addIntegration, astroConfig, updateConfig, config } = params;
+
+					if (astroConfig.integrations.some((i: AstroIntegration) => i.name === name)) return;
+
+					options.openSearch.enabled ??= true;
+					options.openSearch.title ??= config.title;
+					options.openSearch.description ??= `Search ${config.title}`;
+					addIntegration(comboIntegration);
+
+					if (options.openSearch.enabled) {
+						updateConfig({
+							head: [
+								...(config.head ?? []),
+								{
+									tag: 'link',
+									attrs: {
+										rel: 'search',
+										type: 'application/opensearchdescription+xml',
+										title: `Search ${config.title}`,
+										href: `/${options.pattern}.xml`,
+									},
+								},
+							],
+						});
+					}
+				},
 				'astro:config:setup': (params) => {
 					config.env = params.command === 'dev' ? 'dev' : 'prod';
 					config.trailingSlash = params.config.trailingSlash;
@@ -23,15 +64,37 @@ export default defineIntegration({
 					});
 
 					params.injectRoute({
-						pattern: 'warp',
-						entrypoint: '@inox-tools/star-warp/components/warp.astro',
+						pattern: options.pattern,
+						entrypoint: '@inox-tools/star-warp/routes/client.astro',
 						prerender: true,
 					});
+
+					if (options.openSearch.enabled) {
+						const baseUrl = new URL(params.config.base, params.config.site);
+						const url = new URL(`${options.pattern}`, baseUrl);
+
+						addVitePlugin(params, {
+							plugin: makeOpenSearchPlugin({
+								siteName: options.openSearch.title ?? params.config.site ?? 'Astro',
+								description: options.openSearch.description ?? `Search Astro site`,
+								searchURL: url.toString(),
+							}),
+							warnDuplicated: true,
+						});
+
+						params.injectRoute({
+							pattern: `${options.pattern}.xml`,
+							entrypoint: '@inox-tools/star-warp/routes/openSearch.ts',
+							prerender: true,
+						});
+					}
 				},
 				'astro:config:done': (params) => {
 					config.trailingSlash = params.config.trailingSlash;
 				},
 			},
-		};
+		} satisfies AstroIntegration;
+
+		return comboIntegration;
 	},
 });

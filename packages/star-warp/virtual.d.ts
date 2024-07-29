@@ -6,3 +6,13 @@ declare module '@it-astro:star-warp:config' {
 
 	export default config;
 }
+
+declare module '@it-astro:star-warp:openSearch' {
+	const config: {
+		siteName: string;
+		description: string;
+		searchURL: string;
+	};
+
+	export default config;
+}

@@ -24,7 +24,7 @@ This works completely statically, you don't need SSR to use this integration.
 
 ## Using with Starlight
 
-This integration is also a Starlight plugin! Using it as such enables better defaults inferred from your Starlight config!
+This integration is also a Starlight plugin! Using it as such enables better defaults inferred from your Starlight config.
 
 Just move it from the `integrations` property on your `astro.config.mjs` to the `plugins` property in side the Starlight integration:
 
@@ -43,6 +43,10 @@ export default defineConfig({
 ```
 
 ## OpenSearch
+
+:::tip
+When using this integration as a Starlight plugin, OpenSearch is enabled and configured automatically by default.
+:::
 
 You can enable the generation of an OpenSearch Description with the following configuration:
 
@@ -74,10 +78,6 @@ With OpenSearch enabled, add the following to the `<head>` block of your pages:
 ```
 
 The `href` property is defined by your project's [`base`](https://docs.astro.build/en/reference/configuration-reference/#base) and OpenSearch [`path` parameter](#path). The `title` property can be anything you want, it will be used by the browser when displaying the search bar.
-
-:::tip
-The tag is added automatically to Starlight pages when used as a Starlight plugin.
-:::
 
 ### Using on browsers
 

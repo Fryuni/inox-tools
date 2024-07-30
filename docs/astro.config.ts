@@ -1,4 +1,5 @@
 import { defineConfig } from 'astro/config';
+import starWarp from '@inox-tools/star-warp';
 import starlight from '@astrojs/starlight';
 import starlightLinksValidator from 'starlight-links-validator';
 
@@ -44,6 +45,10 @@ export default defineConfig({
 						{
 							label: 'Runtime Logger',
 							link: '/runtime-logger',
+						},
+						{
+							label: 'Star Warp',
+							link: '/star-warp',
 							badge: {
 								text: 'NEW',
 								variant: 'success',
@@ -75,6 +80,7 @@ export default defineConfig({
 				starlightLinksValidator({
 					errorOnRelativeLinks: true,
 				}),
+				starWarp(),
 			],
 		}),
 	],

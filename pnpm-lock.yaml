@@ -126,6 +126,9 @@ importers:
       '@astrojs/starlight':
         specifier: 'catalog:'
         version: 0.25.1(astro@4.12.2(@types/node@20.14.11)(typescript@5.5.4))
+      '@inox-tools/star-warp':
+        specifier: workspace:^
+        version: link:../packages/star-warp
       '@inox-tools/utils':
         specifier: workspace:^
         version: link:../packages/utils
@@ -573,6 +576,46 @@ importers:
       vite:
         specifier: 'catalog:'
         version: 5.3.4(@types/node@20.14.11)
+
+  packages/star-warp:
+    dependencies:
+      '@astrojs/starlight':
+        specifier: '>=0.16 <0.26'
+        version: 0.25.1(astro@4.12.2(@types/node@20.14.11)(typescript@5.5.4))
+      '@inox-tools/utils':
+        specifier: workspace:^
+        version: link:../utils
+      astro-integration-kit:
+        specifier: 'catalog:'
+        version: 0.16.0(astro@4.12.2(@types/node@20.14.11)(typescript@5.5.4))
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 20.14.11
+      '@vitest/coverage-v8':
+        specifier: 'catalog:'
+        version: 2.0.4(vitest@2.0.4(@types/node@20.14.11)(@vitest/ui@2.0.4))
+      '@vitest/ui':
+        specifier: 'catalog:'
+        version: 2.0.4(vitest@2.0.4)
+      astro:
+        specifier: 'catalog:'
+        version: 4.12.2(@types/node@20.14.11)(typescript@5.5.4)
+      jest-extended:
+        specifier: 'catalog:'
+        version: 4.0.2
+      tsup:
+        specifier: 'catalog:'
+        version: 8.2.2(jiti@1.21.6)(postcss@8.4.39)(typescript@5.5.4)(yaml@2.4.5)
+      typescript:
+        specifier: 'catalog:'
+        version: 5.5.4
+      vite:
+        specifier: 'catalog:'
+        version: 5.3.4(@types/node@20.14.11)
+      vitest:
+        specifier: 'catalog:'
+        version: 2.0.4(@types/node@20.14.11)(@vitest/ui@2.0.4)
 
   packages/utils:
     devDependencies:

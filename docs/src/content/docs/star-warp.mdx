@@ -40,6 +40,73 @@ export default defineConfig({
 });
 ```
 
+## OpenSearch
+
+You can enable the generation of an OpenSearch Description with the following configuration:
+
+```ts title="astro.config.mjs" ins={6-8}
+import starWarp from '@inox-tools/star-warp';
+
+export default defineConfig({
+	integrations: [
+		starWarp({
+			openSearch: {
+				enabled: true,
+			},
+		}),
+	],
+});
+```
+
+With OpenSearch enabled, add the following to the `<head>` block of your pages:
+
+```html ins={2-7}
+<head>
+	<link
+		rel="search"
+		type="application/opensearchdescription+xml"
+		href="/warp.xml"
+		title="Astro Site"
+	/>
+</head>
+```
+
+The `href` property is defined by your project's [`base`](https://docs.astro.build/en/reference/configuration-reference/#base) and OpenSearch [`path` parameter](#path). The `title` property can be anything you want, it will be used by the browser when displaying the search bar.
+
+:::tip
+The tag is added automatically to Starlight pages when used as a Starlight plugin.
+:::
+
+### Using on browsers
+
+#### Chrome
+
+Chrome will automatically load the OpenSearch Description once you navigate to any page with the link tag, but it will keep it deactivated. To enable it:
+
+import { Steps } from '@astrojs/starlight/components';
+
+<Steps>
+
+1. Go to the [Chrome Settings Search Engine](chrome://settings/searchEngines) page.
+
+2. Search for your site under "Inactive shortcuts".
+
+3. Click on the "Activate" button.
+
+</Steps>
+
+![chrome](../../img/site-warp-chrome.png)
+
+Once activated, typing anything after the domain will switch the Omnibox to searching on your website:
+
+![chrome-omnibox](../../img/site-warp-chrome-2.png)
+
+#### Safari
+
+Safari will automatically load the OpenSearch Description once you navigate to any page with the link tag. From then on, you'll see an option to search the site when typing anything after the site:
+
+![safari](../../img/site-warp-safari.png)
+
 ## Configuration
 
 ### `path`

@@ -1,0 +1,77 @@
+---
+title: Star Warp
+description: Warp-drive search for Astro sites using Pagefind
+packageName: '@inox-tools/star-warp'
+---
+
+This integration adds a quick "jump to first search result" URL to any Astro site using Pagefind. With that, your users can search within your website from their browsers search bar directly.
+
+## Installing the integration
+
+import { PackageManagers } from 'starlight-package-managers';
+
+<PackageManagers type="exec" pkg="astro" args="add @inox-tools/star-warp" />
+
+## How to use
+
+With the integration installed, navigating to `<your site>/warp?q=your search term` will navigate to the first result of that search.
+
+For example, go to https://inox-tools.fryuni.dev/warp?q=logger and see where you land :)
+
+This works completely statically, you don't need SSR to use this integration.
+
+## Using with Starlight
+
+This integration is also a Starlight plugin to get better defaults from your Starlight site!
+
+Just move it from the `integrations` property on your `astro.config.mjs` to the `plugins` property in side the Starlight integration:
+
+```ts title="astro.config.mjs" del={9} ins={7}
+import starlight from '@astrojs/starlight';
+import starWarp from '@inox-tools/star-warp';
+
+export default defineConfig({
+	integrations: [
+		starlight({
+			plugins: [starWarp()],
+		}),
+		starWarp(),
+	],
+});
+```
+
+## Configuration
+
+### `path`
+
+**Type:** `string`  
+**Default:** `/warp`
+
+The path of the warp route.
+
+### `openSearch.enabled`
+
+**Type:** `boolean`
+
+Whether an OpenSearch Description should be generated on the configured [`path`](#path) followed by `.xml`.
+
+Defaults to `false` when used as an Astro Integration and `true` when used as a Starlight plugin.
+
+### `openSearch.title`
+
+**Type:** `string`
+
+The OpenSearch Description's site search title.
+
+Defaults to the Starlight title when used as a Starlight plugin and the string "Astro Site" when used as an Astro Integration.
+
+### `openSearch.description`
+
+**Type:** `string`  
+**Default:** `Search <title>` where `<title>` is the [OpenSearch Description's site search title](#opensearchtitle).
+
+The OpenSearch Description's site search description.
+
+## License
+
+Star Warp is available under the MIT license.

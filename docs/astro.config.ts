@@ -45,6 +45,10 @@ export default defineConfig({
 						{
 							label: 'Runtime Logger',
 							link: '/runtime-logger',
+						},
+						{
+							label: 'Star Warp',
+							link: '/star-warp',
 							badge: {
 								text: 'NEW',
 								variant: 'success',

@@ -8,7 +8,7 @@ export default defineIntegration({
 	name: '@inox-tools/star-warp',
 	optionsSchema: z
 		.object({
-			pattern: z.string().default('warp'),
+			path: z.string().default('warp'),
 			openSearch: z
 				.object({
 					enabled: z.boolean().optional(),
@@ -23,6 +23,8 @@ export default defineIntegration({
 			env: 'dev',
 			trailingSlash: 'ignore',
 		};
+
+		const pathPattern = options.path.replace(/(^\/+|\/+$)/g, '');
 
 		const comboIntegration = {
 			name,
@@ -47,7 +49,7 @@ export default defineIntegration({
 										rel: 'search',
 										type: 'application/opensearchdescription+xml',
 										title: `Search ${config.title}`,
-										href: `/${options.pattern}.xml`,
+										href: `/${pathPattern}.xml`,
 									},
 								},
 							],
@@ -64,26 +66,28 @@ export default defineIntegration({
 					});
 
 					params.injectRoute({
-						pattern: options.pattern,
+						pattern: pathPattern,
 						entrypoint: '@inox-tools/star-warp/routes/client.astro',
 						prerender: true,
 					});
 
 					if (options.openSearch.enabled) {
 						const baseUrl = new URL(params.config.base, params.config.site);
-						const url = new URL(`${options.pattern}`, baseUrl);
+						const url = new URL(pathPattern, baseUrl);
+
+						const siteName = options.openSearch.title ?? params.config.site ?? 'Astro Site';
 
 						addVitePlugin(params, {
 							plugin: makeOpenSearchPlugin({
-								siteName: options.openSearch.title ?? params.config.site ?? 'Astro',
-								description: options.openSearch.description ?? `Search Astro site`,
+								siteName,
+								description: options.openSearch.description ?? `Search ${siteName}`,
 								searchURL: url.toString(),
 							}),
 							warnDuplicated: true,
 						});
 
 						params.injectRoute({
-							pattern: `${options.pattern}.xml`,
+							pattern: `${pathPattern}.xml`,
 							entrypoint: '@inox-tools/star-warp/routes/openSearch.ts',
 							prerender: true,
 						});

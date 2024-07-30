@@ -8,8 +8,6 @@ export const prerender = true;
 	const search = new URLSearchParams(window.location.search);
 	const query = search.get('q');
 
-	console.log({ warpInfo, search, query });
-
 	function navigate(page) {
 		const nextUrl = new URL(page, window.location.href);
 		nextUrl.search = window.location.search;

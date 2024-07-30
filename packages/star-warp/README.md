@@ -4,22 +4,12 @@
 
 # Star Warp
 
-Starlight warp-drive search
+Pagefind warp-drive search for Astro sites.
+
+See [docs](https://inox-tools.fryuni.dev/star-warp)
 
 ## Install
 
 ```js
-npm i @inox-tools/star-warp
-```
-
-Add the integration to your `astro.config.mjs`:
-
-```js
-// astro.config.mjs
-import { defineConfig } from 'astro';
-import starWarp from '@inox-tools/star-warp';
-
-export default defineConfig({
-  integrations: [starWarp({})],
-});
+astro add @inox-tools/star-warp
 ```

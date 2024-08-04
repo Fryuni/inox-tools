@@ -1,5 +1,11 @@
 # @inox-tools/star-warp
 
+## 0.1.1
+
+### Patch Changes
+
+- 255d6ba: Relax peer dependency restriction on Astro
+
 ## 0.1.0
 
 ### Minor Changes

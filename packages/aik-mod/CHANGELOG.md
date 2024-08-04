@@ -1,5 +1,11 @@
 # @inox-tools/aik-mod
 
+## 0.8.1
+
+### Patch Changes
+
+- 255d6ba: Relax peer dependency restriction on Astro
+
 ## 0.8.0
 
 ### Minor Changes

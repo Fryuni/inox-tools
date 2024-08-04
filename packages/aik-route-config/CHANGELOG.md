@@ -1,5 +1,11 @@
 # @inox-tools/aik-route-config
 
+## 0.7.1
+
+### Patch Changes
+
+- 255d6ba: Relax peer dependency restriction on Astro
+
 ## 0.7.0
 
 ### Minor Changes

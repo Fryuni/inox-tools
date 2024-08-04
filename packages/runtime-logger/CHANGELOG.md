@@ -1,5 +1,11 @@
 # @inox-tools/runtime-logger
 
+## 0.3.1
+
+### Patch Changes
+
+- 255d6ba: Relax peer dependency restriction on Astro
+
 ## 0.3.0
 
 ### Minor Changes

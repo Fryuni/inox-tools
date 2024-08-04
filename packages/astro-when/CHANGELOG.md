@@ -1,5 +1,11 @@
 # @inox-tools/astro-when
 
+## 0.2.1
+
+### Patch Changes
+
+- 255d6ba: Relax peer dependency restriction on Astro
+
 ## 0.2.0
 
 ### Minor Changes

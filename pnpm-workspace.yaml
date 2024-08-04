@@ -23,6 +23,9 @@ catalog:
   '@vitest/coverage-v8': ^2.0.4
   jest-extended: ^4.0.2
 catalogs:
+  lax:
+    astro: ^4
+    '@astrojs/starlight': '>=0.16 <0.26'
   min:
     astro: ^4.12.2
     astro-integration-kit: ~0.16

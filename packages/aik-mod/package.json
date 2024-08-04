@@ -39,7 +39,7 @@
     "vite": "catalog:"
   },
   "peerDependencies": {
-    "astro": "catalog:min",
+    "astro": "catalog:lax",
     "astro-integration-kit": "catalog:min"
   }
 }

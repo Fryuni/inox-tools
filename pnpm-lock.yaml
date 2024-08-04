@@ -75,10 +75,14 @@ catalogs:
     vitest:
       specifier: ^2.0.4
       version: 2.0.4
-  min:
+  lax:
+    '@astrojs/starlight':
+      specifier: '>=0.16 <0.26'
+      version: 0.25.1
     astro:
-      specifier: ^4.12.2
+      specifier: ^4
       version: 4.12.2
+  min:
     astro-integration-kit:
       specifier: ~0.16
       version: 0.16.0
@@ -336,7 +340,7 @@ importers:
         specifier: workspace:^
         version: link:../utils
       astro:
-        specifier: catalog:min
+        specifier: catalog:lax
         version: 4.12.2(@types/node@20.14.11)(typescript@5.5.4)
       astro-integration-kit:
         specifier: catalog:min
@@ -580,7 +584,7 @@ importers:
   packages/star-warp:
     dependencies:
       '@astrojs/starlight':
-        specifier: '>=0.16 <0.26'
+        specifier: catalog:lax
         version: 0.25.1(astro@4.12.2(@types/node@20.14.11)(typescript@5.5.4))
       '@inox-tools/utils':
         specifier: workspace:^

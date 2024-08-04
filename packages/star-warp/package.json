@@ -47,7 +47,7 @@
     "vitest": "catalog:"
   },
   "peerDependencies": {
-    "@astrojs/starlight": ">=0.16 <0.26",
-    "astro": "^4"
+    "@astrojs/starlight": "catalog:lax",
+    "astro": "catalog:lax"
   }
 }

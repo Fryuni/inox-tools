@@ -1,5 +1,13 @@
 # @inox-tools/sitemap-ext
 
+## 0.3.2
+
+### Patch Changes
+
+- 255d6ba: Relax peer dependency restriction on Astro
+- Updated dependencies [255d6ba]
+  - @inox-tools/aik-route-config@0.7.1
+
 ## 0.3.1
 
 ### Patch Changes

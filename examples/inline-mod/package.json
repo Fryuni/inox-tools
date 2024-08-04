@@ -11,6 +11,6 @@
   "devDependencies": {
     "@inox-tools/inline-mod": "workspace:*",
     "typescript": "^5.5.4",
-    "vite": "^5.3.4"
+    "vite": "^5.3.5"
   }
 }

@@ -1,26 +1,26 @@
 catalog:
-  astro: ^4.12.2
-  astro-integration-kit: ~0.16
-  '@astrojs/compiler': ^2.9.2
+  astro: ^4.13.1
+  astro-integration-kit: ~0.16.0
+  '@astrojs/compiler': ^2.10.1
   '@astrojs/sitemap': ^3.1.6
-  '@astrojs/starlight': ^0.25.1
+  '@astrojs/starlight': ^0.25.3
   '@types/debug': ^4.1.12
-  '@types/node': ^20.14.11
+  '@types/node': ^22.1.0
   '@faker-js/faker': ^8.4.1
   '@lunariajs/core': ^0.1.1
-  debug: ^4.3.5
+  debug: ^4.3.6
   sitemap: ^8.0.0
   ast-types: ^0.14.2
   estree-walker: ^3.0.3
-  magic-string: ^0.30.10
+  magic-string: ^0.30.11
   recast: ^0.23.9
   upath: ^2.0.1
-  tsup: 8.2.2
+  tsup: 8.2.4
   typescript: ^5.5.4
-  vite: ^5.3.4
-  vitest: ^2.0.4
-  '@vitest/ui': ^2.0.4
-  '@vitest/coverage-v8': ^2.0.4
+  vite: ^5.3.5
+  vitest: ^2.0.5
+  '@vitest/ui': ^2.0.5
+  '@vitest/coverage-v8': ^2.0.5
   jest-extended: ^4.0.2
 catalogs:
   lax:

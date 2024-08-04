@@ -30,7 +30,7 @@ yq '.catalog' pnpm-workspace.yaml -oj |
   jq '{name:"default",dependencies:.}' \
     >.inox-tools/catalogs/default/package.json
 
-catalogs=$(echo "$CATALOGS" | tr ',' ' ')
+catalogs=$(echo "${CATALOGS:-}" | tr ',' ' ')
 
 for catalog in $catalogs; do
   mkdir -p ".inox-tools/catalogs/$catalog"

@@ -11,10 +11,10 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/check": "^0.8.2",
+    "@astrojs/check": "^0.9.1",
     "@astrojs/node": "^8.3.2",
     "@inox-tools/astro-when": "workspace:^",
-    "astro": "^4.12.2",
+    "astro": "^4.13.1",
     "typescript": "^5.5.4"
   }
 }

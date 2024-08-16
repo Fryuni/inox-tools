@@ -1,0 +1,30 @@
+---
+import { getState } from '@it-astro:state';
+
+export interface Props {
+	name: string;
+}
+
+const { name } = Astro.props;
+const state = getState(name);
+---
+
+<div>
+	<h2>{name}</h2>
+	<h3>Server state</h3>
+	<pre>{JSON.stringify(state, null, 2)}</pre>
+	<h3>Client state</h3>
+	<pre data-state-name={name}></pre>
+</div>
+
+<script>
+	import { getState } from '@it-astro:state';
+
+	const elements = document.querySelectorAll('pre[data-state-name]');
+
+	elements.forEach((element) => {
+		if (!(element instanceof HTMLElement)) return;
+
+		element.textContent = JSON.stringify(getState(element.dataset.stateName!), null, 2);
+	});
+</script>

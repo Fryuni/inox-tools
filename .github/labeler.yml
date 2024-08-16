@@ -29,6 +29,9 @@ pkg/modular-station:
 pkg/sitemap-ext:
 - 'packages/sitemap-ext/**'
 
+pkg/request-state:
+- 'packages/request-state/**'
+
 pkg/content-utils:
 - 'packages/content-utils/**'
 

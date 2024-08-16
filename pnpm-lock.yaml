@@ -45,6 +45,9 @@ catalogs:
     debug:
       specifier: ^4.3.6
       version: 4.3.6
+    devalue:
+      specifier: ^5.0.0
+      version: 5.0.0
     estree-walker:
       specifier: ^3.0.3
       version: 3.0.3
@@ -285,6 +288,24 @@ importers:
         specifier: link:../../packages/inline-mod
         version: link:../../packages/inline-mod
 
+  examples/request-state:
+    dependencies:
+      '@astrojs/check':
+        specifier: ^0.9.1
+        version: 0.9.1(prettier-plugin-astro@0.14.1)(prettier@3.3.3)(typescript@5.5.4)
+      '@astrojs/node':
+        specifier: ^8.3.2
+        version: 8.3.2(astro@4.13.1(@types/node@22.1.0)(typescript@5.5.4))
+      '@inox-tools/request-state':
+        specifier: workspace:^
+        version: link:../../packages/request-state
+      astro:
+        specifier: ^4.13.1
+        version: 4.13.1(@types/node@22.1.0)(typescript@5.5.4)
+      typescript:
+        specifier: ^5.5.4
+        version: 5.5.4
+
   examples/sitemap-ext:
     dependencies:
       '@astrojs/check':
@@ -497,6 +518,46 @@ importers:
       astro:
         specifier: 'catalog:'
         version: 4.13.1(@types/node@22.1.0)(typescript@5.5.4)
+      tsup:
+        specifier: 'catalog:'
+        version: 8.2.4(jiti@1.21.6)(postcss@8.4.40)(typescript@5.5.4)(yaml@2.5.0)
+      typescript:
+        specifier: 'catalog:'
+        version: 5.5.4
+      vite:
+        specifier: 'catalog:'
+        version: 5.3.5(@types/node@22.1.0)
+      vitest:
+        specifier: 'catalog:'
+        version: 2.0.5(@types/node@22.1.0)(@vitest/ui@2.0.5)
+
+  packages/request-state:
+    dependencies:
+      '@inox-tools/utils':
+        specifier: workspace:^
+        version: link:../utils
+      astro-integration-kit:
+        specifier: 'catalog:'
+        version: 0.16.0(astro@4.13.1(@types/node@22.1.0)(typescript@5.5.4))
+      devalue:
+        specifier: 'catalog:'
+        version: 5.0.0
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.1.0
+      '@vitest/coverage-v8':
+        specifier: 'catalog:'
+        version: 2.0.5(vitest@2.0.5(@types/node@22.1.0)(@vitest/ui@2.0.5))
+      '@vitest/ui':
+        specifier: 'catalog:'
+        version: 2.0.5(vitest@2.0.5)
+      astro:
+        specifier: 'catalog:'
+        version: 4.13.1(@types/node@22.1.0)(typescript@5.5.4)
+      jest-extended:
+        specifier: 'catalog:'
+        version: 4.0.2
       tsup:
         specifier: 'catalog:'
         version: 8.2.4(jiti@1.21.6)(postcss@8.4.40)(typescript@5.5.4)(yaml@2.5.0)

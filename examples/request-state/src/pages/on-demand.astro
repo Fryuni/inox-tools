@@ -1,0 +1,28 @@
+---
+import ShowState from '../components/ShowState.astro';
+import { setState } from '@it-astro:state';
+
+export const prerender = false;
+
+setState('renderTime', Date());
+---
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<title>Astro When</title>
+	</head>
+	<body>
+		<h1>Opting out of prerendering</h1>
+		<hr />
+		<p>Other pages:</p>
+		<ul>
+			<li><a href="/">Home</a></li>
+			<li><a href="/prerender/">Opting in to prerendering</a></li>
+		</ul>
+		<hr />
+		<ShowState name="renderTime" />
+	</body>
+</html>

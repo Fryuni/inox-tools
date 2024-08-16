@@ -5,9 +5,16 @@ type State = Map<string, unknown>;
 
 const store = new AsyncLocalStorage<State>();
 
-export const getState = (key: string): unknown | undefined => {
+export const getState = (key: string, valueIfMissing?: unknown): unknown => {
 	const state = store.getStore();
-	return state?.get(key);
+	if (state === undefined) return;
+
+	if (!state.has(key)) {
+		if (valueIfMissing !== undefined) {
+			state.set(key, valueIfMissing);
+		}
+	}
+	return state.get(key);
 };
 
 export const setState = (key: string, value: unknown): void => {

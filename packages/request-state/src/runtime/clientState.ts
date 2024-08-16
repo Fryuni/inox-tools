@@ -31,7 +31,12 @@ const loadState = (): Map<string, unknown> => {
 
 const state = loadState();
 
-export const getState = (key: string): unknown | undefined => {
+export const getState = (key: string, valueIfMissing?: unknown): unknown => {
+	if (!state.has(key)) {
+		if (valueIfMissing !== undefined) {
+			state.set(key, valueIfMissing);
+		}
+	}
 	return state.get(key);
 };
 

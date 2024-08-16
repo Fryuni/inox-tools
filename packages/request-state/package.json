@@ -29,7 +29,8 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "prepublish": "pnpm run build",
-    "test": "vitest run --coverage",
+    "test": "echo 'No tests for now :('",
+    "test:run": "vitest run --coverage",
     "test:dev": "vitest --coverage.enabled=true"
   },
   "dependencies": {

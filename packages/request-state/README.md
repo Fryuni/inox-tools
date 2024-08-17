@@ -83,4 +83,3 @@ Returns the value of the state for the given key, if present. If now, sets the v
 ## License
 
 Astro Request State is available under the MIT license.
-

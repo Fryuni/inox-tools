@@ -1,5 +1,13 @@
 # @examples/astro-when
 
+## 0.0.9
+
+### Patch Changes
+
+- Updated dependencies [56ae2c7]
+- Updated dependencies [47e3f3f]
+  - @inox-tools/request-state@0.1.0
+
 ## 0.0.8
 
 ### Patch Changes

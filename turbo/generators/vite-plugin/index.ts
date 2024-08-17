@@ -42,6 +42,17 @@ export default (plop: PlopTypes.NodePlopAPI, { destBasePath }: PlopTypes.PlopCfg
 				base: `${__dirname}/templates`,
 				verbose: true,
 			},
+			{
+				type: 'modify',
+				path: '{{ turbo.paths.root }}/.github/labeler.yml',
+				pattern: '## PACKAGES',
+				template: `
+## PACKAGES
+
+pkg/{{ dashCase name }}:
+- 'packages/{{ dashCase name }}/**'
+`.trim(),
+			},
 		],
 	});
 };

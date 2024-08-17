@@ -8,6 +8,8 @@ workspace:
 - '*.{js,json}'
 - '.*'
 
+## PACKAGES
+
 pkg/aik-mod:
 - 'packages/aik-mod/**'
 

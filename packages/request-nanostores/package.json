@@ -1,0 +1,55 @@
+{
+  "name": "@inox-tools/request-nanostores",
+  "version": "0.0.0",
+  "description": "Make your Nanostores concurrent safe and shared from server to client",
+  "keywords": [
+    "astro-integration",
+    "withastro",
+    "astro"
+  ],
+  "license": "MIT",
+  "author": "Luiz Ferraz <luiz@lferraz.com>",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./runtime/*": {
+      "default": "./dist/runtime/*.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "virtual.d.ts"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "prepublish": "pnpm run build",
+    "test": "echo 'No tests for now :('",
+    "test:run": "vitest run --coverage",
+    "test:dev": "vitest --coverage.enabled=true"
+  },
+  "dependencies": {
+    "@inox-tools/request-state": "workspace:^",
+    "@inox-tools/utils": "workspace:^",
+    "astro-integration-kit": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "@vitest/ui": "catalog:",
+    "astro": "catalog:",
+    "jest-extended": "catalog:",
+    "tsup": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "astro": "catalog:lax",
+    "nanostores": "^0.11.2"
+  }
+}

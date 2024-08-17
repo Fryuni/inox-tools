@@ -10,6 +10,9 @@ workspace:
 
 ## PACKAGES
 
+pkg/request-nanostores:
+- 'packages/request-nanostores/**'
+
 pkg/aik-mod:
 - 'packages/aik-mod/**'
 

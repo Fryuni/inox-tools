@@ -1,0 +1,20 @@
+{
+  "name": "@example/request-state",
+  "private": true,
+  "type": "module",
+  "version": "0.0.8",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro check && astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/check": "^0.9.2",
+    "@astrojs/node": "^8.3.3",
+    "@inox-tools/request-state": "workspace:^",
+    "astro": "^4.14.2",
+    "typescript": "^5.5.4"
+  }
+}

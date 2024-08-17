@@ -1,0 +1,16 @@
+---
+import { ViewTransitions } from 'astro:transitions';
+---
+
+<html lang="en" transition:animate="none">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<title>Astro When</title>
+		<ViewTransitions />
+	</head>
+	<body>
+		<slot />
+	</body>
+</html>

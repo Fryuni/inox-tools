@@ -4,11 +4,14 @@ catalog:
   '@astrojs/compiler': ^2.10.3
   '@astrojs/sitemap': ^3.1.6
   '@astrojs/starlight': ^0.26.1
+  '@types/content-type': ^1.1.8
   '@types/debug': ^4.1.12
   '@types/node': ^22.4.0
   '@faker-js/faker': ^8.4.1
   '@lunariajs/core': ^0.1.1
+  content-type: ^1.0.5
   debug: ^4.3.6
+  devalue: ^5.0.0
   sitemap: ^8.0.0
   ast-types: ^0.14.2
   estree-walker: ^3.0.3

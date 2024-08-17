@@ -49,6 +49,10 @@ export default defineConfig({
 						{
 							label: 'Star Warp',
 							link: '/star-warp',
+						},
+						{
+							label: 'Request State',
+							link: '/request-state',
 							badge: {
 								text: 'NEW',
 								variant: 'success',

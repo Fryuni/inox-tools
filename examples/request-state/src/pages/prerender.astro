@@ -1,0 +1,20 @@
+---
+import Layout from '../components/Layout.astro';
+import ShowState from '../components/ShowState.astro';
+import { setState } from '@it-astro:state';
+
+export const prerender = true;
+
+setState('renderTime', Date());
+---
+
+<Layout>
+	<h1>Opting in to prerendering</h1>
+	<p>Other pages:</p>
+	<ul>
+		<li><a href="/">Home</a></li>
+		<li><a href="/on-demand/">Opting out of prerendering</a></li>
+	</ul>
+	<hr />
+	<ShowState name="renderTime" />
+</Layout>

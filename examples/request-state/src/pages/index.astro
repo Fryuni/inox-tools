@@ -2,8 +2,12 @@
 import Layout from '../components/Layout.astro';
 import ShowState from '../components/ShowState.astro';
 import { setState } from '@it-astro:state';
+import { $renderTimeMsg } from '../store';
 
-setState('renderTime', Date());
+const renderTime = `Index server at ${new Date().toISOString()}`;
+
+setState('pageMessage', renderTime);
+$renderTimeMsg.set(renderTime);
 ---
 
 <Layout>
@@ -14,5 +18,5 @@ setState('renderTime', Date());
 		<li><a href="/on-demand/">Opting out of prerendering</a></li>
 	</ul>
 	<hr />
-	<ShowState name="renderTime" />
+	<ShowState />
 </Layout>

@@ -302,12 +302,18 @@ importers:
       '@astrojs/node':
         specifier: ^8.3.3
         version: 8.3.3(astro@4.14.2(@types/node@22.4.0)(rollup@4.20.0)(typescript@5.5.4))
+      '@inox-tools/request-nanostores':
+        specifier: workspace:^
+        version: link:../../packages/request-nanostores
       '@inox-tools/request-state':
         specifier: workspace:^
         version: link:../../packages/request-state
       astro:
         specifier: ^4.14.2
         version: 4.14.2(@types/node@22.4.0)(rollup@4.20.0)(typescript@5.5.4)
+      nanostores:
+        specifier: ^0.11.2
+        version: 0.11.2
       typescript:
         specifier: ^5.5.4
         version: 5.5.4
@@ -524,6 +530,49 @@ importers:
       astro:
         specifier: 'catalog:'
         version: 4.14.2(@types/node@22.4.0)(rollup@4.20.0)(typescript@5.5.4)
+      tsup:
+        specifier: 'catalog:'
+        version: 8.2.4(jiti@1.21.6)(postcss@8.4.41)(typescript@5.5.4)(yaml@2.5.0)
+      typescript:
+        specifier: 'catalog:'
+        version: 5.5.4
+      vite:
+        specifier: 'catalog:'
+        version: 5.4.1(@types/node@22.4.0)
+      vitest:
+        specifier: 'catalog:'
+        version: 2.0.5(@types/node@22.4.0)(@vitest/ui@2.0.5)
+
+  packages/request-nanostores:
+    dependencies:
+      '@inox-tools/request-state':
+        specifier: workspace:^
+        version: link:../request-state
+      '@inox-tools/utils':
+        specifier: workspace:^
+        version: link:../utils
+      astro-integration-kit:
+        specifier: 'catalog:'
+        version: 0.16.0(astro@4.14.2(@types/node@22.4.0)(rollup@4.20.0)(typescript@5.5.4))
+      nanostores:
+        specifier: ^0.11.2
+        version: 0.11.2
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.4.0
+      '@vitest/coverage-v8':
+        specifier: 'catalog:'
+        version: 2.0.5(vitest@2.0.5(@types/node@22.4.0)(@vitest/ui@2.0.5))
+      '@vitest/ui':
+        specifier: 'catalog:'
+        version: 2.0.5(vitest@2.0.5)
+      astro:
+        specifier: 'catalog:'
+        version: 4.14.2(@types/node@22.4.0)(rollup@4.20.0)(typescript@5.5.4)
+      jest-extended:
+        specifier: 'catalog:'
+        version: 4.0.2
       tsup:
         specifier: 'catalog:'
         version: 8.2.4(jiti@1.21.6)(postcss@8.4.41)(typescript@5.5.4)(yaml@2.5.0)
@@ -3336,6 +3385,10 @@ packages:
     resolution: {integrity: sha512-eSRppjcPIatRIMC1U6UngP8XFcz8MQWGQdt1MTBQ7NaAmvXDfvNxbvWV3x2y6CdEUciCSsDHDQZbhYaB8QEo2g==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
+
+  nanostores@0.11.2:
+    resolution: {integrity: sha512-6bucNxMJA5rNV554WQl+MWGng0QVMzlRgpKTHHfIbVLrhQ+yRXBychV9ECGVuuUfCMQPjfIG9bj8oJFZ9hYP/Q==}
+    engines: {node: ^18.0.0 || >=20.0.0}
 
   neo-async@2.6.2:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
@@ -7942,6 +7995,8 @@ snapshots:
       thenify-all: 1.6.0
 
   nanoid@3.3.7: {}
+
+  nanostores@0.11.2: {}
 
   neo-async@2.6.2: {}
 

@@ -58,6 +58,14 @@ export default defineConfig({
 								variant: 'success',
 							},
 						},
+						{
+							label: 'Request Nanostores',
+							link: '/request-nanostores',
+							badge: {
+								text: 'NEW',
+								variant: 'success',
+							},
+						},
 					],
 				},
 				{

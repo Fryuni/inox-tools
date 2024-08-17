@@ -30,20 +30,22 @@
     "dev": "tsup --watch",
     "prepublish": "pnpm run build",
     "test": "echo 'No tests for now :('",
-    "test:run": "vitest run --coverage",
-    "test:dev": "vitest --coverage.enabled=true"
+    "test:dev": "vitest --coverage.enabled=true",
+    "test:run": "vitest run --coverage"
   },
   "dependencies": {
-    "astro-integration-kit": "catalog:",
     "@inox-tools/utils": "workspace:^",
+    "astro-integration-kit": "catalog:",
+    "content-type": "catalog:",
     "devalue": "catalog:"
   },
   "devDependencies": {
+    "@types/content-type": "catalog:",
     "@types/node": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "@vitest/ui": "catalog:",
-    "jest-extended": "catalog:",
     "astro": "catalog:",
+    "jest-extended": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",

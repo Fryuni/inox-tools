@@ -1,5 +1,5 @@
 {
-  "name": "@examples/request-state",
+  "name": "@example/request-state",
   "private": true,
   "type": "module",
   "version": "0.0.8",

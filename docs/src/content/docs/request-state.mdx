@@ -104,6 +104,25 @@ document.addEventListener('astro:page-load', () => {
 });
 ```
 
+## State loaded event
+
+On the client, after the server state is loaded but before it is made available to client modules an event `@it-astro:server-state-loaded` is triggered on the document.
+
+```ts
+document.addEventListener('@it-astro:server-state-loaded', (event) => {
+	// A shallow copy of the current client state.
+	// Modifying it won't affect the state already available to client modules.
+	event.previousState.get('foo');
+
+	// The state loaded from the server.
+	// You can modify this state before it is made available to client modules.
+	event.serverState.set('foo', 'bar');
+
+	// The client state won't change at all if the default is prevented.
+	event.preventDefault();
+});
+```
+
 ## License
 
 Astro Request State is available under the MIT license.

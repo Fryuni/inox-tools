@@ -1,5 +1,12 @@
 # @examples/astro-when
 
+## 0.0.10
+
+### Patch Changes
+
+- Updated dependencies [0bcabfd]
+  - @inox-tools/request-nanostores@0.1.0
+
 ## 0.0.9
 
 ### Patch Changes

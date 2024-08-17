@@ -2,7 +2,7 @@
   "name": "@example/request-state",
   "private": true,
   "type": "module",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",

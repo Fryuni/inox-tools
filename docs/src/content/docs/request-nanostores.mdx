@@ -52,6 +52,62 @@ If you don't know if a Nano Store is based on an Atom or not to use with this li
 Nano Stores are very well typed, so TypeScript will know if they are compatible or not.
 :::
 
+### Example
+
+If you have a comments section on your page, you can create a store that will be shared between the page and all components.
+
+```ts title="src/stores/comments.ts"
+import { atom } from 'nanostores';
+import { shared } from '@it-astro:request-nanostores';
+
+export const $comments = shared('comments', atom([]));
+```
+
+A Preact component to show the comments.
+
+```ts title="src/components/Comments.tsx"
+import { useStore } from '@nanostores/preact';
+import { $comments } from '../stores/comments';
+
+export default function Comments() {
+  const $comments = useStore($comments);
+
+  return <ul>
+    { $comments.map(comment => <li>{ comment }</li>) }
+  </ul>;
+}
+```
+
+A Solid component to show the number of comments.
+
+```ts title="src/components/CommentCount.tsx"
+import { useStore } from '@nanostores/solid';
+import { $comments } from '../stores/comments';
+
+export default function Comments() {
+  const $comments = useStore($comments);
+
+  return <p>
+    Comments: { $comments().length }
+  </p>
+}
+```
+
+And an Astro page that loads the comments for the page and uses both components. The comments will be available for the components to render on the server and on the client for interactivity.
+
+```astro title="src/pages/article.astro"
+---
+import Comments from '../components/Comments.tsx';
+import CommentCount from '../components/CommentCount.tsx';
+import { $comments } from '../stores/comments';
+
+$comments.set(await loadCommentsForArticle());
+---
+
+<CommentCount client:load />
+<Comments client:load />
+```
+
 ## License
 
 Request Nanostores is available under the MIT license.

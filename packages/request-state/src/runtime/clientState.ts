@@ -1,4 +1,5 @@
 import { parse } from 'devalue';
+import { type State, ServerStateLoaded } from '../events.js';
 
 const revivers: Record<string, (value: any) => any> = {
 	URL: (value) => new URL(value),
@@ -6,23 +7,6 @@ const revivers: Record<string, (value: any) => any> = {
 	GlobalSymbol: (value) => Symbol.for(value),
 	WellKnownSymbol: (value) => Symbol[value as keyof typeof Symbol],
 };
-
-type State = Map<string, unknown>;
-
-let nextState: State | undefined = undefined;
-
-document.addEventListener('astro:before-swap', (event) => {
-	nextState = loadState(event.newDocument);
-});
-
-document.addEventListener('astro:after-swap', () => {
-	state.clear();
-	if (nextState !== undefined) {
-		for (const [key, value] of nextState) {
-			state.set(key, value);
-		}
-	}
-});
 
 const loadState = (doc: Document): State | undefined => {
 	const element = doc.getElementById('it-astro-state');
@@ -34,7 +18,26 @@ const loadState = (doc: Document): State | undefined => {
 	}
 };
 
-const state = loadState(document) ?? new Map();
+let nextState = loadState(document);
+const state = new Map();
+
+const applyState = () => {
+	const event = new ServerStateLoaded(new Map(state), nextState ?? new Map());
+
+	if (document.dispatchEvent(event)) {
+		state.clear();
+		for (const [key, value] of event.serverState.entries()) {
+			state.set(key, value);
+		}
+	}
+};
+
+applyState();
+
+document.addEventListener('astro:before-swap', (event) => {
+	nextState = loadState(event.newDocument);
+});
+document.addEventListener('astro:after-swap', applyState);
 
 export const getState = (key: string, valueIfMissing?: unknown): unknown => {
 	if (!state.has(key)) {

@@ -20,11 +20,16 @@ const state = getState(name);
 <script>
 	import { getState } from '@it-astro:state';
 
-	const elements = document.querySelectorAll('pre[data-state-name]');
+	function applyState() {
+		const elements = document.querySelectorAll('pre[data-state-name]');
 
-	elements.forEach((element) => {
-		if (!(element instanceof HTMLElement)) return;
+		elements.forEach((element) => {
+			if (!(element instanceof HTMLElement)) return;
 
-		element.textContent = JSON.stringify(getState(element.dataset.stateName!), null, 2);
-	});
+			element.textContent = JSON.stringify(getState(element.dataset.stateName!), null, 2);
+		});
+	}
+
+	applyState();
+	document.addEventListener('astro:page-load', applyState);
 </script>

@@ -7,17 +7,23 @@ challenger: [Florian, Oliver]
 
 Astro provides [`Astro.locals`/`context.locals`](https://docs.astro.build/en/reference/api-reference/#astrolocals) for shared state between different components being rendered in a page.
 
-This state can only be accessed from an Astro component using the `Astro` constant or from middlewares from the context. Sharing state between framework components is not provided and inconvenient.
+This state can only be accessed from an Astro component using the `Astro` constant or from middlewares from the context. Sharing state between framework components is not provided and inconvenient. State using `Astro.locals` is also not shared with the client after the request completes, resulting in problems with the server and the client rendering different contents.
 
-Framework components using the shared state won't have the same state on the client, resulting in problems with the server and the client rendering different contents.
+This library provides a solution for those problems:
 
-This library provides a solution for that, any state set using this library is shared across any component (even from UI frameworks) used in rendering the page in both server and client side.
+- You can share state between any component used in a request, even between frameworks.
+- The final state formed in the server while rendering a request is available for all client code running in the rendered page.
+- UI framework components can keep their state from server to client.
 
 ## Installing the dependency
 
 import { PackageManagers } from 'starlight-package-managers';
 
 <PackageManagers type="exec" pkg="astro" args="add @inox-tools/request-state" />
+
+### Prerequisites
+
+When using the Cloudflare adapter, you'll need to [enable AsyncLocalStorage manually](https://developers.cloudflare.com/workers/runtime-apis/nodejs/#enable-only-asynclocalstorage).
 
 ## How to use
 
@@ -29,6 +35,15 @@ import { getState, setState } from '@it-astro:state';
 setState('some key', 'some value');
 
 const state = getState('some key');
+```
+
+Alternatively, provide an initial value to be used if not present in the state:
+
+```ts
+import { getState } from '@it-astro:state';
+
+// `'initial value'` will be used if `'some key'` is not in the state
+const state = getState('some key', 'initial value');
 ```
 
 The state can be any value supported by the [`devalue` library](https://www.npmjs.com/package/devalue) plus:

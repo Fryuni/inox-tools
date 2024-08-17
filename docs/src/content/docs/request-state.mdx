@@ -69,6 +69,41 @@ Params:
 
 Returns the value of the state for the given key, if present. If now, sets the value to `valueIfMissing` and returns it.
 
+## Using with View Transitions
+
+If you are using Astro's [View Transitions](https://docs.astro.build/en/guides/view-transitions/), the client-side state will be cleared out and entirely replaced with the server state used to render the page the client is navigating to.
+
+For example:
+
+1. You open page `/one`
+2. Server state of page `/one` is loaded on the client
+3. You modify the state one the client using `setState`
+4. You navigate to `/two`
+5. Server state of page `/two` is loaded on the client. All changes from step 3 are lost.
+
+The state is loaded during the `astro:after-swap` event, so:
+
+```ts
+document.addEventListener('astro:before-preparation', () => {
+	// State of the previous page is present
+});
+document.addEventListener('astro:after-preparation', () => {
+	// State of the previous page is present
+});
+document.addEventListener('astro:before-swap', () => {
+	// State of the previous page is present
+});
+document.addEventListener('astro:after-swap', () => {
+	// State of the next page is set
+	// If this listener was registered before the state loader,
+	// the state of the previous page would still be present.
+	// Otherwise, the state of the new page would be present.
+});
+document.addEventListener('astro:page-load', () => {
+	// State of the next page is present
+});
+```
+
 ## License
 
 Astro Request State is available under the MIT license.

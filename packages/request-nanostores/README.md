@@ -66,4 +66,3 @@ Nano Stores are very well typed, so TypeScript will know if they are compatible 
 ## License
 
 Request Nanostores is available under the MIT license.
-

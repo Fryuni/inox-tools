@@ -21,6 +21,9 @@ catalogs:
     '@lunariajs/core':
       specifier: ^0.1.1
       version: 0.1.1
+    '@types/content-type':
+      specifier: ^1.1.8
+      version: 1.1.8
     '@types/debug':
       specifier: ^4.1.12
       version: 4.1.12
@@ -42,6 +45,9 @@ catalogs:
     astro-integration-kit:
       specifier: ~0.16.0
       version: 0.16.0
+    content-type:
+      specifier: ^1.0.5
+      version: 1.0.5
     debug:
       specifier: ^4.3.6
       version: 4.3.6
@@ -539,12 +545,15 @@ importers:
       astro-integration-kit:
         specifier: 'catalog:'
         version: 0.16.0(astro@4.14.2(@types/node@22.4.0)(rollup@4.20.0)(typescript@5.5.4))
+      content-type:
+        specifier: 'catalog:'
+        version: 1.0.5
       devalue:
         specifier: 'catalog:'
         version: 5.0.0
     devDependencies:
       '@types/content-type':
-        specifier: ^1.1.8
+        specifier: 'catalog:'
         version: 1.1.8
       '@types/node':
         specifier: 'catalog:'
@@ -558,9 +567,6 @@ importers:
       astro:
         specifier: 'catalog:'
         version: 4.14.2(@types/node@22.4.0)(rollup@4.20.0)(typescript@5.5.4)
-      content-type:
-        specifier: ^1.0.5
-        version: 1.0.5
       jest-extended:
         specifier: 'catalog:'
         version: 4.0.2

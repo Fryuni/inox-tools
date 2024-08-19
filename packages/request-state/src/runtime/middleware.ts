@@ -1,4 +1,3 @@
-import type { ReadableStream } from 'node:stream/web';
 import { defineMiddleware } from 'astro/middleware';
 import { collectState } from './serverState.js';
 import { parse } from 'content-type';
@@ -14,18 +13,31 @@ export const onRequest = defineMiddleware(async (_, next) => {
 
 	if (mediaType !== 'text/html' && !mediaType.startsWith('text/html+')) return result;
 
-	async function* render() {
-		for await (const chunk of result.body as ReadableStream<ArrayBuffer>) {
-			yield chunk;
-		}
+	const newBody = result.body
+		?.pipeThrough(new TextDecoderStream())
+		.pipeThrough(injectState(getState))
+		.pipeThrough(new TextEncoderStream());
 
-		const state = getState();
-
-		if (state) {
-			yield `<script id="it-astro-state" type="application/json+devalue">${state}</script>`;
-		}
-	}
-
-	// @ts-expect-error generator not assignable to ReadableStream
-	return new Response(render(), result);
+	return new Response(newBody, result);
 });
+
+function injectState(getState: () => string | false) {
+	let injected = false;
+	return new TransformStream({
+		transform(chunk, controller) {
+			if (!injected) {
+				const bodyCloseIndex = chunk.indexOf('</body>');
+				if (bodyCloseIndex > -1) {
+					const state = getState();
+					if (state) {
+						const stateScript = `<script id="it-astro-state" type="application/json+devalue">${state}</script>`;
+
+						chunk = chunk.slice(0, bodyCloseIndex) + stateScript + chunk.slice(bodyCloseIndex);
+					}
+					injected = true;
+				}
+			}
+			controller.enqueue(chunk);
+		},
+	});
+}

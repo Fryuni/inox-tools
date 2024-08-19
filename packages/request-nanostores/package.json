@@ -1,6 +1,6 @@
 {
   "name": "@inox-tools/request-nanostores",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Make your Nanostores concurrent safe and shared from server to client",
   "keywords": [
     "astro-integration",

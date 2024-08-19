@@ -20,15 +20,15 @@ export function addCartItem({ id, name, imageSrc }: CartItemDisplayInfo) {
 		const existingEntry = cartItems.get()[id];
 		const newEntry = existingEntry
 			? {
-				...existingEntry,
-				quantity: existingEntry.quantity + 1,
-			}
+					...existingEntry,
+					quantity: existingEntry.quantity + 1,
+				}
 			: {
-				id,
-				name,
-				imageSrc,
-				quantity: 1,
-			};
+					id,
+					name,
+					imageSrc,
+					quantity: 1,
+				};
 
 		cartItems.setKey(id, newEntry);
 

@@ -14,7 +14,7 @@ export default defineConfig({
 	target: 'node18',
 	bundle: false,
 	dts: {
-		entry: ['src/index.ts', 'src/events.ts'],
+		entry: ['src/index.ts'],
 		banner: '/// <reference path="../virtual.d.ts" />\n',
 	},
 	sourcemap: true,

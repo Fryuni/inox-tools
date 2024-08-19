@@ -21,6 +21,15 @@ import { PackageManagers } from 'starlight-package-managers';
 
 When using the Cloudflare adapter, you'll need to [enable AsyncLocalStorage manually](https://developers.cloudflare.com/workers/runtime-apis/nodejs/#enable-only-asynclocalstorage).
 
+## Demo
+
+A demo reading cookies to set the request state on the server and use it interactively on the client is available here:
+
+- Deployed site: https://inox-tools-ex-request-nanostores.pages.dev/
+- Source code: https://github.com/Fryuni/inox-tools/tree/main/examples/request-nanostores
+
+This demo project is based on Astro's [`with-nanostores` template](https://github.com/withastro/astro/tree/main/examples/with-nanostores).
+
 ## How to use
 
 Wrap your stores using the `shared` function, giving it a name.

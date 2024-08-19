@@ -14,9 +14,6 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
-    },
-    "./runtime/*": {
-      "default": "./dist/runtime/*.js"
     }
   },
   "files": [

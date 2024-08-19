@@ -14,14 +14,6 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
-    },
-    "./events": {
-      "types": "./dist/events.d.ts",
-      "default": "./dist/events.js"
-    },
-    "./runtime/*": {
-      "types": "./dist/runtime/*.d.ts",
-      "default": "./dist/runtime/*.js"
     }
   },
   "files": [

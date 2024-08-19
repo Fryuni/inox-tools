@@ -40,6 +40,8 @@ jobs:
         - sitemap-ext
         - custom-routing
         - astro-when
+        - request-state
+        - request-nanostores
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -72,6 +74,14 @@ jobs:
 
       - name: Discard all git changes
         run: git restore .
+
+      - name: Create Cloudflare Pages Project
+        run: |-
+          pnpm dlx wrangler pages project create 'inox-tools-ex-${{ matrix.example }}' --production-branch main || true
+        working-directory: examples/${{ matrix.example }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
       - name: Publish to Cloudflare Pages
         run: pnpm dlx wrangler pages deploy dist --project-name 'inox-tools-ex-${{ matrix.example }}' --branch '${{ github.head_ref }}'

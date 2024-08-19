@@ -17,6 +17,9 @@ if [ ! -d "$SCRIPT_DIR/$PROJECT_NAME" ]; then
 	exit 1
 fi
 
+cp "$SCRIPT_DIR/wrangler.toml" "$SCRIPT_DIR/$PROJECT_NAME/wrangler.toml"
+echo "name = \"inox-tools-ex-$PROJECT_NAME\"" >>"$SCRIPT_DIR/$PROJECT_NAME/wrangler.toml"
+
 cd "$SCRIPT_DIR/$PROJECT_NAME"
 
 # Check that the project is an Astro project
@@ -29,7 +32,7 @@ fi
 pnpm astro add cloudflare --yes
 
 # Build the project
-pnpm build
+pnpm astro build
 
 # Restore the Astro project to its original state
 git restore package.json astro.config.*

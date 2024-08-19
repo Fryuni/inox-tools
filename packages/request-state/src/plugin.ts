@@ -11,6 +11,14 @@ export const plugin = (): Plugin => {
 				return RESOLVED_MODULE_ID;
 			}
 		},
+		config(config) {
+			if (config.ssr?.external === true) return;
+
+			config.ssr = {
+				...config.ssr,
+				external: [...(config.ssr?.external ?? []), 'node:async_hooks'],
+			};
+		},
 		load(id, options) {
 			if (id !== RESOLVED_MODULE_ID) return;
 

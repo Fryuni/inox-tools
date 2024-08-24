@@ -4,7 +4,5 @@
     "jsx": "react-jsx",
     "jsxImportSource": "preact"
   },
-  "exclude": [
-    "dist/**"
-  ]
+  "exclude": ["dist/**"]
 }

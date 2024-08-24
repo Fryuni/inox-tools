@@ -44,7 +44,7 @@ function ensurePluginIsInstalled(
 	const { config, updateConfig } = options;
 	if (hasPlugin(config.vite?.plugins || [], '@inox-tools/inline-mod')) {
 		debug('Plugin is already installed, using no-op installation function.');
-		return () => { };
+		return () => {};
 	}
 
 	let done = false;

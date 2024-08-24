@@ -1,5 +1,11 @@
 # @inox-tools/astro-when
 
+## 0.2.2
+
+### Patch Changes
+
+- 255dc13: Add debug logging
+
 ## 0.2.1
 
 ### Patch Changes

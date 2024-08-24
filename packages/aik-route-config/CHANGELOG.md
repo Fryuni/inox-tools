@@ -1,5 +1,11 @@
 # @inox-tools/aik-route-config
 
+## 0.7.2
+
+### Patch Changes
+
+- 8400096: Add debug logging
+
 ## 0.7.1
 
 ### Patch Changes

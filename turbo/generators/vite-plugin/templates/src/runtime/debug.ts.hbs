@@ -1,0 +1,7 @@
+import debugC from 'debug';
+
+export const debug = debugC('inox-tools:{{ dashCase name }}')
+
+export const getDebug = (segment?: string) => {
+  return segment ? debug.extend(segment) : debug;
+}

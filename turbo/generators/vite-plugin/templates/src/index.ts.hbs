@@ -2,7 +2,8 @@
  * Vite Plugin API
  * https://cn.vitejs.dev/guide/api-plugin.html
  */
- import type { Plugin, ResolvedConfig, UserConfig, ViteDevServer } from "vite";
+import type { Plugin, ResolvedConfig, UserConfig, ViteDevServer } from "vite";
+import { debug } from './runtime/debug.js';
 
 export type Options = {
     // TODO

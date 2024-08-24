@@ -1,8 +1,11 @@
 import { spawnSync } from 'node:child_process';
 import { basename, dirname, join, sep, resolve } from 'node:path';
 import { hooks } from '@inox-tools/modular-station/hooks';
+import { getDebug } from '../internal/debug.js';
 
 let contentPath: string = '';
+
+const debug = getDebug('git');
 
 /**
  * @internal
@@ -23,6 +26,8 @@ export async function getCommitDate(file: string, age: 'oldest' | 'latest'): Pro
 
 	args.push(basename(file));
 
+	debug('Running git:', args.join(' '));
+
 	const result = spawnSync('git', args, {
 		cwd: resolve(join(contentPath, dirname(file))),
 		encoding: 'utf-8',
@@ -37,12 +42,17 @@ export async function getCommitDate(file: string, age: 'oldest' | 'latest'): Pro
 	const match = output.match(regex);
 
 	if (!match?.groups?.timestamp) {
-		console.error(result.stderr, result.stdout);
+		debug('No match on Git output:', result.stderr, result.stdout);
 		return new Date();
 	}
 
 	let resolvedDate = new Date(Number(match.groups.timestamp) * 1000);
 
+	debug('Invoking @it/content:git:resolved hook', {
+		resolvedDate,
+		age,
+		file,
+	});
 	await hooks.run('@it/content:git:resolved', (logger) => [
 		{
 			logger,
@@ -50,6 +60,7 @@ export async function getCommitDate(file: string, age: 'oldest' | 'latest'): Pro
 			age,
 			file,
 			overrideDate: (newDate) => {
+				debug(`Overriding ${resolvedDate} date of ${file} to ${newDate}`);
 				resolvedDate = newDate;
 			},
 		},
@@ -62,6 +73,7 @@ export async function getCommitDate(file: string, age: 'oldest' | 'latest'): Pro
  * @internal
  */
 export async function listGitTrackedFiles(): Promise<string[]> {
+	debug(`Listing tracked files in ${contentPath}`);
 	const result = spawnSync('git', ['ls-files'], {
 		cwd: resolve(contentPath),
 		encoding: 'utf-8',
@@ -74,6 +86,7 @@ export async function listGitTrackedFiles(): Promise<string[]> {
 	const output = result.stdout.trim();
 	let files = output.split('\n');
 
+	debug('Invoking @it/content:git:listed hook', { trackedFiles: files });
 	await hooks.run('@it/content:git:listed', (logger) => [
 		{
 			logger,

@@ -37,10 +37,12 @@
     "@inox-tools/modular-station": "workspace:^",
     "@inox-tools/utils": "workspace:^",
     "astro-integration-kit": "catalog:",
+    "debug": "catalog:",
     "estree-walker": "catalog:",
     "magic-string": "catalog:"
   },
   "devDependencies": {
+    "@types/debug": "catalog:",
     "@types/node": "catalog:",
     "astro": "catalog:",
     "tsup": "catalog:",

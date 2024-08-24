@@ -1,5 +1,11 @@
 # @inox-tools/aik-mod
 
+## 0.8.2
+
+### Patch Changes
+
+- 36180db: Add debug logging
+
 ## 0.8.1
 
 ### Patch Changes

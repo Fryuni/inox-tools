@@ -1,5 +1,12 @@
 # @inox-tools/content-utils
 
+## 0.6.1
+
+### Patch Changes
+
+- 00895ec: Add debug logging
+- d2d7220: Optimize git times to use a single git command instead of one per file
+
 ## 0.6.0
 
 ### Minor Changes

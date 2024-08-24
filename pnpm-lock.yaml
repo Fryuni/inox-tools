@@ -380,7 +380,13 @@ importers:
       astro-integration-kit:
         specifier: catalog:min
         version: 0.16.0(astro@4.14.3(@types/node@22.5.0)(rollup@4.21.0)(typescript@5.5.4))
+      debug:
+        specifier: 'catalog:'
+        version: 4.3.6
     devDependencies:
+      '@types/debug':
+        specifier: 'catalog:'
+        version: 4.1.12
       '@types/node':
         specifier: 'catalog:'
         version: 22.5.0

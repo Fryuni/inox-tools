@@ -7,6 +7,9 @@ import type { HookParameters, MiddlewareHandler } from 'astro';
 import { definePlugin } from 'astro-integration-kit';
 import { AstroError } from 'astro/errors';
 import type { PluginOption } from 'vite';
+import debugC from 'debug';
+
+const debug = debugC('inox-tools:aik-mod');
 
 export {
 	asyncFactory,
@@ -40,13 +43,18 @@ function ensurePluginIsInstalled(
 ): () => void {
 	const { config, updateConfig } = options;
 	if (hasPlugin(config.vite?.plugins || [], '@inox-tools/inline-mod')) {
-		return () => {};
+		debug('Plugin is already installed, using no-op installation function.');
+		return () => { };
 	}
 
 	let done = false;
 
 	return () => {
-		if (done) return;
+		if (done) {
+			debug('Reusing installed plugin');
+			return;
+		}
+		debug('Installing inline-mod plugin');
 		done = true;
 		updateConfig({
 			vite: {
@@ -68,7 +76,10 @@ export default definePlugin({
 				return {
 					inlineModule: (options: ModuleOptions) => {
 						ensurePlugin();
-						return inlineModule(options);
+						debug('Inlining module');
+						const moduleId = inlineModule(options);
+						debug(`Module inlined as ${moduleId}`);
+						return moduleId;
 					},
 					defineModule: (name: string, options: ModuleOptions) => {
 						if (name.startsWith('astro:')) {
@@ -79,17 +90,20 @@ export default definePlugin({
 						}
 
 						ensurePlugin();
+						debug(`Defining module: ${name}`);
 						return defineModule(name, options);
 					},
 					defineMiddleware: (order: 'pre' | 'post', handler: MiddlewareHandler) => {
 						ensurePlugin();
+						const moduleId = inlineModule({
+							constExports: {
+								onRequest: handler,
+							},
+						});
+						debug(`Defining ${order} middleware as ${moduleId}`);
 						addMiddleware({
 							order,
-							entrypoint: inlineModule({
-								constExports: {
-									onRequest: handler,
-								},
-							}),
+							entrypoint: moduleId,
 						});
 					},
 				};

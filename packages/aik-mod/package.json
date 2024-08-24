@@ -29,9 +29,11 @@
     "test": "echo 'No tests'"
   },
   "dependencies": {
-    "@inox-tools/inline-mod": "workspace:^"
+    "@inox-tools/inline-mod": "workspace:^",
+    "debug": "catalog:"
   },
   "devDependencies": {
+    "@types/debug": "catalog:",
     "@types/node": "catalog:",
     "astro": "catalog:",
     "tsup": "catalog:",

@@ -30,9 +30,11 @@
     "test": "echo 'No tests'"
   },
   "dependencies": {
-    "astro-integration-kit": "catalog:"
+    "astro-integration-kit": "catalog:",
+    "debug": "catalog:"
   },
   "devDependencies": {
+    "@types/debug": "catalog:",
     "@types/node": "catalog:",
     "astro": "catalog:",
     "tsup": "catalog:",

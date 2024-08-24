@@ -32,11 +32,13 @@
   },
   "dependencies": {
     "@inox-tools/utils": "workspace:^",
+    "debug": "catalog:",
     "recast": "catalog:",
     "vite": "catalog:"
   },
   "devDependencies": {
     "@astrojs/compiler": "catalog:",
+    "@types/debug": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "ast-types": "catalog:",
     "tsup": "catalog:",

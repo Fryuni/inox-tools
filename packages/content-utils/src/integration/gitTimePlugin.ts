@@ -1,9 +1,12 @@
 import type { Plugin } from 'vite';
 import type { IntegrationState } from './state.js';
 import * as liveGit from '../runtime/git.js';
+import { getDebug } from '../internal/debug.js';
 
 const MODULE_ID = '@it-astro:content/git';
 const RESOLVED_MODULE_ID = '\x00@it-astro:content/git';
+
+const debug = getDebug('git-time-plugin');
 
 export const gitTimeDevPlugin = ({ contentPaths: { contentPath } }: IntegrationState): Plugin => ({
 	name: '@inox-tools/content-utils/gitTimes',
@@ -13,6 +16,7 @@ export const gitTimeDevPlugin = ({ contentPaths: { contentPath } }: IntegrationS
 	load(id, { ssr } = {}) {
 		if (id !== RESOLVED_MODULE_ID || !ssr) return;
 
+		debug(`Generated dev mode git time plugin for ${contentPath}`);
 		return `
 import {setContentPath} from '@inox-tools/content-utils/runtime/git';
 import {getLatestCommitDate, getOldestCommitDate} from '@inox-tools/content-utils/runtime/liveGit';
@@ -34,8 +38,10 @@ export const gitTimeBuildPlugin = ({
 	async load(id, { ssr } = {}) {
 		if (id !== RESOLVED_MODULE_ID || !ssr) return;
 
+		debug('Registering content path:', contentPath);
 		liveGit.setContentPath(contentPath);
 		const trackedFiles = await liveGit.getAllTrackedCommitDates();
+		debug('Git tracked file dates:', trackedFiles);
 
 		return `
 import {getEntry} from 'astro:content';

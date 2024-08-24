@@ -1,8 +1,11 @@
 import { spawnSync } from 'node:child_process';
 import { basename, dirname, join, sep, resolve, relative } from 'node:path';
 import { hooks } from '@inox-tools/modular-station/hooks';
+import { getDebug } from '../internal/debug.js';
 
 let contentPath: string = '';
+
+const debug = getDebug('git');
 
 /**
  * @internal
@@ -23,6 +26,8 @@ export async function getCommitDate(file: string, age: 'oldest' | 'latest'): Pro
 
 	args.push('--', basename(file));
 
+	debug('Running git:', args.join(' '));
+
 	const result = spawnSync('git', args, {
 		cwd: resolve(join(contentPath, dirname(file))),
 		encoding: 'utf-8',
@@ -37,12 +42,17 @@ export async function getCommitDate(file: string, age: 'oldest' | 'latest'): Pro
 	const match = output.match(regex);
 
 	if (!match?.groups?.timestamp) {
-		console.error(result.stderr, result.stdout);
+		debug('No match on Git output:', result.stderr, result.stdout);
 		return new Date();
 	}
 
 	let resolvedDate = new Date(Number(match.groups.timestamp) * 1000);
 
+	debug('Invoking @it/content:git:resolved hook', {
+		resolvedDate,
+		age,
+		file,
+	});
 	await hooks.run('@it/content:git:resolved', (logger) => [
 		{
 			logger,
@@ -50,6 +60,7 @@ export async function getCommitDate(file: string, age: 'oldest' | 'latest'): Pro
 			age,
 			file,
 			overrideDate: (newDate) => {
+				debug(`Overriding ${resolvedDate} date of ${file} to ${newDate}`);
 				resolvedDate = newDate;
 			},
 		},
@@ -62,6 +73,7 @@ export async function getCommitDate(file: string, age: 'oldest' | 'latest'): Pro
  * @internal
  */
 export async function listGitTrackedFiles(): Promise<string[]> {
+	debug(`Listing tracked files in ${contentPath}`);
 	const result = spawnSync('git', ['ls-files'], {
 		cwd: resolve(contentPath),
 		encoding: 'utf-8',
@@ -74,6 +86,7 @@ export async function listGitTrackedFiles(): Promise<string[]> {
 	const output = result.stdout.trim();
 	let files = output.split('\n');
 
+	debug('Invoking @it/content:git:listed hook', { trackedFiles: files });
 	await hooks.run('@it/content:git:listed', (logger) => [
 		{
 			logger,
@@ -93,12 +106,15 @@ export async function listGitTrackedFiles(): Promise<string[]> {
 }
 
 function getRepoRoot(): string {
+	debug('Retrieving git repo root');
 	const result = spawnSync('git', ['rev-parse', '--show-toplevel'], {
 		cwd: contentPath,
 		encoding: 'utf-8',
 	});
 
 	if (result.error) {
+		debug(`Failed to retrieve repo root:`, result.error, result.stderr);
+		debug('Falling back to contentPath:', contentPath);
 		return contentPath;
 	}
 
@@ -119,12 +135,14 @@ export async function getAllTrackedCommitDates(): Promise<TrackedCommits> {
 
 	const args = ['log', '--format=t:%ct', '--name-status', '--', contentPath];
 
+	debug('Retrieving content git log:', args.join(' '));
 	const gitLog = spawnSync('git', args, {
 		cwd: repoRoot,
 		encoding: 'utf-8',
 	});
 
 	if (gitLog.error) {
+		debug('Failed to retrieve content git log:', gitLog.error, gitLog.stderr);
 		return {
 			oldest: [],
 			latest: [],
@@ -141,6 +159,8 @@ export async function getAllTrackedCommitDates(): Promise<TrackedCommits> {
 			// t:<seconds since epoch>
 			runningDate = Number.parseInt(logLine.slice(2)) * 1000;
 		}
+
+		// TODO: Track git time across renames and moves
 
 		// - Added files take the format `A\t<file>`
 		// - Modified files take the format `M\t<file>`
@@ -178,7 +198,10 @@ export async function getAllTrackedCommitDates(): Promise<TrackedCommits> {
 		const repoFilePath = relative(repoRoot, resolve(contentPath, file));
 
 		const minMax = runningMinMax.get(repoFilePath);
-		if (minMax === undefined) continue;
+		if (minMax === undefined) {
+			debug(`No date found for ${repoFilePath}`);
+			continue;
+		}
 
 		// Replace the first occurrence of the separator so it doesn't get partially normalized when mixin Windows and Unix-like systems.
 		const name = file.replace(sep, ':');

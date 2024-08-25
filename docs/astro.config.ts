@@ -98,6 +98,7 @@ export default defineConfig({
 	],
 	redirects: {
 		'/content-utils': '/content-utils/integration',
+		'/content-utils/git-time': '/content-utils/git',
 		'/modular-station': '/modular-station/api',
 	},
 });

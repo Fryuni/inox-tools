@@ -1,12 +1,15 @@
 ---
-title: Git Times
+title: Git Info
 packageName: '@inox-tools/content-utils'
 description: Get creation and update time for your content from your git history.
+sidebar:
+  badge:
+    text: Updated
 ---
 
 import { Steps } from '@astrojs/starlight/components';
 
-When writing a content rich site a common requirement is to show when some content was published and when it was last updated. Instead of tracking this manually for each entry in your content collections, this library allows you to retrieve those dates from your Git history.
+When writing a content rich site a common requirement is to show when some content was published, when it was last updated and who participated in authoring that content. Instead of tracking this manually for each entry in your content collections, this library allows you to retrieve that information from your Git history.
 
 Git is only necessary during build, so you can deploy your site anywhere. Even on platforms that don't provide Git, access to binaries or native modules (yes, even on Cloudflare).
 
@@ -18,17 +21,21 @@ import { PackageManagers } from 'starlight-package-managers';
 
 1. Install `@inox-tools/content-utils`:
 
-   <PackageManagers type="exec" pkg="astro" args="add @inox-tools/content-utils" />
+   <PackageManagers type="exec" pkg="astro" args="add @inox-tools/astro-when" />
 
 2. Import the time getter you want from `@it-astro:content/git`:
 
    ```astro title="src/pages/blog/[...slug].astro"
    ---
-   import { getLatestCommitDate, getOldestCommitDate } from '@it-astro:content/git';
+   import {
+   	getLatestCommitDate,
+   	getOldestCommitDate,
+   	getEntryGitInfo,
+   } from '@it-astro:content/git';
    ---
    ```
 
-3. Get the time from any collection entry using the same signature as Astro's [`getEntry`](https://docs.astro.build/en/reference/api-reference/#getentry):
+3. Get the time or information about any collection entry using the same signature as Astro's [`getEntry`](https://docs.astro.build/en/reference/api-reference/#getentry):
 
    ```astro title="src/pages/blog/[...slug].astro" ins={2,7,9}
    ---
@@ -56,6 +63,32 @@ If the entry has not been commited yet, this function returns the current time.
 
 Returns the commit time of the first commit that created the selected entry.  
 If the entry has not been commited yet, this function returns the current time.
+
+### `getEntryGitInfo`
+
+Returns all the collected Git information related to the selected entry.
+If the entry has not been commited yet, this function returns undefined.
+
+- `earliest`: Commit time of the commit that first created the path of the collection entry, same as returned by [`getOldestCommitDate`].
+- `latest`: Commit time of the last commit that modified the path of the collection entry.
+- `authors`: The [authors](https://git-scm.com/docs/git-commit#_commit_information) of the commits that modified the path of the collection entry.
+- `coAuthors`: The co-authors of the commits that modified the path of the collection entry. This is inferred from the `Co-Authored-By` commit trailers. Although this is not part of any specification, this is the practiced followed by most Git UIs and Git hosting platforms.
+
+_Type definition:_
+
+```ts
+type GitTrackingInfo = {
+	earliest: Date;
+	latest: Date;
+	authors: GitAuthor[];
+	coAuthors: GitAuthor[];
+};
+
+type GitAuthor = {
+	name: string;
+	email: string;
+};
+```
 
 ## Hooks
 

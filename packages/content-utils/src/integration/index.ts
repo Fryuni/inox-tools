@@ -5,7 +5,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { addVitePlugin, defineIntegration } from 'astro-integration-kit';
 import { injectorPlugin } from './injectorPlugin.js';
 import { seedCollections, type SeedCollectionsOptions } from './seedCollections.js';
-import { gitTimeBuildPlugin, gitTimeDevPlugin } from './gitTimePlugin.js';
+import { gitBuildPlugin, gitDevPlugin } from './gitPlugin.js';
 import { debug } from '../internal/debug.js';
 
 export type InjectCollectionOptions = {
@@ -90,8 +90,7 @@ export const integration = withApi(
 
 						debug('Adding Git time Vite plugin');
 						addVitePlugin(params, {
-							plugin:
-								params.command === 'dev' ? gitTimeDevPlugin(state) : gitTimeBuildPlugin(state),
+							plugin: params.command === 'dev' ? gitDevPlugin(state) : gitBuildPlugin(state),
 							warnDuplicated: true,
 						});
 

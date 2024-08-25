@@ -39,6 +39,7 @@ jobs:
         example:
         - sitemap-ext
         - custom-routing
+        - content-injection
         - astro-when
         - request-state
         - request-nanostores

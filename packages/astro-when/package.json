@@ -42,6 +42,6 @@
     "vite": "catalog:"
   },
   "peerDependencies": {
-    "astro": "catalog:lax"
+    "astro": "catalog:min"
   }
 }

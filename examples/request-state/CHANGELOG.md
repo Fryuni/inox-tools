@@ -1,4 +1,4 @@
-# @examples/astro-when
+# @example/request-state
 
 ## 0.0.11
 

@@ -7,6 +7,7 @@ import node from '@astrojs/node';
 export default defineConfig({
 	integrations: [astroWhen()],
 	output: 'server',
+	devToolbar: { enabled: false },
 	adapter: node({
 		mode: 'standalone',
 	}),

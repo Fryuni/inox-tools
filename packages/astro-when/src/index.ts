@@ -1,73 +1,42 @@
 import { defineIntegration, addVitePlugin } from 'astro-integration-kit';
 import { z } from 'astro/zod';
-import debugC from 'debug';
-
-const debug = debugC('inox-tools:astro-when');
-
-const VIRTUAL_MODULE_ID = '@it-astro:when';
-const RESOLVED_MODULE_ID = `\x00${VIRTUAL_MODULE_ID}`;
-
-// Globally indicate to the virtual module that it is in the same context as the build system.
-const key = Symbol.for('astro:when/buildContext');
+import { join as posixJoin } from 'node:path/posix';
+import { fileURLToPath } from 'node:url';
+import { debug } from './debug.js';
+import { BUILD_CONTEXT_KEY, plugin } from './plugin.js';
 
 export default defineIntegration({
 	name: '@inox-tools/astro-when',
 	optionsSchema: z.never().optional(),
-	setup: () => ({
-		hooks: {
-			'astro:config:setup': (params) => {
-				const outputMode = params.config.output;
-				const command = params.command;
+	setup: () => {
+		const routeComponents = new Set<string>();
+		let rootDir = process.cwd();
 
-				(globalThis as any)[key] = command === 'build';
+		return {
+			hooks: {
+				'astro:config:setup': (params) => {
+					const command = params.command;
+					rootDir = fileURLToPath(params.config.root);
 
-				debug('Adding Vite plugin');
-				addVitePlugin(params, {
-					plugin: {
-						name: '@inox-tools/astro-when',
-						resolveId(id) {
-							if (id === VIRTUAL_MODULE_ID) {
-								debug('Resolving virtual module ID');
-								return RESOLVED_MODULE_ID;
-							}
-						},
-						load(id, options) {
-							if (id !== RESOLVED_MODULE_ID) return;
+					(globalThis as any)[BUILD_CONTEXT_KEY] = command === 'build';
 
-							const preamble = `
-              	export const When = {
-                	Client: 'client',
-                	Server: 'server',
-                	Prerender: 'prerender',
-                	StaticBuild: 'staticBuild',
-                	DevServer: 'devServer',
-              	};
-            	`;
+					debug('Adding Vite plugin');
+					addVitePlugin(params, {
+						plugin: plugin({
+							command,
+							routeComponents,
+							outputMode: params.config.output,
+							pagesPath: fileURLToPath(new URL('pages/', params.config.srcDir)),
+						}),
+					});
+				},
+				'astro:route:setup': (params) => {
+					const componentPath = posixJoin(rootDir, params.route.component);
+					routeComponents.add(componentPath);
 
-							if (options?.ssr !== true) {
-								debug('Generating module for client');
-								return `${preamble} export const whenAmI = When.Client;`;
-							}
-
-							if (command === 'dev') {
-								debug('Generating module for dev server');
-								return `${preamble} export const whenAmI = When.DevServer;`;
-							}
-
-							if (outputMode === 'static') {
-								debug('Generating module for static build');
-								return `${preamble} export const whenAmI = When.StaticBuild;`;
-							}
-
-							debug('Generating module for live server');
-							return `${preamble}
-              const isBuildContext = Symbol.for('astro:when/buildContext');
-              export const whenAmI = globalThis[isBuildContext] ? When.Prerender : When.Server;
-            `;
-						},
-					},
-				});
+					params.logger.info(`Route ${componentPath} will prerender: ${params.route.prerender}`);
+				},
 			},
-		},
-	}),
+		};
+	},
 });

@@ -30,7 +30,7 @@ catalogs:
     astro: ^4
     '@astrojs/starlight': '>=0.16 <0.26'
   min:
-    astro: ^4.12.2
+    astro: ^4.14
     astro-integration-kit: ~0.16
     vite: ^4 || ^5
 packages:

@@ -1,4 +1,4 @@
-# @examples/astro-when
+# @example/astro-when
 
 ## 0.0.8
 

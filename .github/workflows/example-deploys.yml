@@ -39,12 +39,15 @@ jobs:
         example:
         - sitemap-ext
         - custom-routing
+        - content-injection
         - astro-when
         - request-state
         - request-nanostores
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup PNPM
         uses: pnpm/action-setup@v2

@@ -65,8 +65,8 @@ export async function getEntryGitInfo(...args) {
 
 const latestCommits = new Map([
 ${trackedFiles
-				.map(([file, fileInfo]) => `[${JSON.stringify(file)}, new Date(${fileInfo.latest.valueOf()})]`)
-				.join(',')}
+	.map(([file, fileInfo]) => `[${JSON.stringify(file)}, new Date(${fileInfo.latest.valueOf()})]`)
+	.join(',')}
 ]);
 
 export async function getLatestCommitDate(...args) {
@@ -83,8 +83,8 @@ export async function getLatestCommitDate(...args) {
 
 const oldestCommits = new Map([
 ${trackedFiles
-				.map(([file, fileInfo]) => `[${JSON.stringify(file)}, new Date(${fileInfo.earliest.valueOf()})]`)
-				.join(',')}
+	.map(([file, fileInfo]) => `[${JSON.stringify(file)}, new Date(${fileInfo.earliest.valueOf()})]`)
+	.join(',')}
 ]);
 
 export async function getOldestCommitDate(...args) {

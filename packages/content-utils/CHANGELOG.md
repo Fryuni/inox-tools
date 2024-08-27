@@ -1,5 +1,11 @@
 # @inox-tools/content-utils
 
+## 0.7.0
+
+### Minor Changes
+
+- 666543e: Allow retrieving the Git authors and co-authors of Content Collection Entries
+
 ## 0.6.1
 
 ### Patch Changes

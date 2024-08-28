@@ -1,0 +1,53 @@
+{
+  "name": "@inox-tools/server-islands",
+  "version": "0.0.0",
+  "description": "Common tools and utilities for working with Server Islands.",
+  "keywords": [
+    "astro-integration",
+    "withastro",
+    "astro"
+  ],
+  "license": "MIT",
+  "author": "Luiz Ferraz <luiz@lferraz.com>",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./runtime/lib": {
+      "types": "./dist/runtime/lib.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "virtual.d.ts"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "prepublish": "pnpm run build",
+    "test": "vitest run --coverage",
+    "test:dev": "vitest --coverage.enabled=true"
+  },
+  "dependencies": {
+    "@inox-tools/utils": "workspace:^",
+    "astro-integration-kit": "catalog:",
+    "debug": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "@vitest/ui": "catalog:",
+    "jest-extended": "catalog:",
+    "astro": "catalog:",
+    "tsup": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "astro": "catalog:lax"
+  }
+}

@@ -1,0 +1,58 @@
+---
+// This component automatically wraps itself in a server island if it is not already in a server island!
+// If you add it directly to a page, it will render "This is a placeholder" for 3 seconds while the bar loads as a Server Island.
+// If you add it inside of a component that is already being used as a server island, it will directly load the bar.
+import Self from './PersonalBar.astro';
+import CartCount from './CartCount';
+import { getServerIslandContext } from '@it-astro:server-islands';
+
+let wishlist = 0;
+let cart = 0;
+
+const serverIslandContext = getServerIslandContext(Astro);
+
+const asServerIsland = serverIslandContext !== undefined;
+
+if (asServerIsland) {
+	// Delay when running as a server island
+	await new Promise((resolve) => setTimeout(resolve, 3000));
+}
+---
+
+{
+	asServerIsland && (
+		<>
+			<a href="#" class="text-center text-gray-700 hover:text-primary transition relative">
+				<div class="text-2xl">
+					<i class="fa-regular fa-heart" />
+				</div>
+				<div class="text-xs leading-3">Wishlist</div>
+				<div class="absolute right-0 -top-1 w-5 h-5 rounded-full flex items-center justify-center bg-primary text-white text-xs">
+					{wishlist}
+				</div>
+			</a>
+			<a href="#" class="text-center text-gray-700 hover:text-primary transition relative">
+				<div class="text-2xl">
+					<i class="fa-solid fa-bag-shopping" />
+				</div>
+				<div class="text-xs leading-3">Cart</div>
+				<CartCount client:load count={cart} />
+			</a>
+			<a href="#" class="text-center text-gray-700 hover:text-primary transition relative">
+				<div class="text-2xl">
+					<i class="fa-regular fa-user" />
+				</div>
+				<div class="text-xs leading-3">Account</div>
+			</a>
+		</>
+	)
+}
+{
+	!asServerIsland && (
+		<>
+			<Self server:defer {...Astro.props}>
+				<Fragment slot="fallback">This is a placeholder!</Fragment>
+			</Self>
+		</>
+	)
+}

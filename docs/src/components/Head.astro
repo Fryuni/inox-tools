@@ -4,6 +4,7 @@ import StarlightHead from '@astrojs/starlight/components/Head.astro';
 
 <StarlightHead {...Astro.props} />
 <script>
+	import '../utils/croctClient.js';
 	import { inject } from '@vercel/analytics';
 
 	inject();

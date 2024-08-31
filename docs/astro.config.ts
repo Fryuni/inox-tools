@@ -1,7 +1,10 @@
 import { defineConfig } from 'astro/config';
-import starWarp from '@inox-tools/star-warp';
 import starlight from '@astrojs/starlight';
+import vercel from '@astrojs/vercel/serverless';
+import starWarp from '@inox-tools/star-warp';
 import starlightLinksValidator from 'starlight-links-validator';
+
+process.env.ASTRO_PROJECT_ROOT = new URL('../', import.meta.url).toString();
 
 const SITE =
 	process.env.VERCEL_ENV !== 'production' && process.env.VERCEL_URL
@@ -10,6 +13,10 @@ const SITE =
 
 // https://astro.build/config
 export default defineConfig({
+	output: 'hybrid',
+	adapter: vercel({
+		skewProtection: true,
+	}),
 	site: SITE,
 	trailingSlash: 'never',
 	integrations: [

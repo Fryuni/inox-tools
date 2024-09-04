@@ -6,7 +6,7 @@
 
 Test tooling and utilities based on Astro's own internal testing tools.
 
-See [docs](https://inox-tools.fryuni.dev/astro-tests)
+See [docs](https://inox-tools.fryuni.dev/astro-tests).
 
 ## Install
 

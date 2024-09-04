@@ -39,3 +39,4 @@ packages:
   - docs
   - packages/*
   - examples/*
+  - packages/*/tests/fixture/*

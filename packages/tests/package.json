@@ -29,9 +29,13 @@
   },
   "dependencies": {
     "@astrojs/internal-helpers": "catalog:",
+    "@astrojs/markdown-remark": "^5.2.0",
+    "@inox-tools/utils": "workspace:^",
     "astro": "catalog:",
+    "shiki": "^1.14.1",
     "fast-glob": "^3.3.2",
     "strip-ansi": "^7.1.0",
-    "undici": "^6.19.8"
+    "undici": "^6.19.8",
+    "zod": "^3"
   }
 }

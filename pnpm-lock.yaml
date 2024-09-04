@@ -465,15 +465,24 @@ importers:
         specifier: 'catalog:'
         version: 4.3.6
     devDependencies:
+      '@inox-tools/astro-tests':
+        specifier: 'workspace:'
+        version: link:../tests
       '@types/debug':
         specifier: 'catalog:'
         version: 4.1.12
       '@types/node':
         specifier: 'catalog:'
         version: 22.5.0
+      '@vitest/ui':
+        specifier: 'catalog:'
+        version: 2.0.5(vitest@2.0.5)
       astro:
         specifier: 'catalog:'
         version: 4.14.3(@types/node@22.5.0)(rollup@4.21.0)(typescript@5.5.4)
+      jest-extended:
+        specifier: 'catalog:'
+        version: 4.0.2
       tsup:
         specifier: 'catalog:'
         version: 8.2.4(jiti@1.21.6)(postcss@8.4.41)(typescript@5.5.4)(yaml@2.5.0)
@@ -483,6 +492,27 @@ importers:
       vite:
         specifier: 'catalog:'
         version: 5.4.2(@types/node@22.5.0)
+      vitest:
+        specifier: 'catalog:'
+        version: 2.0.5(@types/node@22.5.0)(@vitest/ui@2.0.5)
+
+  packages/astro-when/tests/fixture/server-output:
+    dependencies:
+      '@inox-tools/astro-when':
+        specifier: 'workspace:'
+        version: link:../../..
+      astro:
+        specifier: 'catalog:'
+        version: 4.14.3(@types/node@22.5.0)(rollup@4.21.0)(typescript@5.5.4)
+
+  packages/astro-when/tests/fixture/static-output:
+    dependencies:
+      '@inox-tools/astro-when':
+        specifier: 'workspace:'
+        version: link:../../..
+      astro:
+        specifier: 'catalog:'
+        version: 4.14.3(@types/node@22.5.0)(rollup@4.21.0)(typescript@5.5.4)
 
   packages/content-utils:
     dependencies:
@@ -812,21 +842,30 @@ importers:
       '@astrojs/internal-helpers':
         specifier: 'catalog:'
         version: 0.4.1
+      '@astrojs/markdown-remark':
+        specifier: ^5.2.0
+        version: 5.2.0
+      '@inox-tools/utils':
+        specifier: workspace:^
+        version: link:../utils
       astro:
         specifier: 'catalog:'
         version: 4.14.3(@types/node@22.5.0)(rollup@4.21.0)(typescript@5.5.4)
       fast-glob:
         specifier: ^3.3.2
         version: 3.3.2
+      shiki:
+        specifier: ^1.14.1
+        version: 1.14.1
       strip-ansi:
         specifier: ^7.1.0
         version: 7.1.0
-      tinyexec:
-        specifier: ^0.3.0
-        version: 0.3.0
       undici:
         specifier: ^6.19.8
         version: 6.19.8
+      zod:
+        specifier: ^3
+        version: 3.23.8
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
@@ -4499,9 +4538,6 @@ packages:
 
   tinycolor2@1.6.0:
     resolution: {integrity: sha512-XPaBkWQJdsf3pLKJV9p4qN/S+fm2Oj8AIPo1BTUhg5oxkvm9+SVEGFdhyOz7tTdUTfvxMiAs4sp6/eZO2Ew+pw==}
-
-  tinyexec@0.3.0:
-    resolution: {integrity: sha512-tVGE0mVJPGb0chKhqmsoosjsS+qUnJVGJpZgsHYQcGoPlG3B51R3PouqTgEGH2Dc9jjFyOqOpix6ZHNMXp1FZg==}
 
   tinygradient@1.1.5:
     resolution: {integrity: sha512-8nIfc2vgQ4TeLnk2lFj4tRLvvJwEfQuabdsmvDdQPT0xlk9TaNtpGd6nNRxXoK6vQhN6RSzj+Cnp5tTQmpxmbw==}
@@ -9553,8 +9589,6 @@ snapshots:
   tinybench@2.9.0: {}
 
   tinycolor2@1.6.0: {}
-
-  tinyexec@0.3.0: {}
 
   tinygradient@1.1.5:
     dependencies:

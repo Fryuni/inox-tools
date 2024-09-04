@@ -1,6 +1,6 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import fastGlob from 'fast-glob';
 import { Agent, request } from 'undici';
 import { build, dev, preview, sync } from 'astro';
@@ -9,14 +9,16 @@ import { mergeConfig } from '../node_modules/astro/dist/core/config/merge.js';
 import { validateConfig } from '../node_modules/astro/dist/core/config/validate.js';
 import type { App } from 'astro/app';
 import { getViteConfig } from 'astro/config';
+import { callsites } from './utils.js';
 
 // Disable telemetry when running tests
 process.env.ASTRO_TELEMETRY_DISABLED = 'true';
 
-type InlineConfig = AstroInlineConfig & { root: string | URL };
-type NodeRequest = import('node:http').IncomingMessage;
-type NodeResponse = import('node:http').ServerResponse;
-type DevServer = Awaited<ReturnType<typeof dev>>;
+type InlineConfig = Omit<AstroInlineConfig, 'root'> & { root: string | URL };
+export type NodeRequest = import('node:http').IncomingMessage;
+export type NodeResponse = import('node:http').ServerResponse;
+export type DevServer = Awaited<ReturnType<typeof dev>>;
+export type PreviewServer = Awaited<ReturnType<typeof preview>>;
 
 type Fixture = {
 	/**
@@ -53,7 +55,7 @@ type Fixture = {
 	 *
 	 * Must have called .dev() or .preview() before.
 	 */
-	fetch: (url: string, opts: Parameters<typeof request>[1]) => Promise<Response>;
+	fetch: (url: string, opts?: Parameters<typeof request>[1]) => Promise<Response>;
 
 	pathExists: (path: string) => boolean;
 	/**
@@ -109,6 +111,9 @@ export async function loadFixture(inlineConfig: InlineConfig): Promise<Fixture> 
 	inlineConfig.logLevel = 'silent';
 	inlineConfig.vite ??= {};
 	inlineConfig.vite.logLevel = 'silent';
+	// Prevent hanging when testing the dev server on some scenarios
+	inlineConfig.vite.optimizeDeps ??= {};
+	inlineConfig.vite.optimizeDeps.noDiscovery = true;
 
 	let root = inlineConfig.root;
 	if (typeof root !== 'string') {
@@ -118,9 +123,15 @@ export async function loadFixture(inlineConfig: InlineConfig): Promise<Fixture> 
 		// Handle "file:///C:/Users/fred", convert to "C:/Users/fred"
 		root = fileURLToPath(new URL(root));
 	} else if (!path.isAbsolute(root)) {
-		// Handle "./fixtures/...", convert to absolute path
-		root = fileURLToPath(new URL(root, import.meta.url));
+		const [caller] = callsites().slice(1);
+		let callerUrl = caller.getScriptNameOrSourceURL() || undefined;
+		if (callerUrl?.startsWith('file:') === false) {
+			callerUrl = pathToFileURL(callerUrl).toString();
+		}
+		// Handle "./fixtures/...", convert to absolute path relative to the caller of this function.
+		root = fileURLToPath(new URL(root, callerUrl));
 	}
+	inlineConfig.root = root;
 	const config = await validateConfig(inlineConfig, root, 'dev');
 	const viteConfig = await getViteConfig(
 		{},

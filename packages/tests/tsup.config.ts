@@ -20,7 +20,7 @@ export default defineConfig({
 	clean: true,
 	splitting: true,
 	minify: false,
-	external: [...dependencies, /^@astrojs/, 'shiki', 'prismjs', 'zod', 'vite', './virtual.d.ts'],
+	external: [...dependencies, 'vite', './virtual.d.ts'],
 	noExternal: [
 		...devDependencies,
 		// To inline the internal pieces of Astro that are needed for testing

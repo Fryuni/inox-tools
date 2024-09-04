@@ -68,6 +68,9 @@ export default defineIntegration({
 					},
 				});
 			},
+			'astro:build:done': () => {
+				delete (globalThis as any)[key];
+			}
 		},
 	}),
 });

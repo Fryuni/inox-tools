@@ -33,3 +33,17 @@ export async function* streamAsyncIterator(stream: ReadableStream) {
     reader.releaseLock();
   }
 }
+
+export function callsites(): NodeJS.CallSite[] {
+  const oldPrepare = Error.prepareStackTrace;
+  try {
+    Error.prepareStackTrace = (_, stackTrace) => stackTrace;
+
+    // Stack is only captures if read.
+    const stack = new Error('nothing').stack as unknown as NodeJS.CallSite[];
+
+    return stack.slice(1);
+  } finally {
+    Error.prepareStackTrace = oldPrepare;
+  }
+}

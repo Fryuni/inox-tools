@@ -1,0 +1,213 @@
+---
+title: Astro Test Utils
+packageName: '@inox-tools/astro-tests'
+description: Utilities for testing your own Astro integrations and libraries based on Astro's own testing tools.
+---
+
+TODO: Some introduction
+
+## How to install
+
+import { PackageManagers } from 'starlight-package-managers';
+
+<PackageManagers dev pkg="@inox-tools/astro-tests" />
+
+## Fixtures
+
+### `config`
+
+<p>**Type:** `AstroConfig`</p>
+
+The final config passed to [Astro's programatic CLI entrypoints][advanced APIs]. This configuration can be overriden on each method call.
+Will be automatically passed to the methods below:
+
+- [`startDevServer()`](#startdevserver)
+- [`build()`](#build)
+- [`preview()`](#preview)
+- [`sync()`](#sync)
+
+### `startDevServer`
+
+{(
+
+<p>
+	<strong>Type: </strong>
+	<code dir="auto" style="padding-right: 0;">
+		(inlineConfig:
+	</code>
+	<a href="https://docs.astro.build/en/reference/cli-reference/#astroinlineconfig">
+		<code dir="auto" style="padding-right: 0;">
+			AstroInlineConfig
+		</code>
+	</a>
+	<code dir="auto" style="padding-left: 0;">
+		) =&gt; Promise&lt;DevServer&gt;
+	</code>
+</p>
+)}
+
+Starts a dev server at an available port.
+
+This server can't be running at the same time for thein same fixture as .preview() since they share ports.
+Be sure to call devServer.stop() before test exit.
+
+Equivalent to running [`astro dev`](https://docs.astro.build/en/reference/cli-reference/#astro-dev).
+
+TODO: Send a PR to Astro docs documenting `DevServer`
+
+### `build`
+
+{(
+
+<p>
+	<strong>Type: </strong>
+	<code dir="auto" style="padding-right: 0;">
+		(inlineConfig:
+	</code>
+	<a href="https://docs.astro.build/en/reference/cli-reference/#astroinlineconfig">
+		<code dir="auto" style="padding-right: 0;">
+			AstroInlineConfig
+		</code>
+	</a>
+	<code dir="auto" style="padding-left: 0;">
+		) =&gt; Promise&lt;void&gt;
+	</code>
+</p>
+)}
+
+Builds into current folder (will erase previous build).
+
+Equivalent to running [`astro build`](https://docs.astro.build/en/reference/cli-reference/#astro-build).
+
+### `preview`
+
+{(
+
+<p>
+	<strong>Type: </strong>
+	<code dir="auto" style="padding-right: 0;">
+		(inlineConfig:
+	</code>
+	<a href="https://docs.astro.build/en/reference/cli-reference/#astroinlineconfig">
+		<code dir="auto" style="padding-right: 0;">
+			AstroInlineConfig
+		</code>
+	</a>
+	<code dir="auto" style="padding-left: 0;">
+		) =&gt; Promise&lt;PreviewServer&gt;
+	</code>
+</p>
+)}
+
+Starts a preview server.
+
+This server can't be running at the same time for thein same fixture as .dev() since they share ports.
+Be sure to call server.stop() before test exit.
+
+Equivalent to running [`astro preview`](https://docs.astro.build/en/reference/cli-reference/#astro-preview).
+
+TODO: Send a PR to Astro docs documenting `PreviewServer`
+
+### `sync`
+
+{(
+
+<p>
+	<strong>Type: </strong>
+	<code dir="auto" style="padding-right: 0;">
+		(inlineConfig:
+	</code>
+	<a href="https://docs.astro.build/en/reference/cli-reference/#astroinlineconfig">
+		<code dir="auto" style="padding-right: 0;">
+			AstroInlineConfig
+		</code>
+	</a>
+	<code dir="auto" style="padding-left: 0;">
+		) =&gt; Promise&lt;void&gt;
+	</code>
+</p>
+)}
+
+Synchronizes the Astro project and configuration with the generated code, populating the `src/env.d.ts` file and the `.astro` directory.
+
+Equivalent to running [`astro sync`](https://docs.astro.build/en/reference/cli-reference/#astro-sync).
+
+### `clean`
+
+<p>
+  **Type:** `() => Promise<void>`
+</p>
+
+### `resolveUrl`
+
+<p>**Type:** `(url: string) => string`</p>
+
+### `fetch`
+
+<p>
+  **Type:** `(url: string, opts?: Parameters<typeof request>[1]) => Promise<Response>`
+</p>
+
+### `pathExists`
+
+<p>**Type:** `(path: string) => boolean`</p>
+
+### `readFile`
+
+<p>
+  **Type:** `(path: string) => Promise<string>`
+</p>
+
+### `editFile`
+
+<p>
+  **Type:** `(path: string, updater: string | ((content: string) => string)) => Promise<() => void>`
+</p>
+
+### `resetAllFiles`
+
+<p>**Type:** `() => void`</p>
+
+### `readdir`
+
+<p>
+  **Type:** `(path: string) => Promise<string[]>`
+</p>
+
+### `glob`
+
+<p>
+  **Type:** `(pattern: string) => Promise<string[]>`
+</p>
+
+### `loadTestAdapterApp`
+
+<p>
+  **Type:** `() => Promise<App>`
+</p>
+
+### `loadNodeAdapterHandler`
+
+<p>
+  **Type:** `() => Promise<(req: NodeRequest, res: NodeResponse) => void>`
+</p>
+
+## Test Adapter
+
+### `env`
+
+### `provideAddress`
+
+### `extendAdapter`
+
+### `setEntryPoints`
+
+### `setMiddlewareEntryPoint`
+
+### `setRoutes`
+
+## Utilities
+
+### No Node checker
+
+[advanted APIs]: https://docs.astro.build/en/reference/cli-reference/#advanced-apis-experimental

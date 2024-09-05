@@ -24,25 +24,41 @@ type Fixture = {
 	/**
 	 * Returns the final config.
 	 * Will be automatically passed to the methods below:
-	 * - .dev()
+	 * - .startDevServer()
 	 * - .build()
 	 * - .preview()
 	 * - .sync()
 	 */
 	config: AstroConfig;
 	/**
-	 * Starts a dev server at an available port. Be sure to call devServer.stop() before test exit.
+	 * Starts a dev server at an available port.
+	 *
+	 * This server can't be running at the same time for thein same fixture as .preview() since they share ports.
+	 * Be sure to call devServer.stop() before test exit.
+	 *
+	 * Equivalent to running `astro dev`.
 	 */
 	startDevServer: typeof dev;
 	/**
-	 * Builds into current folder (will erase previous build)
+	 * Builds into current folder (will erase previous build).
+	 *
+	 * Equivalent to running `astro build`.
 	 */
 	build: typeof build;
 	/**
-	 * Starts a preview server. Note this can't be running in same fixture as .dev() as they share ports.
-	 * Also, you must call `server.close()` before test exit.
+	 * Starts a preview server.
+	 *
+	 * This server can't be running at the same time for thein same fixture as .dev() since they share ports.
+	 * Be sure to call server.stop() before test exit.
+	 *
+	 * Equivalent to running `astro preview`.
 	 */
 	preview: typeof preview;
+	/**
+	 * Synchronizes the Astro project and configuration with the generated code, populating the `src/env.d.ts` file and the `.astro` directory.
+	 *
+	 * Equivalent to running `astro sync`.
+	 */
 	sync: typeof sync;
 
 	/**

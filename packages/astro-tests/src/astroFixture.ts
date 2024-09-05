@@ -7,9 +7,9 @@ import { build, dev, preview, sync } from 'astro';
 import type { AstroConfig, AstroInlineConfig } from 'astro';
 import { mergeConfig } from '../node_modules/astro/dist/core/config/merge.js';
 import { validateConfig } from '../node_modules/astro/dist/core/config/validate.js';
-import type { App } from 'astro/app';
 import { getViteConfig } from 'astro/config';
 import { callsites } from './utils.js';
+import type { App } from 'astro/app';
 
 // Disable telemetry when running tests
 process.env.ASTRO_TELEMETRY_DISABLED = 'true';
@@ -19,6 +19,11 @@ export type NodeRequest = import('node:http').IncomingMessage;
 export type NodeResponse = import('node:http').ServerResponse;
 export type DevServer = Awaited<ReturnType<typeof dev>>;
 export type PreviewServer = Awaited<ReturnType<typeof preview>>;
+
+type TestApp = {
+	render: (req: Request) => Promise<Response>;
+	toInternalApp: () => App;
+};
 
 type Fixture = {
 	/**
@@ -62,17 +67,25 @@ type Fixture = {
 	sync: typeof sync;
 
 	/**
-	 * Removes the project's dist folder.
+	 * Removes generated directories from the fixture directory.
 	 */
 	clean: () => Promise<void>;
+	/**
+	 * Resolves a relative URL to the full url of the running server.
+	 *
+	 * This can only be called after either .startDevServer() or .preview() is called.
+	 */
 	resolveUrl: (url: string) => string;
 	/**
-	 * Returns a URL from the running server.
+	 * Send a request to the given URL. If the URL is relative, it will be resolved relative to the root of the server (without a base path).
 	 *
-	 * Must have called .dev() or .preview() before.
+	 * This can only be called after either .startDevServer() or .preview() is called.
 	 */
 	fetch: (url: string, opts?: Parameters<typeof request>[1]) => Promise<Response>;
 
+	/**
+	 * Checks whether the given path exists on the build output.
+	 */
 	pathExists: (path: string) => boolean;
 	/**
 	 * Read a file from the build.
@@ -92,7 +105,7 @@ type Fixture = {
 	 */
 	resetAllFiles: () => void;
 	/**
-	 * Read a directory from the build.
+	 * Read a directory from the build output.
 	 */
 	readdir: (path: string) => Promise<string[]>;
 
@@ -103,9 +116,9 @@ type Fixture = {
 	/**
 	 * Load an app built using the Test Adapter.
 	 */
-	loadTestAdapterApp: () => Promise<App>;
+	loadTestAdapterApp: () => Promise<TestApp>;
 	/**
-	 * Load an app built using the Node Adapter.
+	 * Load the handler for an app built using the Node Adapter.
 	 */
 	loadNodeAdapterHandler: () => Promise<(req: NodeRequest, res: NodeResponse) => void>;
 };
@@ -223,14 +236,24 @@ export async function loadFixture(inlineConfig: InlineConfig): Promise<Fixture> 
 				recursive: true,
 				force: true,
 			});
-			const astroCache = new URL('./node_modules/.astro', config.root);
-			if (fs.existsSync(astroCache)) {
-				await fs.promises.rm(astroCache, {
-					maxRetries: 10,
-					recursive: true,
-					force: true,
-				});
-			}
+
+			await fs.promises.rm(new URL('./node_modules/.astro', config.root), {
+				maxRetries: 10,
+				recursive: true,
+				force: true,
+			});
+
+			await fs.promises.rm(config.cacheDir, {
+				maxRetries: 10,
+				recursive: true,
+				force: true,
+			});
+
+			await fs.promises.rm(new URL('./.astro', config.root), {
+				maxRetries: 10,
+				recursive: true,
+				force: true,
+			});
 		},
 		resolveUrl,
 		fetch: async (url, init) => {
@@ -311,7 +334,10 @@ export async function loadFixture(inlineConfig: InlineConfig): Promise<Fixture> 
 			const { createApp, manifest } = await import(url.toString());
 			const app = createApp();
 			app.manifest = manifest;
-			return app;
+			return {
+				render: (req) => app.render(req),
+				toInternalApp: () => app,
+			};
 		},
 		loadNodeAdapterHandler: async () => {
 			const url = new URL(`./server/entry.mjs?id=${fixtureId}`, config.outDir);

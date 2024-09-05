@@ -11,22 +11,22 @@ type MiddlewareEntryPoint = HookParameters<'astro:build:ssr'>['middlewareEntryPo
 type Routes = HookParameters<'astro:build:done'>['routes'];
 
 export type Options = {
+  env?: Record<string, string | undefined>;
   provideAddress?: boolean;
   extendAdapter?: AstroAdapter;
   setEntryPoints?: (entryPoints: EntryPoints) => void;
   setMiddlewareEntryPoint?: (middlewareEntryPoint: MiddlewareEntryPoint) => void;
   setRoutes?: (routes: Routes) => void;
-  env: Record<string, string | undefined>;
 };
 
-export default function (options: Options = { env: {} }): AstroIntegration {
+export default function (options: Options = {}): AstroIntegration {
   const {
     provideAddress = true,
     extendAdapter,
     setEntryPoints,
     setMiddlewareEntryPoint,
     setRoutes,
-    env,
+    env = {},
   } = options;
 
   return {

@@ -53,8 +53,6 @@ Be sure to call devServer.stop() before test exit.
 
 Equivalent to running [`astro dev`](https://docs.astro.build/en/reference/cli-reference/#astro-dev).
 
-TODO: Send a PR to Astro docs documenting `DevServer`
-
 ### `build`
 
 {(
@@ -105,8 +103,6 @@ This server can't be running at the same time for thein same fixture as .dev() s
 Be sure to call server.stop() before test exit.
 
 Equivalent to running [`astro preview`](https://docs.astro.build/en/reference/cli-reference/#astro-preview).
-
-TODO: Send a PR to Astro docs documenting `PreviewServer`
 
 ### `sync`
 
@@ -349,3 +345,10 @@ A Vite plugin to ensure no module in the final bundle relies on the built-in Nod
 If the generated bundle contains any reference to a Node module the build will fail.
 
 The checked modules are those from the built-in module list provided as [part of `node:modules`](https://nodejs.org/api/module.html#modulebuiltinmodules), both with an without the `node:` prefix, as well as the [prefix-only modules](https://nodejs.org/api/modules.html#built-in-modules-with-mandatory-node-prefix).
+
+## TODOs
+
+- Send a PR to Astro Docs fixing the signature of the `dev`, `build`, `preview` and `sync` APIs;
+- Send a PR to Astro Docs fixing the documentation of `AstroInlineConfig`;
+- Send a PR to Astro Docs documenting the `DevServer`;
+- Send a PR to Astro Docs documenting the `PreviewServer`;

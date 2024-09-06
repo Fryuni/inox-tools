@@ -215,11 +215,7 @@ export async function loadFixture(inlineConfig: InlineConfig): Promise<Fixture> 
 		},
 		build: async (extraInlineConfig = {}) => {
 			process.env.NODE_ENV = 'production';
-			return build(
-				mergeConfig(inlineConfig, extraInlineConfig),
-				// @ts-expect-error -- This is not typed by Astro
-				{ teardownCompiler: false }
-			);
+			return build(mergeConfig(inlineConfig, extraInlineConfig));
 		},
 		preview: async (extraInlineConfig = {}) => {
 			process.env.NODE_ENV = 'production';

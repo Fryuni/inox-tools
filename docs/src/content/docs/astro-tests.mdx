@@ -4,7 +4,17 @@ packageName: '@inox-tools/astro-tests'
 description: Utilities for testing your own Astro integrations and libraries based on Astro's own testing tools.
 ---
 
-TODO: Some introduction
+Astro's current ecosystem lacks solutions for testing integrations, adapters, and components without either copying internal entire parts of the Astro code or bypassing package encapsulation to import internal modules from Astro. This tool aims to fill that gap by providing high-level wrapper over the known practices required to test Astro libraries.
+
+It offers utilities for setting up environments, running builds, and inspecting renders, ensuring compatibility and performance without the need to tamper with internal Astro logic.
+
+## Compatibility
+
+Relying on internal details of Astro can lead to your code breaking at any time. Those internal pieces can move, break or be removed from Astro even on patch versions since they are not part of the public API.
+
+Although this library also utilizes some parts of the Astro code that are meant to be internal, projects using this library for their tests will not break in case those parts are changed. This is ensured by how it built and published, although the source code breaks encapsulation, the code in the published library relies only on Astro's public API.
+
+You can check on your node_modules to see it 😉
 
 ## How to install
 
@@ -346,9 +356,6 @@ If the generated bundle contains any reference to a Node module the build will f
 
 The checked modules are those from the built-in module list provided as [part of `node:modules`](https://nodejs.org/api/module.html#modulebuiltinmodules), both with an without the `node:` prefix, as well as the [prefix-only modules](https://nodejs.org/api/modules.html#built-in-modules-with-mandatory-node-prefix).
 
-## TODOs
+## License
 
-- Send a PR to Astro Docs fixing the signature of the `dev`, `build`, `preview` and `sync` APIs;
-- Send a PR to Astro Docs fixing the documentation of `AstroInlineConfig`;
-- Send a PR to Astro Docs documenting the `DevServer`;
-- Send a PR to Astro Docs documenting the `PreviewServer`;
+Astro Test Utils is available under the MIT license.

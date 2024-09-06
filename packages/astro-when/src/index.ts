@@ -68,9 +68,19 @@ export default defineIntegration({
 					},
 				});
 			},
+			'astro:config:done': (params) => {
+				// Check if the version of Astro being used has the `injectTypes` utility.
+				if (typeof params.injectTypes === 'function') {
+					debug('Injecting types in .astro structure');
+					params.injectTypes({
+						filename: 'types.d.ts',
+						content: "import '@inox-tools/astro-when';",
+					});
+				}
+			},
 			'astro:build:done': () => {
 				delete (globalThis as any)[key];
-			}
+			},
 		},
 	}),
 });

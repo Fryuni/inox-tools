@@ -3,7 +3,7 @@
  * Modified to use TypeScript and to comply with new types and requirements.
  */
 
-import type { AstroAdapter, AstroIntegration, HookParameters } from 'astro';
+import type { AstroIntegration, HookParameters } from 'astro';
 
 type EntryPoints = HookParameters<'astro:build:ssr'>['entryPoints'];
 type MiddlewareEntryPoint = HookParameters<'astro:build:ssr'>['middlewareEntryPoint'];
@@ -12,8 +12,6 @@ type Routes = HookParameters<'astro:build:done'>['routes'];
 export type Options = {
 	/**
 	 * Environment variables available for `astro:env` as server-side variables and secrets.
-	 *
-	 * @default {}
 	 */
 	env?: Record<string, string | undefined>;
 	/**
@@ -46,11 +44,11 @@ export type Options = {
 
 export default function (options: Options = {}): AstroIntegration {
 	const {
+		env,
 		provideAddress = true,
 		setEntryPoints,
 		setMiddlewareEntryPoint,
 		setRoutes,
-		env = {},
 	} = options;
 
 	return {
@@ -73,13 +71,11 @@ export default function (options: Options = {}): AstroIntegration {
 											import { App } from 'astro/app';
 											import fs from 'fs';
 
-											${env
+											${env != null
 												? `
+											const $$env = ${JSON.stringify(env)};
 											await import('astro/env/setup')
-												.then(mod => mod.setGetEnv((key) => {
-													const data = ${JSON.stringify(env)};
-													return data[key];
-												}))
+												.then(mod => mod.setGetEnv((key) => $$env[key]))
 												.catch(() => {});`
 												: ''
 											}

@@ -21,8 +21,6 @@ defaults:
     shell: bash
 
 env:
-  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
   FORCE_COLOR: true
   ASTRO_TELEMETRY_DISABLED: true
   # 7 GiB by default on GitHub, setting to 6 GiB
@@ -47,6 +45,14 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Cache turbo build setup
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-${{ matrix.NODE_VERSION }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.NODE_VERSION }}-turbo-
 
       - name: Setup PNPM
         uses: pnpm/action-setup@v2
@@ -105,6 +111,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Cache turbo build setup
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-${{ matrix.NODE_VERSION }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.NODE_VERSION }}-turbo-
 
       - name: Setup PNPM
         uses: pnpm/action-setup@v2

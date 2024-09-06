@@ -20,14 +20,18 @@ export function fixLineEndings(str: string) {
 	return str.replace(/\r\n/g, '\n');
 }
 
+/**
+ * Like the lib `callsites` but with the proper Node types
+ * instead of old compatibility types.
+ */
 export function callsites(): NodeJS.CallSite[] {
 	const oldPrepare = Error.prepareStackTrace;
 	try {
 		Error.prepareStackTrace = (_, stackTrace) => stackTrace;
-
-		// Stack is only captures if read.
+		// TS expects it be a string, but now it is the internal objects.
 		const stack = new Error('nothing').stack as unknown as NodeJS.CallSite[];
 
+		// Remove the frame of `callsites` itself.
 		return stack.slice(1);
 	} finally {
 		Error.prepareStackTrace = oldPrepare;

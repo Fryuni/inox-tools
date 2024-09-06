@@ -4,25 +4,49 @@
  */
 
 import type { AstroAdapter, AstroIntegration, HookParameters } from 'astro';
-import { viteID } from './utils.js';
 
 type EntryPoints = HookParameters<'astro:build:ssr'>['entryPoints'];
 type MiddlewareEntryPoint = HookParameters<'astro:build:ssr'>['middlewareEntryPoint'];
 type Routes = HookParameters<'astro:build:done'>['routes'];
 
 export type Options = {
+	/**
+	 * Environment variables available for `astro:env` as server-side variables and secrets.
+	 *
+	 * @default {}
+	 */
 	env?: Record<string, string | undefined>;
+	/**
+	 * Whether to expose `Astro.clientAddress`.
+	 *
+	 * @default true
+	 */
 	provideAddress?: boolean;
-	extendAdapter?: AstroAdapter;
+
+	/**
+	 * Callback to collect the build entrypoints.
+	 *
+	 * The collected value is a map from `RouteData` describing a route
+	 * to the URL pointing to the file on disk that can be imported to
+	 * render that route.
+	 */
 	setEntryPoints?: (entryPoints: EntryPoints) => void;
+	/**
+	 * Callback to collect the middleware entrypoint.
+	 *
+	 * The collected value is the URL pointing to the file on disk.
+	 * It will be `undefined` if no middleware is used.
+	 */
 	setMiddlewareEntryPoint?: (middlewareEntryPoint: MiddlewareEntryPoint) => void;
+	/**
+	 * Callback to collect the final state of the routes.
+	 */
 	setRoutes?: (routes: Routes) => void;
 };
 
 export default function (options: Options = {}): AstroIntegration {
 	const {
 		provideAddress = true,
-		extendAdapter,
 		setEntryPoints,
 		setMiddlewareEntryPoint,
 		setRoutes,
@@ -41,9 +65,6 @@ export default function (options: Options = {}): AstroIntegration {
 								resolveId(id) {
 									if (id === '@my-ssr') {
 										return id;
-									} else if (id === 'astro/app') {
-										const viteId = viteID(new URL('../dist/core/app/index.js', import.meta.url));
-										return viteId;
 									}
 								},
 								load(id) {
@@ -52,16 +73,15 @@ export default function (options: Options = {}): AstroIntegration {
 											import { App } from 'astro/app';
 											import fs from 'fs';
 
-											${
-												env
-													? `
+											${env
+												? `
 											await import('astro/env/setup')
 												.then(mod => mod.setGetEnv((key) => {
 													const data = ${JSON.stringify(env)};
 													return data[key];
 												}))
 												.catch(() => {});`
-													: ''
+												: ''
 											}
 
 											class MyApp extends App {
@@ -105,12 +125,16 @@ export default function (options: Options = {}): AstroIntegration {
 					exports: ['manifest', 'createApp'],
 					supportedAstroFeatures: {
 						serverOutput: 'stable',
-						envGetSecret: 'experimental',
+						envGetSecret: 'stable',
 						staticOutput: 'stable',
 						hybridOutput: 'stable',
 						i18nDomains: 'stable',
+						assets: {
+							supportKind: 'stable',
+							isSharpCompatible: true,
+							isSquooshCompatible: true,
+						},
 					},
-					...extendAdapter,
 				});
 			},
 			'astro:build:ssr': ({ entryPoints, middlewareEntryPoint }) => {

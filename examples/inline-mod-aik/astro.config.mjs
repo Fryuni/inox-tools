@@ -16,9 +16,13 @@ export default defineConfig({
 			// Async factory values are awaited in runtmie and the resolved value is exported from
 			// the defined module as if it was inline.
 			config: asyncFactory(async () => {
-				// Fetch configuration from some remote place when the server is initialized
-				const res = await fetch('https://httpbin.org/json');
-				return res.json();
+				try {
+					// Fetch configuration from some remote place when the server is initialized
+					const res = await fetch('https://httpbin.org/json');
+					return res.json();
+				} catch (e) {
+					return { status: 'error', message: e.message };
+				}
 			}),
 			locals: {
 				// Plain values are serialized and made available in runtime

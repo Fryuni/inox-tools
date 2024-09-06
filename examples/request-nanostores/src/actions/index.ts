@@ -1,5 +1,6 @@
-import { defineAction, z } from 'astro:actions';
+import { defineAction } from 'astro:actions';
 import { CART_COOKIE_NAME, cookieOptions, extractCartCookie } from '../cookies';
+import { z } from 'astro/zod';
 
 export const server = {
 	setCartItem: defineAction({

@@ -9,7 +9,7 @@ import * as os from 'node:os';
  *   Windows:    C:/Users/astro/code/my-project/src/pages/index.astro
  */
 export function viteID(filePath: URL): string {
-  return slash(fileURLToPath(filePath) + filePath.search);
+	return slash(fileURLToPath(filePath) + filePath.search);
 }
 
 export const isLinux = os.platform() === 'linux';
@@ -17,33 +17,19 @@ export const isMacOS = os.platform() === 'darwin';
 export const isWindows = os.platform() === 'win32';
 
 export function fixLineEndings(str: string) {
-  return str.replace(/\r\n/g, '\n');
-}
-
-export async function* streamAsyncIterator(stream: ReadableStream) {
-  const reader = stream.getReader();
-
-  try {
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) return;
-      yield value;
-    }
-  } finally {
-    reader.releaseLock();
-  }
+	return str.replace(/\r\n/g, '\n');
 }
 
 export function callsites(): NodeJS.CallSite[] {
-  const oldPrepare = Error.prepareStackTrace;
-  try {
-    Error.prepareStackTrace = (_, stackTrace) => stackTrace;
+	const oldPrepare = Error.prepareStackTrace;
+	try {
+		Error.prepareStackTrace = (_, stackTrace) => stackTrace;
 
-    // Stack is only captures if read.
-    const stack = new Error('nothing').stack as unknown as NodeJS.CallSite[];
+		// Stack is only captures if read.
+		const stack = new Error('nothing').stack as unknown as NodeJS.CallSite[];
 
-    return stack.slice(1);
-  } finally {
-    Error.prepareStackTrace = oldPrepare;
-  }
+		return stack.slice(1);
+	} finally {
+		Error.prepareStackTrace = oldPrepare;
+	}
 }

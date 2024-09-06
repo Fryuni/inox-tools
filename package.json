@@ -20,7 +20,7 @@
     "format": "prettier -w \"**/*\" --ignore-unknown --cache",
     "postinstall": "node ./turbo/cache-key.mjs",
     "release": "pnpm run build && changeset publish",
-    "test": "turbo run test --concurrency=1",
+    "test": "turbo run --concurrency=1 --filter '@inox-tools/*' test",
     "version": "changeset version && pnpm install && pnpm format"
   },
   "lint-staged": {

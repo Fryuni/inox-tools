@@ -21,9 +21,9 @@ test('CJS dependency default import', async () => {
 	});
 
 	expect(modInfo.text).toEqualIgnoringWhitespace(`
-		import __node_modulespnpmdebug436node_modulesdebugsrcindexjs from './../../node_modules/.pnpm/debug@4.3.6/node_modules/debug/src/index.js';
+		import __node_modulespnpmdebug437node_modulesdebugsrcindexjs from './../../node_modules/.pnpm/debug@4.3.7/node_modules/debug/src/index.js';
 
-		export default __node_modulespnpmdebug436node_modulesdebugsrcindexjs;
+		export default __node_modulespnpmdebug437node_modulesdebugsrcindexjs;
 	`);
 });
 
@@ -35,7 +35,7 @@ test('CJS dependency named import', async () => {
 	expect(modInfo.text).toEqualIgnoringWhitespace(`
 		import {
 			coerce as __coerce,
-		} from './../../node_modules/.pnpm/debug@4.3.6/node_modules/debug/src/index.js';
+		} from './../../node_modules/.pnpm/debug@4.3.7/node_modules/debug/src/index.js';
 
 		export default __coerce;
 	`);

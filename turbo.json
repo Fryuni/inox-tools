@@ -16,6 +16,8 @@
       "persistent": true
     },
     "test": {
+      "dependsOn": ["^build"],
+      "cache": false,
       "outputLogs": "new-only"
     }
   }

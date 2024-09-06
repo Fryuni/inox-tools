@@ -16,6 +16,11 @@ git restore packages
 # Upgrade all dev dependencies
 pnpm upgrade -rLD
 
+pnpm dedupe
+
+git add '**/package.json' package.json pnpm-lock.yaml pnpm-workspace.yaml
+git commit -m "chore: Upgrade dependencies"
+
 rm -rf .inox-tools
 mkdir -p .inox-tools/catalogs/default
 cat >.inox-tools/pnpm-workspace.yaml <<EOF
@@ -74,5 +79,5 @@ yq . pnpm-workspace.yaml -oy -i -P
 
 pnpm dedupe
 
-# git add '**/package.json' package.json pnpm-lock.yaml pnpm-workspace.yaml
-# git commit -m "chore: Upgrade dependencies"
+git add '**/package.json' package.json pnpm-lock.yaml pnpm-workspace.yaml
+git commit -m "chore: Upgrade catalogs"

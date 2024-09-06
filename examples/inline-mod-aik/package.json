@@ -13,13 +13,13 @@
   "dependencies": {
     "@astrojs/check": "^0.9.3",
     "@astrojs/node": "^8.3.3",
-    "astro": "^4.14.3",
+    "astro": "^4.15.3",
     "typescript": "^5.5.4",
-    "vite": "^5.4.2"
+    "vite": "^5.4.3"
   },
   "devDependencies": {
     "@inox-tools/aik-mod": "workspace:^",
-    "astro-integration-kit": "^0.16.0"
+    "astro-integration-kit": "^0.16.1"
   },
   "overrides": {
     "vite": "$vite"

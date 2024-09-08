@@ -1248,7 +1248,7 @@ class GlobalCache {
 		// these values can be cached once and reused across avery run.
 
 		// Add entries to allow proper serialization over generators and iterators.
-		const emptyGenerator = function* (): any { };
+		const emptyGenerator = function* (): any {};
 
 		this.cache.addUnchecked(Object.getPrototypeOf(emptyGenerator), {
 			type: 'expr',

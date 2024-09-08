@@ -14,7 +14,7 @@ Relying on internal details of Astro can lead to your code breaking at any time.
 
 Although this library also utilizes some parts of the Astro code that are meant to be internal, projects using this library for their tests will not break in case those parts are changed. This is ensured by how it built and published, although the source code breaks encapsulation, the code in the published library relies only on Astro's public API.
 
-You can check on your node_modules to see it 😉
+You can check on your `node_modules` directory to see it 😉
 
 ## How to install
 
@@ -28,8 +28,8 @@ import { PackageManagers } from 'starlight-package-managers';
 
 <p>**Type:** `AstroConfig`</p>
 
-The final config passed to [Astro's programatic CLI entrypoints](https://docs.astro.build/en/reference/cli-reference/#advanced-apis-experimental). This configuration can be overriden on each method call.
-Will be automatically passed to the methods below:
+The final config passed to [Astro's programatic CLI entrypoints](https://docs.astro.build/en/reference/cli-reference/#advanced-apis-experimental). This configuration can be overridden for each method call.
+It will automatically be passed to the following methods:
 
 - [`startDevServer()`](#startdevserver)
 - [`build()`](#build)
@@ -56,10 +56,10 @@ Will be automatically passed to the methods below:
 </p>
 )}
 
-Starts a dev server at an available port.
+Starts a development server on an available port.
 
-This server can't be running at the same time for thein same fixture as .preview() since they share ports.
-Be sure to call devServer.stop() before test exit.
+This server cannot run simultaneously with `.preview()` for the same fixture, as they share ports.
+Ensure `devServer.stop()` is called before the test exits.
 
 Equivalent to running [`astro dev`](https://docs.astro.build/en/reference/cli-reference/#astro-dev).
 
@@ -109,8 +109,8 @@ Equivalent to running [`astro build`](https://docs.astro.build/en/reference/cli-
 
 Starts a preview server.
 
-This server can't be running at the same time for thein same fixture as .dev() since they share ports.
-Be sure to call server.stop() before test exit.
+This server cannot run simultaneously with `.dev()` on the same fixture, as they share ports.
+Ensure `server.stop()` is called before the test exits.
 
 Equivalent to running [`astro preview`](https://docs.astro.build/en/reference/cli-reference/#astro-preview).
 
@@ -235,7 +235,7 @@ Reset all changes made with [`.editFile()`](#editfile)
 
 Read a directory from the build output (relative to `outDir` config).
 
-This is a convenience wrapper around [readdir from Node's FS Promise API](https://nodejs.org/api/fs.html#fspromisesreaddirpath-options).
+This is a convenience wrapper for [readdir from Node's FS Promise API](https://nodejs.org/api/fs.html#fspromisesreaddirpath-options).
 
 ### `glob`
 
@@ -294,7 +294,7 @@ type TestApp = {
 };
 ```
 
-A minimal proxy to the underlying Astro App using the test adapter.
+A minimal proxy for the underlying Astro app, provided by the test adapter.
 
 ##### `render`
 
@@ -350,9 +350,9 @@ A callback function that will receive the final value of the project routes.
 
 ### No Node checker
 
-A Vite plugin to ensure no module in the final bundle relies on the built-in Node modules.
+A Vite plugin that ensures no module in the final bundle depends on built-in Node modules.
 
-If the generated bundle contains any reference to a Node module the build will fail.
+If any reference to a Node module is found in the generated bundle, the build will fail.
 
 The checked modules are those from the built-in module list provided as [part of `node:modules`](https://nodejs.org/api/module.html#modulebuiltinmodules), both with an without the `node:` prefix, as well as the [prefix-only modules](https://nodejs.org/api/modules.html#built-in-modules-with-mandatory-node-prefix).
 

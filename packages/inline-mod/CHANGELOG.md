@@ -1,5 +1,11 @@
 # @inox-tools/inline-mod
 
+## 1.5.1-inline-md.0
+
+### Patch Changes
+
+- 111fd09: Optimize stacking of imports
+
 ## 1.5.0
 
 ### Minor Changes

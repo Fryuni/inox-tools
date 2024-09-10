@@ -683,18 +683,9 @@ class Inspector {
 			for (const [name, properties] of capturedVariables[scope].entries()) {
 				const value = await v8.lookupCapturedVariableValue(func, name, scope === 'required');
 
-				const moduleEntry = await findModuleEntry(value);
 				const frameLength = this.frames.length;
 
-				if (moduleEntry) {
-					this.cache.add(value, moduleEntry);
-					this.frames.push({
-						captureModule: {
-							name: moduleEntry.value.reference,
-							value: value,
-						},
-					});
-				} else if (value instanceof Function) {
+				if (value instanceof Function) {
 					// Only bother pushing on context frame if the name of the variable
 					// we captured is different from the name of the function.  If the
 					// names are the same, this is a direct reference, and we don't have
@@ -710,6 +701,16 @@ class Inspector {
 
 				const serializedName = await this.inspect(name);
 				const serializedValue = await this.inspect(value, properties);
+
+				if (serializedValue.type === 'module' || serializedValue.type === 'moduleValue') {
+					this.frames.splice(frameLength);
+					this.frames.push({
+						captureModule: {
+							name: serializedValue.value.reference,
+							value: value,
+						},
+					});
+				}
 
 				capturedValues.set(serializedName, { entry: serializedValue });
 

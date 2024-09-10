@@ -1,0 +1,41 @@
+{
+  "name": "@inox-tools/astro-tests",
+  "version": "0.0.0",
+  "license": "MIT",
+  "author": "Luiz Ferraz <luiz@lferraz.com>",
+  "type": "module",
+  "exports": {
+    "./*": {
+      "types": "./dist/*.d.ts",
+      "default": "./dist/*.js"
+    }
+  },
+  "files": [
+    "README.md",
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "echo 'This is the test utility, there are no tests for it'"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "tsup": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
+  },
+  "dependencies": {
+    "@astrojs/internal-helpers": "catalog:",
+    "@astrojs/markdown-remark": "^5.2.0",
+    "@inox-tools/utils": "workspace:^",
+    "astro": "catalog:",
+    "shiki": "^1.14.1",
+    "fast-glob": "^3.3.2",
+    "strip-ansi": "^7.1.0",
+    "undici": "^6.19.8",
+    "zod": "^3"
+  }
+}

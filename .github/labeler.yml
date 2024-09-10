@@ -40,5 +40,8 @@ pkg/request-state:
 pkg/content-utils:
 - 'packages/content-utils/**'
 
+pkg/astro-tests:
+- 'packages/astro-tests/**'
+
 pkg/velox-luna:
 - 'packages/velox-luna/**'

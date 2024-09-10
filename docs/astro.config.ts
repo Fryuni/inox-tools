@@ -76,6 +76,16 @@ export default defineConfig({
 					],
 				},
 				{
+					label: 'Tools for Authors',
+					collapsed: false,
+					items: [
+						{
+							label: 'Astro Tests',
+							link: '/astro-tests',
+						},
+					],
+				},
+				{
 					label: 'Modular Station',
 					collapsed: false,
 					autogenerate: {

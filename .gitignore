@@ -51,6 +51,8 @@ node_modules/
 
 # Build outputs
 dist/
+.astro/
+**/src/env.d.ts
 build/
 .inox-tools/
 *.js.map

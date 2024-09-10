@@ -4,6 +4,7 @@ catalog:
   '@astrojs/compiler': ^2.10.3
   '@astrojs/sitemap': ^3.1.6
   '@astrojs/starlight': ^0.26.4
+  '@astrojs/internal-helpers': ^0.4.1
   '@types/content-type': ^1.1.8
   '@types/debug': ^4.1.12
   '@types/node': ^22.5.4
@@ -38,3 +39,4 @@ packages:
   - docs
   - packages/*
   - examples/*
+  - packages/*/tests/fixture/*

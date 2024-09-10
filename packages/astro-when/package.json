@@ -27,19 +27,24 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "prepublish": "pnpm run build",
-    "test": "echo 'No tests'"
+    "test": "vitest run",
+    "test:dev": "vitest"
   },
   "dependencies": {
     "astro-integration-kit": "catalog:",
     "debug": "catalog:"
   },
   "devDependencies": {
+    "@inox-tools/astro-tests": "workspace:",
     "@types/debug": "catalog:",
     "@types/node": "catalog:",
+    "@vitest/ui": "catalog:",
     "astro": "catalog:",
+    "jest-extended": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:",
-    "vite": "catalog:"
+    "vite": "catalog:",
+    "vitest": "catalog:"
   },
   "peerDependencies": {
     "astro": "catalog:lax"

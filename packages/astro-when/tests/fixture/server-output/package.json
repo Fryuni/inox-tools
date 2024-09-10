@@ -1,0 +1,9 @@
+{
+  "name": "@astro-when/server-output",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@inox-tools/astro-when": "workspace:",
+    "astro": "catalog:"
+  }
+}

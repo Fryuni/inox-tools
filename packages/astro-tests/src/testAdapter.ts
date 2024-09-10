@@ -71,13 +71,14 @@ export default function (options: Options = {}): AstroIntegration {
 											import { App } from 'astro/app';
 											import fs from 'fs';
 
-											${env != null
-												? `
+											${
+												env != null
+													? `
 											const $$env = ${JSON.stringify(env)};
 											await import('astro/env/setup')
 												.then(mod => mod.setGetEnv((key) => $$env[key]))
 												.catch(() => {});`
-												: ''
+													: ''
 											}
 
 											class MyApp extends App {

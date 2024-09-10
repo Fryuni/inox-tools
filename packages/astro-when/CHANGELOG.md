@@ -1,5 +1,11 @@
 # @inox-tools/astro-when
 
+## 0.2.3
+
+### Patch Changes
+
+- 485df2c: Inject types in `.astro` folder structure if the utility is available
+
 ## 0.2.2
 
 ### Patch Changes

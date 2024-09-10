@@ -16,6 +16,14 @@ Although this library also utilizes some parts of the Astro code that are meant 
 
 You can check on your `node_modules` directory to see it 😉
 
+:::warn[Possibility of an official Astro package]
+There is ongoing conversation about having this in the Astro core repo to be published under `@astrojs/`.
+
+This package is published as a milestone in that effort. It is also a necessity to test all other packages that are part of Inox Tools until this proposal lands on Astro core. If/when that happens, this package will be published as a thin wrapper around the official test package and deprecated.
+
+If the conversations ends in the decision of not having a test package provided from Astro itself, then this package will continue to work for that purpose.
+:::
+
 ## How to install
 
 import { PackageManagers } from 'starlight-package-managers';

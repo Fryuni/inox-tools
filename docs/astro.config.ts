@@ -82,6 +82,10 @@ export default defineConfig({
 						{
 							label: 'Astro Tests',
 							link: '/astro-tests',
+							badge: {
+								text: 'NEW',
+								variant: 'success',
+							},
 						},
 					],
 				},

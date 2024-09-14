@@ -126,6 +126,9 @@ type Fixture = {
 	loadNodeAdapterHandler: () => Promise<(req: NodeRequest, res: NodeResponse) => void>;
 };
 
+// Select a random default port
+let nextDefaultPort = 10000 + Math.floor(Math.random() * 40000);
+
 /**
  * Loads an Astro fixture project.
  *
@@ -149,6 +152,18 @@ export async function loadFixture(inlineConfig: InlineConfig): Promise<Fixture> 
 	// Prevent hanging when testing the dev server on some scenarios
 	inlineConfig.vite.optimizeDeps ??= {};
 	inlineConfig.vite.optimizeDeps.noDiscovery = true;
+
+	inlineConfig.server ??= {};
+	if (typeof inlineConfig.server === 'function') {
+		debug('Wrapping server config for default port');
+		const original = inlineConfig.server;
+		inlineConfig.server = (options) => ({
+			port: nextDefaultPort++,
+			...original(options),
+		});
+	} else {
+		inlineConfig.server.port ??= nextDefaultPort++;
+	}
 
 	let root = inlineConfig.root;
 	if (typeof root !== 'string') {
@@ -174,8 +189,8 @@ export async function loadFixture(inlineConfig: InlineConfig): Promise<Fixture> 
 	inlineConfig.root = root;
 	const config = await validateConfig(inlineConfig, root, 'dev');
 
-	debug('Output dir:', inlineConfig.outDir);
-	debug('Src dir:', inlineConfig.srcDir);
+	debug('Output dir:', config.outDir);
+	debug('Src dir:', config.srcDir);
 
 	const viteConfig = await getViteConfig(
 		{},

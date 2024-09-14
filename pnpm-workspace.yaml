@@ -3,6 +3,7 @@ catalog:
   astro-integration-kit: ~0.16.1
   '@astrojs/compiler': ^2.10.3
   '@astrojs/sitemap': ^3.1.6
+  '@astrojs/node': ^8.3.3
   '@astrojs/starlight': ^0.26.4
   '@astrojs/internal-helpers': ^0.4.1
   '@types/content-type': ^1.1.8
@@ -10,6 +11,7 @@ catalog:
   '@types/node': ^22.5.4
   '@faker-js/faker': ^9.0.0
   '@lunariajs/core': ^0.1.1
+  '@playwright/test': ^1.47.1
   content-type: ^1.0.5
   debug: ^4.3.7
   devalue: ^5.0.0
@@ -40,3 +42,4 @@ packages:
   - packages/*
   - examples/*
   - packages/*/tests/fixture/*
+  - packages/*/e2e/fixture/*

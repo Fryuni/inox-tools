@@ -4,6 +4,9 @@
  */
 
 import type { AstroIntegration, HookParameters } from 'astro';
+import { getDebug } from './internal/log.js';
+
+const debug = getDebug('testAdapter');
 
 type EntryPoints = HookParameters<'astro:build:ssr'>['entryPoints'];
 type MiddlewareEntryPoint = HookParameters<'astro:build:ssr'>['middlewareEntryPoint'];
@@ -43,6 +46,8 @@ export type Options = {
 };
 
 export default function (options: Options = {}): AstroIntegration {
+	debug('New test adapter created', options);
+
 	const {
 		env,
 		provideAddress = true,
@@ -52,7 +57,7 @@ export default function (options: Options = {}): AstroIntegration {
 	} = options;
 
 	return {
-		name: 'test-ssr-adapter',
+		name: debug.name,
 		hooks: {
 			'astro:config:setup': ({ updateConfig }) => {
 				updateConfig({
@@ -71,14 +76,13 @@ export default function (options: Options = {}): AstroIntegration {
 											import { App } from 'astro/app';
 											import fs from 'fs';
 
-											${
-												env != null
-													? `
+											${env != null
+												? `
 											const $$env = ${JSON.stringify(env)};
 											await import('astro/env/setup')
 												.then(mod => mod.setGetEnv((key) => $$env[key]))
 												.catch(() => {});`
-													: ''
+												: ''
 											}
 
 											class MyApp extends App {
@@ -116,6 +120,7 @@ export default function (options: Options = {}): AstroIntegration {
 				});
 			},
 			'astro:config:done': ({ setAdapter }) => {
+				debug('Applying adapter');
 				setAdapter({
 					name: 'my-ssr-adapter',
 					serverEntrypoint: '@my-ssr',
@@ -136,14 +141,17 @@ export default function (options: Options = {}): AstroIntegration {
 			},
 			'astro:build:ssr': ({ entryPoints, middlewareEntryPoint }) => {
 				if (setEntryPoints) {
+					debug('Collecting entry points');
 					setEntryPoints(entryPoints);
 				}
 				if (setMiddlewareEntryPoint) {
+					debug('Collecting middleware entry point');
 					setMiddlewareEntryPoint(middlewareEntryPoint);
 				}
 			},
 			'astro:build:done': ({ routes }) => {
 				if (setRoutes) {
+					debug('Collecting routes');
 					setRoutes(routes);
 				}
 			},

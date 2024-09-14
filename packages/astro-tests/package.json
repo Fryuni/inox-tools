@@ -32,6 +32,7 @@
     "@astrojs/markdown-remark": "^5.2.0",
     "@inox-tools/utils": "workspace:^",
     "astro": "catalog:",
+    "debug": "catalog:",
     "shiki": "^1.14.1",
     "fast-glob": "^3.3.2",
     "strip-ansi": "^7.1.0",

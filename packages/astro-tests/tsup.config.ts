@@ -11,7 +11,7 @@ const devDependencies = [...Object.keys(packageJson.devDependencies || {})]
 	.map((name) => new RegExp(`^${name}/?$`));
 
 export default defineConfig({
-	entry: ['src/**/*.ts'],
+	entry: ['src/*.ts'],
 	format: ['esm'],
 	target: 'node18',
 	bundle: true,

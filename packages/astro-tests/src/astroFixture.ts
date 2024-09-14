@@ -10,6 +10,9 @@ import { validateConfig } from '../node_modules/astro/dist/core/config/validate.
 import { getViteConfig } from 'astro/config';
 import { callsites } from './utils.js';
 import type { App } from 'astro/app';
+import { getDebug } from './internal/log.js';
+
+const debug = getDebug('fixture');
 
 // Disable telemetry when running tests
 process.env.ASTRO_TELEMETRY_DISABLED = 'true';
@@ -136,10 +139,13 @@ type Fixture = {
 export async function loadFixture(inlineConfig: InlineConfig): Promise<Fixture> {
 	if (!inlineConfig?.root) throw new Error("Must provide { root: './fixtures/...' }");
 
+	debug('Setting default log level to "silent"');
 	// Silent by default during tests to not pollute the console output
-	inlineConfig.logLevel = 'silent';
+	inlineConfig.logLevel ??= 'silent';
 	inlineConfig.vite ??= {};
-	inlineConfig.vite.logLevel = 'silent';
+	inlineConfig.vite.logLevel ??= 'silent';
+
+	debug('Disabling Vite discovery for dependency optimization');
 	// Prevent hanging when testing the dev server on some scenarios
 	inlineConfig.vite.optimizeDeps ??= {};
 	inlineConfig.vite.optimizeDeps.noDiscovery = true;
@@ -149,19 +155,28 @@ export async function loadFixture(inlineConfig: InlineConfig): Promise<Fixture> 
 		// Handle URL, should already be absolute so just convert to path
 		root = fileURLToPath(root);
 	} else if (root.startsWith('file://')) {
+		debug('Root is a file URL, converting to path');
 		// Handle "file:///C:/Users/fred", convert to "C:/Users/fred"
 		root = fileURLToPath(new URL(root));
 	} else if (!path.isAbsolute(root)) {
+		debug('Root is a relative path, resolving to absolute path relative to caller');
 		const [caller] = callsites().slice(1);
 		let callerUrl = caller.getScriptNameOrSourceURL() || undefined;
 		if (callerUrl?.startsWith('file:') === false) {
 			callerUrl = pathToFileURL(callerUrl).toString();
 		}
+		debug(`Fixture loaded from ${callerUrl}`);
 		// Handle "./fixtures/...", convert to absolute path relative to the caller of this function.
 		root = fileURLToPath(new URL(root, callerUrl));
+		debug(`Resolved fixture root to ${root}`);
 	}
+
 	inlineConfig.root = root;
 	const config = await validateConfig(inlineConfig, root, 'dev');
+
+	debug('Output dir:', inlineConfig.outDir);
+	debug('Src dir:', inlineConfig.srcDir);
+
 	const viteConfig = await getViteConfig(
 		{},
 		{ ...inlineConfig, root }
@@ -193,7 +208,10 @@ export async function loadFixture(inlineConfig: InlineConfig): Promise<Fixture> 
 
 	const onNextChange = () =>
 		devServer
-			? new Promise((resolve) => devServer.watcher.once('change', resolve))
+			? new Promise<void>((resolve) =>
+				// TODO: Implement filter to only resolve on changes to a given file.
+				devServer.watcher.once('change', () => resolve())
+			)
 			: Promise.reject(new Error('No dev server running'));
 
 	// Also do it on process exit, just in case.
@@ -203,48 +221,58 @@ export async function loadFixture(inlineConfig: InlineConfig): Promise<Fixture> 
 		config,
 		startDevServer: async (extraInlineConfig = {}) => {
 			process.env.NODE_ENV = 'development';
+			debug(`Starting dev server for fixture ${root}`);
 			devServer = await dev(
 				mergeConfig(inlineConfig, {
 					...extraInlineConfig,
 					force: true,
 				})
 			);
-			viteServerOptions.host = parseAddressToHost(devServer.address.address)!; // update host
-			viteServerOptions.port = devServer.address.port; // update port
+			viteServerOptions.host = parseAddressToHost(devServer.address.address)!;
+			viteServerOptions.port = devServer.address.port;
+			debug(`Dev server for ${root} running at ${resolveUrl('/')}`);
 			return devServer;
 		},
 		build: async (extraInlineConfig = {}) => {
 			process.env.NODE_ENV = 'production';
+			debug(`Building fixture ${root}`);
 			return build(mergeConfig(inlineConfig, extraInlineConfig));
 		},
 		preview: async (extraInlineConfig = {}) => {
 			process.env.NODE_ENV = 'production';
+			debug(`Starting preview server for fixture ${root}`);
 			const previewServer = await preview(mergeConfig(inlineConfig, extraInlineConfig));
-			viteServerOptions.host = parseAddressToHost(previewServer.host)!; // update host
-			viteServerOptions.port = previewServer.port; // update port
+			viteServerOptions.host = parseAddressToHost(previewServer.host)!;
+			viteServerOptions.port = previewServer.port;
+			debug(`Preview server for ${root} running at ${resolveUrl('/')}`);
 			return previewServer;
 		},
 		sync,
 
 		clean: async () => {
+			debug(`Cleaning fixture ${root}`);
+			debug(`Removing outDir`);
 			await fs.promises.rm(config.outDir, {
 				maxRetries: 10,
 				recursive: true,
 				force: true,
 			});
 
+			debug(`Removing node_modules/.astro`);
 			await fs.promises.rm(new URL('./node_modules/.astro', config.root), {
 				maxRetries: 10,
 				recursive: true,
 				force: true,
 			});
 
+			debug(`Removing cacheDir`);
 			await fs.promises.rm(config.cacheDir, {
 				maxRetries: 10,
 				recursive: true,
 				force: true,
 			});
 
+			debug(`Removing .astro`);
 			await fs.promises.rm(new URL('./.astro', config.root), {
 				maxRetries: 10,
 				recursive: true,
@@ -254,6 +282,7 @@ export async function loadFixture(inlineConfig: InlineConfig): Promise<Fixture> 
 		resolveUrl,
 		fetch: async (url, init) => {
 			if (config.vite?.server?.https) {
+				debug('Injecting agent to enable HTTPS and HTTP/2 support');
 				init = {
 					// Use a custom fetch dispatcher. This is an undici option that allows
 					// us to customize the fetch behavior. We use it here to allow h2.
@@ -289,7 +318,7 @@ export async function loadFixture(inlineConfig: InlineConfig): Promise<Fixture> 
 			} catch (err: any) {
 				// node fetch throws a vague error when it fails, so we log the url here to easily debug it
 				if (err.message?.includes('fetch failed')) {
-					console.error(`[astro test] failed to fetch ${resolvedUrl}`);
+					console.error(`[astro-tests] failed to fetch ${resolvedUrl}`);
 					console.error(err);
 				}
 				throw err;
@@ -303,6 +332,7 @@ export async function loadFixture(inlineConfig: InlineConfig): Promise<Fixture> 
 			const fileUrl = new URL(filePath.replace(/^\//, ''), config.root);
 			const contents = await fs.promises.readFile(fileUrl, 'utf-8');
 			const reset = () => {
+				debug(`Resetting ${filePath}`);
 				fs.writeFileSync(fileUrl, contents);
 			};
 			// Only save this reset if not already in the map, in case multiple edits happen
@@ -310,6 +340,8 @@ export async function loadFixture(inlineConfig: InlineConfig): Promise<Fixture> 
 			if (!fileEdits.has(fileUrl.toString())) {
 				fileEdits.set(fileUrl.toString(), reset);
 			}
+
+			debug(`Editing ${filePath}`);
 			const newContents =
 				typeof newContentsOrCallback === 'function'
 					? newContentsOrCallback(contents)
@@ -327,8 +359,11 @@ export async function loadFixture(inlineConfig: InlineConfig): Promise<Fixture> 
 			}),
 		loadTestAdapterApp: async () => {
 			const url = new URL(`./server/entry.mjs?id=${fixtureId}`, config.outDir);
+			debug(`Importing test adapter entrypoint from ${url.toString()}`);
 			const { createApp, manifest } = await import(url.toString());
+			debug('Instantiating test adapter app');
 			const app = createApp();
+			debug('Manifest:', manifest);
 			app.manifest = manifest;
 			return {
 				render: (req) => app.render(req),
@@ -337,6 +372,7 @@ export async function loadFixture(inlineConfig: InlineConfig): Promise<Fixture> 
 		},
 		loadNodeAdapterHandler: async () => {
 			const url = new URL(`./server/entry.mjs?id=${fixtureId}`, config.outDir);
+			debug(`Importing node adapter handler from ${url.toString()}`);
 			const { handler } = await import(url.toString());
 			return handler;
 		},

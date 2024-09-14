@@ -476,6 +476,9 @@ importers:
       astro:
         specifier: 'catalog:'
         version: 4.15.3(@types/node@22.5.4)(rollup@4.21.2)(typescript@5.5.4)
+      debug:
+        specifier: 'catalog:'
+        version: 4.3.7
       fast-glob:
         specifier: ^3.3.2
         version: 3.3.2

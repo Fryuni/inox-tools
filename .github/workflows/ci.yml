@@ -176,7 +176,7 @@ jobs:
         run: pnpm run build
 
       - name: Test
-        run: pnpm turbo test:e2e
+        run: pnpm test:e2e
 
   duplicated-packages:
     name: Check for duplicated dependencies

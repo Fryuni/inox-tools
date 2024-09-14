@@ -1,8 +1,14 @@
 ---
 import { setState } from '@it-astro:state';
+import * as devalue from 'devalue';
 
-const name = Astro.url.searchParams.get('name');
-setState('name', name ?? 'World');
+const state = devalue.parse(process.env.INJECTED_STATE || '[123]');
+
+setState('injected-state', state);
+setState('fancy-objects', {
+	url: new URL('https://example.com/foo/bar'),
+	date: new Date('2022-01-01T00:00:00.000Z'),
+});
 ---
 
 <html>
@@ -10,11 +16,24 @@ setState('name', name ?? 'World');
 		<title>Basic example</title>
 	</head>
 	<body>
-		<h1>Hello, <span id="name"></span>!</h1>
-	</body>
-	<script>
-		import { getState } from '@it-astro:state';
+		<pre id="injected-state"></pre>
+		<script>
+			import { getState } from '@it-astro:state';
+			import * as devalue from 'devalue';
 
-		document.getElementById('name')!.textContent = getState('name') as string;
-	</script>
+			const state = getState('injected-state');
+			document.getElementById('injected-state')!.innerHTML = devalue.stringify(state);
+
+			const fancyObjects: any = getState('fancy-objects');
+			console.assert(
+				fancyObjects.url instanceof URL && fancyObjects.url.href === 'https://example.com/foo/bar',
+				`fancyObjects.url.href: ${fancyObjects.url.constructor.name}(${fancyObjects.url})`
+			);
+			console.assert(
+				fancyObjects.date instanceof Date &&
+					fancyObjects.date.toISOString() === '2022-01-01T00:00:00.000Z',
+				`fancyObjects.date: ${fancyObjects.date.constructor.name}(${fancyObjects.date.toISOString()})`
+			);
+		</script>
+	</body>
 </html>

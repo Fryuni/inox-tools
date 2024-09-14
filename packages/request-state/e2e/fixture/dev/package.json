@@ -1,0 +1,9 @@
+{
+  "name": "@request-state/dev",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@inox-tools/request-state": "workspace:",
+    "astro": "catalog:"
+  }
+}

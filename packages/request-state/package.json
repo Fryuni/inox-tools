@@ -25,11 +25,9 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "prepublish": "pnpm run build",
-    "test": "echo 'No tests for now :('",
+    "test": "echo 'Run test:e2e'",
     "test:e2e": "playwright test",
-    "test:e2e:report": "playwright show-report",
-    "test:dev": "vitest --coverage.enabled=true",
-    "test:run": "vitest run --coverage"
+    "test:e2e:report": "playwright show-report"
   },
   "dependencies": {
     "@inox-tools/utils": "workspace:^",
@@ -42,14 +40,11 @@
     "@playwright/test": "catalog:",
     "@types/content-type": "catalog:",
     "@types/node": "catalog:",
-    "@vitest/coverage-v8": "catalog:",
-    "@vitest/ui": "catalog:",
     "astro": "catalog:",
     "jest-extended": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:",
-    "vite": "catalog:",
-    "vitest": "catalog:"
+    "vite": "catalog:"
   },
   "peerDependencies": {
     "astro": "catalog:lax"

@@ -22,6 +22,14 @@
     },
     "test:e2e": {
       "dependsOn": ["build"],
+      "passThroughEnv": [
+        "PLAYWRIGHT_NODEJS_PATH",
+        "PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS",
+        "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD",
+        "PLAYWRIGHT_BROWSERS_PATH",
+        "PLAYWRIGHT_CHROME_BIN",
+        "PLAYWRIGHT_FIREFOX_BIN"
+      ],
       "cache": false,
       "outputLogs": "new-only"
     }

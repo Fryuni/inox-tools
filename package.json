@@ -21,6 +21,7 @@
     "postinstall": "node ./turbo/cache-key.mjs",
     "release": "pnpm run build && changeset publish",
     "test": "turbo run --concurrency=1 --filter '@inox-tools/*' test",
+    "test:e2e": "turbo run --concurrency=1 --filter '@inox-tools/*' test:e2e",
     "version": "changeset version && pnpm install && pnpm format"
   },
   "lint-staged": {

@@ -1,0 +1,10 @@
+{
+  "name": "@request-state/basic",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@astrojs/node": "catalog:",
+    "@inox-tools/request-state": "workspace:",
+    "astro": "catalog:"
+  }
+}

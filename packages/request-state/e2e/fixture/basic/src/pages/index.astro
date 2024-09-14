@@ -1,0 +1,20 @@
+---
+import { setState } from '@it-astro:state';
+
+const name = Astro.url.searchParams.get('name');
+setState('name', name ?? 'World');
+---
+
+<html>
+	<head>
+		<title>Basic example</title>
+	</head>
+	<body>
+		<h1>Hello, <span id="name"></span>!</h1>
+	</body>
+	<script>
+		import { getState } from '@it-astro:state';
+
+		document.getElementById('name')!.textContent = getState('name') as string;
+	</script>
+</html>

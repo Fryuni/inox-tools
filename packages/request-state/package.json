@@ -26,6 +26,8 @@
     "dev": "tsup --watch",
     "prepublish": "pnpm run build",
     "test": "echo 'No tests for now :('",
+    "test:e2e": "playwright test",
+    "test:e2e:report": "playwright show-report",
     "test:dev": "vitest --coverage.enabled=true",
     "test:run": "vitest run --coverage"
   },
@@ -36,6 +38,8 @@
     "devalue": "catalog:"
   },
   "devDependencies": {
+    "@inox-tools/astro-tests": "workspace:",
+    "@playwright/test": "catalog:",
     "@types/content-type": "catalog:",
     "@types/node": "catalog:",
     "@vitest/coverage-v8": "catalog:",

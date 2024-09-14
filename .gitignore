@@ -40,6 +40,7 @@ node_modules/
 /turbo/cache-key.json
 .pnpm-store
 .parcel-cache
+.direnv
 
 # dotenv environment variable files
 .env
@@ -56,3 +57,10 @@ dist/
 build/
 .inox-tools/
 *.js.map
+
+# Test results
+test-results/
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/

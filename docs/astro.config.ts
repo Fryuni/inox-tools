@@ -60,14 +60,14 @@ export default defineConfig({
 						{
 							label: 'Request State',
 							link: '/request-state',
-							badge: {
-								text: 'NEW',
-								variant: 'success',
-							},
 						},
 						{
 							label: 'Request Nanostores',
 							link: '/request-nanostores',
+						},
+						{
+							label: 'Cut Short',
+							link: '/cut-short',
 							badge: {
 								text: 'NEW',
 								variant: 'success',

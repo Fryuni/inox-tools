@@ -1,20 +1,10 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "extends": [
-    "//"
-  ],
+  "extends": ["//"],
   "tasks": {
     "build": {
-      "inputs": [
-        "*",
-        "src/**",
-        "public/**",
-        "../packages/*/package.json"
-      ],
-      "outputs": [
-        ".vercel",
-        ".astro"
-      ]
+      "inputs": ["*", "src/**", "public/**", "../packages/*/package.json"],
+      "outputs": [".vercel", ".astro"]
     }
   }
 }

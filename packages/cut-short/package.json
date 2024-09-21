@@ -34,6 +34,7 @@
     "debug": "catalog:"
   },
   "devDependencies": {
+    "@inox-tools/astro-tests": "workspace:",
     "@types/node": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "@vitest/ui": "catalog:",

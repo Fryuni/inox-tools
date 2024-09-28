@@ -14,17 +14,18 @@
       system: let
         throwSystem = throw "Unsupported system: ${system}";
         pkgs = nixpkgs.legacyPackages.${system};
+        node = pkgs.nodejs_22;
 
-            browsersInfo = builtins.fromJSON (builtins.readFile "${pkgs.playwright-driver}/browsers.json");
+        browsersInfo = builtins.fromJSON (builtins.readFile "${pkgs.playwright-driver}/browsers.json");
       in {
         devShells.default = pkgs.mkShell {
           packages = [
-            pkgs.nodejs_20
-            pkgs.corepack_20
+            node
+            pkgs.corepack_22
             pkgs.playwright
           ];
 
-          PLAYWRIGHT_NODEJS_PATH = "${pkgs.nodejs_20}/bin/node";
+          PLAYWRIGHT_NODEJS_PATH = "${node}/bin/node";
           PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS = true;
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = 1;
           PLAYWRIGHT_BROWSERS_PATH = "${pkgs.playwright-driver.browsers}";

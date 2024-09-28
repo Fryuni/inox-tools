@@ -23,7 +23,7 @@ export type NodeResponse = import('node:http').ServerResponse;
 export type DevServer = Awaited<ReturnType<typeof dev>>;
 export type PreviewServer = Awaited<ReturnType<typeof preview>>;
 
-type TestApp = {
+export type TestApp = {
 	render: (req: Request) => Promise<Response>;
 	toInternalApp: () => App;
 };
@@ -224,9 +224,9 @@ export async function loadFixture(inlineConfig: InlineConfig): Promise<Fixture> 
 	const onNextChange = () =>
 		devServer
 			? new Promise<void>((resolve) =>
-					// TODO: Implement filter to only resolve on changes to a given file.
-					devServer.watcher.once('change', () => resolve())
-				)
+				// TODO: Implement filter to only resolve on changes to a given file.
+				devServer.watcher.once('change', () => resolve())
+			)
 			: Promise.reject(new Error('No dev server running'));
 
 	// Also do it on process exit, just in case.

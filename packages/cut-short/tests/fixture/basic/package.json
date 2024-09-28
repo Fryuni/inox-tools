@@ -1,0 +1,9 @@
+{
+  "name": "@cut-short/basic",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@inox-tools/cut-short": "workspace:",
+    "astro": "catalog:"
+  }
+}

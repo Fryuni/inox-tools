@@ -1,0 +1,51 @@
+{
+  "name": "@inox-tools/cut-short",
+  "version": "0.0.0",
+  "description": "Immediately halt request processing and return custom responses effortlessly.",
+  "keywords": [
+    "astro-integration",
+    "withastro",
+    "astro"
+  ],
+  "license": "MIT",
+  "author": "Luiz Ferraz <luiz@lferraz.com>",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "virtual.d.ts"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "prepublish": "pnpm run build",
+    "test": "vitest run --coverage",
+    "test:dev": "vitest --coverage.enabled=true"
+  },
+  "dependencies": {
+    "@inox-tools/utils": "workspace:^",
+    "astro-integration-kit": "catalog:",
+    "debug": "catalog:"
+  },
+  "devDependencies": {
+    "@inox-tools/astro-tests": "workspace:",
+    "@types/node": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "@vitest/ui": "catalog:",
+    "jest-extended": "catalog:",
+    "astro": "catalog:",
+    "tsup": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "astro": "catalog:lax"
+  }
+}

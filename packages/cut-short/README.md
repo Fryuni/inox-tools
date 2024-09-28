@@ -16,10 +16,10 @@ Add the integration to your `astro.config.mjs`:
 
 ```js
 // astro.config.mjs
-import { defineConfig } from 'astro'
+import { defineConfig } from 'astro';
 import cutShort from '@inox-tools/cut-short';
 
 export default defineConfig({
-    integrations: [cutShort({})]
-})
+  integrations: [cutShort({})],
+});
 ```

@@ -1,11 +1,11 @@
-import type { MaybeThunk } from '@inox-tools/utils/types';
+import { loadThunkValue, type MaybeThunk } from '@inox-tools/utils/values';
 
 export class CarrierError extends Error {
-  public constructor(private readonly response: MaybeThunk<Response>) {
-    super('CarrierError');
-  }
+	public constructor(private readonly response: MaybeThunk<Response>) {
+		super('CarrierError');
+	}
 
-  public getResponse(): Promise<Response> {
-    return Promise.resolve(typeof this.response === 'function' ? this.response() : this.response);
-  }
+	public getResponse(): Promise<Response> {
+		return Promise.resolve(loadThunkValue(this.response));
+	}
 }

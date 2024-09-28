@@ -23,34 +23,27 @@ A page-rendering context is when you are inside of:
 - An API endpoint;
 - A function called from another page-rendering context.
 
-```ts title="src/pages/userId.ts" del={3-4} ins={7-8,18-19} {10-11}
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+<Tabs>
+  <TabItem label="Common module">
+
+```ts title="src/lib/auth.js"
 import { endRequest } from '@it-astro/cut-short';
 
-// This is invalid, the top level of a module is not a page rendering context.
-endRequest(new Response('Page not found', { status: 404 }));
-
-export const GET = () => {
-	// This is valid, an API endpoint is a page rendering context.
-	if (someCondition) endRequest(new Response('Matched inline blocking condition'));
-
-  // Calling a function from a rendering context allows it to stop the request.
-  const user = getUser();
-
-	// The normal response
-	return new Response(user.id);
-};
-
 export function getUser() {
-  // This is valid, this function is called from a page rendering context.
   if (noUser) endRequest(new Response('No user', { status: 401 }));
 
   return {...};
 }
 ```
 
-```astro title="src/pages/dashboard.astro" ins={4-5}
+  </TabItem>
+  <TabItem label="Page">
+
+```astro title="src/pages/dashboard.astro"
 ---
-import { getUser } from './userId.js';
+import { getUser } from '../lib/auth';
 
 // Calling a function from a rendering context allows it to stop the request.
 const user = getUser();
@@ -58,6 +51,26 @@ const user = getUser();
 
 <Dashboard />
 ```
+
+  </TabItem>
+  <TabItem label="Endpoint">
+
+```ts title="src/pages/userId.ts"
+import { endRequest } from '@it-astro/cut-short';
+import { getUser } from '../lib/auth';
+
+export const GET = () => {
+	if (someCondition) endRequest(new Response('Matched inline blocking condition'));
+
+	// Calling a function from a rendering context allows it to stop the request.
+	const user = getUser();
+
+	return new Response(user.id);
+};
+```
+
+  </TabItem>
+</Tabs>
 
 ### `endRequest()`
 

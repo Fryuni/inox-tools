@@ -1,5 +1,12 @@
 # @inox-tools/star-warp
 
+## 0.1.2
+
+### Patch Changes
+
+- Updated dependencies [b53264e]
+  - @inox-tools/utils@0.1.4
+
 ## 0.1.1
 
 ### Patch Changes

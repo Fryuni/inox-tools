@@ -25,9 +25,10 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "prepublish": "pnpm run build",
-    "test": "echo 'No tests for now :('",
-    "test:run": "vitest run --coverage",
-    "test:dev": "vitest --coverage.enabled=true"
+    "test": "vitest run",
+    "test:dev": "vitest",
+    "test:e2e": "playwright test",
+    "test:e2e:report": "playwright show-report"
   },
   "dependencies": {
     "@inox-tools/request-state": "workspace:^",
@@ -35,8 +36,9 @@
     "astro-integration-kit": "catalog:"
   },
   "devDependencies": {
+    "@inox-tools/astro-tests": "workspace:",
+    "@playwright/test": "catalog:",
     "@types/node": "catalog:",
-    "@vitest/coverage-v8": "catalog:",
     "@vitest/ui": "catalog:",
     "astro": "catalog:",
     "jest-extended": "catalog:",
@@ -47,6 +49,6 @@
   },
   "peerDependencies": {
     "astro": "catalog:lax",
-    "nanostores": "^0.11.2"
+    "nanostores": "catalog:"
   }
 }

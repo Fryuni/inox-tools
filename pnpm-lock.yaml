@@ -82,10 +82,10 @@ catalogs:
       specifier: ^8.0.0
       version: 8.0.0
     tsup:
-      specifier: 8.3.0
-      version: 8.3.0
+      specifier: 8.2.4
+      version: 8.2.4
     typescript:
-      specifier: ^5.6.2
+      specifier: ^5.5.4
       version: 5.6.2
     upath:
       specifier: ^2.0.1
@@ -414,7 +414,7 @@ importers:
         version: 4.15.9(@types/node@22.7.4)(rollup@4.22.5)(typescript@5.6.2)
       tsup:
         specifier: 'catalog:'
-        version: 8.3.0(jiti@2.0.0)(postcss@8.4.47)(typescript@5.6.2)(yaml@2.5.1)
+        version: 8.2.4(jiti@2.0.0)(postcss@8.4.47)(typescript@5.6.2)(yaml@2.5.1)
       typescript:
         specifier: 'catalog:'
         version: 5.6.2
@@ -457,7 +457,7 @@ importers:
         version: 0.14.2
       tsup:
         specifier: 'catalog:'
-        version: 8.3.0(jiti@2.0.0)(postcss@8.4.47)(typescript@5.6.2)(yaml@2.5.1)
+        version: 8.2.4(jiti@2.0.0)(postcss@8.4.47)(typescript@5.6.2)(yaml@2.5.1)
       typescript:
         specifier: 'catalog:'
         version: 5.6.2
@@ -503,7 +503,7 @@ importers:
         version: 22.7.4
       tsup:
         specifier: 'catalog:'
-        version: 8.3.0(jiti@2.0.0)(postcss@8.4.47)(typescript@5.6.2)(yaml@2.5.1)
+        version: 8.2.4(jiti@2.0.0)(postcss@8.4.47)(typescript@5.6.2)(yaml@2.5.1)
       typescript:
         specifier: 'catalog:'
         version: 5.6.2
@@ -543,7 +543,7 @@ importers:
         version: 4.0.2
       tsup:
         specifier: 'catalog:'
-        version: 8.3.0(jiti@2.0.0)(postcss@8.4.47)(typescript@5.6.2)(yaml@2.5.1)
+        version: 8.2.4(jiti@2.0.0)(postcss@8.4.47)(typescript@5.6.2)(yaml@2.5.1)
       typescript:
         specifier: 'catalog:'
         version: 5.6.2
@@ -604,7 +604,7 @@ importers:
         version: 4.15.9(@types/node@22.7.4)(rollup@4.22.5)(typescript@5.6.2)
       tsup:
         specifier: 'catalog:'
-        version: 8.3.0(jiti@2.0.0)(postcss@8.4.47)(typescript@5.6.2)(yaml@2.5.1)
+        version: 8.2.4(jiti@2.0.0)(postcss@8.4.47)(typescript@5.6.2)(yaml@2.5.1)
       typescript:
         specifier: 'catalog:'
         version: 5.6.2
@@ -653,7 +653,7 @@ importers:
         version: 4.0.2
       tsup:
         specifier: 'catalog:'
-        version: 8.3.0(jiti@2.0.0)(postcss@8.4.47)(typescript@5.6.2)(yaml@2.5.1)
+        version: 8.2.4(jiti@2.0.0)(postcss@8.4.47)(typescript@5.6.2)(yaml@2.5.1)
       typescript:
         specifier: 'catalog:'
         version: 5.6.2
@@ -705,7 +705,7 @@ importers:
         version: 4.0.2
       tsup:
         specifier: 'catalog:'
-        version: 8.3.0(jiti@2.0.0)(postcss@8.4.47)(typescript@5.6.2)(yaml@2.5.1)
+        version: 8.2.4(jiti@2.0.0)(postcss@8.4.47)(typescript@5.6.2)(yaml@2.5.1)
       upath:
         specifier: 'catalog:'
         version: 2.0.1
@@ -736,7 +736,7 @@ importers:
         version: 4.15.9(@types/node@22.7.4)(rollup@4.22.5)(typescript@5.6.2)
       tsup:
         specifier: 'catalog:'
-        version: 8.3.0(jiti@2.0.0)(postcss@8.4.47)(typescript@5.6.2)(yaml@2.5.1)
+        version: 8.2.4(jiti@2.0.0)(postcss@8.4.47)(typescript@5.6.2)(yaml@2.5.1)
       typescript:
         specifier: 'catalog:'
         version: 5.6.2
@@ -782,7 +782,7 @@ importers:
         version: 4.0.2
       tsup:
         specifier: 'catalog:'
-        version: 8.3.0(jiti@2.0.0)(postcss@8.4.47)(typescript@5.6.2)(yaml@2.5.1)
+        version: 8.2.4(jiti@2.0.0)(postcss@8.4.47)(typescript@5.6.2)(yaml@2.5.1)
       typescript:
         specifier: 'catalog:'
         version: 5.6.2
@@ -867,7 +867,7 @@ importers:
         version: 4.0.2
       tsup:
         specifier: 'catalog:'
-        version: 8.3.0(jiti@2.0.0)(postcss@8.4.47)(typescript@5.6.2)(yaml@2.5.1)
+        version: 8.2.4(jiti@2.0.0)(postcss@8.4.47)(typescript@5.6.2)(yaml@2.5.1)
       typescript:
         specifier: 'catalog:'
         version: 5.6.2
@@ -940,7 +940,7 @@ importers:
         version: 4.0.2
       tsup:
         specifier: 'catalog:'
-        version: 8.3.0(jiti@2.0.0)(postcss@8.4.47)(typescript@5.6.2)(yaml@2.5.1)
+        version: 8.2.4(jiti@2.0.0)(postcss@8.4.47)(typescript@5.6.2)(yaml@2.5.1)
       typescript:
         specifier: 'catalog:'
         version: 5.6.2
@@ -974,7 +974,7 @@ importers:
         version: 4.15.9(@types/node@22.7.4)(rollup@4.22.5)(typescript@5.6.2)
       tsup:
         specifier: 'catalog:'
-        version: 8.3.0(jiti@2.0.0)(postcss@8.4.47)(typescript@5.6.2)(yaml@2.5.1)
+        version: 8.2.4(jiti@2.0.0)(postcss@8.4.47)(typescript@5.6.2)(yaml@2.5.1)
       typescript:
         specifier: 'catalog:'
         version: 5.6.2
@@ -1011,7 +1011,7 @@ importers:
         version: 4.0.2
       tsup:
         specifier: 'catalog:'
-        version: 8.3.0(jiti@2.0.0)(postcss@8.4.47)(typescript@5.6.2)(yaml@2.5.1)
+        version: 8.2.4(jiti@2.0.0)(postcss@8.4.47)(typescript@5.6.2)(yaml@2.5.1)
       typescript:
         specifier: 'catalog:'
         version: 5.6.2
@@ -1041,7 +1041,7 @@ importers:
         version: 4.0.2
       tsup:
         specifier: 'catalog:'
-        version: 8.3.0(jiti@2.0.0)(postcss@8.4.47)(typescript@5.6.2)(yaml@2.5.1)
+        version: 8.2.4(jiti@2.0.0)(postcss@8.4.47)(typescript@5.6.2)(yaml@2.5.1)
       typescript:
         specifier: 'catalog:'
         version: 5.6.2
@@ -1059,7 +1059,7 @@ importers:
         version: 0.1.1
       tsup:
         specifier: 'catalog:'
-        version: 8.3.0(jiti@2.0.0)(postcss@8.4.47)(typescript@5.6.2)(yaml@2.5.1)
+        version: 8.2.4(jiti@2.0.0)(postcss@8.4.47)(typescript@5.6.2)(yaml@2.5.1)
       typescript:
         specifier: 'catalog:'
         version: 5.6.2
@@ -4826,8 +4826,8 @@ packages:
   tslib@2.7.0:
     resolution: {integrity: sha512-gLXCKdN1/j47AiHiOkJN69hJmcbGTHI0ImLmbYLHykhgeN0jVGola9yVjFgzCUklsZQMW55o+dW7IXv3RCXDzA==}
 
-  tsup@8.3.0:
-    resolution: {integrity: sha512-ALscEeyS03IomcuNdFdc0YWGVIkwH1Ws7nfTbAPuoILvEV2hpGQAY72LIOjglGo4ShWpZfpBqP/jpQVCzqYQag==}
+  tsup@8.2.4:
+    resolution: {integrity: sha512-akpCPePnBnC/CXgRrcy72ZSntgIEUa1jN0oJbbvpALWKNOz1B7aM+UVDWGRGIO/T/PZugAESWDJUAb5FD48o8Q==}
     engines: {node: '>=18'}
     hasBin: true
     peerDependencies:
@@ -9895,7 +9895,7 @@ snapshots:
 
   tslib@2.7.0: {}
 
-  tsup@8.3.0(jiti@2.0.0)(postcss@8.4.47)(typescript@5.6.2)(yaml@2.5.1):
+  tsup@8.2.4(jiti@2.0.0)(postcss@8.4.47)(typescript@5.6.2)(yaml@2.5.1):
     dependencies:
       bundle-require: 5.0.0(esbuild@0.23.1)
       cac: 6.7.14
@@ -9904,6 +9904,7 @@ snapshots:
       debug: 4.3.7
       esbuild: 0.23.1
       execa: 5.1.1
+      globby: 11.1.0
       joycon: 3.1.1
       picocolors: 1.1.0
       postcss-load-config: 6.0.1(jiti@2.0.0)(postcss@8.4.47)(yaml@2.5.1)
@@ -9911,7 +9912,6 @@ snapshots:
       rollup: 4.22.5
       source-map: 0.8.0-beta.0
       sucrase: 3.35.0
-      tinyglobby: 0.2.7
       tree-kill: 1.2.2
     optionalDependencies:
       postcss: 8.4.47

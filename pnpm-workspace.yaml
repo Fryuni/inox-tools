@@ -22,8 +22,8 @@ catalog:
   nanostores: ^0.11.3
   recast: ^0.23.9
   upath: ^2.0.1
-  tsup: 8.3.0
-  typescript: ^5.6.2
+  tsup: 8.2.4
+  typescript: ^5.5.4
   vite: ^5.4.8
   vitest: ^2.1.1
   '@vitest/ui': ^2.1.1

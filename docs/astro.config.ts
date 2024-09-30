@@ -73,12 +73,23 @@ export default defineConfig({
 								variant: 'success',
 							},
 						},
+						{
+							label: 'Content Utilities',
+							collapsed: false,
+							autogenerate: {
+								directory: 'content-utils',
+							},
+						},
 					],
 				},
 				{
 					label: 'Tools for Authors',
 					collapsed: false,
 					items: [
+						{
+							label: 'Astro Integration Kit',
+							link: 'https://astro-integration-kit.netlify.app',
+						},
 						{
 							label: 'Astro Tests',
 							link: '/astro-tests',
@@ -87,26 +98,19 @@ export default defineConfig({
 								variant: 'success',
 							},
 						},
+						{
+							label: 'Modular Station',
+							collapsed: false,
+							autogenerate: {
+								directory: 'modular-station',
+							},
+						},
+						{
+							label: 'Inline Module',
+							collapsed: true,
+							autogenerate: { directory: 'inline-mod' },
+						},
 					],
-				},
-				{
-					label: 'Modular Station',
-					collapsed: false,
-					autogenerate: {
-						directory: 'modular-station',
-					},
-				},
-				{
-					label: 'Content Utilities',
-					collapsed: false,
-					autogenerate: {
-						directory: 'content-utils',
-					},
-				},
-				{
-					label: 'Inline Module',
-					collapsed: false,
-					autogenerate: { directory: 'inline-mod' },
 				},
 			],
 			plugins: [

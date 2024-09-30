@@ -35,7 +35,7 @@
     "debug": "catalog:"
   },
   "devDependencies": {
-    "@inox-tools/astro-tests": "workspace:",
+    "@inox-tools/astro-tests": "workspace:^",
     "@types/debug": "catalog:",
     "@types/node": "catalog:",
     "@vitest/ui": "catalog:",

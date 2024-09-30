@@ -36,7 +36,7 @@
     "devalue": "catalog:"
   },
   "devDependencies": {
-    "@inox-tools/astro-tests": "workspace:",
+    "@inox-tools/astro-tests": "workspace:^",
     "@playwright/test": "catalog:",
     "@types/content-type": "catalog:",
     "@types/node": "catalog:",

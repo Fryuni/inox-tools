@@ -35,10 +35,14 @@
   "dependencies": {
     "@inox-tools/utils": "workspace:^",
     "astro-integration-kit": "catalog:",
-    "debug": "catalog:"
+    "debug": "catalog:",
+    "rehype": "catalog:",
+    "unist-util-map": "catalog:",
+    "unist-util-visit": "catalog:"
   },
   "devDependencies": {
     "@inox-tools/astro-tests": "workspace:",
+    "@types/hast": "catalog:",
     "@types/node": "catalog:",
     "@vitest/ui": "catalog:",
     "jest-extended": "catalog:",
@@ -49,6 +53,12 @@
     "vitest": "catalog:"
   },
   "peerDependencies": {
-    "astro": "catalog:lax"
+    "astro": "catalog:lax",
+    "preact": "*"
+  },
+  "peerDependenciesMeta": {
+    "preact": {
+      "optional": true
+    }
   }
 }

@@ -8,6 +8,7 @@ catalog:
   '@astrojs/internal-helpers': ^0.4.1
   '@types/content-type': ^1.1.8
   '@types/debug': ^4.1.12
+  '@types/hast': ^3.0.4
   '@types/node': ^22.7.4
   '@faker-js/faker': ^9.0.3
   '@lunariajs/core': ^0.1.1
@@ -21,9 +22,12 @@ catalog:
   magic-string: ^0.30.11
   nanostores: ^0.11.3
   recast: ^0.23.9
+  rehype: ^13.0.0
   upath: ^2.0.1
   tsup: 8.2.4
   typescript: ^5.5.4
+  unist-util-map: ^4.0.0
+  unist-util-visit: ^5.0.0
   vite: ^5.4.8
   vitest: ^2.1.1
   '@vitest/ui': ^2.1.1

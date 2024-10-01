@@ -36,6 +36,9 @@ catalogs:
     '@types/debug':
       specifier: ^4.1.12
       version: 4.1.12
+    '@types/hast':
+      specifier: ^3.0.4
+      version: 3.0.4
     '@types/node':
       specifier: ^22.7.4
       version: 22.7.4
@@ -78,6 +81,9 @@ catalogs:
     recast:
       specifier: ^0.23.9
       version: 0.23.9
+    rehype:
+      specifier: ^13.0.0
+      version: 13.0.2
     sitemap:
       specifier: ^8.0.0
       version: 8.0.0
@@ -87,6 +93,12 @@ catalogs:
     typescript:
       specifier: ^5.5.4
       version: 5.6.2
+    unist-util-map:
+      specifier: ^4.0.0
+      version: 4.0.0
+    unist-util-visit:
+      specifier: ^5.0.0
+      version: 5.0.0
     upath:
       specifier: ^2.0.1
       version: 2.0.1
@@ -324,6 +336,9 @@ importers:
       '@astrojs/preact':
         specifier: ^3.5.3
         version: 3.5.3(@babel/core@7.25.2)(preact@10.24.1)(vite@5.4.8(@types/node@22.7.4))
+      '@inox-tools/portal-gun':
+        specifier: workspace:^
+        version: link:../../packages/portal-gun
       '@inox-tools/request-nanostores':
         specifier: workspace:^
         version: link:../../packages/request-nanostores
@@ -758,10 +773,25 @@ importers:
       debug:
         specifier: 'catalog:'
         version: 4.3.7
+      preact:
+        specifier: '*'
+        version: 10.24.1
+      rehype:
+        specifier: 'catalog:'
+        version: 13.0.2
+      unist-util-map:
+        specifier: 'catalog:'
+        version: 4.0.0
+      unist-util-visit:
+        specifier: 'catalog:'
+        version: 5.0.0
     devDependencies:
       '@inox-tools/astro-tests':
         specifier: 'workspace:'
         version: link:../astro-tests
+      '@types/hast':
+        specifier: 'catalog:'
+        version: 3.0.4
       '@types/node':
         specifier: 'catalog:'
         version: 22.7.4
@@ -4961,6 +4991,9 @@ packages:
 
   unist-util-is@6.0.0:
     resolution: {integrity: sha512-2qCTHimwdxLfz+YzdGfkqNlH0tLi9xjTnHddPmJwtIG9MGsdbutfTc4P+haPD7l7Cjxf/WZj+we5qfVPvvxfYw==}
+
+  unist-util-map@4.0.0:
+    resolution: {integrity: sha512-HJs1tpkSmRJUzj6fskQrS5oYhBYlmtcvy4SepdDEEsL04FjBrgF0Mgggvxc1/qGBGgW7hRh9+UBK1aqTEnBpIA==}
 
   unist-util-modify-children@4.0.0:
     resolution: {integrity: sha512-+tdN5fGNddvsQdIzUF3Xx82CU9sMM+fA0dLgR9vOmT0oPT2jH+P1nd5lSqfCfXAw+93NhcXNY2qqvTUtE4cQkw==}
@@ -10026,6 +10059,10 @@ snapshots:
       unist-util-is: 6.0.0
 
   unist-util-is@6.0.0:
+    dependencies:
+      '@types/unist': 3.0.3
+
+  unist-util-map@4.0.0:
     dependencies:
       '@types/unist': 3.0.3
 

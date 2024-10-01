@@ -14,5 +14,15 @@ export default function AddToCartForm({ item, children }: Props) {
 		addCartItem(item);
 	}
 
-	return <form onSubmit={addToCart}>{children}</form>;
+	return (
+		<>
+			<portal to="header">
+				<p>Adding to the header</p>
+			</portal>
+			<portal to="head">
+				<meta name="injector" content="preact element" />
+			</portal>
+			<form onSubmit={addToCart}>{children}</form>;
+		</>
+	);
 }

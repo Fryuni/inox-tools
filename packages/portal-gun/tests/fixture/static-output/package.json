@@ -1,0 +1,9 @@
+{
+  "name": "@portal-gun/static-output",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@inox-tools/portal-gun": "workspace:",
+    "astro": "catalog:"
+  }
+}

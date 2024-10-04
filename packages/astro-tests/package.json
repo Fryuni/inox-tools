@@ -4,6 +4,11 @@
   "license": "MIT",
   "author": "Luiz Ferraz <luiz@lferraz.com>",
   "type": "module",
+  "keywords": [
+    "withastro",
+    "utils",
+    "tests"
+  ],
   "exports": {
     "./*": {
       "types": "./dist/*.d.ts",

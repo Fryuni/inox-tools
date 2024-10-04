@@ -5,7 +5,8 @@
   "keywords": [
     "lifecycle",
     "astro-integration",
-    "astro"
+    "astro",
+    "utils"
   ],
   "repository": "https://github.com/Fryuni/inox-tools.git",
   "license": "MIT",

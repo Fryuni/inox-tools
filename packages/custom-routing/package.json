@@ -4,7 +4,8 @@
   "description": "Define custom routing instead of Astro's default file-based routing.",
   "keywords": [
     "astro-integration",
-    "withastro"
+    "withastro",
+    "utils"
   ],
   "repository": "https://github.com/Fryuni/inox-tools.git",
   "license": "MIT",

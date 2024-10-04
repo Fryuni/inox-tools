@@ -6,7 +6,8 @@
     "astro-integration",
     "withastro",
     "starlight",
-    "astro"
+    "astro",
+    "utils"
   ],
   "license": "MIT",
   "author": "Luiz Ferraz <luiz@lferraz.com>",

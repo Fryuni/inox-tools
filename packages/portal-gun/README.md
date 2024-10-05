@@ -4,7 +4,7 @@
 
 # Portal Gun
 
-Transport HTML elements between elements in your page during rendering through Portals.
+Transport HTML elements through your page during rendering using Portals.
 
 ## Install
 
@@ -16,10 +16,10 @@ Add the integration to your `astro.config.mjs`:
 
 ```js
 // astro.config.mjs
-import { defineConfig } from 'astro'
+import { defineConfig } from 'astro';
 import portalGun from '@inox-tools/portal-gun';
 
 export default defineConfig({
-    integrations: [portalGun({})]
-})
+  integrations: [portalGun({})],
+});
 ```

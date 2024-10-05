@@ -1,0 +1,21 @@
+<header>
+	<portal-in to="start:head">
+		<link rel="stylesheet" href="prepended from header" />
+	</portal-in>
+	<portal-in to="end:head">
+		<link rel="stylesheet" href="appended from header" />
+	</portal-in>
+
+	<portal-in to="start:body">
+		<div>
+			<p>Prepended from header</p>
+		</div>
+	</portal-in>
+	<portal-in to="end:body">
+		<div>
+			<p>Appended from header</p>
+		</div>
+	</portal-in>
+
+	<p>Header</p>
+</header>

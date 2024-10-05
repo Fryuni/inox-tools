@@ -1,7 +1,7 @@
 {
   "name": "@inox-tools/portal-gun",
   "version": "0.0.0",
-  "description": "Transport HTML elements between elements in your page during rendering through Portals.",
+  "description": "Transport HTML elements through your page during rendering using Portals.",
   "keywords": [
     "astro-integration",
     "withastro",
@@ -33,6 +33,7 @@
     "test:dev": "vitest"
   },
   "dependencies": {
+    "@inox-tools/runtime-logger": "workspace:^",
     "@inox-tools/utils": "workspace:^",
     "astro-integration-kit": "catalog:",
     "debug": "catalog:",

@@ -3,6 +3,7 @@ import { rehype } from 'rehype';
 import type * as hast from 'hast';
 import * as visitor from 'unist-util-visit';
 import { debug } from '../internal/debug.js';
+import { logger } from '@it-astro:logger:portal-gun';
 
 const processor = rehype();
 
@@ -16,46 +17,98 @@ export const onRequest: MiddlewareHandler = async (_, next) => {
   const tree = processor.parse(body);
 
   const portalContents = new Map<string, hast.ElementContent[]>();
+  const landingPortals: Array<{
+    name: string;
+    landContent: () => void;
+  }> = [];
 
-  visitor.visit(tree, 'element', (node, index, parent) => {
-    if (node.tagName !== 'portal') return visitor.CONTINUE;
+  function portalIn(
+    node: hast.Element,
+    index?: number,
+    parent?: hast.Parent
+  ): visitor.VisitorResult {
+    const name = node.properties?.to;
+    if (typeof name !== 'string') {
+      logger.warn('Incoming portal without valid target');
+      debug('Incoming portal without target', node.properties);
+      return;
+    }
 
-    const target = node.properties?.to;
-    if (typeof target !== 'string') return visitor.CONTINUE;
+    debug(`Sending ${node.children.length} children to portal ${name}`);
 
-    debug(`Sending ${node.children.length} children to portal ${target}`);
+    const content = portalContents.get(name) ?? [];
+    content.push(...node.children);
+    portalContents.set(name, content);
 
-    const children = portalContents.get(target) ?? [];
-    children.push(...node.children);
-    portalContents.set(target, children);
-
-    if (parent && index !== undefined) {
+    if (parent !== undefined && index !== undefined) {
       parent.children.splice(index, 1);
-
-      // Continue to the same index, which is now the following element
       return [visitor.CONTINUE, index];
     }
-  });
+  }
 
-  visitor.visit(tree, 'element', (node, index, parent) => {
-    if (!parent || index === undefined) return visitor.CONTINUE;
-    if (
-      !(node.tagName === 'portal' || (node.tagName === 'link' && node.properties?.as === 'portal'))
-    )
-      return visitor.CONTINUE;
-
-    let name = node.tagName === 'portal' ? node.properties?.name : node.properties?.rel;
-    if (Array.isArray(name)) {
-      name = name[0];
+  function portalOut(node: hast.Element, parent?: hast.Parent): visitor.VisitorResult {
+    const name = node.properties?.name;
+    if (parent === undefined || typeof name !== 'string') {
+      logger.warn('Outgoing portal without valid name');
+      debug('Outgoing portal without name', node.properties);
+      return;
     }
-    if (typeof name !== 'string') return visitor.CONTINUE;
 
-    const children = portalContents.get(name) ?? [];
+    landingPortals.push({
+      name: name,
+      landContent: () => {
+        const content = portalContents.get(name) ?? [];
+        parent.children.splice(parent.children.indexOf(node), 1, ...node.children, ...content);
+      },
+    });
+  }
 
-    debug(`Receiving ${children.length} children into portal ${name}`);
+  // Activate all the portals
+  visitor.visit(tree, 'element', (node, index, parent) => {
+    let boundaryPortalName = node.tagName;
+    switch (node.tagName) {
+      case 'portal-out':
+        return portalOut(node, parent);
+      case 'portal-in':
+        return portalIn(node, index, parent);
+      case 'body':
+      case 'head':
+        break;
+      default: {
+        const id = node.properties.id;
+        if (typeof id === 'string') {
+          boundaryPortalName = `#${id}`;
+          break;
+        } else {
+          return;
+        }
+      }
+    }
 
-    parent.children.splice(index, 1, ...children);
+    debug(`Adding boundary portals to ${boundaryPortalName}`);
+
+    landingPortals.push({
+      name: `start:${boundaryPortalName}`,
+      landContent: () => {
+        const content = portalContents.get(`start:${boundaryPortalName}`) ?? [];
+        node.children.unshift(...content);
+      },
+    });
+    landingPortals.push({
+      name: `end:${boundaryPortalName}`,
+      landContent: () => {
+        const content = portalContents.get(`end:${boundaryPortalName}`) ?? [];
+        node.children.push(...content);
+      },
+    });
   });
+
+  // Land all elements through the portals
+  // We do this backwards to properly handle nested portals
+  for (let i = landingPortals.length - 1; i >= 0; i--) {
+    const portal = landingPortals[i];
+    portal.landContent();
+  }
 
   const newBody = processor.stringify(tree);
 

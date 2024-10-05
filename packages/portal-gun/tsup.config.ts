@@ -9,24 +9,19 @@ const dependencies = [
 const devDependencies = [...Object.keys(packageJson.devDependencies || {})];
 
 export default defineConfig({
-	entry: [
-		'src/index.ts',
-  	'src/runtime/*.ts',
-	],
+	entry: ['src/index.ts', 'src/runtime/*.ts'],
 	format: ['esm'],
 	target: 'node18',
 	bundle: true,
 	dts: {
-		entry: [
-			'src/index.ts',
-		],
+		entry: ['src/index.ts'],
 		banner: '/// <reference path="../virtual.d.ts" />\n',
 	},
 	sourcemap: true,
 	clean: true,
 	splitting: true,
 	minify: false,
-	external: [...dependencies, './virtual.d.ts'],
+	external: [...dependencies, '@it-astro:logger:portal-gun', './virtual.d.ts'],
 	noExternal: devDependencies,
 	treeshake: 'smallest',
 	tsconfig: 'tsconfig.json',

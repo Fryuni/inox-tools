@@ -336,9 +336,6 @@ importers:
       '@astrojs/preact':
         specifier: ^3.5.3
         version: 3.5.3(@babel/core@7.25.2)(preact@10.24.1)(vite@5.4.8(@types/node@22.7.4))
-      '@inox-tools/portal-gun':
-        specifier: workspace:^
-        version: link:../../packages/portal-gun
       '@inox-tools/request-nanostores':
         specifier: workspace:^
         version: link:../../packages/request-nanostores
@@ -764,6 +761,9 @@ importers:
 
   packages/portal-gun:
     dependencies:
+      '@inox-tools/runtime-logger':
+        specifier: workspace:^
+        version: link:../runtime-logger
       '@inox-tools/utils':
         specifier: workspace:^
         version: link:../utils
@@ -817,7 +817,7 @@ importers:
         specifier: 'catalog:'
         version: 2.1.1(@types/node@22.7.4)(@vitest/ui@2.1.1)
 
-  packages/portal-gun/tests/fixture/static-output:
+  packages/portal-gun/tests/fixture/basic:
     dependencies:
       '@inox-tools/portal-gun':
         specifier: 'workspace:'

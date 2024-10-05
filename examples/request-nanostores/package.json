@@ -15,7 +15,6 @@
     "@astrojs/node": "^8.3.4",
     "@astrojs/preact": "^3.5.3",
     "@inox-tools/request-nanostores": "workspace:^",
-    "@inox-tools/portal-gun": "workspace:^",
     "@nanostores/preact": "^0.5.2",
     "astro": "^4.15.9",
     "nanostores": "^0.11.3",

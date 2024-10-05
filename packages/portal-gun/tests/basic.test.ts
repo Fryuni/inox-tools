@@ -1,19 +1,18 @@
 import { loadFixture } from '@inox-tools/astro-tests/astroFixture';
-import { parseHTML } from 'linkedom';
 import { beforeAll, expect, test } from 'vitest';
 
 const fixture = await loadFixture({
-  root: './fixture/basic',
+	root: './fixture/basic',
 });
 
 beforeAll(async () => {
-  await fixture.build({});
+	await fixture.build({});
 });
 
 test('elements are sent across Astro Components', async () => {
-  const html = await fixture.readFile('header-footer/index.html');
+	const html = await fixture.readFile('header-footer/index.html');
 
-  expect(html).toEqualIgnoringWhitespace(`
+	expect(html).toEqualIgnoringWhitespace(`
 <!doctype html>
 <html>
   <head>
@@ -36,9 +35,9 @@ test('elements are sent across Astro Components', async () => {
 });
 
 test('portals entries without a landing portal get voided', async () => {
-  const html = await fixture.readFile('missing-portal/index.html');
+	const html = await fixture.readFile('missing-portal/index.html');
 
-  expect(html).toEqualIgnoringWhitespace(`
+	expect(html).toEqualIgnoringWhitespace(`
 <!doctype html>
 <html>
   <head>
@@ -55,9 +54,9 @@ test('portals entries without a landing portal get voided', async () => {
 });
 
 test('portal to start and end of identified element', async () => {
-  const html = await fixture.readFile('id-boundary/index.html');
+	const html = await fixture.readFile('id-boundary/index.html');
 
-  expect(html).toEqualIgnoringWhitespace(`
+	expect(html).toEqualIgnoringWhitespace(`
 <!doctype html>
 <html>
   <head>
@@ -78,9 +77,9 @@ test('portal to start and end of identified element', async () => {
 });
 
 test('portal to start and end of head and body', async () => {
-  const html = await fixture.readFile('global-boundary/index.html');
+	const html = await fixture.readFile('global-boundary/index.html');
 
-  expect(html).toEqualIgnoringWhitespace(`
+	expect(html).toEqualIgnoringWhitespace(`
 <!doctype html>
 <html>
   <head>

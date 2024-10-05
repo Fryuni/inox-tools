@@ -1,5 +1,11 @@
 # @inox-tools/cut-short
 
+## 0.1.1
+
+### Patch Changes
+
+- 8f04995: Add new Astro keywords
+
 ## 0.1.0
 
 ### Minor Changes

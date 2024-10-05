@@ -1,5 +1,13 @@
 # @inox-tools/runtime-logger
 
+## 0.3.3
+
+### Patch Changes
+
+- 8f04995: Add new Astro keywords
+- Updated dependencies [8f04995]
+  - @inox-tools/modular-station@0.3.2
+
 ## 0.3.2
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @inox-tools/modular-station
 
+## 0.3.2
+
+### Patch Changes
+
+- 8f04995: Add new Astro keywords
+
 ## 0.3.1
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @inox-tools/astro-when
 
+## 0.2.4
+
+### Patch Changes
+
+- 8f04995: Add new Astro keywords
+
 ## 0.2.3
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@inox-tools/astro-tests",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "license": "MIT",
   "author": "Luiz Ferraz <luiz@lferraz.com>",
   "type": "module",

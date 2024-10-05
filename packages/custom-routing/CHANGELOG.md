@@ -1,5 +1,11 @@
 # @inox-tools/inline-mod
 
+## 0.4.1
+
+### Patch Changes
+
+- 8f04995: Add new Astro keywords
+
 ## 0.4.0
 
 ### Minor Changes

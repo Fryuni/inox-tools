@@ -1,11 +1,12 @@
 {
   "name": "@inox-tools/astro-when",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Integration that informs when in Astro's lifecycle the code is running",
   "keywords": [
     "lifecycle",
     "astro-integration",
-    "astro"
+    "astro",
+    "utils"
   ],
   "repository": "https://github.com/Fryuni/inox-tools.git",
   "license": "MIT",

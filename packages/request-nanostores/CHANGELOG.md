@@ -1,5 +1,13 @@
 # @inox-tools/request-nanostores
 
+## 0.1.3
+
+### Patch Changes
+
+- 8f04995: Add new Astro keywords
+- Updated dependencies [8f04995]
+  - @inox-tools/request-state@0.1.3
+
 ## 0.1.2
 
 ### Patch Changes

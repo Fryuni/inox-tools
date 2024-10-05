@@ -1,13 +1,14 @@
 {
   "name": "@inox-tools/content-utils",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "description": "Utilities to work with content collections on an Astro project from an integration or library.",
   "keywords": [
     "lifecycle",
     "astro-integration",
     "astro",
     "withastro",
-    "content-collection"
+    "content-collection",
+    "utils"
   ],
   "license": "MIT",
   "author": "Luiz Ferraz <luiz@lferraz.com>",

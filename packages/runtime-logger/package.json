@@ -1,11 +1,12 @@
 {
   "name": "@inox-tools/runtime-logger",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Expose Astro Integration Logger at runtime for consistent output",
   "keywords": [
     "astro-integration",
     "withastro",
-    "astro"
+    "astro",
+    "utils"
   ],
   "license": "MIT",
   "author": "Luiz Ferraz <luiz@lferraz.com>",

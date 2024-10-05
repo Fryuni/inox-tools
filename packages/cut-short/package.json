@@ -1,11 +1,12 @@
 {
   "name": "@inox-tools/cut-short",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Immediately halt request processing and return custom responses effortlessly.",
   "keywords": [
     "astro-integration",
     "withastro",
-    "astro"
+    "astro",
+    "utils"
   ],
   "license": "MIT",
   "author": "Luiz Ferraz <luiz@lferraz.com>",

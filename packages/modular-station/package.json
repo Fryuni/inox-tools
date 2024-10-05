@@ -1,10 +1,11 @@
 {
   "name": "@inox-tools/modular-station",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Simplifying Astro integrations with a flexible docking system.",
   "keywords": [
     "astro-integration",
-    "astro"
+    "astro",
+    "utils"
   ],
   "license": "MIT",
   "author": "Luiz Ferraz <luiz@lferraz.com>",

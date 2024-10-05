@@ -1,5 +1,11 @@
 # @inox-tools/star-warp
 
+## 0.1.3
+
+### Patch Changes
+
+- 8f04995: Add new Astro keywords
+
 ## 0.1.2
 
 ### Patch Changes

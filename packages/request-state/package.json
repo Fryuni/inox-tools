@@ -1,11 +1,12 @@
 {
   "name": "@inox-tools/request-state",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Shared request state between server and client",
   "keywords": [
     "astro-integration",
     "withastro",
-    "astro"
+    "astro",
+    "utils"
   ],
   "license": "MIT",
   "author": "Luiz Ferraz <luiz@lferraz.com>",

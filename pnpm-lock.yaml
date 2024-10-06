@@ -1024,9 +1024,21 @@ importers:
 
   packages/utils:
     devDependencies:
+      '@types/hast':
+        specifier: ^3.0.4
+        version: 3.0.4
+      '@types/mdast':
+        specifier: ^4.0.4
+        version: 4.0.4
       '@types/node':
         specifier: 'catalog:'
         version: 22.7.4
+      '@types/unist':
+        specifier: ^3.0.3
+        version: 3.0.3
+      '@types/xast':
+        specifier: ^2.0.4
+        version: 2.0.4
       '@vitest/coverage-v8':
         specifier: 'catalog:'
         version: 2.1.1(vitest@2.1.1(@types/node@22.7.4)(@vitest/ui@2.1.1))
@@ -1039,12 +1051,18 @@ importers:
       jest-extended:
         specifier: 'catalog:'
         version: 4.0.2
+      mdast-util-from-markdown:
+        specifier: ^2.0.1
+        version: 2.0.1
       tsup:
         specifier: 'catalog:'
         version: 8.2.4(jiti@2.0.0)(postcss@8.4.47)(typescript@5.6.2)(yaml@2.5.1)
       typescript:
         specifier: 'catalog:'
         version: 5.6.2
+      unist-util-is:
+        specifier: ^6.0.0
+        version: 6.0.0
       vite:
         specifier: 'catalog:'
         version: 5.4.8(@types/node@22.7.4)
@@ -2151,6 +2169,9 @@ packages:
 
   '@types/unist@3.0.3':
     resolution: {integrity: sha512-ko/gIFJRv177XgZsZcBwnqJN5x/Gien8qNOn0D5bQU/zAzVf9Zt3BlcUiLqhV9y4ARk0GbT3tnUiPNgnTXzc/Q==}
+
+  '@types/xast@2.0.4':
+    resolution: {integrity: sha512-6Q6HWhHXR5EEKcxgF5YBW5XPAAtCi/GgyCWHx6wR7dZTXF5rv2B2fm0hgpSscJqaVDVm6n1DAVbsM8RSM5PlMw==}
 
   '@ungap/structured-clone@1.2.0':
     resolution: {integrity: sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==}
@@ -6567,6 +6588,10 @@ snapshots:
   '@types/unist@2.0.11': {}
 
   '@types/unist@3.0.3': {}
+
+  '@types/xast@2.0.4':
+    dependencies:
+      '@types/unist': 3.0.3
 
   '@ungap/structured-clone@1.2.0': {}
 

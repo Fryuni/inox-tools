@@ -5,7 +5,9 @@
   "keywords": [
     "astro-integration",
     "withastro",
-    "astro"
+    "astro",
+    "ui",
+    "utils"
   ],
   "license": "MIT",
   "author": "Luiz Ferraz <luiz@lferraz.com>",

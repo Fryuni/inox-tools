@@ -20,6 +20,6 @@ import { defineConfig } from 'astro';
 import portalGun from '@inox-tools/portal-gun';
 
 export default defineConfig({
-  integrations: [portalGun({})],
+  integrations: [portalGun()],
 });
 ```

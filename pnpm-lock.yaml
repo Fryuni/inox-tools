@@ -93,12 +93,6 @@ catalogs:
     typescript:
       specifier: ^5.5.4
       version: 5.6.2
-    unist-util-map:
-      specifier: ^4.0.0
-      version: 4.0.0
-    unist-util-visit:
-      specifier: ^5.0.0
-      version: 5.0.0
     upath:
       specifier: ^2.0.1
       version: 2.0.1
@@ -779,12 +773,6 @@ importers:
       rehype:
         specifier: 'catalog:'
         version: 13.0.2
-      unist-util-map:
-        specifier: 'catalog:'
-        version: 4.0.0
-      unist-util-visit:
-        specifier: 'catalog:'
-        version: 5.0.0
     devDependencies:
       '@inox-tools/astro-tests':
         specifier: 'workspace:'
@@ -5030,9 +5018,6 @@ packages:
 
   unist-util-is@6.0.0:
     resolution: {integrity: sha512-2qCTHimwdxLfz+YzdGfkqNlH0tLi9xjTnHddPmJwtIG9MGsdbutfTc4P+haPD7l7Cjxf/WZj+we5qfVPvvxfYw==}
-
-  unist-util-map@4.0.0:
-    resolution: {integrity: sha512-HJs1tpkSmRJUzj6fskQrS5oYhBYlmtcvy4SepdDEEsL04FjBrgF0Mgggvxc1/qGBGgW7hRh9+UBK1aqTEnBpIA==}
 
   unist-util-modify-children@4.0.0:
     resolution: {integrity: sha512-+tdN5fGNddvsQdIzUF3Xx82CU9sMM+fA0dLgR9vOmT0oPT2jH+P1nd5lSqfCfXAw+93NhcXNY2qqvTUtE4cQkw==}
@@ -10163,10 +10148,6 @@ snapshots:
       unist-util-is: 6.0.0
 
   unist-util-is@6.0.0:
-    dependencies:
-      '@types/unist': 3.0.3
-
-  unist-util-map@4.0.0:
     dependencies:
       '@types/unist': 3.0.3
 

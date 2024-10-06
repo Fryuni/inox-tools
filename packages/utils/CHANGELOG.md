@@ -1,5 +1,11 @@
 # @inox-tools/utils
 
+## 0.2.0
+
+### Minor Changes
+
+- e07b8a8: Add unist visitor with support for postorder traversal
+
 ## 0.1.4
 
 ### Patch Changes

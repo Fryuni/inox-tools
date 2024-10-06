@@ -1,6 +1,6 @@
 {
   "name": "@inox-tools/star-warp",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Warp-drive search for Astro sites using Pagefind",
   "keywords": [
     "astro-integration",

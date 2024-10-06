@@ -1,10 +1,10 @@
 import { expect, test } from 'vitest';
 
 export const defineCommonTests = (loadPath: (path: string) => Promise<string>) => {
-  test('elements are sent across Astro Components', async () => {
-    const html = await loadPath('header-footer');
+	test('elements are sent across Astro Components', async () => {
+		const html = await loadPath('header-footer');
 
-    expect(html).toEqualIgnoringWhitespace(`
+		expect(html).toEqualIgnoringWhitespace(`
 <!doctype html>
 <html>
   <head>
@@ -24,12 +24,12 @@ export const defineCommonTests = (loadPath: (path: string) => Promise<string>) =
   </body>
 </html>
 `);
-  });
+	});
 
-  test('portals entries without a landing portal get voided', async () => {
-    const html = await loadPath('missing-portal');
+	test('portals entries without a landing portal get voided', async () => {
+		const html = await loadPath('missing-portal');
 
-    expect(html).toEqualIgnoringWhitespace(`
+		expect(html).toEqualIgnoringWhitespace(`
 <!doctype html>
 <html>
   <head>
@@ -43,12 +43,12 @@ export const defineCommonTests = (loadPath: (path: string) => Promise<string>) =
   </body>
 </html>
 `);
-  });
+	});
 
-  test('portal to start and end of identified element', async () => {
-    const html = await loadPath('id-boundary');
+	test('portal to start and end of identified element', async () => {
+		const html = await loadPath('id-boundary');
 
-    expect(html).toEqualIgnoringWhitespace(`
+		expect(html).toEqualIgnoringWhitespace(`
 <!doctype html>
 <html>
   <head>
@@ -66,12 +66,12 @@ export const defineCommonTests = (loadPath: (path: string) => Promise<string>) =
   </body>
 </html>
 `);
-  });
+	});
 
-  test('portal to start and end of head and body', async () => {
-    const html = await loadPath('global-boundary');
+	test('portal to start and end of head and body', async () => {
+		const html = await loadPath('global-boundary');
 
-    expect(html).toEqualIgnoringWhitespace(`
+		expect(html).toEqualIgnoringWhitespace(`
 <!doctype html>
 <html>
   <head>
@@ -94,12 +94,12 @@ export const defineCommonTests = (loadPath: (path: string) => Promise<string>) =
   </body>
 </html>
 `);
-  });
+	});
 
-  test('portal entries from within UI framework component', async () => {
-    const html = await loadPath('ui-frameworks');
+	test('portal entries from within UI framework component', async () => {
+		const html = await loadPath('ui-frameworks');
 
-    expect(html).toEqualIgnoringWhitespace(`
+		expect(html).toEqualIgnoringWhitespace(`
 <!doctype html>
 <html>
   <head>
@@ -117,12 +117,12 @@ export const defineCommonTests = (loadPath: (path: string) => Promise<string>) =
   </body>
 </html>
 `);
-  });
+	});
 
-  test('portals can go through portals', async () => {
-    const html = await loadPath('nested-portals');
+	test('portals can go through portals', async () => {
+		const html = await loadPath('nested-portals');
 
-    expect(html).toEqualIgnoringWhitespace(`
+		expect(html).toEqualIgnoringWhitespace(`
 <!doctype html>
 <html>
   <head>
@@ -140,5 +140,5 @@ export const defineCommonTests = (loadPath: (path: string) => Promise<string>) =
   </body>
 </html>
 `);
-  });
+	});
 };

@@ -3,12 +3,12 @@ import { beforeAll } from 'vitest';
 import { defineCommonTests } from './common.js';
 
 const fixture = await loadFixture({
-  root: './fixture/basic',
-  outDir: 'dist/static',
+	root: './fixture/basic',
+	outDir: 'dist/static',
 });
 
 beforeAll(async () => {
-  await fixture.build({});
+	await fixture.build({});
 });
 
 defineCommonTests((path) => fixture.readFile(`${path}/index.html`));

@@ -1,5 +1,11 @@
 # @inox-tools/sitemap-ext
 
+## 0.3.5
+
+### Patch Changes
+
+- @inox-tools/aik-route-config@0.7.4
+
 ## 0.3.4
 
 ### Patch Changes

@@ -1,5 +1,12 @@
 # @inox-tools/modular-station
 
+## 0.3.3
+
+### Patch Changes
+
+- Updated dependencies [e07b8a8]
+  - @inox-tools/utils@0.2.0
+
 ## 0.3.2
 
 ### Patch Changes

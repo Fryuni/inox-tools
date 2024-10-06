@@ -1,21 +1,21 @@
 <header>
-	<portal-in to="start:head">
+	<portal-gate to="start:head">
 		<link rel="stylesheet" href="prepended from header" />
-	</portal-in>
-	<portal-in to="end:head">
+	</portal-gate>
+	<portal-gate to="end:head">
 		<link rel="stylesheet" href="appended from header" />
-	</portal-in>
+	</portal-gate>
 
-	<portal-in to="start:body">
+	<portal-gate to="start:body">
 		<div>
 			<p>Prepended from header</p>
 		</div>
-	</portal-in>
-	<portal-in to="end:body">
+	</portal-gate>
+	<portal-gate to="end:body">
 		<div>
 			<p>Appended from header</p>
 		</div>
-	</portal-in>
+	</portal-gate>
 
 	<p>Header</p>
 </header>

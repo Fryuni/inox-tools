@@ -14,24 +14,24 @@ import { PackageManagers } from 'starlight-package-managers';
 
 ## How to use
 
-Use a `<portal-in>` element with a `to` attribute to send all children to the target portal:
+Use a `<portal-gate>` element with a `to` attribute to send all children to the target portal:
 
 ```html
-<portal-in to="group">
+<portal-gate to="group">
 	<dialog>
 		<p>Dialog</p>
 	</dialog>
-</portal-in>
+</portal-gate>
 ```
 
 ### Target Portal
 
 You can define output portals anywhere on the page. They are replaced with every element teleported to it.
 
-Use a `<portal-out>` element with a `name` attribute:
+Use a `<portal-landzone>` element with a `name` attribute:
 
 ```html
-<portal-out name="group"></portal-out>
+<portal-landzone name="group"></portal-landzone>
 ```
 
 ### ID boundary portals
@@ -48,12 +48,12 @@ Given the following document:
 	<p>Hello</p>
 </div>
 
-<portal-in to="start:#element-id">
+<portal-gate to="start:#element-id">
 	<p>Before</p>
-</portal-in>
-<portal-in to="after:#element-id">
+</portal-gate>
+<portal-gate to="after:#element-id">
 	<p>After</p>
-</portal-in>
+</portal-gate>
 ```
 
 The HTML sent to the client will be:

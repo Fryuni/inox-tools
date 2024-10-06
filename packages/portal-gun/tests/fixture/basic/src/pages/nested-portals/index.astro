@@ -1,0 +1,21 @@
+<html>
+	<head>
+		<title>Index</title>
+	</head>
+	<body>
+		<header id="header"></header>
+		<portal-gate to="start:#header">
+			<portal-landzone name="target"></portal-landzone>
+		</portal-gate>
+		<portal-gate to="target">
+			<p>two jumps</p>
+			<portal-gate to="end:body">
+				<p>portal out of portal</p>
+				<footer>
+					<!-- Duplicating portal -->
+					<portal-landzone name="target"></portal-landzone>
+				</footer>
+			</portal-gate>
+		</portal-gate>
+	</body>
+</html>

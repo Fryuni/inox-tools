@@ -37,9 +37,7 @@
     "@inox-tools/utils": "workspace:^",
     "astro-integration-kit": "catalog:",
     "debug": "catalog:",
-    "rehype": "catalog:",
-    "unist-util-map": "catalog:",
-    "unist-util-visit": "catalog:"
+    "rehype": "catalog:"
   },
   "devDependencies": {
     "@inox-tools/astro-tests": "workspace:",

@@ -1,7 +1,7 @@
 import type { MiddlewareHandler } from 'astro';
 import { rehype } from 'rehype';
 import type * as hast from 'hast';
-import * as visitor from 'unist-util-visit';
+import * as visitor from '@inox-tools/utils/unist/visit';
 import { debug } from '../internal/debug.js';
 import { logger } from '@it-astro:logger:portal-gun';
 import {
@@ -22,17 +22,13 @@ export const onRequest: MiddlewareHandler = async (_, next) => {
 	const body = await response.text();
 	const tree = processor.parse(body);
 
-	const portalContents = new Map<string, hast.ElementContent[]>();
+	const portalContents = new Map<string, hast.ElementContent[][]>();
 	const landingPortals: Array<{
 		name: string;
 		landContent: () => void;
 	}> = [];
 
-	function portalIn(
-		node: hast.Element,
-		index?: number,
-		parent?: hast.Parent
-	): visitor.VisitorResult {
+	function portalIn(node: hast.Element, parents: hast.Parent[]): visitor.VisitorResult {
 		const name = node.properties?.to;
 		if (typeof name !== 'string') {
 			logger.warn('Incoming portal without valid target');
@@ -43,8 +39,11 @@ export const onRequest: MiddlewareHandler = async (_, next) => {
 		debug(`Sending ${node.children.length} children to portal ${name}`);
 
 		const content = portalContents.get(name) ?? [];
-		content.push(...node.children);
+		content.push(node.children);
 		portalContents.set(name, content);
+
+		const parent = parents.at(-1);
+		const index = parent?.children.indexOf(node);
 
 		if (parent !== undefined && index !== undefined) {
 			parent.children.splice(index, 1);
@@ -52,9 +51,9 @@ export const onRequest: MiddlewareHandler = async (_, next) => {
 		}
 	}
 
-	function portalOut(node: hast.Element, parent?: hast.Parent): visitor.VisitorResult {
+	function portalOut(node: hast.Element, parents: hast.Parent[]): visitor.VisitorResult {
 		const name = node.properties?.name;
-		if (parent === undefined || typeof name !== 'string') {
+		if (parents.length === 0 || typeof name !== 'string') {
 			logger.warn('Outgoing portal without valid name');
 			debug('Outgoing portal without name', node.properties);
 			return;
@@ -64,20 +63,28 @@ export const onRequest: MiddlewareHandler = async (_, next) => {
 			name: name,
 			landContent: () => {
 				const content = portalContents.get(name) ?? [];
-				parent.children.splice(parent.children.indexOf(node), 1, ...node.children, ...content);
+				const parent = parents.at(-1)!;
+				parent.children.splice(
+					parent.children.indexOf(node),
+					1,
+					...node.children,
+					...content.flat(1)
+				);
 			},
 		});
 	}
 
 	// Activate all the portals
-	visitor.visit(tree, 'element', {
-		leave: (node, index, parent) => {
+	visitor.visitParents({
+		tree,
+		test: 'element',
+		leave: (node, parents) => {
 			let boundaryPortalName = node.tagName;
 			switch (node.tagName) {
 				case EXIT_PORTAL_TAG:
-					return portalOut(node, parent);
+					return portalOut(node, parents);
 				case ENTRY_PORTAL_TAG:
-					return portalIn(node, index, parent);
+					return portalIn(node, parents);
 				case 'body':
 				case 'head':
 					break;
@@ -98,14 +105,14 @@ export const onRequest: MiddlewareHandler = async (_, next) => {
 				name: PREPEND_PREFIX + boundaryPortalName,
 				landContent: () => {
 					const content = portalContents.get(PREPEND_PREFIX + boundaryPortalName) ?? [];
-					node.children.unshift(...content);
+					node.children.unshift(...content.flat(1));
 				},
 			});
 			landingPortals.push({
 				name: APPEND_PREFIX + boundaryPortalName,
 				landContent: () => {
 					const content = portalContents.get(APPEND_PREFIX + boundaryPortalName) ?? [];
-					node.children.push(...content);
+					node.children.push(...content.flat(1));
 				},
 			});
 		},

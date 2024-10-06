@@ -4,5 +4,5 @@ import portalGun from '@inox-tools/portal-gun';
 import preact from '@astrojs/preact';
 
 export default defineConfig({
-    integrations: [portalGun(), preact()],
+	integrations: [portalGun(), preact()],
 });

@@ -1,5 +1,12 @@
 # @inox-tools/inline-mod
 
+## 1.5.2
+
+### Patch Changes
+
+- Updated dependencies [e07b8a8]
+  - @inox-tools/utils@0.2.0
+
 ## 1.5.1
 
 ### Patch Changes

@@ -4,24 +4,24 @@ import { beforeAll } from 'vitest';
 import { defineCommonTests } from './common.js';
 
 const fixture = await loadFixture({
-  root: './fixture/basic',
-  outDir: 'dist/server',
-  build: {
-    server: 'dist/server/server',
-    client: 'dist/server/client',
-  },
-  output: 'server',
-  adapter: testAdapter(),
+	root: './fixture/basic',
+	outDir: 'dist/server',
+	build: {
+		server: 'dist/server/server',
+		client: 'dist/server/client',
+	},
+	output: 'server',
+	adapter: testAdapter(),
 });
 
 let app: TestApp;
 
 beforeAll(async () => {
-  await fixture.build({});
-  app = await fixture.loadTestAdapterApp();
+	await fixture.build({});
+	app = await fixture.loadTestAdapterApp();
 });
 
 defineCommonTests(async (path) => {
-  const res = await app.render(new Request(`http://example.com/${path}`));
-  return res.text();
+	const res = await app.render(new Request(`http://example.com/${path}`));
+	return res.text();
 });

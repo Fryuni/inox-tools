@@ -10,6 +10,9 @@ workspace:
 
 ## PACKAGES
 
+pkg/portal-gun:
+- 'packages/portal-gun/**'
+
 pkg/cut-short:
 - 'packages/cut-short/**'
 

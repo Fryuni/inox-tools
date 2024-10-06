@@ -36,6 +36,9 @@ catalogs:
     '@types/debug':
       specifier: ^4.1.12
       version: 4.1.12
+    '@types/hast':
+      specifier: ^3.0.4
+      version: 3.0.4
     '@types/node':
       specifier: ^22.7.4
       version: 22.7.4
@@ -78,6 +81,9 @@ catalogs:
     recast:
       specifier: ^0.23.9
       version: 0.23.9
+    rehype:
+      specifier: ^13.0.0
+      version: 13.0.2
     sitemap:
       specifier: ^8.0.0
       version: 8.0.0
@@ -323,13 +329,13 @@ importers:
         version: 8.3.4(astro@4.15.9(@types/node@22.7.4)(rollup@4.22.5)(typescript@5.6.2))
       '@astrojs/preact':
         specifier: ^3.5.3
-        version: 3.5.3(@babel/core@7.25.2)(preact@10.24.1)(vite@5.4.8(@types/node@22.7.4))
+        version: 3.5.3(@babel/core@7.25.2)(preact@10.24.2)(vite@5.4.8(@types/node@22.7.4))
       '@inox-tools/request-nanostores':
         specifier: workspace:^
         version: link:../../packages/request-nanostores
       '@nanostores/preact':
         specifier: ^0.5.2
-        version: 0.5.2(nanostores@0.11.3)(preact@10.24.1)
+        version: 0.5.2(nanostores@0.11.3)(preact@10.24.2)
       astro:
         specifier: ^4.15.9
         version: 4.15.9(@types/node@22.7.4)(rollup@4.22.5)(typescript@5.6.2)
@@ -338,7 +344,7 @@ importers:
         version: 0.11.3
       preact:
         specifier: ^10.24.1
-        version: 10.24.1
+        version: 10.24.2
       typescript:
         specifier: ^5.6.2
         version: 5.6.2
@@ -747,6 +753,73 @@ importers:
         specifier: 'catalog:'
         version: 2.1.1(@types/node@22.7.4)(@vitest/ui@2.1.1)
 
+  packages/portal-gun:
+    dependencies:
+      '@inox-tools/runtime-logger':
+        specifier: workspace:^
+        version: link:../runtime-logger
+      '@inox-tools/utils':
+        specifier: workspace:^
+        version: link:../utils
+      astro-integration-kit:
+        specifier: 'catalog:'
+        version: 0.16.1(astro@4.15.9(@types/node@22.7.4)(rollup@4.22.5)(typescript@5.6.2))
+      debug:
+        specifier: 'catalog:'
+        version: 4.3.7
+      preact:
+        specifier: '*'
+        version: 10.24.2
+      rehype:
+        specifier: 'catalog:'
+        version: 13.0.2
+    devDependencies:
+      '@inox-tools/astro-tests':
+        specifier: 'workspace:'
+        version: link:../astro-tests
+      '@types/hast':
+        specifier: 'catalog:'
+        version: 3.0.4
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.7.4
+      '@vitest/ui':
+        specifier: 'catalog:'
+        version: 2.1.1(vitest@2.1.1)
+      astro:
+        specifier: 'catalog:'
+        version: 4.15.9(@types/node@22.7.4)(rollup@4.22.5)(typescript@5.6.2)
+      jest-extended:
+        specifier: 'catalog:'
+        version: 4.0.2
+      tsup:
+        specifier: 'catalog:'
+        version: 8.2.4(jiti@2.0.0)(postcss@8.4.47)(typescript@5.6.2)(yaml@2.5.1)
+      typescript:
+        specifier: 'catalog:'
+        version: 5.6.2
+      vite:
+        specifier: 'catalog:'
+        version: 5.4.8(@types/node@22.7.4)
+      vitest:
+        specifier: 'catalog:'
+        version: 2.1.1(@types/node@22.7.4)(@vitest/ui@2.1.1)
+
+  packages/portal-gun/tests/fixture/basic:
+    dependencies:
+      '@astrojs/preact':
+        specifier: ^3.5.3
+        version: 3.5.3(@babel/core@7.25.2)(preact@10.24.2)(vite@5.4.8(@types/node@22.7.4))
+      '@inox-tools/portal-gun':
+        specifier: 'workspace:'
+        version: link:../../..
+      astro:
+        specifier: 'catalog:'
+        version: 4.15.9(@types/node@22.7.4)(rollup@4.22.5)(typescript@5.6.2)
+      preact:
+        specifier: ^10.24.2
+        version: 10.24.2
+
   packages/request-nanostores:
     dependencies:
       '@inox-tools/request-state':
@@ -800,13 +873,13 @@ importers:
         version: 8.3.4(astro@4.15.9(@types/node@22.7.4)(rollup@4.22.5)(typescript@5.6.2))
       '@astrojs/preact':
         specifier: ^3.5.3
-        version: 3.5.3(@babel/core@7.25.2)(preact@10.24.1)(vite@5.4.8(@types/node@22.7.4))
+        version: 3.5.3(@babel/core@7.25.2)(preact@10.24.2)(vite@5.4.8(@types/node@22.7.4))
       '@inox-tools/request-nanostores':
         specifier: 'workspace:'
         version: link:../../..
       '@nanostores/preact':
         specifier: ^0.5.2
-        version: 0.5.2(nanostores@0.11.3)(preact@10.24.1)
+        version: 0.5.2(nanostores@0.11.3)(preact@10.24.2)
       astro:
         specifier: 'catalog:'
         version: 4.15.9(@types/node@22.7.4)(rollup@4.22.5)(typescript@5.6.2)
@@ -815,13 +888,13 @@ importers:
         version: 0.11.3
       preact:
         specifier: ^10.24.0
-        version: 10.24.1
+        version: 10.24.2
 
   packages/request-nanostores/tests/fixture/race:
     dependencies:
       '@astrojs/preact':
         specifier: ^3.5.3
-        version: 3.5.3(@babel/core@7.25.2)(preact@10.24.1)(vite@5.4.8(@types/node@22.7.4))
+        version: 3.5.3(@babel/core@7.25.2)(preact@10.24.2)(vite@5.4.8(@types/node@22.7.4))
       '@inox-tools/request-nanostores':
         specifier: 'workspace:'
         version: link:../../..
@@ -4236,8 +4309,8 @@ packages:
     peerDependencies:
       preact: '>=10'
 
-  preact@10.24.1:
-    resolution: {integrity: sha512-PnBAwFI3Yjxxcxw75n6VId/5TFxNW/81zexzWD9jn1+eSrOP84NdsS38H5IkF/UH3frqRPT+MvuCoVHjTDTnDw==}
+  preact@10.24.2:
+    resolution: {integrity: sha512-1cSoF0aCC8uaARATfrlz4VCBqE8LwZwRfLgkxJOQwAlQt6ayTmi0D9OF7nXid1POI5SZidFuG9CnlXbDfLqY/Q==}
 
   preferred-pm@4.0.0:
     resolution: {integrity: sha512-gYBeFTZLu055D8Vv3cSPox/0iTPtkzxpLroSYYA7WXgRi31WCJ51Uyl8ZiPeUUjyvs2MBzK+S8v9JVUgHU/Sqw==}
@@ -5426,15 +5499,15 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@astrojs/preact@3.5.3(@babel/core@7.25.2)(preact@10.24.1)(vite@5.4.8(@types/node@22.7.4))':
+  '@astrojs/preact@3.5.3(@babel/core@7.25.2)(preact@10.24.2)(vite@5.4.8(@types/node@22.7.4))':
     dependencies:
       '@babel/plugin-transform-react-jsx': 7.25.2(@babel/core@7.25.2)
       '@babel/plugin-transform-react-jsx-development': 7.24.7(@babel/core@7.25.2)
-      '@preact/preset-vite': 2.8.2(@babel/core@7.25.2)(preact@10.24.1)(vite@5.4.8(@types/node@22.7.4))
-      '@preact/signals': 1.3.0(preact@10.24.1)
+      '@preact/preset-vite': 2.8.2(@babel/core@7.25.2)(preact@10.24.2)(vite@5.4.8(@types/node@22.7.4))
+      '@preact/signals': 1.3.0(preact@10.24.2)
       babel-plugin-transform-hook-names: 1.0.2(@babel/core@7.25.2)
-      preact: 10.24.1
-      preact-render-to-string: 6.5.11(preact@10.24.1)
+      preact: 10.24.2
+      preact-render-to-string: 6.5.11(preact@10.24.2)
     transitivePeerDependencies:
       - '@babel/core'
       - supports-color
@@ -6267,10 +6340,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@nanostores/preact@0.5.2(nanostores@0.11.3)(preact@10.24.1)':
+  '@nanostores/preact@0.5.2(nanostores@0.11.3)(preact@10.24.2)':
     dependencies:
       nanostores: 0.11.3
-      preact: 10.24.1
+      preact: 10.24.2
 
   '@nodelib/fs.scandir@2.1.5':
     dependencies:
@@ -6312,12 +6385,12 @@ snapshots:
 
   '@polka/url@1.0.0-next.28': {}
 
-  '@preact/preset-vite@2.8.2(@babel/core@7.25.2)(preact@10.24.1)(vite@5.4.8(@types/node@22.7.4))':
+  '@preact/preset-vite@2.8.2(@babel/core@7.25.2)(preact@10.24.2)(vite@5.4.8(@types/node@22.7.4))':
     dependencies:
       '@babel/core': 7.25.2
       '@babel/plugin-transform-react-jsx': 7.25.2(@babel/core@7.25.2)
       '@babel/plugin-transform-react-jsx-development': 7.24.7(@babel/core@7.25.2)
-      '@prefresh/vite': 2.4.6(preact@10.24.1)(vite@5.4.8(@types/node@22.7.4))
+      '@prefresh/vite': 2.4.6(preact@10.24.2)(vite@5.4.8(@types/node@22.7.4))
       '@rollup/pluginutils': 4.2.1
       babel-plugin-transform-hook-names: 1.0.2(@babel/core@7.25.2)
       debug: 4.3.7
@@ -6334,27 +6407,27 @@ snapshots:
 
   '@preact/signals-core@1.8.0': {}
 
-  '@preact/signals@1.3.0(preact@10.24.1)':
+  '@preact/signals@1.3.0(preact@10.24.2)':
     dependencies:
       '@preact/signals-core': 1.8.0
-      preact: 10.24.1
+      preact: 10.24.2
 
   '@prefresh/babel-plugin@0.5.1': {}
 
-  '@prefresh/core@1.5.2(preact@10.24.1)':
+  '@prefresh/core@1.5.2(preact@10.24.2)':
     dependencies:
-      preact: 10.24.1
+      preact: 10.24.2
 
   '@prefresh/utils@1.2.0': {}
 
-  '@prefresh/vite@2.4.6(preact@10.24.1)(vite@5.4.8(@types/node@22.7.4))':
+  '@prefresh/vite@2.4.6(preact@10.24.2)(vite@5.4.8(@types/node@22.7.4))':
     dependencies:
       '@babel/core': 7.25.2
       '@prefresh/babel-plugin': 0.5.1
-      '@prefresh/core': 1.5.2(preact@10.24.1)
+      '@prefresh/core': 1.5.2(preact@10.24.2)
       '@prefresh/utils': 1.2.0
       '@rollup/pluginutils': 4.2.1
-      preact: 10.24.1
+      preact: 10.24.2
       vite: 5.4.8(@types/node@22.7.4)
     transitivePeerDependencies:
       - supports-color
@@ -9206,11 +9279,11 @@ snapshots:
       picocolors: 1.1.0
       source-map-js: 1.2.1
 
-  preact-render-to-string@6.5.11(preact@10.24.1):
+  preact-render-to-string@6.5.11(preact@10.24.2):
     dependencies:
-      preact: 10.24.1
+      preact: 10.24.2
 
-  preact@10.24.1: {}
+  preact@10.24.2: {}
 
   preferred-pm@4.0.0:
     dependencies:

@@ -74,6 +74,14 @@ export default defineConfig({
 							},
 						},
 						{
+							label: 'Portal Gun',
+							link: '/portal-gun',
+							badge: {
+								text: 'NEW',
+								variant: 'success',
+							},
+						},
+						{
 							label: 'Content Utilities',
 							collapsed: false,
 							autogenerate: {

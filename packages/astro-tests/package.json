@@ -1,5 +1,6 @@
 {
   "name": "@inox-tools/astro-tests",
+  "description": "Utilities for testing your own Astro integrations and libraries based on Astro's own testing tools",
   "version": "0.1.4",
   "license": "MIT",
   "author": "Luiz Ferraz <luiz@lferraz.com>",

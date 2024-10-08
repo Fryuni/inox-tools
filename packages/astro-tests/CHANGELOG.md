@@ -1,5 +1,11 @@
 # @inox-tools/astro-tests
 
+## 0.1.5
+
+### Patch Changes
+
+- d81825e: Add package description
+
 ## 0.1.4
 
 ### Patch Changes

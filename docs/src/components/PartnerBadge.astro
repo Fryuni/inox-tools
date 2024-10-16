@@ -1,0 +1,19 @@
+---
+import { Image } from 'astro:assets';
+import lightBadge from '../img/Partner-badge-light-mode.png';
+import darkBadge from '../img/Partner-badge-dark-mode.png';
+---
+
+<center>
+	<a href="https://croct.com">
+		<Image class:list={['light:sl-hidden']} src={darkBadge} alt="Croct Partner" />
+		<Image class:list={['dark:sl-hidden']} src={lightBadge} alt="Croct Partner" />
+	</a>
+</center>
+
+<style>
+	img {
+		width: 100%;
+		height: auto;
+	}
+</style>

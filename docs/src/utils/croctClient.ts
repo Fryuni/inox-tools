@@ -15,3 +15,6 @@ declare global {
 }
 
 window.croct = croct;
+
+export default croct;
+export { croct };

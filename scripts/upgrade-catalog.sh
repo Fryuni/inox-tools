@@ -19,7 +19,7 @@ pnpm upgrade -rLD
 pnpm dedupe
 
 git add '**/package.json' package.json pnpm-lock.yaml pnpm-workspace.yaml
-git commit -m "chore: Upgrade dependencies"
+git commit -m "chore: Upgrade dependencies" || true
 
 rm -rf .inox-tools
 mkdir -p .inox-tools/catalogs/default

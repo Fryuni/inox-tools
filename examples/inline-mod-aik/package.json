@@ -11,11 +11,11 @@
     "start": "astro dev"
   },
   "dependencies": {
-    "@astrojs/check": "^0.9.3",
+    "@astrojs/check": "^0.9.4",
     "@astrojs/node": "^8.3.4",
-    "astro": "^4.15.9",
-    "typescript": "^5.6.2",
-    "vite": "^5.4.8"
+    "astro": "^4.16.7",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10"
   },
   "devDependencies": {
     "@inox-tools/aik-mod": "workspace:^",

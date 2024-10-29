@@ -42,12 +42,12 @@
     "rehype": "catalog:"
   },
   "devDependencies": {
-    "@inox-tools/astro-tests": "workspace:",
+    "@inox-tools/astro-tests": "workspace:^",
     "@types/hast": "catalog:",
     "@types/node": "catalog:",
     "@vitest/ui": "catalog:",
-    "jest-extended": "catalog:",
     "astro": "catalog:",
+    "jest-extended": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",

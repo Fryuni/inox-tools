@@ -11,12 +11,12 @@
     "start": "astro dev"
   },
   "dependencies": {
-    "@astrojs/check": "^0.9.3",
-    "@astrojs/mdx": "^3.1.7",
-    "@astrojs/rss": "^4.0.7",
-    "@astrojs/sitemap": "^3.1.6",
-    "astro": "^4.15.9",
-    "typescript": "^5.6.2"
+    "@astrojs/check": "^0.9.4",
+    "@astrojs/mdx": "^3.1.8",
+    "@astrojs/rss": "^4.0.9",
+    "@astrojs/sitemap": "^3.2.1",
+    "astro": "^4.16.7",
+    "typescript": "^5.6.3"
   },
   "devDependencies": {
     "@inox-tools/custom-routing": "workspace:*"

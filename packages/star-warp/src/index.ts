@@ -3,8 +3,9 @@ import { z } from 'astro/zod';
 import { makePlugin } from './configPlugin.js';
 import type { AstroIntegration } from 'astro';
 import { makeOpenSearchPlugin } from './openSearchPlugin.js';
+import type { StarlightPlugin } from '@astrojs/starlight/types';
 
-export default defineIntegration({
+const integration = defineIntegration({
 	name: '@inox-tools/star-warp',
 	optionsSchema: z
 		.object({
@@ -102,3 +103,12 @@ export default defineIntegration({
 		return comboIntegration;
 	},
 });
+
+// Yeah it is like this for the type generation to result in friendly types.
+// Deal with it future me!
+
+const starWarp = integration as (
+	...args: Parameters<typeof integration>
+) => AstroIntegration & StarlightPlugin;
+
+export default starWarp;

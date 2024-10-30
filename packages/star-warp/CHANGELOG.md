@@ -1,5 +1,12 @@
 # @inox-tools/star-warp
 
+## 0.1.5
+
+### Patch Changes
+
+- eda7b7d: Fixes type error when used as a Starlight plugin.
+- d32aaf5: Extend support for newer Starlight versions
+
 ## 0.1.4
 
 ### Patch Changes

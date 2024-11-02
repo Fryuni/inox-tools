@@ -554,7 +554,7 @@ importers:
   packages/astro-when/tests/fixture/server-output:
     dependencies:
       '@inox-tools/astro-when':
-        specifier: 'workspace:'
+        specifier: workspace:1.0.0-beta.0
         version: link:../../..
       astro:
         specifier: 5.0.0-beta.6
@@ -563,7 +563,7 @@ importers:
   packages/astro-when/tests/fixture/static-output:
     dependencies:
       '@inox-tools/astro-when':
-        specifier: 'workspace:'
+        specifier: workspace:1.0.0-beta.0
         version: link:../../..
       astro:
         specifier: 5.0.0-beta.6
@@ -664,7 +664,7 @@ importers:
   packages/cut-short/tests/fixture/basic:
     dependencies:
       '@inox-tools/cut-short':
-        specifier: 'workspace:'
+        specifier: workspace:1.0.0-beta.0
         version: link:../../..
       astro:
         specifier: 5.0.0-beta.6
@@ -802,7 +802,7 @@ importers:
         specifier: ^3.5.3
         version: 3.5.3(@babel/core@7.26.0)(preact@10.24.3)(vite@6.0.0-beta.8(@types/node@22.8.4)(jiti@2.0.0)(yaml@2.6.0))
       '@inox-tools/portal-gun':
-        specifier: 'workspace:'
+        specifier: workspace:1.0.0-beta.0
         version: link:../../..
       astro:
         specifier: 5.0.0-beta.6
@@ -866,7 +866,7 @@ importers:
         specifier: ^3.5.3
         version: 3.5.3(@babel/core@7.26.0)(preact@10.24.3)(vite@6.0.0-beta.8(@types/node@22.8.4)(jiti@2.0.0)(yaml@2.6.0))
       '@inox-tools/request-nanostores':
-        specifier: 'workspace:'
+        specifier: workspace:0.1.5-beta.0
         version: link:../../..
       '@nanostores/preact':
         specifier: ^0.5.2
@@ -887,7 +887,7 @@ importers:
         specifier: ^3.5.3
         version: 3.5.3(@babel/core@7.26.0)(preact@10.24.3)(vite@6.0.0-beta.8(@types/node@22.8.4)(jiti@2.0.0)(yaml@2.6.0))
       '@inox-tools/request-nanostores':
-        specifier: 'workspace:'
+        specifier: workspace:0.1.5-beta.0
         version: link:../../..
       astro:
         specifier: 5.0.0-beta.6
@@ -945,7 +945,7 @@ importers:
         specifier: 'catalog:'
         version: 9.0.0-beta.3(astro@5.0.0-beta.6(@types/node@22.8.4)(jiti@2.0.0)(rollup@4.24.3)(typescript@5.6.3)(yaml@2.6.0))
       '@inox-tools/request-state':
-        specifier: 'workspace:'
+        specifier: workspace:0.1.5-beta.0
         version: link:../../..
       astro:
         specifier: 5.0.0-beta.6
@@ -957,7 +957,7 @@ importers:
   packages/request-state/e2e/fixture/dev:
     dependencies:
       '@inox-tools/request-state':
-        specifier: 'workspace:'
+        specifier: workspace:0.1.5-beta.0
         version: link:../../..
       astro:
         specifier: 5.0.0-beta.6
@@ -969,7 +969,7 @@ importers:
         specifier: 'catalog:'
         version: 9.0.0-beta.3(astro@5.0.0-beta.6(@types/node@22.8.4)(jiti@2.0.0)(rollup@4.24.3)(typescript@5.6.3)(yaml@2.6.0))
       '@inox-tools/request-state':
-        specifier: 'workspace:'
+        specifier: workspace:0.1.5-beta.0
         version: link:../../..
       astro:
         specifier: 5.0.0-beta.6

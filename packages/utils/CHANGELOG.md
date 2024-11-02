@@ -1,5 +1,12 @@
 # @inox-tools/utils
 
+## 0.3.0-beta.0
+
+### Minor Changes
+
+- b4843b9: Bump support to Vite 6
+- b4843b9: Add utility for setting deeply nested values through optional fields
+
 ## 0.2.0
 
 ### Minor Changes

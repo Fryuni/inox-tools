@@ -6,7 +6,7 @@
   "dependencies": {
     "@astrojs/node": "catalog:",
     "@astrojs/preact": "^3.5.3",
-    "@inox-tools/request-nanostores": "workspace:",
+    "@inox-tools/request-nanostores": "workspace:0.1.5-beta.0",
     "@nanostores/preact": "^0.5.2",
     "astro": "catalog:",
     "nanostores": "catalog:",

@@ -1,5 +1,11 @@
 # @inox-tools/astro-when
 
+## 1.0.0-beta.0
+
+### Major Changes
+
+- b4843b9: Bump support to Astro 5
+
 ## 0.2.4
 
 ### Patch Changes

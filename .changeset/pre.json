@@ -40,5 +40,9 @@
     "@inox-tools/velox-luna": "0.3.2",
     "templates": "1.0.0"
   },
-  "changesets": []
+  "changesets": [
+    "sixty-chefs-itch",
+    "smooth-pets-grab",
+    "ten-fireants-peel"
+  ]
 }

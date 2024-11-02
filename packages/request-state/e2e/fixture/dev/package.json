@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@inox-tools/request-state": "workspace:",
+    "@inox-tools/request-state": "workspace:0.1.5-beta.0",
     "astro": "catalog:"
   }
 }

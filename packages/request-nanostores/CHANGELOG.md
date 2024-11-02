@@ -1,5 +1,14 @@
 # @inox-tools/request-nanostores
 
+## 0.1.5-beta.0
+
+### Patch Changes
+
+- Updated dependencies [b4843b9]
+- Updated dependencies [b4843b9]
+  - @inox-tools/utils@0.3.0-beta.0
+  - @inox-tools/request-state@0.1.5-beta.0
+
 ## 0.1.4
 
 ### Patch Changes

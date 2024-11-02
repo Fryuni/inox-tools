@@ -42,7 +42,9 @@
   "pnpm": {
     "overrides": {
       "@croct/sdk": "0.17.0",
-      "picomatch": "3.0.1"
+      "astro": "5.0.0-beta.6",
+      "picomatch": "3.0.1",
+      "vite": "6.0.0-beta.8"
     }
   }
 }

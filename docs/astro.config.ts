@@ -1,6 +1,6 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
-import vercel from '@astrojs/vercel';
+import vercel from '@astrojs/vercel/serverless';
 import starWarp from '@inox-tools/star-warp';
 import starlightLinksValidator from 'starlight-links-validator';
 

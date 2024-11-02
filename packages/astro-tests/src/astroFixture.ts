@@ -151,7 +151,7 @@ export async function loadFixture(inlineConfig: InlineConfig): Promise<Fixture> 
 
 	debug('Disabling Vite discovery for dependency optimization');
 	// Prevent hanging when testing the dev server on some scenarios
-	setNestedIfNullish(inlineConfig, 'optimizeDeps.noDiscovery', true);
+	setNestedIfNullish(inlineConfig, 'vite.optimizeDeps.noDiscovery', true);
 
 	inlineConfig.server ??= {};
 	if (typeof inlineConfig.server === 'function') {

@@ -41,6 +41,8 @@
     "templates": "1.0.0"
   },
   "changesets": [
+    "grumpy-coins-collect",
+    "hot-pandas-dream",
     "sixty-chefs-itch",
     "smooth-pets-grab",
     "ten-fireants-peel"

@@ -1,5 +1,11 @@
 # @inox-tools/astro-tests
 
+## 0.2.0-beta.1
+
+### Patch Changes
+
+- ed6f403: Fix opt-out of Vite's dependency optimization during tests
+
 ## 0.2.0-beta.0
 
 ### Minor Changes

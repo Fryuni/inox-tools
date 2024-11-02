@@ -1,6 +1,6 @@
 {
   "name": "@inox-tools/astro-tests",
-  "version": "0.2.0-beta.0",
+  "version": "0.2.0-beta.1",
   "description": "Utilities for testing your own Astro integrations and libraries based on Astro's own testing tools",
   "keywords": [
     "withastro",

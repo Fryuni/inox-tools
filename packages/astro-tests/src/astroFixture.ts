@@ -224,9 +224,9 @@ export async function loadFixture(inlineConfig: InlineConfig): Promise<Fixture> 
 	const onNextChange = () =>
 		devServer
 			? new Promise<void>((resolve) =>
-				// TODO: Implement filter to only resolve on changes to a given file.
-				devServer.watcher.once('change', () => resolve())
-			)
+					// TODO: Implement filter to only resolve on changes to a given file.
+					devServer.watcher.once('change', () => resolve())
+				)
 			: Promise.reject(new Error('No dev server running'));
 
 	// Also do it on process exit, just in case.

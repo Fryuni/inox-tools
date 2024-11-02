@@ -1,6 +1,6 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
-import vercel from '@astrojs/vercel/serverless';
+import vercel from '@astrojs/vercel';
 import starWarp from '@inox-tools/star-warp';
 import starlightLinksValidator from 'starlight-links-validator';
 
@@ -13,7 +13,7 @@ const SITE =
 
 // https://astro.build/config
 export default defineConfig({
-	output: 'hybrid',
+	output: 'server',
 	adapter: vercel({
 		skewProtection: true,
 	}),

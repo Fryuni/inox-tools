@@ -1,15 +1,15 @@
 {
   "name": "@inox-tools/astro-tests",
-  "description": "Utilities for testing your own Astro integrations and libraries based on Astro's own testing tools",
   "version": "0.1.5",
-  "license": "MIT",
-  "author": "Luiz Ferraz <luiz@lferraz.com>",
-  "type": "module",
+  "description": "Utilities for testing your own Astro integrations and libraries based on Astro's own testing tools",
   "keywords": [
     "withastro",
     "utils",
     "tests"
   ],
+  "license": "MIT",
+  "author": "Luiz Ferraz <luiz@lferraz.com>",
+  "type": "module",
   "exports": {
     "./*": {
       "types": "./dist/*.d.ts",
@@ -26,23 +26,23 @@
     "dev": "tsup --watch",
     "test": "echo 'This is the test utility, there are no tests for it'"
   },
-  "devDependencies": {
-    "@types/node": "catalog:",
-    "tsup": "catalog:",
-    "typescript": "catalog:",
-    "vite": "catalog:",
-    "vitest": "catalog:"
-  },
   "dependencies": {
     "@astrojs/internal-helpers": "catalog:",
     "@astrojs/markdown-remark": "^5.2.0",
     "@inox-tools/utils": "workspace:^",
     "astro": "catalog:",
     "debug": "catalog:",
-    "shiki": "^1.14.1",
     "fast-glob": "^3.3.2",
+    "shiki": "^1.14.1",
     "strip-ansi": "^7.1.0",
     "undici": "^6.19.8",
     "zod": "^3"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "tsup": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
   }
 }

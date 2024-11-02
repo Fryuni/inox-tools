@@ -1,8 +1,20 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
+import type { StarlightConfig } from '@astrojs/starlight/types';
 import vercel from '@astrojs/vercel/serverless';
 import starWarp from '@inox-tools/star-warp';
 import starlightLinksValidator from 'starlight-links-validator';
+
+const badge = {
+	new: {
+		text: 'NEW',
+		variant: 'success',
+	},
+	updated: {
+		text: 'UPDATED',
+		variant: 'default',
+	},
+} satisfies Record<string, NonNullable<NonNullable<StarlightConfig['sidebar']>[number]['badge']>>;
 
 process.env.ASTRO_PROJECT_ROOT = new URL('../', import.meta.url).toString();
 
@@ -13,7 +25,7 @@ const SITE =
 
 // https://astro.build/config
 export default defineConfig({
-	output: 'server',
+	output: 'hybrid',
 	adapter: vercel({
 		skewProtection: true,
 	}),
@@ -69,18 +81,10 @@ export default defineConfig({
 						{
 							label: 'Cut Short',
 							link: '/cut-short',
-							badge: {
-								text: 'NEW',
-								variant: 'success',
-							},
 						},
 						{
 							label: 'Portal Gun',
 							link: '/portal-gun',
-							badge: {
-								text: 'NEW',
-								variant: 'success',
-							},
 						},
 						{
 							label: 'Content Utilities',
@@ -102,10 +106,6 @@ export default defineConfig({
 						{
 							label: 'Astro Tests',
 							link: '/astro-tests',
-							badge: {
-								text: 'NEW',
-								variant: 'success',
-							},
 						},
 						{
 							label: 'Modular Station',

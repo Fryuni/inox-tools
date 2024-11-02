@@ -5,6 +5,7 @@
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**"],
+      "inputs": ["$TURBO_DEFAULT$", "!tests", "!e2e"],
       "outputLogs": "new-only"
     },
     "preview": {

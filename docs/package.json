@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@astrojs/starlight": "catalog:",
-    "@astrojs/vercel": "^7.8.2",
+    "@astrojs/vercel": "^8.0.0-beta",
     "@croct/plug": "^0.16.4",
     "@inox-tools/star-warp": "workspace:^",
     "@inox-tools/utils": "workspace:^",

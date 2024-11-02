@@ -149,8 +149,8 @@ importers:
         specifier: 'catalog:'
         version: 0.28.4(astro@5.0.0-beta.6(@types/node@22.8.4)(jiti@2.0.0)(rollup@4.24.3)(typescript@5.6.3)(yaml@2.6.0))
       '@astrojs/vercel':
-        specifier: ^7.8.2
-        version: 7.8.2(astro@5.0.0-beta.6(@types/node@22.8.4)(jiti@2.0.0)(rollup@4.24.3)(typescript@5.6.3)(yaml@2.6.0))
+        specifier: ^8.0.0-beta
+        version: 8.0.0-beta.3(astro@5.0.0-beta.6(@types/node@22.8.4)(jiti@2.0.0)(rollup@4.24.3)(typescript@5.6.3)(yaml@2.6.0))
       '@croct/plug':
         specifier: ^0.16.4
         version: 0.16.4
@@ -189,8 +189,8 @@ importers:
         specifier: ^0.9.4
         version: 0.9.4(prettier-plugin-astro@0.14.1)(prettier@3.3.3)(typescript@5.6.3)
       '@astrojs/node':
-        specifier: ^8.3.4
-        version: 8.3.4(astro@5.0.0-beta.6(@types/node@22.8.4)(jiti@2.0.0)(rollup@4.24.3)(typescript@5.6.3)(yaml@2.6.0))
+        specifier: ^9.0.0-beta
+        version: 9.0.0-beta.3(astro@5.0.0-beta.6(@types/node@22.8.4)(jiti@2.0.0)(rollup@4.24.3)(typescript@5.6.3)(yaml@2.6.0))
       '@inox-tools/astro-when':
         specifier: workspace:^
         version: link:../../packages/astro-when
@@ -216,8 +216,8 @@ importers:
         specifier: 5.0.0-beta.6
         version: 5.0.0-beta.6(@types/node@22.8.4)(jiti@2.0.0)(rollup@4.24.3)(typescript@5.6.3)(yaml@2.6.0)
       astro-integration-kit:
-        specifier: ^0.16.1
-        version: 0.16.1(astro@5.0.0-beta.6(@types/node@22.8.4)(jiti@2.0.0)(rollup@4.24.3)(typescript@5.6.3)(yaml@2.6.0))
+        specifier: ^0.17
+        version: 0.17.0(astro@5.0.0-beta.6(@types/node@22.8.4)(jiti@2.0.0)(rollup@4.24.3)(typescript@5.6.3)(yaml@2.6.0))
       typescript:
         specifier: ^5.6.3
         version: 5.6.3
@@ -228,8 +228,8 @@ importers:
         specifier: ^0.9.4
         version: 0.9.4(prettier-plugin-astro@0.14.1)(prettier@3.3.3)(typescript@5.6.3)
       '@astrojs/mdx':
-        specifier: ^3.1.8
-        version: 3.1.8(astro@5.0.0-beta.6(@types/node@22.8.4)(jiti@2.0.0)(rollup@4.24.3)(typescript@5.6.3)(yaml@2.6.0))
+        specifier: ^4.0.0-beta
+        version: 4.0.0-beta.3(astro@5.0.0-beta.6(@types/node@22.8.4)(jiti@2.0.0)(rollup@4.24.3)(typescript@5.6.3)(yaml@2.6.0))
       '@astrojs/rss':
         specifier: ^4.0.9
         version: 4.0.9
@@ -265,8 +265,8 @@ importers:
         specifier: ^0.9.4
         version: 0.9.4(prettier-plugin-astro@0.14.1)(prettier@3.3.3)(typescript@5.6.3)
       '@astrojs/node':
-        specifier: ^8.3.4
-        version: 8.3.4(astro@5.0.0-beta.6(@types/node@22.8.4)(jiti@2.0.0)(rollup@4.24.3)(typescript@5.6.3)(yaml@2.6.0))
+        specifier: ^9.0.0-beta
+        version: 9.0.0-beta.3(astro@5.0.0-beta.6(@types/node@22.8.4)(jiti@2.0.0)(rollup@4.24.3)(typescript@5.6.3)(yaml@2.6.0))
       astro:
         specifier: 5.0.0-beta.6
         version: 5.0.0-beta.6(@types/node@22.8.4)(jiti@2.0.0)(rollup@4.24.3)(typescript@5.6.3)(yaml@2.6.0)
@@ -281,8 +281,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/aik-mod
       astro-integration-kit:
-        specifier: ^0.16.1
-        version: 0.16.1(astro@5.0.0-beta.6(@types/node@22.8.4)(jiti@2.0.0)(rollup@4.24.3)(typescript@5.6.3)(yaml@2.6.0))
+        specifier: ^0.17
+        version: 0.17.0(astro@5.0.0-beta.6(@types/node@22.8.4)(jiti@2.0.0)(rollup@4.24.3)(typescript@5.6.3)(yaml@2.6.0))
 
   examples/inline-mod-astro:
     dependencies:
@@ -290,8 +290,8 @@ importers:
         specifier: ^0.9.4
         version: 0.9.4(prettier-plugin-astro@0.14.1)(prettier@3.3.3)(typescript@5.6.3)
       '@astrojs/node':
-        specifier: ^8.3.4
-        version: 8.3.4(astro@5.0.0-beta.6(@types/node@22.8.4)(jiti@2.0.0)(rollup@4.24.3)(typescript@5.6.3)(yaml@2.6.0))
+        specifier: ^9.0.0-beta
+        version: 9.0.0-beta.3(astro@5.0.0-beta.6(@types/node@22.8.4)(jiti@2.0.0)(rollup@4.24.3)(typescript@5.6.3)(yaml@2.6.0))
       '@astrojs/rss':
         specifier: ^4.0.9
         version: 4.0.9
@@ -306,7 +306,7 @@ importers:
         version: 6.0.0-beta.8(@types/node@22.8.4)(jiti@2.0.0)(yaml@2.6.0)
     devDependencies:
       '@inox-tools/inline-mod':
-        specifier: link:../../packages/inline-mod
+        specifier: workspace:^
         version: link:../../packages/inline-mod
 
   examples/request-nanostores:
@@ -315,8 +315,8 @@ importers:
         specifier: ^0.9.4
         version: 0.9.4(prettier-plugin-astro@0.14.1)(prettier@3.3.3)(typescript@5.6.3)
       '@astrojs/node':
-        specifier: ^8.3.4
-        version: 8.3.4(astro@5.0.0-beta.6(@types/node@22.8.4)(jiti@2.0.0)(rollup@4.24.3)(typescript@5.6.3)(yaml@2.6.0))
+        specifier: ^9.0.0-beta
+        version: 9.0.0-beta.3(astro@5.0.0-beta.6(@types/node@22.8.4)(jiti@2.0.0)(rollup@4.24.3)(typescript@5.6.3)(yaml@2.6.0))
       '@astrojs/preact':
         specifier: ^3.5.3
         version: 3.5.3(@babel/core@7.26.0)(preact@10.24.3)(vite@6.0.0-beta.8(@types/node@22.8.4)(jiti@2.0.0)(yaml@2.6.0))
@@ -345,8 +345,8 @@ importers:
         specifier: ^0.9.4
         version: 0.9.4(prettier-plugin-astro@0.14.1)(prettier@3.3.3)(typescript@5.6.3)
       '@astrojs/node':
-        specifier: ^8.3.4
-        version: 8.3.4(astro@5.0.0-beta.6(@types/node@22.8.4)(jiti@2.0.0)(rollup@4.24.3)(typescript@5.6.3)(yaml@2.6.0))
+        specifier: ^9.0.0-beta
+        version: 9.0.0-beta.3(astro@5.0.0-beta.6(@types/node@22.8.4)(jiti@2.0.0)(rollup@4.24.3)(typescript@5.6.3)(yaml@2.6.0))
       '@inox-tools/request-nanostores':
         specifier: workspace:^
         version: link:../../packages/request-nanostores
@@ -369,11 +369,11 @@ importers:
         specifier: ^0.9.4
         version: 0.9.4(prettier-plugin-astro@0.14.1)(prettier@3.3.3)(typescript@5.6.3)
       '@astrojs/mdx':
-        specifier: ^3.1.8
-        version: 3.1.8(astro@5.0.0-beta.6(@types/node@22.8.4)(jiti@2.0.0)(rollup@4.24.3)(typescript@5.6.3)(yaml@2.6.0))
+        specifier: ^4.0.0-beta
+        version: 4.0.0-beta.3(astro@5.0.0-beta.6(@types/node@22.8.4)(jiti@2.0.0)(rollup@4.24.3)(typescript@5.6.3)(yaml@2.6.0))
       '@astrojs/node':
-        specifier: ^8.3.4
-        version: 8.3.4(astro@5.0.0-beta.6(@types/node@22.8.4)(jiti@2.0.0)(rollup@4.24.3)(typescript@5.6.3)(yaml@2.6.0))
+        specifier: ^9.0.0-beta
+        version: 9.0.0-beta.3(astro@5.0.0-beta.6(@types/node@22.8.4)(jiti@2.0.0)(rollup@4.24.3)(typescript@5.6.3)(yaml@2.6.0))
       '@astrojs/rss':
         specifier: ^4.0.9
         version: 4.0.9
@@ -1205,8 +1205,9 @@ packages:
     peerDependencies:
       astro: 5.0.0-beta.6
 
-  '@astrojs/node@8.3.4':
-    resolution: {integrity: sha512-xzQs39goN7xh9np9rypGmbgZj3AmmjNxEMj9ZWz5aBERlqqFF3n8A/w/uaJeZ/bkHS60l1BXVS0tgsQt9MFqBA==}
+  '@astrojs/mdx@4.0.0-beta.3':
+    resolution: {integrity: sha512-U8fWNOTpbGqxyvHQY/Uj2ucp8uUdBxHxInkH+2AcRQaL4ZYq0W/agufz+VsCt4DQkapvgREwIACsJ8WnoEE79A==}
+    engines: {node: ^18.17.1 || ^20.3.0 || >=21.0.0}
     peerDependencies:
       astro: 5.0.0-beta.6
 
@@ -1240,8 +1241,8 @@ packages:
     resolution: {integrity: sha512-/ca/+D8MIKEC8/A9cSaPUqQNZm+Es/ZinRv0ZAzvu2ios7POQSsVD+VOj7/hypWNsNM3T7RpfgNq7H2TU1KEHA==}
     engines: {node: ^18.17.1 || ^20.3.0 || >=21.0.0}
 
-  '@astrojs/vercel@7.8.2':
-    resolution: {integrity: sha512-U2JsfN0LzFMX5CPrcb+5bAAyqyYURP6Dk/mUIXX87r5x4baQy+juU+ntvf926YA0tR7u6jPRXHymE2axQ/l3NQ==}
+  '@astrojs/vercel@8.0.0-beta.3':
+    resolution: {integrity: sha512-QawKiUFR6BTZGCjICyC58U7p/OAlumIsuXDT5MNOc7a6/psKPu0TUHc4aQ/TEUvCuZX0qhaAOg7NhixLNmn6KA==}
     peerDependencies:
       astro: 5.0.0-beta.6
 
@@ -2452,11 +2453,6 @@ packages:
     peerDependencies:
       astro: 5.0.0-beta.6
 
-  astro-integration-kit@0.16.1:
-    resolution: {integrity: sha512-N/iam0PAFrRT9azYZqscP1HowQhC77Dwlp912P0/72k+kwUVgO3m73F26XXukHYoZBsrHgrUrfsWBxuCH3kEUg==}
-    peerDependencies:
-      astro: 5.0.0-beta.6
-
   astro-integration-kit@0.17.0:
     resolution: {integrity: sha512-fe31CCKmrGYn/kkBd1J4b7P02gEdMdEIFBz14zdAud+YAmJeLtZD6wmrCz3LDau+lE1oM1hQnvmZXVSM/YveKw==}
     peerDependencies:
@@ -2763,14 +2759,6 @@ packages:
 
   dataloader@1.4.0:
     resolution: {integrity: sha512-68s5jYdlvasItOJnCuI2Q9s4q98g0pCyL3HrcKJu8KNugUl8ahgmZYg38ysLTgQjjXX3H8CJLkAvWrclWfcalw==}
-
-  debug@2.6.9:
-    resolution: {integrity: sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==}
-    peerDependencies:
-      supports-color: '*'
-    peerDependenciesMeta:
-      supports-color:
-        optional: true
 
   debug@4.3.7:
     resolution: {integrity: sha512-Er2nc/H7RrMXZBFCEim6TCmMk02Z8vLC2Rbi1KEBggpo0fS6l0S1nnapwmIi3yW/+GOJap1Krg4w0Hg80oCqgQ==}
@@ -3895,11 +3883,6 @@ packages:
     resolution: {integrity: sha512-ZDY+bPm5zTTF+YpCrAU9nK0UgICYPT0QtT1NZWFv4s++TNkcgVaT0g6+4R2uI4MjQjzysHB1zxuWL50hzaeXiw==}
     engines: {node: '>= 0.6'}
 
-  mime@1.6.0:
-    resolution: {integrity: sha512-x0Vn8spI+wuJ1O6S7gnbaQg8Pxh4NNHb7KSINmEWKiPE4RKOplvijn+NkmYmmRgP68mc70j2EbeTFRsrswaQeg==}
-    engines: {node: '>=4'}
-    hasBin: true
-
   mimic-fn@2.1.0:
     resolution: {integrity: sha512-OqbOk5oEQeAZ8WXWydlu9HJjz9WVdEIvamMCcXmuqUYjTknH/sqsWvhQ3vgwKFRR1HpjvNBKQ37nbJgYzGqGcg==}
     engines: {node: '>=6'}
@@ -3954,9 +3937,6 @@ packages:
   mrmime@2.0.0:
     resolution: {integrity: sha512-eu38+hdgojoyq63s+yTpN4XMBdt5l8HhMhc4VKLO9KM5caLIBvUm4thi7fFaxyTmCKeNnXZ5pAlBwCUnhA09uw==}
     engines: {node: '>=10'}
-
-  ms@2.0.0:
-    resolution: {integrity: sha512-Tpp60P6IUJDTuOq/5Z8cdskzJujfwqfOTkrwIwj7IRISpnkJnT6SyJ4PCPnGMoFjC9ddhal5KVIYtAt97ix05A==}
 
   ms@2.1.3:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
@@ -4519,10 +4499,6 @@ packages:
     resolution: {integrity: sha512-oVekP1cKtI+CTDvHWYFUcMtsK/00wmAEfyqKfNdARm8u1wNVhSgaX7A8d4UuIlUI5e84iEwOhs7ZPYRmzU9U6A==}
     engines: {node: '>=10'}
     hasBin: true
-
-  send@0.19.1:
-    resolution: {integrity: sha512-p4rRk4f23ynFEfcD9LA0xRYngj+IyGiEYyqqOak8kaN0TvNmuxC2dcVeBn62GpCeR2CpWqyHCNScTP91QbAVFg==}
-    engines: {node: '>= 0.8.0'}
 
   send@1.1.0:
     resolution: {integrity: sha512-v67WcEouB5GxbTWL/4NeToqcZiAWEq90N888fczVArY8A79J0L4FD7vj5hm3eUMua5EpoQ59wa/oovY6TLvRUA==}
@@ -5242,9 +5218,6 @@ packages:
   web-namespaces@2.0.1:
     resolution: {integrity: sha512-bKr1DkiNa2krS7qxNtdrtHAmzuYGFQLiQ13TsorsdT6ULTkPLKuu5+GsFpDlg6JFjUTwX2DyhMPG2be8uPrqsQ==}
 
-  web-vitals@3.5.2:
-    resolution: {integrity: sha512-c0rhqNcHXRkY/ogGDJQxZ9Im9D19hDihbzSQJrsioex+KnFgmMzBiy57Z1EjkhX/+OjyBpclDCzz2ITtjokFmg==}
-
   webidl-conversions@3.0.1:
     resolution: {integrity: sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==}
 
@@ -5498,11 +5471,22 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@astrojs/node@8.3.4(astro@5.0.0-beta.6(@types/node@22.8.4)(jiti@2.0.0)(rollup@4.24.3)(typescript@5.6.3)(yaml@2.6.0))':
+  '@astrojs/mdx@4.0.0-beta.3(astro@5.0.0-beta.6(@types/node@22.8.4)(jiti@2.0.0)(rollup@4.24.3)(typescript@5.6.3)(yaml@2.6.0))':
     dependencies:
+      '@astrojs/markdown-remark': 6.0.0-beta.2
+      '@mdx-js/mdx': 3.1.0(acorn@8.14.0)
+      acorn: 8.14.0
       astro: 5.0.0-beta.6(@types/node@22.8.4)(jiti@2.0.0)(rollup@4.24.3)(typescript@5.6.3)(yaml@2.6.0)
-      send: 0.19.1
-      server-destroy: 1.0.1
+      es-module-lexer: 1.5.4
+      estree-util-visit: 2.0.0
+      hast-util-to-html: 9.0.3
+      kleur: 4.1.5
+      rehype-raw: 7.0.0
+      remark-gfm: 4.0.0
+      remark-smartypants: 3.0.2
+      source-map: 0.7.4
+      unist-util-visit: 5.0.0
+      vfile: 6.0.3
     transitivePeerDependencies:
       - supports-color
 
@@ -5583,16 +5567,15 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@astrojs/vercel@7.8.2(astro@5.0.0-beta.6(@types/node@22.8.4)(jiti@2.0.0)(rollup@4.24.3)(typescript@5.6.3)(yaml@2.6.0))':
+  '@astrojs/vercel@8.0.0-beta.3(astro@5.0.0-beta.6(@types/node@22.8.4)(jiti@2.0.0)(rollup@4.24.3)(typescript@5.6.3)(yaml@2.6.0))':
     dependencies:
       '@astrojs/internal-helpers': 0.4.1
       '@vercel/analytics': 1.3.2
       '@vercel/edge': 1.1.2
       '@vercel/nft': 0.27.5
       astro: 5.0.0-beta.6(@types/node@22.8.4)(jiti@2.0.0)(rollup@4.24.3)(typescript@5.6.3)(yaml@2.6.0)
-      esbuild: 0.21.5
+      esbuild: 0.24.0
       fast-glob: 3.3.2
-      web-vitals: 3.5.2
     transitivePeerDependencies:
       - encoding
       - next
@@ -6884,12 +6867,6 @@ snapshots:
       astro: 5.0.0-beta.6(@types/node@22.8.4)(jiti@2.0.0)(rollup@4.24.3)(typescript@5.6.3)(yaml@2.6.0)
       rehype-expressive-code: 0.35.6
 
-  astro-integration-kit@0.16.1(astro@5.0.0-beta.6(@types/node@22.8.4)(jiti@2.0.0)(rollup@4.24.3)(typescript@5.6.3)(yaml@2.6.0)):
-    dependencies:
-      astro: 5.0.0-beta.6(@types/node@22.8.4)(jiti@2.0.0)(rollup@4.24.3)(typescript@5.6.3)(yaml@2.6.0)
-      pathe: 1.1.2
-      recast: 0.23.9
-
   astro-integration-kit@0.17.0(astro@5.0.0-beta.6(@types/node@22.8.4)(jiti@2.0.0)(rollup@4.24.3)(typescript@5.6.3)(yaml@2.6.0)):
     dependencies:
       astro: 5.0.0-beta.6(@types/node@22.8.4)(jiti@2.0.0)(rollup@4.24.3)(typescript@5.6.3)(yaml@2.6.0)
@@ -7257,10 +7234,6 @@ snapshots:
   data-uri-to-buffer@6.0.2: {}
 
   dataloader@1.4.0: {}
-
-  debug@2.6.9:
-    dependencies:
-      ms: 2.0.0
 
   debug@4.3.7:
     dependencies:
@@ -8857,8 +8830,6 @@ snapshots:
     dependencies:
       mime-db: 1.52.0
 
-  mime@1.6.0: {}
-
   mimic-fn@2.1.0: {}
 
   mimic-fn@4.0.0: {}
@@ -8897,8 +8868,6 @@ snapshots:
   mri@1.2.0: {}
 
   mrmime@2.0.0: {}
-
-  ms@2.0.0: {}
 
   ms@2.1.3: {}
 
@@ -9558,24 +9527,6 @@ snapshots:
   semver@6.3.1: {}
 
   semver@7.6.3: {}
-
-  send@0.19.1:
-    dependencies:
-      debug: 2.6.9
-      depd: 2.0.0
-      destroy: 1.2.0
-      encodeurl: 2.0.0
-      escape-html: 1.0.3
-      etag: 1.8.1
-      fresh: 0.5.2
-      http-errors: 2.0.0
-      mime: 1.6.0
-      ms: 2.1.3
-      on-finished: 2.4.1
-      range-parser: 1.2.1
-      statuses: 2.0.1
-    transitivePeerDependencies:
-      - supports-color
 
   send@1.1.0:
     dependencies:
@@ -10327,8 +10278,6 @@ snapshots:
       defaults: 1.0.4
 
   web-namespaces@2.0.1: {}
-
-  web-vitals@3.5.2: {}
 
   webidl-conversions@3.0.1: {}
 

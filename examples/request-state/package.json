@@ -12,10 +12,10 @@
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",
-    "@astrojs/node": "^8.3.4",
+    "@astrojs/node": "^9.0.0-beta",
     "@inox-tools/request-nanostores": "workspace:^",
     "@inox-tools/request-state": "workspace:^",
-    "astro": "^4.16.7",
+    "astro": "^5.0.0-beta",
     "nanostores": "^0.11.3",
     "typescript": "^5.6.3"
   }

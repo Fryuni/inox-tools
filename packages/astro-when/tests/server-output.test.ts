@@ -1,6 +1,5 @@
-import { loadFixture, type DevServer } from '@inox-tools/astro-tests/astroFixture';
+import { loadFixture, type DevServer, type TestApp } from '@inox-tools/astro-tests/astroFixture';
 import testAdapter from '@inox-tools/astro-tests/testAdapter';
-import type { App } from 'astro/app';
 import { describe, test, expect, beforeAll, afterAll } from 'vitest';
 
 const fixture = await loadFixture({
@@ -13,7 +12,7 @@ describe('Astro when on a static output project', () => {
 		let devServer: DevServer;
 
 		beforeAll(async () => {
-			await fixture.startDevServer({});
+			devServer = await fixture.startDevServer({});
 		});
 
 		afterAll(async () => {
@@ -23,6 +22,8 @@ describe('Astro when on a static output project', () => {
 		test('identifies the dev server for prerender routes', async () => {
 			const res = await fixture.fetch('/prerendered');
 			const content = await res.text();
+
+			console.log({ content });
 
 			expect(content).toEqual('devServer');
 		});
@@ -36,7 +37,7 @@ describe('Astro when on a static output project', () => {
 	});
 
 	describe('build output', () => {
-		let app: App;
+		let app: TestApp;
 
 		beforeAll(async () => {
 			await fixture.build({});

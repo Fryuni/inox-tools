@@ -600,7 +600,7 @@ test('should add a pretty stack (hast)', function () {
 			'    at node (text) (visit.ts:1:1)',
 			'    at node (element<div>) (visit.ts:1:1)',
 			'    at node (root) (visit.ts:1:1)',
-			'    at Module.visitParents (visit.ts:1:1)',
+			'    at visitParents (visit.ts:1:1)',
 		].join('\n'),
 		'should provide a useful stack trace'
 	);
@@ -646,7 +646,7 @@ test('should add a pretty stack (xast)', function () {
 			'    at node (text) (visit.ts:1:1)',
 			'    at node (element<xml>) (visit.ts:1:1)',
 			'    at node (root) (visit.ts:1:1)',
-			'    at Module.visitParents (visit.ts:1:1)',
+			'    at visitParents (visit.ts:1:1)',
 		].join('\n')
 	);
 });

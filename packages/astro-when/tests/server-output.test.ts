@@ -23,8 +23,6 @@ describe('Astro when on a static output project', () => {
 			const res = await fixture.fetch('/prerendered');
 			const content = await res.text();
 
-			console.log({ content });
-
 			expect(content).toEqual('devServer');
 		});
 

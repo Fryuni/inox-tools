@@ -33,15 +33,15 @@
     "test:dev": "vitest --coverage.enabled=true"
   },
   "dependencies": {
-    "astro-integration-kit": "catalog:",
-    "@inox-tools/utils": "workspace:^"
+    "@inox-tools/utils": "workspace:^",
+    "astro-integration-kit": "catalog:"
   },
   "devDependencies": {
     "@types/node": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "@vitest/ui": "catalog:",
-    "jest-extended": "catalog:",
     "astro": "catalog:",
+    "jest-extended": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",

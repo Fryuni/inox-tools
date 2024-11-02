@@ -1,5 +1,6 @@
 {
   "name": "@request-state/view-transitions",
+  "version": "0.0.0",
   "private": true,
   "type": "module",
   "dependencies": {

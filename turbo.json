@@ -5,6 +5,7 @@
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**"],
+      "inputs": ["$TURBO_DEFAULT$", "!tests", "!e2e"],
       "outputLogs": "new-only"
     },
     "preview": {
@@ -15,9 +16,15 @@
       "cache": false,
       "persistent": true
     },
+    "test:dev": {
+      "dependsOn": ["build"],
+      "cache": false,
+      "persistent": true
+    },
     "test": {
       "dependsOn": ["build"],
       "cache": false,
+      "passThroughEnv": ["NODE_OPTIONS", "DEBUG"],
       "outputLogs": "new-only"
     },
     "test:e2e": {

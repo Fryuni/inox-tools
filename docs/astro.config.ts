@@ -33,7 +33,7 @@ export default defineConfig({
 	trailingSlash: 'never',
 	integrations: [
 		starlight({
-			title: 'Inox Tools',
+			title: 'Inox Tools BETA',
 			credits: true,
 			favicon: '/favicon.png',
 			social: {
@@ -47,6 +47,10 @@ export default defineConfig({
 				MarkdownContent: './src/components/MarkdownContent.astro',
 			},
 			sidebar: [
+				{
+					label: 'Stable Docs (Astro 4)',
+					link: 'https://inox-tools.fryuni.dev/',
+				},
 				{
 					label: 'Tiny and Cute Integrations',
 					collapsed: false,

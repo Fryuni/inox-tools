@@ -1,4 +1,5 @@
 ---
+import { Aside, Code } from '@astrojs/starlight/components';
 import { AstroError } from 'astro/errors';
 import { PackageManagers } from 'starlight-package-managers';
 
@@ -16,6 +17,17 @@ const packageName: string | undefined =
 if (!packageName) {
 	throw new AstroError('Missing package name.');
 }
+
+const packageSpec = version && version !== 'latest' ? `${packageName}@${version}` : packageName;
+
+// Taked from Astro source to show the exact code the user will see.
+const codemodBrokenIdent = packageSpec
+	.trim()
+	.replace(/[-_./]?astro(?:js)?[-_.]?/g, '')
+	.replace(/\.js/, '')
+	.replace(/[.\-_/]+([a-zA-Z])/g, (_, w) => w.toUpperCase())
+	.replace(/^[^a-zA-Z$_]+/, '');
+const codemodFixedIdent = codemodBrokenIdent.replace(/@.*$/, '');
 ---
 
 {
@@ -29,13 +41,41 @@ if (!packageName) {
 {
 	packageType === 'integration' && (
 		<>
-			<PackageManagers type="exec" pkg="astro" args={`add ${packageName}@${version}`} />
+			<PackageManagers type="exec" pkg="astro" args={`add ${packageSpec}`} />
+			{codemodBrokenIdent !== codemodFixedIdent && (
+				<Aside type="caution" title="Invalid Codemod">
+					<p>
+						Installing the <code>{version}</code> version of the this package using
+						<code>astro add</code>
+						generates an invalid code for your Astro Config. After installing, remove the
+						<code>@{version}</code> added in the import and integrations section.
+					</p>
+					<Code
+						lang="ts"
+						title="astro.config.mjs"
+						del={{ range: '1,5' }}
+						ins={{ range: '2,6' }}
+						code={`
+import ${codemodBrokenIdent} from '${packageName}';
+import ${codemodFixedIdent} from '${packageName}';
+
+export default defineConfig({
+	integrations: [${codemodBrokenIdent}()],
+	integrations: [${codemodFixedIdent}()],
+});`.trim()}
+					/>
+					<p>
+						Follow <a href="https://github.com/withastro/astro/issues/12359">this issue</a> for more
+						information and updates.
+					</p>
+				</Aside>
+			)}
 		</>
 	)
 }
 
 {
 	packageType !== 'integration' && (
-		<PackageManagers dev={packageType === 'devLib'} pkg={`${packageName}@${version}`} />
+		<PackageManagers dev={packageType === 'devLib'} pkg={packageSpec} />
 	)
 }

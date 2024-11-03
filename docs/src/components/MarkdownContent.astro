@@ -1,0 +1,8 @@
+---
+import Default from '@astrojs/starlight/components/MarkdownContent.astro';
+import BetaBanner from './BetaBanner.astro';
+export type { Props } from '@astrojs/starlight/props';
+---
+
+<BetaBanner />
+<Default {...Astro.props}><slot /></Default>

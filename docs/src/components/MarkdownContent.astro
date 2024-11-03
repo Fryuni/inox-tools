@@ -2,6 +2,8 @@
 import Default from '@astrojs/starlight/components/MarkdownContent.astro';
 import BetaBanner from './BetaBanner.astro';
 export type { Props } from '@astrojs/starlight/props';
+
+Astro.locals.starlight = Astro.props;
 ---
 
 <BetaBanner />

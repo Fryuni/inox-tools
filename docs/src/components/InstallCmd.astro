@@ -1,0 +1,41 @@
+---
+import { AstroError } from 'astro/errors';
+import { PackageManagers } from 'starlight-package-managers';
+
+export type Props = {
+	type?: 'lib' | 'devLib' | 'integration';
+	packageName?: string;
+	inSteps?: boolean;
+	version?: string;
+};
+
+const { type: packageType = 'integration', inSteps, version = 'beta' } = Astro.props;
+const packageName: string | undefined =
+	Astro.locals.starlight.entry.data.packageName ?? Astro.props.packageName;
+
+if (!packageName) {
+	throw new AstroError('Missing package name.');
+}
+---
+
+{
+	inSteps && (
+		<>
+			Install <code dir="auto">{packageName}</code>:{' '}
+		</>
+	)
+}
+
+{
+	packageType === 'integration' && (
+		<>
+			<PackageManagers type="exec" pkg="astro" args={`add ${packageName}@${version}`} />
+		</>
+	)
+}
+
+{
+	packageType !== 'integration' && (
+		<PackageManagers dev={packageType === 'devLib'} pkg={`${packageName}@${version}`} />
+	)
+}

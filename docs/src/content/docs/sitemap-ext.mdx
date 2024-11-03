@@ -14,14 +14,18 @@ The goal of this extension is to provide higher-level functionality and configur
 
 ## Installation
 
-To install this integration you just need to replace the import from the official `@astrojs/sitemap` integration with `@inox-tools/sitemap-ext`.
+import InstallCmd from '@/components/InstallCmd.astro';
+
+<InstallCmd type="lib" />
+
+To use this integration you just need to replace the import from the official `@astrojs/sitemap` integration with `@inox-tools/sitemap-ext`.
 
 ```ts title="astro.config.mjs" del={1} add={2}
 import sitemap from '@astrojs/sitemap';
 import sitemap from '@inox-tools/sitemap-ext';
 
 export default defineConfig({
-  integration: [sitemap()],
+	integration: [sitemap()],
 });
 ```
 
@@ -69,11 +73,11 @@ This hook function will be called during build-time only and will be given callb
 
 ```ts
 type ConfigHook = (callbacks: {
-  addToSitemap: (routeParams?: Record<string, string | undefined>[]) => void;
-  removeFromSitemap: (routeParams?: Record<string, string | undefined>[]) => void;
-  setSitemap: (
-    routeParams: Array<{ sitemap?: boolean; params: Record<string, string | undefined> }>
-  ) => void;
+	addToSitemap: (routeParams?: Record<string, string | undefined>[]) => void;
+	removeFromSitemap: (routeParams?: Record<string, string | undefined>[]) => void;
+	setSitemap: (
+		routeParams: Array<{ sitemap?: boolean; params: Record<string, string | undefined> }>
+	) => void;
 }) => Promise<void> | void;
 ```
 
@@ -84,13 +88,13 @@ As noted by the type, the given hook function can be async, which means you can 
 import sitemap from 'sitemap-ext:config';
 
 sitemap(async ({ addToSitemap, removeFromSitemap }) => {
-  const shouldBeIncluded = await fetchThisConfigFromRemote();
+	const shouldBeIncluded = await fetchThisConfigFromRemote();
 
-  if (shouldBeIncluded) {
-    addToSitemap();
-  } else {
-    removeFromSitemap();
-  }
+	if (shouldBeIncluded) {
+		addToSitemap();
+	} else {
+		removeFromSitemap();
+	}
 });
 ---
 ```
@@ -111,14 +115,14 @@ import { getCollection } from 'astro:content';
 import sitemap from 'sitemap-ext:config';
 
 sitemap(async ({ addToSitemap }) => {
-  const blogPosts = await getCollection('posts');
+	const blogPosts = await getCollection('posts');
 
-  addToSitemap(
-    blogPosts.map((post) => ({
-      locale: post.data.locale,
-      postId: post.data.id,
-    }))
-  );
+	addToSitemap(
+		blogPosts.map((post) => ({
+			locale: post.data.locale,
+			postId: post.data.id,
+		}))
+	);
 });
 ---
 ```
@@ -137,17 +141,17 @@ import { getCollection } from 'astro:content';
 import sitemap from 'sitemap-ext:config';
 
 sitemap(async ({ setSitemap }) => {
-  const blogPosts = await getCollection('posts');
+	const blogPosts = await getCollection('posts');
 
-  setSitemap(
-    blogPosts.map((post) => ({
-      params: {
-        locale: post.data.locale,
-        postId: post.data.id,
-      },
-      sitemap: post.data.includeInSitemap,
-    }))
-  );
+	setSitemap(
+		blogPosts.map((post) => ({
+			params: {
+				locale: post.data.locale,
+				postId: post.data.id,
+			},
+			sitemap: post.data.includeInSitemap,
+		}))
+	);
 });
 ---
 ```
@@ -164,20 +168,20 @@ import { getCollection } from 'astro:content';
 import sitemap from 'sitemap-ext:config';
 
 export async function getStaticPaths() {
-  const blogPosts = await getCollection('posts');
+	const blogPosts = await getCollection('posts');
 
-  const postParams = blogPosts.map((post) => ({
-    params: {
-      locale: post.data.locale,
-      postId: post.data.id,
-    },
-    props: { post }, // for Astro.props
-    sitemap: post.data.includeInSitemap,
-  }));
+	const postParams = blogPosts.map((post) => ({
+		params: {
+			locale: post.data.locale,
+			postId: post.data.id,
+		},
+		props: { post }, // for Astro.props
+		sitemap: post.data.includeInSitemap,
+	}));
 
-  sitemap(({ setSitemap }) => setSitemap(postParams));
+	sitemap(({ setSitemap }) => setSitemap(postParams));
 
-  return postParams;
+	return postParams;
 }
 ---
 ```

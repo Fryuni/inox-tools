@@ -35,6 +35,10 @@ export default defineConfig({
 			},
 			sidebar: [
 				{
+					label: 'BETA Docs (Astro 5)',
+					link: 'https://inox-tools-git-feat-astro-5-fryuni-pro.vercel.app/',
+				},
+				{
 					label: 'Tiny and Cute Integrations',
 					collapsed: false,
 					items: [
@@ -69,18 +73,10 @@ export default defineConfig({
 						{
 							label: 'Cut Short',
 							link: '/cut-short',
-							badge: {
-								text: 'NEW',
-								variant: 'success',
-							},
 						},
 						{
 							label: 'Portal Gun',
 							link: '/portal-gun',
-							badge: {
-								text: 'NEW',
-								variant: 'success',
-							},
 						},
 						{
 							label: 'Content Utilities',
@@ -102,10 +98,6 @@ export default defineConfig({
 						{
 							label: 'Astro Tests',
 							link: '/astro-tests',
-							badge: {
-								text: 'NEW',
-								variant: 'success',
-							},
 						},
 						{
 							label: 'Modular Station',

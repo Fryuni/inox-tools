@@ -1,5 +1,4 @@
 import { getEntry } from 'astro:content';
-import { join } from 'node:path';
 import { collectGitInfoForContentFiles } from './git.js';
 import type { GitTrackingInfo } from '@it-astro:content/git';
 

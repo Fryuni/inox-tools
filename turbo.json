@@ -6,7 +6,8 @@
       "dependsOn": ["^build"],
       "outputs": ["dist/**"],
       "inputs": ["$TURBO_DEFAULT$", "!tests", "!e2e"],
-      "outputLogs": "new-only"
+      "outputLogs": "new-only",
+      "passThroughEnv": ["DEBUG"]
     },
     "preview": {
       "dependsOn": ["build"],

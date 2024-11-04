@@ -7,6 +7,9 @@ import {
 	type HookNames,
 } from './allHooksPlugin.js';
 import type { Prettify } from '@inox-tools/utils/types';
+import { getDebug } from './internal/debug.js';
+
+const debug = getDebug('api');
 
 export type AstroIntegration = NativeIntegration;
 
@@ -25,6 +28,12 @@ export type IntegrationApi<TOptions extends any[], TApi> = {
 	 * Type guard for checking if the integration is an instance of this integration.
 	 */
 	is(integration: AstroIntegration): integration is AstroIntegration & TApi;
+
+	/**
+	 * Extracts the integration with it's API from a reduced integration processed by Astro's
+	 * validation phase.
+	 */
+	fromIntegration(integration: AstroIntegration): (AstroIntegration & TApi) | null;
 
 	/**
 	 * Get the instance of this integration API from the Astro config in the `astro:config:setup` hook.
@@ -132,6 +141,8 @@ function protectApi<TAttr extends string, TApi extends Record<string, any>>(
 	} as Record<TAttr, TApi>;
 }
 
+const API_RECOVER_HOOK_MARKER = `@it:modular-station:internal:${crypto.randomUUID()}`;
+
 /**
  * Expose extra APIs from an integration for other integrations to use.
  *
@@ -143,34 +154,62 @@ export function withApi<
 >(
 	factory: (...args: TOptions) => AstroIntegration & TApi
 ): NeighborIntegration<TOptions, Prettify<Omit<TApi, 'hooks'>>> {
-	const integrationSymbol = Symbol(factory.name);
+	const integrationSymbol = Symbol(factory.name || crypto.randomUUID());
+	debug(`Generated new integration symbol:`, integrationSymbol);
 
 	const wrapper: IntegrationFactory<TOptions, TApi> = (...args) => {
-		// Add a marker to the result of the factory so we can find it among all the installed integrations.
-		return Object.assign(factory(...args) as any, { [integrationSymbol]: true });
+		const integration = factory(...args) as any;
+		debug('Associating integration symbol with factory:', { integrationSymbol, integration });
+
+		// Extra APIs in an integration are removed when processed by the Zod validator when it comes from the user config
+		// but ONLY when coming from the user config, so APIs are allowed between transitive integrations but not between
+		// two direct integrations nor between a direct and a transitive integration.
+		// Extra hooks, so long as they are not symbolic, are passed through tho, so, to circumvent this, we add
+		// a randomly generated hook returning the original value along with the symbolic marker. The hook name
+		// is randomly generated at runtime to avoid it being used by people that mess with internals of things (like we are doing here).
+		// The return value includes the symbolic marker to allow detecting whether the integration is the intended one
+		// even across duplicated installations, while the integration object is returned to recover access
+		// to the complete API after it is deleted by Astro.
+		Object.assign(integration.hooks, {
+			[API_RECOVER_HOOK_MARKER]: () => ({ integrationSymbol, integration }),
+		});
+		debug('Associated integration symbol with factory:', integration);
+		return integration;
 	};
 
 	const api: IntegrationApi<TOptions, TApi> = {
-		is: (integration: any): integration is AstroIntegration & TApi =>
+		is: (integration: any): integration is AstroIntegration & TApi => {
+			debug('Checking integration for symbol', { integrationSymbol, integration });
+			const recovered = integration?.hooks?.[API_RECOVER_HOOK_MARKER]?.();
+
 			// `integrationSymbol` is a non-exposed unique symbol, so it can only be present where
 			// the wrapper function above included it.
-			// Therefore an object matching this must be an integration constructed from that.
-			integration[integrationSymbol] === true,
-		fromIntegrations: (integrations) => integrations.find(api.is) ?? null,
+			// Therefore an object matching this must be an integration constructed from the wrapper.
+			return recovered?.integrationSymbol === integrationSymbol;
+		},
+		fromIntegration: (integration: AstroIntegration): (AstroIntegration & TApi) | null => {
+			debug('Checking integration for symbol', { integrationSymbol, integration });
+			const recovered = (integration.hooks as any)[API_RECOVER_HOOK_MARKER]?.();
+
+			return recovered?.integrationSymbol === integrationSymbol ? recovered.integration : null;
+		},
+		fromIntegrations: (integrations) => {
+			for (const integration of integrations) {
+				const target = api.fromIntegration(integration);
+				if (target !== null) return target;
+			}
+
+			return null;
+		},
 		fromConfig: (config) => api.fromIntegrations(config.integrations),
-		fromSetup: ({ config, updateConfig }, ...args) => {
+		fromSetup: ({ config }, ...args) => {
 			let instance = api.fromConfig(config);
 
 			if (instance === null) {
 				// If there is no instance of the integration currently installed, instantiate one
 				// using the given options and install it.
 				const fullIntegration = wrapper(...args);
-				updateConfig({
-					integrations: [fullIntegration],
-				});
-
-				// Also add the integration to the current configuration in case the API is used
-				// twice in the same consumer integration under different names.
+				debug(`Could not find integration "${fullIntegration.name}" in the config. Installing it.`);
 				config.integrations.push(fullIntegration);
 
 				// Use the new integration as the API.

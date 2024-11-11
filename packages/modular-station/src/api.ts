@@ -202,7 +202,7 @@ export function withApi<
 			return null;
 		},
 		fromConfig: (config) => api.fromIntegrations(config.integrations),
-		fromSetup: ({ config }, ...args) => {
+		fromSetup: ({ config, updateConfig }, ...args) => {
 			let instance = api.fromConfig(config);
 
 			if (instance === null) {
@@ -210,6 +210,24 @@ export function withApi<
 				// using the given options and install it.
 				const fullIntegration = wrapper(...args);
 				debug(`Could not find integration "${fullIntegration.name}" in the config. Installing it.`);
+
+				// Both changes to `config` and calls to `updateConfig` can be used for
+				// propagating changes to the config to Astro. But only when used alone.
+				// Once `updateConfig` is used, any following modifications to the `config`
+				// property will be discarded.
+				//
+				// Since something else might have called `updateConfig` already, we cannot
+				// rely on updating just the `config` value directly. But if we just call
+				// `updateConfig` then it new integration won't be present for following
+				// plugins nor the caller integration itself. If we update the `config` and
+				// then call `updateConfig`, the integration will be added twice, so that
+				// doesn't work either.
+				// The proper way to ensure the integration is installed, not duplicate it
+				// and have it available for further probing in the config is to call
+				// `updateConfig`, which will add the integration and prevent `config` from
+				// propagating, and then changing `config` directly to make the change visible
+				// to the current context.
+				updateConfig({ integrations: [fullIntegration] });
 				config.integrations.push(fullIntegration);
 
 				// Use the new integration as the API.

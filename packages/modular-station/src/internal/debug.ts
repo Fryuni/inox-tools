@@ -1,7 +1,7 @@
 import debugC from 'debug';
 
-export const debug = debugC('inox-tools:astro-tests');
+export const debug = debugC('inox-tools:modular-station');
 
 export function getDebug(name: string): debugC.Debugger {
-	return debug.extend(name);
+  return debug.extend(name);
 }

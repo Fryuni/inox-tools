@@ -1,5 +1,13 @@
 # @inox-tools/content-utils
 
+## 0.7.4
+
+### Patch Changes
+
+- Updated dependencies [aa73961]
+- Updated dependencies [aa73961]
+  - @inox-tools/modular-station@0.3.4
+
 ## 0.7.3
 
 ### Patch Changes

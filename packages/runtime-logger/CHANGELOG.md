@@ -1,5 +1,14 @@
 # @inox-tools/runtime-logger
 
+## 0.3.5
+
+### Patch Changes
+
+- 23b89bf: Fixes internal plugins having the same name causing incorrect warnings when building
+- Updated dependencies [aa73961]
+- Updated dependencies [aa73961]
+  - @inox-tools/modular-station@0.3.4
+
 ## 0.3.4
 
 ### Patch Changes

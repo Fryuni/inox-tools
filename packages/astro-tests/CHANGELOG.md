@@ -1,5 +1,11 @@
 # @inox-tools/astro-tests
 
+## 0.1.6
+
+### Patch Changes
+
+- aa73961: Remove global change to `debug` package options
+
 ## 0.1.5
 
 ### Patch Changes

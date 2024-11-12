@@ -1,5 +1,11 @@
 # @inox-tools/inline-mod
 
+## 1.5.3
+
+### Patch Changes
+
+- aa73961: Remove global change to `debug` package options
+
 ## 1.5.2
 
 ### Patch Changes

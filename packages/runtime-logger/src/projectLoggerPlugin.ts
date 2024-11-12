@@ -5,7 +5,7 @@ const VIRTUAL_MODULE = '@it-astro:logger';
 const RESOLVED_VIRTUAL_MODULE = '\x00@it-astro:logger?';
 
 export const projectLoggerPlugin = (rootPath: string): Plugin => ({
-	name: '@inox-tools/runtime-logger/dev',
+	name: '@inox-tools/runtime-logger/project',
 	resolveId(id, importer) {
 		if (id === VIRTUAL_MODULE) {
 			const params = new URLSearchParams();

@@ -34,7 +34,7 @@
     "@inox-tools/utils": "workspace:^",
     "debug": "catalog:",
     "recast": "catalog:",
-    "vite": "catalog:"
+    "vite": "6.0.0-beta.8"
   },
   "devDependencies": {
     "@astrojs/compiler": "catalog:",

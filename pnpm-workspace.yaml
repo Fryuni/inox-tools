@@ -1,9 +1,9 @@
 catalog:
-  astro: ^5.0.0-beta
+  astro: ^5.0.0
   astro-integration-kit: ~0.17.0
   '@astrojs/compiler': ^2.10.3
   '@astrojs/sitemap': ^3.2.1
-  '@astrojs/node': ^9.0.0-beta
+  '@astrojs/node': ^9.0.0
   '@astrojs/starlight': ^0.28.4
   '@astrojs/internal-helpers': ^0.4.1
   '@types/content-type': ^1.1.8
@@ -26,19 +26,19 @@ catalog:
   upath: ^2.0.1
   tsup: 8.3.5
   typescript: ^5.6.3
-  vite: ^6.0.0-beta
+  vite: ^6.0.0
   vitest: ^2.1.4
   '@vitest/ui': ^2.1.4
   '@vitest/coverage-v8': ^2.1.4
   jest-extended: ^4.0.2
 catalogs:
   lax:
-    astro: ^5.0.0-beta
+    astro: ^5
     '@astrojs/starlight': '>=0.16 <0.30'
   min:
-    astro: ^5.0.0-beta
+    astro: ^5
     astro-integration-kit: ~0.17
-    vite: ^4 || ^5 || ^6.0.0-beta
+    vite: ^4 || ^5 || ^6
 packages:
   - turbo
   - docs

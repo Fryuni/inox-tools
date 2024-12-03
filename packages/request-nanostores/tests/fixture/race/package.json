@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@astrojs/preact": "^3.5.3",
+    "@astrojs/preact": "^3.5.4",
     "@inox-tools/request-nanostores": "workspace:0.1.5-beta.0",
     "astro": "catalog:",
     "nanostores": "catalog:"

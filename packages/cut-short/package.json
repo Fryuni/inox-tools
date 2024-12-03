@@ -39,11 +39,11 @@
     "@types/node": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "@vitest/ui": "catalog:",
-    "astro": "catalog:",
+    "astro": "catalog:lax",
     "jest-extended": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:",
-    "vite": "catalog:",
+    "vite": "6.0.2",
     "vitest": "catalog:"
   },
   "peerDependencies": {

@@ -48,10 +48,6 @@ export default defineConfig({
 			},
 			sidebar: [
 				{
-					label: 'Stable Docs (Astro 4)',
-					link: 'https://inox-tools.fryuni.dev/',
-				},
-				{
 					label: 'Tiny and Cute Integrations',
 					collapsed: false,
 					items: [

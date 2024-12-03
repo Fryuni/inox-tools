@@ -13,6 +13,13 @@
   - @inox-tools/utils@0.3.0-beta.0
   - @inox-tools/runtime-logger@0.3.5-beta.0
 
+## 0.1.1
+
+### Patch Changes
+
+- Updated dependencies [23b89bf]
+  - @inox-tools/runtime-logger@0.3.5
+
 ## 0.1.0
 
 ### Minor Changes

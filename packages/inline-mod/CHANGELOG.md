@@ -12,6 +12,12 @@
 - Updated dependencies [b4843b9]
   - @inox-tools/utils@0.3.0-beta.0
 
+## 1.5.3
+
+### Patch Changes
+
+- aa73961: Remove global change to `debug` package options
+
 ## 1.5.2
 
 ### Patch Changes

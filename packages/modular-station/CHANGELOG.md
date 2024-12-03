@@ -8,6 +8,13 @@
 - Updated dependencies [b4843b9]
   - @inox-tools/utils@0.3.0-beta.0
 
+## 0.3.4
+
+### Patch Changes
+
+- aa73961: Remove global change to `debug` package options
+- aa73961: Fixes duplicated initialization of API module when used transitively by integrations and direcly by the user project
+
 ## 0.3.3
 
 ### Patch Changes

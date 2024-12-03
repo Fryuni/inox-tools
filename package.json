@@ -43,8 +43,7 @@
     "overrides": {
       "@croct/sdk": "0.17.0",
       "@inox-tools/star-warp>astro": "4.16.8",
-      "picomatch": "3.0.1",
-      "vite": "6.0.0-beta.8"
+      "picomatch": "3.0.1"
     }
   }
 }

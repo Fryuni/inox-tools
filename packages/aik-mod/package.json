@@ -35,10 +35,10 @@
   "devDependencies": {
     "@types/debug": "catalog:",
     "@types/node": "catalog:",
-    "astro": "catalog:lax",
+    "astro": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:",
-    "vite": "6.0.2"
+    "vite": "catalog:"
   },
   "peerDependencies": {
     "astro": "catalog:lax",

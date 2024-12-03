@@ -1,6 +1,6 @@
 {
   "name": "@inox-tools/modular-station",
-  "version": "0.3.4-beta.0",
+  "version": "0.3.4",
   "description": "Simplifying Astro integrations with a flexible docking system.",
   "keywords": [
     "astro-integration",
@@ -44,7 +44,7 @@
     "astro": "catalog:min",
     "tsup": "catalog:",
     "typescript": "catalog:",
-    "vite": "6.0.2",
+    "vite": "catalog:",
     "vitest": "catalog:"
   },
   "peerDependencies": {

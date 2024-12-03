@@ -50,7 +50,7 @@
     "jest-extended": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:",
-    "vite": "6.0.2",
+    "vite": "catalog:",
     "vitest": "catalog:"
   },
   "peerDependencies": {

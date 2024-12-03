@@ -415,7 +415,7 @@ importers:
         specifier: 'catalog:'
         version: 22.10.1
       astro:
-        specifier: catalog:lax
+        specifier: 'catalog:'
         version: 5.0.1(@types/node@22.10.1)(jiti@2.0.0)(rollup@4.28.0)(typescript@5.7.2)(yaml@2.6.0)
       tsup:
         specifier: 'catalog:'
@@ -562,7 +562,7 @@ importers:
   packages/astro-when/tests/fixture/server-output:
     dependencies:
       '@inox-tools/astro-when':
-        specifier: workspace:1.0.0-beta.0
+        specifier: 'workspace:'
         version: link:../../..
       astro:
         specifier: 'catalog:'
@@ -571,7 +571,7 @@ importers:
   packages/astro-when/tests/fixture/static-output:
     dependencies:
       '@inox-tools/astro-when':
-        specifier: workspace:1.0.0-beta.0
+        specifier: 'workspace:'
         version: link:../../..
       astro:
         specifier: 'catalog:'
@@ -816,7 +816,7 @@ importers:
         specifier: ^3.5.4
         version: 3.5.4(@babel/core@7.26.0)(@types/node@22.10.1)(jiti@2.0.0)(preact@10.25.1)(yaml@2.6.0)
       '@inox-tools/portal-gun':
-        specifier: workspace:1.0.0-beta.0
+        specifier: 'workspace:'
         version: link:../../..
       astro:
         specifier: 'catalog:'
@@ -880,7 +880,7 @@ importers:
         specifier: ^3.5.4
         version: 3.5.4(@babel/core@7.26.0)(@types/node@22.10.1)(jiti@2.0.0)(preact@10.25.1)(yaml@2.6.0)
       '@inox-tools/request-nanostores':
-        specifier: workspace:0.1.5-beta.0
+        specifier: 'workspace:'
         version: link:../../..
       '@nanostores/preact':
         specifier: ^0.5.2
@@ -901,7 +901,7 @@ importers:
         specifier: ^3.5.4
         version: 3.5.4(@babel/core@7.26.0)(@types/node@22.10.1)(jiti@2.0.0)(preact@10.25.1)(yaml@2.6.0)
       '@inox-tools/request-nanostores':
-        specifier: workspace:0.1.5-beta.0
+        specifier: 'workspace:'
         version: link:../../..
       astro:
         specifier: 'catalog:'
@@ -959,7 +959,7 @@ importers:
         specifier: 'catalog:'
         version: 9.0.0(astro@5.0.1(@types/node@22.10.1)(jiti@2.0.0)(rollup@4.28.0)(typescript@5.7.2)(yaml@2.6.0))
       '@inox-tools/request-state':
-        specifier: workspace:0.1.5-beta.0
+        specifier: 'workspace:'
         version: link:../../..
       astro:
         specifier: 'catalog:'
@@ -971,7 +971,7 @@ importers:
   packages/request-state/e2e/fixture/dev:
     dependencies:
       '@inox-tools/request-state':
-        specifier: workspace:0.1.5-beta.0
+        specifier: 'workspace:'
         version: link:../../..
       astro:
         specifier: 'catalog:'
@@ -983,7 +983,7 @@ importers:
         specifier: 'catalog:'
         version: 9.0.0(astro@5.0.1(@types/node@22.10.1)(jiti@2.0.0)(rollup@4.28.0)(typescript@5.7.2)(yaml@2.6.0))
       '@inox-tools/request-state':
-        specifier: workspace:0.1.5-beta.0
+        specifier: 'workspace:'
         version: link:../../..
       astro:
         specifier: 'catalog:'

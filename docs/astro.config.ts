@@ -33,7 +33,7 @@ export default defineConfig({
 	trailingSlash: 'never',
 	integrations: [
 		starlight({
-			title: 'Inox Tools BETA',
+			title: 'Inox Tools',
 			credits: true,
 			favicon: '/favicon.png',
 			social: {

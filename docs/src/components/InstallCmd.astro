@@ -10,7 +10,7 @@ export type Props = {
 	version?: string;
 };
 
-const { type: packageType = 'integration', inSteps, version = 'beta' } = Astro.props;
+const { type: packageType = 'integration', inSteps, version = 'latest' } = Astro.props;
 const packageName: string | undefined =
 	Astro.locals.starlight.entry.data.packageName ?? Astro.props.packageName;
 

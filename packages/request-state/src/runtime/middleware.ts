@@ -26,13 +26,13 @@ function injectState(getState: () => string | false) {
 	return new TransformStream({
 		transform(chunk, controller) {
 			if (!injected) {
-				const bodyCloseIndex = chunk.indexOf('</body>');
-				if (bodyCloseIndex > -1) {
+				const headCloseIndex = chunk.indexOf('</head>');
+				if (headCloseIndex > -1) {
 					const state = getState();
 					if (state) {
 						const stateScript = `<script id="it-astro-state" type="application/json+devalue">${state}</script>`;
 
-						chunk = chunk.slice(0, bodyCloseIndex) + stateScript + chunk.slice(bodyCloseIndex);
+						chunk = chunk.slice(0, headCloseIndex) + stateScript + chunk.slice(headCloseIndex);
 					}
 					injected = true;
 				}

@@ -677,7 +677,7 @@ importers:
   packages/cut-short/tests/fixture/basic:
     dependencies:
       '@inox-tools/cut-short':
-        specifier: workspace:1.0.0-beta.0
+        specifier: 'workspace:'
         version: link:../../..
       astro:
         specifier: 'catalog:'

@@ -1,5 +1,16 @@
 # @inox-tools/sitemap-ext
 
+## 0.4.0
+
+### Minor Changes
+
+- Minimal bump to sync inter-dependencies to Astro 5 and Vite 6
+
+### Patch Changes
+
+- Updated dependencies
+  - @inox-tools/aik-route-config@0.8.0
+
 ## 0.3.6
 
 ### Patch Changes

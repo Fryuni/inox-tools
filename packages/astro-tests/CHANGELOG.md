@@ -1,5 +1,11 @@
 # @inox-tools/astro-tests
 
+## 0.2.1
+
+### Patch Changes
+
+- Minimal bump to sync inter-dependencies to Astro 5 and Vite 6
+
 ## 0.2.0
 
 ### Minor Changes

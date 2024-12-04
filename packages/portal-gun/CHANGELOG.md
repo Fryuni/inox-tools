@@ -1,5 +1,13 @@
 # @inox-tools/portal-gun
 
+## 1.0.1
+
+### Patch Changes
+
+- Minimal bump to sync inter-dependencies to Astro 5 and Vite 6
+- Updated dependencies
+  - @inox-tools/runtime-logger@0.4.0
+
 ## 1.0.0
 
 ### Major Changes

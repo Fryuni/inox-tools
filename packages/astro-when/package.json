@@ -1,6 +1,6 @@
 {
   "name": "@inox-tools/astro-when",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Integration that informs when in Astro's lifecycle the code is running",
   "keywords": [
     "lifecycle",

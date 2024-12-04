@@ -1,5 +1,16 @@
 # @inox-tools/aik-mod
 
+## 0.9.0
+
+### Minor Changes
+
+- Minimal bump to sync inter-dependencies to Astro 5 and Vite 6
+
+### Patch Changes
+
+- Updated dependencies
+  - @inox-tools/inline-mod@2.0.1
+
 ## 0.8.5
 
 ### Patch Changes

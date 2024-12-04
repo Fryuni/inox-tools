@@ -1,5 +1,11 @@
 # @inox-tools/inline-mod
 
+## 2.0.1
+
+### Patch Changes
+
+- Minimal bump to sync inter-dependencies to Astro 5 and Vite 6
+
 ## 2.0.0
 
 ### Major Changes

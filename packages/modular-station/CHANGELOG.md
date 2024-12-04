@@ -1,5 +1,11 @@
 # @inox-tools/modular-station
 
+## 0.4.0
+
+### Minor Changes
+
+- Minimal bump to sync inter-dependencies to Astro 5 and Vite 6
+
 ## 0.3.5
 
 ### Patch Changes

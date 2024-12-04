@@ -1,5 +1,11 @@
 # @inox-tools/request-state
 
+## 0.2.0
+
+### Minor Changes
+
+- Minimal bump to sync inter-dependencies to Astro 5 and Vite 6
+
 ## 0.1.5
 
 ### Patch Changes

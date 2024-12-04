@@ -1,6 +1,6 @@
 {
   "name": "@inox-tools/portal-gun",
-  "version": "1.0.0-beta.0",
+  "version": "1.0.0",
   "description": "Transport HTML elements through your page during rendering using Portals.",
   "keywords": [
     "astro-integration",

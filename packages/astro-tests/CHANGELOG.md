@@ -1,5 +1,18 @@
 # @inox-tools/astro-tests
 
+## 0.2.0
+
+### Minor Changes
+
+- 21e0744: Bump support to Astro 5
+
+### Patch Changes
+
+- 21e0744: Fix opt-out of Vite's dependency optimization during tests
+- Updated dependencies [21e0744]
+- Updated dependencies [21e0744]
+  - @inox-tools/utils@0.3.0
+
 ## 0.2.0-beta.1
 
 ### Patch Changes

@@ -1,5 +1,18 @@
 # @inox-tools/portal-gun
 
+## 1.0.0
+
+### Major Changes
+
+- 21e0744: Bump support to Astro 5
+
+### Patch Changes
+
+- Updated dependencies [21e0744]
+- Updated dependencies [21e0744]
+  - @inox-tools/utils@0.3.0
+  - @inox-tools/runtime-logger@0.3.6
+
 ## 1.0.0-beta.0
 
 ### Major Changes

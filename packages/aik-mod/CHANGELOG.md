@@ -4,6 +4,13 @@
 
 ### Patch Changes
 
+- Updated dependencies [21e0744]
+  - @inox-tools/inline-mod@2.0.0
+
+## 0.8.5
+
+### Patch Changes
+
 - Updated dependencies [aa73961]
   - @inox-tools/inline-mod@1.5.3
 

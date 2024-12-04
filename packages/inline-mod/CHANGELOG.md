@@ -1,5 +1,17 @@
 # @inox-tools/inline-mod
 
+## 2.0.0
+
+### Major Changes
+
+- 21e0744: Bump support to Vite 6
+
+### Patch Changes
+
+- Updated dependencies [21e0744]
+- Updated dependencies [21e0744]
+  - @inox-tools/utils@0.3.0
+
 ## 2.0.0-beta.0
 
 ### Major Changes

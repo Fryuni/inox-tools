@@ -1,5 +1,11 @@
 # @inox-tools/inline-mod
 
+## 1.0.0
+
+### Major Changes
+
+- 21e0744: Bump support to Astro 5
+
 ## 1.0.0-beta.0
 
 ### Major Changes

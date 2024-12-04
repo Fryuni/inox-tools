@@ -1,5 +1,13 @@
 # @inox-tools/request-state
 
+## 0.1.5
+
+### Patch Changes
+
+- Updated dependencies [21e0744]
+- Updated dependencies [21e0744]
+  - @inox-tools/utils@0.3.0
+
 ## 0.1.5-beta.0
 
 ### Patch Changes

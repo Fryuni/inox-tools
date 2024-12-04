@@ -1,5 +1,14 @@
 # @inox-tools/runtime-logger
 
+## 0.3.6
+
+### Patch Changes
+
+- Updated dependencies [21e0744]
+- Updated dependencies [21e0744]
+  - @inox-tools/utils@0.3.0
+  - @inox-tools/modular-station@0.3.5
+
 ## 0.3.5
 
 ### Patch Changes

@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@inox-tools/cut-short": "workspace:",
+    "@inox-tools/cut-short": "workspace:1.0.0-beta.0",
     "astro": "catalog:"
   }
 }

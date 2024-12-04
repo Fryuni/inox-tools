@@ -11,6 +11,7 @@ import { getViteConfig } from 'astro/config';
 import { callsites } from './utils.js';
 import type { App } from 'astro/app';
 import { getDebug } from './internal/log.js';
+import { setNestedIfNullish } from '@inox-tools/utils/values';
 
 const debug = getDebug('fixture');
 
@@ -144,14 +145,13 @@ export async function loadFixture(inlineConfig: InlineConfig): Promise<Fixture> 
 
 	debug('Setting default log level to "silent"');
 	// Silent by default during tests to not pollute the console output
-	inlineConfig.logLevel ??= 'silent';
-	inlineConfig.vite ??= {};
-	inlineConfig.vite.logLevel ??= 'silent';
+	setNestedIfNullish(inlineConfig, 'logLevel', 'silent');
+	setNestedIfNullish(inlineConfig, 'vite.logLevel', 'silent');
+	setNestedIfNullish(inlineConfig, 'devToolbar.enabled', false);
 
 	debug('Disabling Vite discovery for dependency optimization');
 	// Prevent hanging when testing the dev server on some scenarios
-	inlineConfig.vite.optimizeDeps ??= {};
-	inlineConfig.vite.optimizeDeps.noDiscovery = true;
+	setNestedIfNullish(inlineConfig, 'vite.optimizeDeps.noDiscovery', true);
 
 	inlineConfig.server ??= {};
 	if (typeof inlineConfig.server === 'function') {

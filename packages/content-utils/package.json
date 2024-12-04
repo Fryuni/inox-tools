@@ -45,7 +45,7 @@
   "devDependencies": {
     "@types/debug": "catalog:",
     "@types/node": "catalog:",
-    "astro": "catalog:",
+    "astro": "catalog:min",
     "tsup": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:"

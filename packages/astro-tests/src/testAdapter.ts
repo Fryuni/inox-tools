@@ -132,11 +132,7 @@ export default function (options: Options = {}): AstroIntegration {
 						staticOutput: 'stable',
 						hybridOutput: 'stable',
 						i18nDomains: 'stable',
-						assets: {
-							supportKind: 'stable',
-							isSharpCompatible: true,
-							isSquooshCompatible: true,
-						},
+						sharpImageService: 'stable',
 					},
 				});
 			},

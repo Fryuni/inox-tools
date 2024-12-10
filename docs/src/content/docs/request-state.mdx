@@ -130,6 +130,10 @@ document.addEventListener('@it-astro:server-state-loaded', (event) => {
 });
 ```
 
+## Caveats
+
+Enabling Request State disables [response streaming](https://docs.astro.build/en/recipes/streaming-improve-page-performance/). The entire application state must be generated before shipping closing head tag to the client. This behavior prevents data race when client components start hydrating before entire document is loaded.
+
 ## License
 
 Astro Request State is available under the MIT license.

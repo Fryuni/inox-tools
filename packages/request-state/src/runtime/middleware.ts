@@ -13,31 +13,20 @@ export const onRequest = defineMiddleware(async (_, next) => {
 
 	if (mediaType !== 'text/html' && !mediaType.startsWith('text/html+')) return result;
 
-	const newBody = result.body
-		?.pipeThrough(new TextDecoderStream())
-		.pipeThrough(injectState(getState))
-		.pipeThrough(new TextEncoderStream());
+	const originalBody = await result.text();
 
-	return new Response(newBody, result);
+	const headCloseIndex = originalBody.indexOf('</head>');
+	if (headCloseIndex > -1) {
+		const state = getState();
+		if (state) {
+			const stateScript = `<script id="it-astro-state" type="application/json+devalue">${state}</script>`;
+
+			return new Response(
+				originalBody.slice(0, headCloseIndex) + stateScript + originalBody.slice(headCloseIndex),
+				result
+			);
+		}
+	}
+
+	return new Response(originalBody, result);
 });
-
-function injectState(getState: () => string | false) {
-	let injected = false;
-	return new TransformStream({
-		transform(chunk, controller) {
-			if (!injected) {
-				const headCloseIndex = chunk.indexOf('</head>');
-				if (headCloseIndex > -1) {
-					const state = getState();
-					if (state) {
-						const stateScript = `<script id="it-astro-state" type="application/json+devalue">${state}</script>`;
-
-						chunk = chunk.slice(0, headCloseIndex) + stateScript + chunk.slice(headCloseIndex);
-					}
-					injected = true;
-				}
-			}
-			controller.enqueue(chunk);
-		},
-	});
-}

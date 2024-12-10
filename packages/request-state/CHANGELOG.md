@@ -1,5 +1,11 @@
 # @inox-tools/request-state
 
+## 0.3.0
+
+### Minor Changes
+
+- 4870d82: Fixes flash of page with unsynchronized state due to response streaming.
+
 ## 0.2.0
 
 ### Minor Changes

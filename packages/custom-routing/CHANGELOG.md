@@ -1,5 +1,11 @@
 # @inox-tools/inline-mod
 
+## 1.0.2
+
+### Patch Changes
+
+- f2e76e2: Refactor internally to use new Inox Tools template
+
 ## 1.0.1
 
 ### Patch Changes

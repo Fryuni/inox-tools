@@ -31,6 +31,34 @@ declare module '@it-astro:content/git' {
 		coAuthors: GitAuthor[];
 	};
 
+	export type GitAuthor = {
+		name: string;
+		email: string;
+	};
+
+	export type GitCommitInfo = {
+		/**
+		 * Full commit hash.
+		 */
+		hash: string;
+		/**
+		 * Short commit hash.
+		 */
+		shortHash: string;
+		/**
+		 * Commit's "committer date" in seconds since UNIX epoch.
+		 */
+		secondsSinceEpoch: number;
+		/**
+		 * Commit author.
+		 */
+		author: GitAuthor;
+		/**
+		 * Commit co-authors, extracted from the "Co-Authored-By" commit trailers.
+		 */
+		coAuthors: GitAuthor[];
+	};
+
 	/**
 	 * Retrieve the latest commit that changed a Content Collection Entry.
 	 *
@@ -55,6 +83,11 @@ declare module '@it-astro:content/git' {
 
 declare namespace Astro {
 	export interface IntegrationHooks {
+		'@it/content:git:commit'?: (params: {
+			logger: import('astro').AstroIntegrationLogger;
+			commitInfo: import('@it-astro:content/git').GitCommitInfo;
+			drop: () => void;
+		}) => Promise<void> | void;
 		'@it/content:git:resolved'?: (params: {
 			logger: import('astro').AstroIntegrationLogger;
 			file: string;

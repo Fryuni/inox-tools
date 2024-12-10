@@ -12,19 +12,28 @@
   "author": "Luiz Ferraz <luiz@lferraz.com>",
   "type": "module",
   "exports": {
-    ".": "./index.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
   },
   "files": [
     "README.md",
-    "*.ts"
+    "dist",
+    "src"
   ],
   "scripts": {
-    "build": "echo 'no build'",
-    "test": "echo 'no test'"
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "prepublish": "pnpm run build",
+    "test": "echo 'no tests'"
   },
   "devDependencies": {
+    "@types/node": "catalog:",
     "astro": "catalog:",
-    "typescript": "catalog:"
+    "tsup": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:"
   },
   "peerDependency": {
     "astro": ">=3"

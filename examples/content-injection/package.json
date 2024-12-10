@@ -14,8 +14,8 @@
     "@astrojs/check": "^0.9.4",
     "@inox-tools/content-utils": "workspace:^",
     "@inox-tools/runtime-logger": "workspace:^",
-    "astro": "^4.16.7",
-    "astro-integration-kit": "^0.16.1",
-    "typescript": "^5.6.3"
+    "astro": "^5.0.1",
+    "astro-integration-kit": "^0.17.0",
+    "typescript": "^5.7.2"
   }
 }

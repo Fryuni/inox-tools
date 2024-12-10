@@ -1,8 +1,20 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
+import type { StarlightConfig } from '@astrojs/starlight/types';
 import vercel from '@astrojs/vercel/serverless';
 import starWarp from '@inox-tools/star-warp';
 import starlightLinksValidator from 'starlight-links-validator';
+
+const badge = {
+	new: {
+		text: 'NEW',
+		variant: 'success',
+	},
+	updated: {
+		text: 'UPDATED',
+		variant: 'default',
+	},
+} satisfies Record<string, NonNullable<NonNullable<StarlightConfig['sidebar']>[number]['badge']>>;
 
 process.env.ASTRO_PROJECT_ROOT = new URL('../', import.meta.url).toString();
 
@@ -32,12 +44,9 @@ export default defineConfig({
 				Head: './src/components/Head.astro',
 				PageTitle: './src/components/PageTitle.astro',
 				Sidebar: './src/components/Sidebar.astro',
+				MarkdownContent: './src/components/MarkdownContent.astro',
 			},
 			sidebar: [
-				{
-					label: 'BETA Docs (Astro 5)',
-					link: 'https://inox-tools-git-feat-astro-5-fryuni-pro.vercel.app/',
-				},
 				{
 					label: 'Tiny and Cute Integrations',
 					collapsed: false,

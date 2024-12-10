@@ -1,0 +1,8 @@
+---
+import Default from '@astrojs/starlight/components/MarkdownContent.astro';
+export type { Props } from '@astrojs/starlight/props';
+
+Astro.locals.starlight = Astro.props;
+---
+
+<Default {...Astro.props}><slot /></Default>

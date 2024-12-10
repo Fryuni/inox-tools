@@ -1,5 +1,27 @@
 # @inox-tools/aik-route-config
 
+## 0.8.0
+
+### Minor Changes
+
+- Minimal bump to sync inter-dependencies to Astro 5 and Vite 6
+
+## 0.7.5
+
+### Patch Changes
+
+- Updated dependencies [21e0744]
+- Updated dependencies [21e0744]
+  - @inox-tools/utils@0.3.0
+
+## 0.7.5-beta.0
+
+### Patch Changes
+
+- Updated dependencies [b4843b9]
+- Updated dependencies [b4843b9]
+  - @inox-tools/utils@0.3.0-beta.0
+
 ## 0.7.4
 
 ### Patch Changes

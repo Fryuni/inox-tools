@@ -14,7 +14,7 @@
       system: let
         throwSystem = throw "Unsupported system: ${system}";
         pkgs = nixpkgs.legacyPackages.${system};
-        node = pkgs.nodejs_20;
+        node = pkgs.nodejs_22;
 
         browsersInfo = builtins.fromJSON (builtins.readFile "${pkgs.playwright-driver}/browsers.json");
       in {

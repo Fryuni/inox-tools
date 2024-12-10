@@ -119,7 +119,7 @@ $comments.set(await loadCommentsForArticle());
 
 ## Caveats
 
-Enabling request-nanostores disables [response streaming](https://docs.astro.build/en/recipes/streaming-improve-page-performance/). This behavior caused by [request-state](/request-state) package that prevents race condition where nanostores not initialized before client components starts hydrating.
+Enabling Request-Scoped Nanostores disables [response streaming](https://docs.astro.build/en/recipes/streaming-improve-page-performance/). This behavior caused by [request-state](/request-state) package that prevents race condition where nanostores not initialized before client components starts hydrating.
 
 ## License
 

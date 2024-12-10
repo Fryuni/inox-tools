@@ -10,7 +10,7 @@ describe('Astro when on a static output project', () => {
 		let devServer: DevServer;
 
 		beforeAll(async () => {
-			await fixture.startDevServer({});
+			devServer = await fixture.startDevServer({});
 		});
 
 		afterAll(async () => {

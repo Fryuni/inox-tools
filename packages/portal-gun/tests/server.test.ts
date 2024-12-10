@@ -6,10 +6,6 @@ import { defineCommonTests } from './common.js';
 const fixture = await loadFixture({
 	root: './fixture/basic',
 	outDir: 'dist/server',
-	build: {
-		server: 'dist/server/server',
-		client: 'dist/server/client',
-	},
 	output: 'server',
 	adapter: testAdapter(),
 });

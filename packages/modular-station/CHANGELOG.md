@@ -1,5 +1,34 @@
 # @inox-tools/modular-station
 
+## 0.4.0
+
+### Minor Changes
+
+- Minimal bump to sync inter-dependencies to Astro 5 and Vite 6
+
+## 0.3.5
+
+### Patch Changes
+
+- Updated dependencies [21e0744]
+- Updated dependencies [21e0744]
+  - @inox-tools/utils@0.3.0
+
+## 0.3.4-beta.0
+
+### Patch Changes
+
+- Updated dependencies [b4843b9]
+- Updated dependencies [b4843b9]
+  - @inox-tools/utils@0.3.0-beta.0
+
+## 0.3.4
+
+### Patch Changes
+
+- aa73961: Remove global change to `debug` package options
+- aa73961: Fixes duplicated initialization of API module when used transitively by integrations and direcly by the user project
+
 ## 0.3.3
 
 ### Patch Changes

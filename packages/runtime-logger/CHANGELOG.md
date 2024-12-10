@@ -1,5 +1,43 @@
 # @inox-tools/runtime-logger
 
+## 0.4.0
+
+### Minor Changes
+
+- Minimal bump to sync inter-dependencies to Astro 5 and Vite 6
+
+### Patch Changes
+
+- Updated dependencies
+  - @inox-tools/modular-station@0.4.0
+
+## 0.3.6
+
+### Patch Changes
+
+- Updated dependencies [21e0744]
+- Updated dependencies [21e0744]
+  - @inox-tools/utils@0.3.0
+  - @inox-tools/modular-station@0.3.5
+
+## 0.3.5
+
+### Patch Changes
+
+- 23b89bf: Fixes internal plugins having the same name causing incorrect warnings when building
+- Updated dependencies [aa73961]
+- Updated dependencies [aa73961]
+  - @inox-tools/modular-station@0.3.4
+
+## 0.3.5-beta.0
+
+### Patch Changes
+
+- Updated dependencies [b4843b9]
+- Updated dependencies [b4843b9]
+  - @inox-tools/utils@0.3.0-beta.0
+  - @inox-tools/modular-station@0.3.4-beta.0
+
 ## 0.3.4
 
 ### Patch Changes

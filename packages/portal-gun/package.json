@@ -1,6 +1,6 @@
 {
   "name": "@inox-tools/portal-gun",
-  "version": "0.1.0",
+  "version": "1.0.1",
   "description": "Transport HTML elements through your page during rendering using Portals.",
   "keywords": [
     "astro-integration",
@@ -46,7 +46,7 @@
     "@types/hast": "catalog:",
     "@types/node": "catalog:",
     "@vitest/ui": "catalog:",
-    "astro": "catalog:",
+    "astro": "catalog:lax",
     "jest-extended": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:",

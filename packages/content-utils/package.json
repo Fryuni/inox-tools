@@ -1,6 +1,6 @@
 {
   "name": "@inox-tools/content-utils",
-  "version": "0.7.3",
+  "version": "0.8.0",
   "description": "Utilities to work with content collections on an Astro project from an integration or library.",
   "keywords": [
     "lifecycle",
@@ -45,7 +45,7 @@
   "devDependencies": {
     "@types/debug": "catalog:",
     "@types/node": "catalog:",
-    "astro": "catalog:",
+    "astro": "catalog:min",
     "tsup": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:"

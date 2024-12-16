@@ -13,15 +13,15 @@
   },
   "dependencies": {
     "@astrojs/starlight": "catalog:",
-    "@astrojs/vercel": "^7.8.2",
-    "@croct/plug": "^0.16.4",
+    "@astrojs/vercel": "^8.0.1",
+    "@croct/plug": "^0.16.5",
     "@inox-tools/star-warp": "workspace:^",
     "@inox-tools/utils": "workspace:^",
     "@vercel/analytics": "^1.4.1",
-    "astro": "^4.16.16",
+    "astro": "^5.0.8",
     "sharp": "^0.33.5",
     "starlight-links-validator": "^0.13.4",
-    "starlight-package-managers": "^0.8.0"
+    "starlight-package-managers": "^0.8.1"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.4",

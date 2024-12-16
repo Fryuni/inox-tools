@@ -40,7 +40,7 @@
     "@types/node": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "@vitest/ui": "catalog:",
-    "astro": "catalog:",
+    "astro": "5.0.8",
     "jest-extended": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:",

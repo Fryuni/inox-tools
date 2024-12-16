@@ -12,11 +12,11 @@
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",
-    "@astrojs/mdx": "^4.0.1",
+    "@astrojs/mdx": "^4.0.2",
     "@astrojs/node": "^9.0.0",
-    "@astrojs/rss": "^4.0.9",
+    "@astrojs/rss": "^4.0.10",
     "@inox-tools/sitemap-ext": "workspace:^",
-    "astro": "^5.0.1",
+    "astro": "^5.0.8",
     "typescript": "^5.7.2"
   }
 }

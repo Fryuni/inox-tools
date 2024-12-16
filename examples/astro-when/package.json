@@ -14,7 +14,7 @@
     "@astrojs/check": "^0.9.4",
     "@astrojs/node": "^9.0.0",
     "@inox-tools/astro-when": "workspace:^",
-    "astro": "^5.0.1",
+    "astro": "^5.0.8",
     "typescript": "^5.7.2"
   }
 }

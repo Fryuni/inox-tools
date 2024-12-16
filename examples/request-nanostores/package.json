@@ -16,9 +16,9 @@
     "@astrojs/preact": "^4.0.0",
     "@inox-tools/request-nanostores": "workspace:^",
     "@nanostores/preact": "^0.5.2",
-    "astro": "^5.0.1",
+    "astro": "^5.0.8",
     "nanostores": "^0.11.3",
-    "preact": "^10.25.1",
+    "preact": "^10.25.2",
     "typescript": "^5.7.2"
   }
 }

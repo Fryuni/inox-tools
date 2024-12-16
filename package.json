@@ -42,7 +42,6 @@
   "pnpm": {
     "overrides": {
       "@croct/sdk": "0.17.0",
-      "@inox-tools/star-warp>astro": "4.16.8",
       "picomatch": "3.0.1"
     }
   }

@@ -18,13 +18,13 @@
     "@inox-tools/star-warp": "workspace:^",
     "@inox-tools/utils": "workspace:^",
     "@vercel/analytics": "^1.4.1",
-    "astro": "^5.0.8",
+    "astro": "catalog:",
     "sharp": "^0.33.5",
     "starlight-links-validator": "^0.13.4",
     "starlight-package-managers": "^0.8.1"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.4",
-    "typescript": "~5.7.2"
+    "typescript": "catalog:"
   }
 }

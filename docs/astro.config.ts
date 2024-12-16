@@ -25,7 +25,6 @@ const SITE =
 
 // https://astro.build/config
 export default defineConfig({
-	output: 'hybrid',
 	adapter: vercel({
 		skewProtection: true,
 	}),

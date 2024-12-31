@@ -1,0 +1,17 @@
+diff --git a/dist/assets/utils/transformToPath.js b/dist/assets/utils/transformToPath.js
+index cca8548dec42090b0621d1f21c86f503d5bba1be..44199097330b5061b26dfab4c488e8ee370b7b04 100644
+--- a/dist/assets/utils/transformToPath.js
++++ b/dist/assets/utils/transformToPath.js
+@@ -6,10 +6,10 @@ import { isESMImportedImage } from "./imageKind.js";
+ function propsToFilename(filePath, transform, hash) {
+   let filename = decodeURIComponent(removeQueryString(filePath));
+   const ext = extname(filename);
+-  if (filePath.startsWith("data:")) {
++  if (filePath.startsWith("data:") || filePath.length > 50) {
+     filename = shorthash(filePath);
+   } else {
+-    filename = basename(filename, ext);
++    filename = basename(filename, ext).replace(/[^a-zA-Z0-9_-]+/g, "_");
+   }
+   const prefixDirname = isESMImportedImage(transform.src) ? dirname(filePath) : "";
+   let outputExt = transform.format ? `.${transform.format}` : ext;

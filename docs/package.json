@@ -21,7 +21,7 @@
     "@vercel/analytics": "^1.4.1",
     "astro": "catalog:",
     "sharp": "^0.33.5",
-    "starlight-links-validator": "^0.13.4",
+    "starlight-links-validator": "^0.14.1",
     "starlight-package-managers": "^0.8.1"
   },
   "devDependencies": {

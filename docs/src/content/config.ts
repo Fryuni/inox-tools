@@ -6,6 +6,7 @@ export const collections = {
 		schema: docsSchema({
 			extend: z.object({
 				packageName: z.string().optional(),
+				howItWorks: z.string().optional(),
 			}),
 		}),
 	}),

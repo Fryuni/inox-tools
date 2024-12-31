@@ -12,6 +12,7 @@
     "validate": "astro check"
   },
   "dependencies": {
+    "@astrojs/node": "^9.0.0",
     "@astrojs/starlight": "catalog:",
     "@astrojs/vercel": "^8.0.1",
     "@croct/plug": "^0.16.5",
@@ -25,6 +26,9 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.4",
+    "@types/pako": "^2.0.3",
+    "js-base64": "^3.7.7",
+    "pako": "^2.1.0",
     "typescript": "catalog:"
   }
 }

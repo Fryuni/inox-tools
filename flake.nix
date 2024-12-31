@@ -22,6 +22,7 @@
           packages = [
             node
             pkgs.corepack_22
+            pkgs.git
           ];
 
           PLAYWRIGHT_NODEJS_PATH = "${node}/bin/node";

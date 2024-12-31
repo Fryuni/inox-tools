@@ -1,0 +1,69 @@
+---
+title: How Runtime Logger works?
+description: A detailed explanation of how Runtime Logger is implemented
+packageName: '@inox-tools/runtime-logger'
+---
+
+import Mermaid from '@/components/Mermaid.astro';
+
+Astro Runtime Logger provides logger objects to the runtime in different ways for different purposes.
+
+There are layers to the behaviors in this integration:
+
+- Getting a logger implementation to the runtime
+- Exposing different logger modules for integration use
+- Exposing different logger modules for each file using the project logger from the same import
+
+To achieve this, this package has actually has two integrations and four Vite plugins in the following arrangement:
+
+<Mermaid
+	code={`
+flowchart TD
+    A[Christmas] -->|Get money| B(Go shopping)
+    B --> C{Here we go}
+    C -->|One| D[Laptop]
+    C -->|Two| E[iPhone]
+    C -->|Three| F[fa:fa-car Car]
+`}
+/>
+
+## Getting a logger at runtime
+
+There are two ways to get a logger at runtime, and we use both for them in different times.
+
+For the final build output, the logger has to be entirely independent. So we copy the implementation of Astro's own logger and add it to the bundle. The implementation is lightly modified so it doesn't rely on things that are not supposed to be used on the deployed server, like terminal control characters and Node-only modules. Because Astro's implementation is supposed to be used only during build, it can assume those and be fancier (colors and things), but we don't want to limit your project deployment options.
+
+Getting that [stub implementation][logger stub] to the runtime is done with a simple [Vite plugin][logger stub plugin] that return it as a virtual module:
+
+```ts
+import type { Plugin } from 'vite';
+import { readFile } from 'fs/promises';
+
+export const INTERNAL_MODULE = '@it-astro:logger-internal';
+const RESOLVED_INTERNAL_MODULE = '\x00@it-astro:logger-internal';
+
+const templatePath = new URL('../template/loggerStub.mjs', import.meta.url);
+
+export const loggerInternalsPlugin: Plugin = {
+	name: '@inox-tools/runtime-logger/internal',
+	resolveId(id) {
+		if (id === INTERNAL_MODULE) {
+			return RESOLVED_INTERNAL_MODULE;
+		}
+	},
+	load(id) {
+		if (id !== RESOLVED_INTERNAL_MODULE) return;
+
+		return readFile(templatePath, 'utf-8');
+	},
+};
+```
+
+But while running the build, dev or preview command we are in that golden environment where all the fancy feature work, so it would be a shame to not use them. So the integration has some conditional logic surrounding the use of that virtual module:
+
+```ts
+
+```
+
+[logger stub]: https://github.com/Fryuni/inox-tools/blob/main/packages/runtime-logger/template/loggerStub.mjs
+[logger stub plugin]: https://github.com/Fryuni/inox-tools/blob/main/packages/runtime-logger/src/internalPlugin.ts

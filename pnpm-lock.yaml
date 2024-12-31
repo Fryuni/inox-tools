@@ -158,6 +158,9 @@ importers:
 
   docs:
     dependencies:
+      '@astrojs/node':
+        specifier: ^9.0.0
+        version: 9.0.0(astro@5.0.8(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.28.1)(typescript@5.7.2)(yaml@2.6.1))
       '@astrojs/starlight':
         specifier: 'catalog:'
         version: 0.30.2(astro@5.0.8(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.28.1)(typescript@5.7.2)(yaml@2.6.1))
@@ -192,6 +195,15 @@ importers:
       '@astrojs/check':
         specifier: ^0.9.4
         version: 0.9.4(prettier-plugin-astro@0.14.1)(prettier@3.4.2)(typescript@5.7.2)
+      '@types/pako':
+        specifier: ^2.0.3
+        version: 2.0.3
+      js-base64:
+        specifier: ^3.7.7
+        version: 3.7.7
+      pako:
+        specifier: ^2.1.0
+        version: 2.1.0
       typescript:
         specifier: 'catalog:'
         version: 5.7.2
@@ -2254,6 +2266,9 @@ packages:
   '@types/node@22.10.2':
     resolution: {integrity: sha512-Xxr6BBRCAOQixvonOye19wnzyDiUtTeqldOOmj3CkeblonbccA12PFwlufvRdrpjXxqnmUaeiU5EOA+7s5diUQ==}
 
+  '@types/pako@2.0.3':
+    resolution: {integrity: sha512-bq0hMV9opAcrmE0Byyo0fY3Ew4tgOevJmQ9grUhpXQhYfyLJ1Kqg3P33JT5fdbT2AjeAjR51zqqVjAL/HMkx7Q==}
+
   '@types/picomatch@2.3.3':
     resolution: {integrity: sha512-Yll76ZHikRFCyz/pffKGjrCwe/le2CDwOP5F210KQo27kpRE46U2rDnzikNlVn6/ezH3Mhn46bJMTfeVTtcYMg==}
 
@@ -3555,6 +3570,9 @@ packages:
     resolution: {integrity: sha512-34wB/Y7MW7bzjKRjUKTa46I2Z7eV62Rkhva+KkopW7Qvv/OSWBqvkSY7vusOPrNuZcUG3tApvdVgNB8POj3SPw==}
     engines: {node: '>=10'}
 
+  js-base64@3.7.7:
+    resolution: {integrity: sha512-7rCnleh0z2CkXhH67J8K1Ytz0b2Y+yxTPL+/KOJoa20hfnVQ/3/T6W/KflYI4bRHRagNeXeU2bkNGI3v1oS/lw==}
+
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
 
@@ -4102,6 +4120,9 @@ packages:
   pagefind@1.2.0:
     resolution: {integrity: sha512-sFVv5/x73qCp9KlLHv8/uWDv7rG1tsWcG9MuXc5YTrXIrb8c1Gshm9oc5rMLXNZILXUWai8WczqaK4jjroEzng==}
     hasBin: true
+
+  pako@2.1.0:
+    resolution: {integrity: sha512-w+eufiZ1WuJYgPXbV/PO3NCMEc3xqylkKHzp8bxp1uW4qaSNQUkwmLLEc3kKsfz8lpV1F8Ht3U1Cm+9Srog2ug==}
 
   param-case@2.1.1:
     resolution: {integrity: sha512-eQE845L6ot89sk2N8liD8HAuH4ca6Vvr7VWAWwt7+kvvG5aBcPmmphQ68JsEG2qa9n1TykS2DLeMt363AAH8/w==}
@@ -6671,6 +6692,8 @@ snapshots:
     dependencies:
       undici-types: 6.20.0
 
+  '@types/pako@2.0.3': {}
+
   '@types/picomatch@2.3.3': {}
 
   '@types/sax@1.2.7':
@@ -8288,6 +8311,8 @@ snapshots:
 
   joycon@3.1.1: {}
 
+  js-base64@3.7.7: {}
+
   js-tokens@4.0.0: {}
 
   js-yaml@3.14.1:
@@ -9129,6 +9154,8 @@ snapshots:
       '@pagefind/linux-arm64': 1.2.0
       '@pagefind/linux-x64': 1.2.0
       '@pagefind/windows-x64': 1.2.0
+
+  pako@2.1.0: {}
 
   param-case@2.1.1:
     dependencies:

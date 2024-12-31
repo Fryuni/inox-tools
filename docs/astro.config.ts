@@ -1,7 +1,7 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import type { StarlightConfig } from '@astrojs/starlight/types';
-import vercel from '@astrojs/vercel/serverless';
+import vercel from '@astrojs/vercel';
 import starWarp from '@inox-tools/star-warp';
 import starlightLinksValidator from 'starlight-links-validator';
 
@@ -134,5 +134,8 @@ export default defineConfig({
 		'/content-utils': '/content-utils/integration',
 		'/content-utils/git-time': '/content-utils/git',
 		'/modular-station': '/modular-station/api',
+	},
+	image: {
+		domains: ['mermaid.ink'],
 	},
 });

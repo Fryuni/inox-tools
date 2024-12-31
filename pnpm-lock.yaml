@@ -124,6 +124,11 @@ overrides:
   '@croct/sdk': 0.17.0
   picomatch: 3.0.1
 
+patchedDependencies:
+  astro:
+    hash: 4hepzxt2ecxpinknws2mzmplbu
+    path: patches/astro.patch
+
 importers:
 
   .:
@@ -160,13 +165,13 @@ importers:
     dependencies:
       '@astrojs/node':
         specifier: ^9.0.0
-        version: 9.0.0(astro@5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
+        version: 9.0.0(astro@5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
       '@astrojs/starlight':
         specifier: 'catalog:'
-        version: 0.30.3(astro@5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
+        version: 0.30.3(astro@5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
       '@astrojs/vercel':
         specifier: ^8.0.1
-        version: 8.0.1(astro@5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))(rollup@4.29.1)
+        version: 8.0.1(astro@5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))(rollup@4.29.1)
       '@croct/plug':
         specifier: ^0.16.5
         version: 0.16.5
@@ -181,16 +186,16 @@ importers:
         version: 1.4.1
       astro:
         specifier: 'catalog:'
-        version: 5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
+        version: 5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
       sharp:
         specifier: ^0.33.5
         version: 0.33.5
       starlight-links-validator:
         specifier: ^0.14.1
-        version: 0.14.1(@astrojs/starlight@0.30.3(astro@5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)))
+        version: 0.14.1(@astrojs/starlight@0.30.3(astro@5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)))
       starlight-package-managers:
         specifier: ^0.8.1
-        version: 0.8.1(@astrojs/starlight@0.30.3(astro@5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)))
+        version: 0.8.1(@astrojs/starlight@0.30.3(astro@5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)))
     devDependencies:
       '@astrojs/check':
         specifier: ^0.9.4
@@ -215,13 +220,13 @@ importers:
         version: 0.9.4(prettier-plugin-astro@0.14.1)(prettier@3.4.2)(typescript@5.7.2)
       '@astrojs/node':
         specifier: ^9.0.0
-        version: 9.0.0(astro@5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
+        version: 9.0.0(astro@5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
       '@inox-tools/astro-when':
         specifier: workspace:^
         version: link:../../packages/astro-when
       astro:
         specifier: ^5.1.1
-        version: 5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
+        version: 5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
       typescript:
         specifier: ^5.7.2
         version: 5.7.2
@@ -239,10 +244,10 @@ importers:
         version: link:../../packages/runtime-logger
       astro:
         specifier: ^5.1.1
-        version: 5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
+        version: 5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
       astro-integration-kit:
         specifier: ^0.18.0
-        version: 0.18.0(astro@5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
+        version: 0.18.0(astro@5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
       typescript:
         specifier: ^5.7.2
         version: 5.7.2
@@ -254,7 +259,7 @@ importers:
         version: 0.9.4(prettier-plugin-astro@0.14.1)(prettier@3.4.2)(typescript@5.7.2)
       '@astrojs/mdx':
         specifier: ^4.0.3
-        version: 4.0.3(astro@5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
+        version: 4.0.3(astro@5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
       '@astrojs/rss':
         specifier: ^4.0.10
         version: 4.0.10
@@ -263,7 +268,7 @@ importers:
         version: 3.2.1
       astro:
         specifier: ^5.1.1
-        version: 5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
+        version: 5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
       typescript:
         specifier: ^5.7.2
         version: 5.7.2
@@ -291,10 +296,10 @@ importers:
         version: 0.9.4(prettier-plugin-astro@0.14.1)(prettier@3.4.2)(typescript@5.7.2)
       '@astrojs/node':
         specifier: ^9.0.0
-        version: 9.0.0(astro@5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
+        version: 9.0.0(astro@5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
       astro:
         specifier: ^5.1.1
-        version: 5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
+        version: 5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
       typescript:
         specifier: ^5.7.2
         version: 5.7.2
@@ -307,7 +312,7 @@ importers:
         version: link:../../packages/aik-mod
       astro-integration-kit:
         specifier: ^0.18.0
-        version: 0.18.0(astro@5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
+        version: 0.18.0(astro@5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
 
   examples/inline-mod-astro:
     dependencies:
@@ -316,13 +321,13 @@ importers:
         version: 0.9.4(prettier-plugin-astro@0.14.1)(prettier@3.4.2)(typescript@5.7.2)
       '@astrojs/node':
         specifier: ^9.0.0
-        version: 9.0.0(astro@5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
+        version: 9.0.0(astro@5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
       '@astrojs/rss':
         specifier: ^4.0.10
         version: 4.0.10
       astro:
         specifier: ^5.1.1
-        version: 5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
+        version: 5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
       typescript:
         specifier: ^5.7.2
         version: 5.7.2
@@ -341,7 +346,7 @@ importers:
         version: 0.9.4(prettier-plugin-astro@0.14.1)(prettier@3.4.2)(typescript@5.7.2)
       '@astrojs/node':
         specifier: ^9.0.0
-        version: 9.0.0(astro@5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
+        version: 9.0.0(astro@5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
       '@astrojs/preact':
         specifier: ^4.0.1
         version: 4.0.1(@babel/core@7.26.0)(@types/node@22.10.2)(jiti@2.0.0)(preact@10.25.4)(yaml@2.6.1)
@@ -353,7 +358,7 @@ importers:
         version: 0.5.2(nanostores@0.11.3)(preact@10.25.4)
       astro:
         specifier: ^5.1.1
-        version: 5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
+        version: 5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
       nanostores:
         specifier: ^0.11.3
         version: 0.11.3
@@ -371,7 +376,7 @@ importers:
         version: 0.9.4(prettier-plugin-astro@0.14.1)(prettier@3.4.2)(typescript@5.7.2)
       '@astrojs/node':
         specifier: ^9.0.0
-        version: 9.0.0(astro@5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
+        version: 9.0.0(astro@5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
       '@inox-tools/request-nanostores':
         specifier: workspace:^
         version: link:../../packages/request-nanostores
@@ -380,7 +385,7 @@ importers:
         version: link:../../packages/request-state
       astro:
         specifier: ^5.1.1
-        version: 5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
+        version: 5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
       nanostores:
         specifier: ^0.11.3
         version: 0.11.3
@@ -395,10 +400,10 @@ importers:
         version: 0.9.4(prettier-plugin-astro@0.14.1)(prettier@3.4.2)(typescript@5.7.2)
       '@astrojs/mdx':
         specifier: ^4.0.3
-        version: 4.0.3(astro@5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
+        version: 4.0.3(astro@5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
       '@astrojs/node':
         specifier: ^9.0.0
-        version: 9.0.0(astro@5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
+        version: 9.0.0(astro@5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
       '@astrojs/rss':
         specifier: ^4.0.10
         version: 4.0.10
@@ -407,7 +412,7 @@ importers:
         version: link:../../packages/sitemap-ext
       astro:
         specifier: ^5.1.1
-        version: 5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
+        version: 5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
       typescript:
         specifier: ^5.7.2
         version: 5.7.2
@@ -419,7 +424,7 @@ importers:
         version: link:../inline-mod
       astro-integration-kit:
         specifier: catalog:min
-        version: 0.17.0(astro@5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
+        version: 0.17.0(astro@5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
       debug:
         specifier: 'catalog:'
         version: 4.4.0
@@ -432,7 +437,7 @@ importers:
         version: 22.10.2
       astro:
         specifier: 'catalog:'
-        version: 5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
+        version: 5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
       tsup:
         specifier: 'catalog:'
         version: 8.3.5(jiti@2.0.0)(postcss@8.4.49)(typescript@5.7.2)(yaml@2.6.1)
@@ -450,10 +455,10 @@ importers:
         version: link:../utils
       astro:
         specifier: catalog:lax
-        version: 5.0.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
+        version: 5.0.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
       astro-integration-kit:
         specifier: catalog:min
-        version: 0.17.0(astro@5.0.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
+        version: 0.17.0(astro@5.0.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
       debug:
         specifier: 'catalog:'
         version: 4.4.0
@@ -499,7 +504,7 @@ importers:
         version: link:../utils
       astro:
         specifier: 'catalog:'
-        version: 5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
+        version: 5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
       debug:
         specifier: 'catalog:'
         version: 4.4.0
@@ -539,7 +544,7 @@ importers:
     dependencies:
       astro-integration-kit:
         specifier: 'catalog:'
-        version: 0.18.0(astro@5.0.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
+        version: 0.18.0(astro@5.0.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
       debug:
         specifier: 'catalog:'
         version: 4.4.0
@@ -558,7 +563,7 @@ importers:
         version: 2.1.8(vitest@2.1.8)
       astro:
         specifier: catalog:lax
-        version: 5.0.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
+        version: 5.0.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
       jest-extended:
         specifier: 'catalog:'
         version: 4.0.2
@@ -582,7 +587,7 @@ importers:
         version: link:../../..
       astro:
         specifier: 'catalog:'
-        version: 5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
+        version: 5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
 
   packages/astro-when/tests/fixture/static-output:
     dependencies:
@@ -591,7 +596,7 @@ importers:
         version: link:../../..
       astro:
         specifier: 'catalog:'
-        version: 5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
+        version: 5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
 
   packages/content-utils:
     dependencies:
@@ -603,7 +608,7 @@ importers:
         version: link:../utils
       astro-integration-kit:
         specifier: 'catalog:'
-        version: 0.18.0(astro@5.0.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
+        version: 0.18.0(astro@5.0.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
       debug:
         specifier: 'catalog:'
         version: 4.4.0
@@ -622,7 +627,7 @@ importers:
         version: 22.10.2
       astro:
         specifier: catalog:min
-        version: 5.0.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
+        version: 5.0.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
       tsup:
         specifier: 'catalog:'
         version: 8.3.5(jiti@2.0.0)(postcss@8.4.49)(typescript@5.7.2)(yaml@2.6.1)
@@ -640,7 +645,7 @@ importers:
         version: 22.10.2
       astro:
         specifier: 'catalog:'
-        version: 5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
+        version: 5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
       tsup:
         specifier: 'catalog:'
         version: 8.3.5(jiti@2.0.0)(postcss@8.4.49)(typescript@5.7.2)(yaml@2.6.1)
@@ -658,7 +663,7 @@ importers:
         version: link:../utils
       astro-integration-kit:
         specifier: 'catalog:'
-        version: 0.18.0(astro@5.0.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
+        version: 0.18.0(astro@5.0.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
       debug:
         specifier: 'catalog:'
         version: 4.4.0
@@ -677,7 +682,7 @@ importers:
         version: 2.1.8(vitest@2.1.8)
       astro:
         specifier: catalog:lax
-        version: 5.0.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
+        version: 5.0.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
       jest-extended:
         specifier: 'catalog:'
         version: 4.0.2
@@ -701,7 +706,7 @@ importers:
         version: link:../../..
       astro:
         specifier: 'catalog:'
-        version: 5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
+        version: 5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
 
   packages/inline-mod:
     dependencies:
@@ -750,7 +755,7 @@ importers:
         version: link:../utils
       astro-integration-kit:
         specifier: 'catalog:'
-        version: 0.18.0(astro@5.0.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
+        version: 0.18.0(astro@5.0.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
       debug:
         specifier: 'catalog:'
         version: 4.4.0
@@ -769,7 +774,7 @@ importers:
         version: 2.1.8(vitest@2.1.8)
       astro:
         specifier: catalog:min
-        version: 5.0.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
+        version: 5.0.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
       tsup:
         specifier: 'catalog:'
         version: 8.3.5(jiti@2.0.0)(postcss@8.4.49)(typescript@5.7.2)(yaml@2.6.1)
@@ -793,7 +798,7 @@ importers:
         version: link:../utils
       astro-integration-kit:
         specifier: 'catalog:'
-        version: 0.18.0(astro@5.0.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
+        version: 0.18.0(astro@5.0.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
       debug:
         specifier: 'catalog:'
         version: 4.4.0
@@ -818,7 +823,7 @@ importers:
         version: 2.1.8(vitest@2.1.8)
       astro:
         specifier: catalog:lax
-        version: 5.0.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
+        version: 5.0.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
       jest-extended:
         specifier: 'catalog:'
         version: 4.0.2
@@ -845,7 +850,7 @@ importers:
         version: link:../../..
       astro:
         specifier: 'catalog:'
-        version: 5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
+        version: 5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
       preact:
         specifier: ^10.25.1
         version: 10.25.4
@@ -860,7 +865,7 @@ importers:
         version: link:../utils
       astro-integration-kit:
         specifier: 'catalog:'
-        version: 0.18.0(astro@5.0.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
+        version: 0.18.0(astro@5.0.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
       nanostores:
         specifier: 'catalog:'
         version: 0.11.3
@@ -879,7 +884,7 @@ importers:
         version: 2.1.8(vitest@2.1.8)
       astro:
         specifier: catalog:lax
-        version: 5.0.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
+        version: 5.0.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
       jest-extended:
         specifier: 'catalog:'
         version: 4.0.2
@@ -900,7 +905,7 @@ importers:
     dependencies:
       '@astrojs/node':
         specifier: 'catalog:'
-        version: 9.0.0(astro@5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
+        version: 9.0.0(astro@5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
       '@astrojs/preact':
         specifier: ^3.5.4
         version: 3.5.4(@babel/core@7.26.0)(@types/node@22.10.2)(preact@10.25.4)
@@ -912,7 +917,7 @@ importers:
         version: 0.5.2(nanostores@0.11.3)(preact@10.25.4)
       astro:
         specifier: 'catalog:'
-        version: 5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
+        version: 5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
       nanostores:
         specifier: 'catalog:'
         version: 0.11.3
@@ -930,7 +935,7 @@ importers:
         version: link:../../..
       astro:
         specifier: 'catalog:'
-        version: 5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
+        version: 5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
       nanostores:
         specifier: 'catalog:'
         version: 0.11.3
@@ -942,7 +947,7 @@ importers:
         version: link:../utils
       astro-integration-kit:
         specifier: 'catalog:'
-        version: 0.18.0(astro@5.0.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
+        version: 0.18.0(astro@5.0.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
       content-type:
         specifier: 'catalog:'
         version: 1.0.5
@@ -964,7 +969,7 @@ importers:
         version: 22.10.2
       astro:
         specifier: catalog:lax
-        version: 5.0.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
+        version: 5.0.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
       jest-extended:
         specifier: 'catalog:'
         version: 4.0.2
@@ -982,13 +987,13 @@ importers:
     dependencies:
       '@astrojs/node':
         specifier: 'catalog:'
-        version: 9.0.0(astro@5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
+        version: 9.0.0(astro@5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
       '@inox-tools/request-state':
         specifier: 'workspace:'
         version: link:../../..
       astro:
         specifier: 'catalog:'
-        version: 5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
+        version: 5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
       devalue:
         specifier: 'catalog:'
         version: 5.1.1
@@ -1000,19 +1005,19 @@ importers:
         version: link:../../..
       astro:
         specifier: 'catalog:'
-        version: 5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
+        version: 5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
 
   packages/request-state/e2e/fixture/view-transitions:
     dependencies:
       '@astrojs/node':
         specifier: 'catalog:'
-        version: 9.0.0(astro@5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
+        version: 9.0.0(astro@5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
       '@inox-tools/request-state':
         specifier: 'workspace:'
         version: link:../../..
       astro:
         specifier: 'catalog:'
-        version: 5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
+        version: 5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
 
   packages/runtime-logger:
     dependencies:
@@ -1024,7 +1029,7 @@ importers:
         version: link:../utils
       astro-integration-kit:
         specifier: 'catalog:'
-        version: 0.18.0(astro@5.0.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
+        version: 0.18.0(astro@5.0.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
@@ -1037,7 +1042,7 @@ importers:
         version: 2.1.8(vitest@2.1.8)
       astro:
         specifier: catalog:lax
-        version: 5.0.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
+        version: 5.0.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
       jest-extended:
         specifier: 'catalog:'
         version: 4.0.2
@@ -1064,7 +1069,7 @@ importers:
         version: link:../aik-route-config
       astro-integration-kit:
         specifier: 'catalog:'
-        version: 0.18.0(astro@5.0.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
+        version: 0.18.0(astro@5.0.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
       sitemap:
         specifier: 'catalog:'
         version: 8.0.0
@@ -1074,7 +1079,7 @@ importers:
         version: 22.10.2
       astro:
         specifier: catalog:lax
-        version: 5.0.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
+        version: 5.0.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
       tsup:
         specifier: 'catalog:'
         version: 8.3.5(jiti@2.0.0)(postcss@8.4.49)(typescript@5.7.2)(yaml@2.6.1)
@@ -1089,13 +1094,13 @@ importers:
     dependencies:
       '@astrojs/starlight':
         specifier: catalog:lax
-        version: 0.30.2(astro@5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
+        version: 0.30.2(astro@5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
       '@inox-tools/utils':
         specifier: workspace:^
         version: link:../utils
       astro-integration-kit:
         specifier: 'catalog:'
-        version: 0.18.0(astro@5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
+        version: 0.18.0(astro@5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
@@ -1108,7 +1113,7 @@ importers:
         version: 2.1.8(vitest@2.1.8)
       astro:
         specifier: 'catalog:'
-        version: 5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
+        version: 5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
       jest-extended:
         specifier: 'catalog:'
         version: 4.0.2
@@ -1150,7 +1155,7 @@ importers:
         version: 2.1.8(vitest@2.1.8)
       astro:
         specifier: 'catalog:'
-        version: 5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
+        version: 5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
       jest-extended:
         specifier: 'catalog:'
         version: 4.0.2
@@ -5634,12 +5639,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@astrojs/mdx@4.0.3(astro@5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))':
+  '@astrojs/mdx@4.0.3(astro@5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))':
     dependencies:
       '@astrojs/markdown-remark': 6.0.1
       '@mdx-js/mdx': 3.1.0(acorn@8.14.0)
       acorn: 8.14.0
-      astro: 5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
+      astro: 5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
       es-module-lexer: 1.6.0
       estree-util-visit: 2.0.0
       hast-util-to-html: 9.0.4
@@ -5653,9 +5658,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@astrojs/node@9.0.0(astro@5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))':
+  '@astrojs/node@9.0.0(astro@5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))':
     dependencies:
-      astro: 5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
+      astro: 5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
       send: 1.1.0
       server-destroy: 1.0.1
     transitivePeerDependencies:
@@ -5727,16 +5732,16 @@ snapshots:
       stream-replace-string: 2.0.0
       zod: 3.24.1
 
-  '@astrojs/starlight@0.30.2(astro@5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))':
+  '@astrojs/starlight@0.30.2(astro@5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))':
     dependencies:
-      '@astrojs/mdx': 4.0.3(astro@5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
+      '@astrojs/mdx': 4.0.3(astro@5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
       '@astrojs/sitemap': 3.2.1
       '@pagefind/default-ui': 1.3.0
       '@types/hast': 3.0.4
       '@types/js-yaml': 4.0.9
       '@types/mdast': 4.0.4
-      astro: 5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
-      astro-expressive-code: 0.38.3(astro@5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
+      astro: 5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
+      astro-expressive-code: 0.38.3(astro@5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
       bcp-47: 2.1.0
       hast-util-from-html: 2.0.3
       hast-util-select: 6.0.3
@@ -5757,16 +5762,16 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@astrojs/starlight@0.30.3(astro@5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))':
+  '@astrojs/starlight@0.30.3(astro@5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))':
     dependencies:
-      '@astrojs/mdx': 4.0.3(astro@5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
+      '@astrojs/mdx': 4.0.3(astro@5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
       '@astrojs/sitemap': 3.2.1
       '@pagefind/default-ui': 1.3.0
       '@types/hast': 3.0.4
       '@types/js-yaml': 4.0.9
       '@types/mdast': 4.0.4
-      astro: 5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
-      astro-expressive-code: 0.38.3(astro@5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
+      astro: 5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
+      astro-expressive-code: 0.38.3(astro@5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
       bcp-47: 2.1.0
       hast-util-from-html: 2.0.3
       hast-util-select: 6.0.3
@@ -5799,13 +5804,13 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@astrojs/vercel@8.0.1(astro@5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))(rollup@4.29.1)':
+  '@astrojs/vercel@8.0.1(astro@5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))(rollup@4.29.1)':
     dependencies:
       '@astrojs/internal-helpers': 0.4.2
       '@vercel/analytics': 1.4.1
       '@vercel/edge': 1.1.4
       '@vercel/nft': 0.27.10(rollup@4.29.1)
-      astro: 5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
+      astro: 5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
       esbuild: 0.24.2
       fast-glob: 3.3.2
     transitivePeerDependencies:
@@ -7130,36 +7135,36 @@ snapshots:
 
   astring@1.9.0: {}
 
-  astro-expressive-code@0.38.3(astro@5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)):
+  astro-expressive-code@0.38.3(astro@5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)):
     dependencies:
-      astro: 5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
+      astro: 5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
       rehype-expressive-code: 0.38.3
 
-  astro-integration-kit@0.17.0(astro@5.0.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)):
+  astro-integration-kit@0.17.0(astro@5.0.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)):
     dependencies:
-      astro: 5.0.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
+      astro: 5.0.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
       pathe: 1.1.2
       recast: 0.23.9
 
-  astro-integration-kit@0.17.0(astro@5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)):
+  astro-integration-kit@0.17.0(astro@5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)):
     dependencies:
-      astro: 5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
+      astro: 5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
       pathe: 1.1.2
       recast: 0.23.9
 
-  astro-integration-kit@0.18.0(astro@5.0.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)):
+  astro-integration-kit@0.18.0(astro@5.0.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)):
     dependencies:
-      astro: 5.0.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
+      astro: 5.0.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
       pathe: 1.1.2
       recast: 0.23.9
 
-  astro-integration-kit@0.18.0(astro@5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)):
+  astro-integration-kit@0.18.0(astro@5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)):
     dependencies:
-      astro: 5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
+      astro: 5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
       pathe: 1.1.2
       recast: 0.23.9
 
-  astro@5.0.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1):
+  astro@5.0.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1):
     dependencies:
       '@astrojs/compiler': 2.10.3
       '@astrojs/internal-helpers': 0.4.2
@@ -7237,7 +7242,7 @@ snapshots:
       - typescript
       - yaml
 
-  astro@5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1):
+  astro@5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1):
     dependencies:
       '@astrojs/compiler': 2.10.3
       '@astrojs/internal-helpers': 0.4.2
@@ -10050,9 +10055,9 @@ snapshots:
 
   stackback@0.0.2: {}
 
-  starlight-links-validator@0.14.1(@astrojs/starlight@0.30.3(astro@5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))):
+  starlight-links-validator@0.14.1(@astrojs/starlight@0.30.3(astro@5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))):
     dependencies:
-      '@astrojs/starlight': 0.30.3(astro@5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
+      '@astrojs/starlight': 0.30.3(astro@5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
       '@types/picomatch': 3.0.1
       github-slugger: 2.0.0
       hast-util-from-html: 2.0.3
@@ -10063,9 +10068,9 @@ snapshots:
       picomatch: 3.0.1
       unist-util-visit: 5.0.0
 
-  starlight-package-managers@0.8.1(@astrojs/starlight@0.30.3(astro@5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))):
+  starlight-package-managers@0.8.1(@astrojs/starlight@0.30.3(astro@5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))):
     dependencies:
-      '@astrojs/starlight': 0.30.3(astro@5.1.1(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
+      '@astrojs/starlight': 0.30.3(astro@5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.2)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
 
   statuses@2.0.1: {}
 

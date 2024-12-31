@@ -17,7 +17,7 @@ function imgUrlFor(config: any): string {
 	);
 	const compressed = deflate(encodedState, { level: 9 });
 	const encoded = fromUint8Array(compressed, true);
-	return `https://mermaid.ink/img/pako:${encoded}?type=png`;
+	return `https://mermaid.ink/img/pako:${encoded}?type=webp`;
 }
 ---
 
@@ -30,6 +30,6 @@ function imgUrlFor(config: any): string {
 <Image
 	class:list={['dark:sl-hidden']}
 	alt={Astro.props.alt || 'Mermaid Diagram'}
-	src={imgUrlFor({ theme: 'forest' })}
+	src={imgUrlFor({ theme: 'default' })}
 	inferSize
 />

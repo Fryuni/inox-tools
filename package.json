@@ -43,6 +43,9 @@
     "overrides": {
       "@croct/sdk": "0.17.0",
       "picomatch": "3.0.1"
+    },
+    "patchedDependencies": {
+      "astro": "patches/astro.patch"
     }
   }
 }

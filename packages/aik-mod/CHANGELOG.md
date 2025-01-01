@@ -1,5 +1,13 @@
 # @inox-tools/aik-mod
 
+## 0.9.1
+
+### Patch Changes
+
+- 0dcdeaa: Bump Astro Integration Kit
+- Updated dependencies [0dcdeaa]
+  - @inox-tools/inline-mod@2.0.2
+
 ## 0.9.0
 
 ### Minor Changes

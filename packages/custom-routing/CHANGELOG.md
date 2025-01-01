@@ -1,5 +1,11 @@
 # @inox-tools/inline-mod
 
+## 1.0.3
+
+### Patch Changes
+
+- 0dcdeaa: Bump Astro Integration Kit
+
 ## 1.0.2
 
 ### Patch Changes

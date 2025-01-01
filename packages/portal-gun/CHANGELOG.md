@@ -1,5 +1,13 @@
 # @inox-tools/portal-gun
 
+## 1.0.2
+
+### Patch Changes
+
+- 0dcdeaa: Bump Astro Integration Kit
+- Updated dependencies [0dcdeaa]
+  - @inox-tools/runtime-logger@0.4.1
+
 ## 1.0.1
 
 ### Patch Changes

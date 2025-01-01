@@ -1,5 +1,13 @@
 # @inox-tools/sitemap-ext
 
+## 0.4.1
+
+### Patch Changes
+
+- 0dcdeaa: Bump Astro Integration Kit
+- Updated dependencies [0dcdeaa]
+  - @inox-tools/aik-route-config@0.8.1
+
 ## 0.4.0
 
 ### Minor Changes

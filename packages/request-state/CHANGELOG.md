@@ -1,5 +1,11 @@
 # @inox-tools/request-state
 
+## 0.3.1
+
+### Patch Changes
+
+- 0dcdeaa: Bump Astro Integration Kit
+
 ## 0.3.0
 
 ### Minor Changes

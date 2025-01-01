@@ -1,5 +1,13 @@
 # @inox-tools/request-nanostores
 
+## 0.2.2
+
+### Patch Changes
+
+- 0dcdeaa: Bump Astro Integration Kit
+- Updated dependencies [0dcdeaa]
+  - @inox-tools/request-state@0.3.1
+
 ## 0.2.1
 
 ### Patch Changes

@@ -54,7 +54,7 @@ inlineModule({
 
 Generates the following module:
 
-```js
+```ts
 const __uniqueSymbol = Symbol('foo');
 const __globalSymbol = Symbol.for('foo');
 
@@ -113,7 +113,7 @@ inlineModule({
 
 Generates:
 
-```js
+```ts
 const __nestedArray_1 = [456];
 
 const __nestedArray = [];
@@ -342,7 +342,7 @@ inlineModule({
 
 Generates:
 
-```js
+```ts
 const __capturedValue = { counter: 0 };
 
 function __f0() {
@@ -388,7 +388,7 @@ inlineModule({
 
 Generates:
 
-```js
+```ts
 import * as __path from 'path';
 import __fs from 'fs';
 import { inspect as __inspect } from 'util';
@@ -418,7 +418,7 @@ inlineModule({
 
 Generates:
 
-```js
+```ts
 import * as __one from 'lib-one';
 import __two from 'lib-two';
 import { three as __three } from 'lib-three';
@@ -449,7 +449,7 @@ inlineModule({
 
 Generates:
 
-```js
+```ts
 const __obj = {};
 
 Object.defineProperty(__obj, 'property', {

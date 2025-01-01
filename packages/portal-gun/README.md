@@ -8,7 +8,7 @@ Transport HTML elements through your page during rendering using Portals.
 
 ## Install
 
-```js
+```sh
 npm i @inox-tools/portal-gun
 ```
 

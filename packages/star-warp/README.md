@@ -10,6 +10,6 @@ See [docs](https://inox-tools.fryuni.dev/star-warp)
 
 ## Install
 
-```js
+```sh
 astro add @inox-tools/star-warp
 ```

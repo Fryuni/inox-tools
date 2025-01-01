@@ -10,6 +10,6 @@ See [docs](https://inox-tools.fryuni.dev/astro-tests).
 
 ## Install
 
-```js
+```sh
 npm install @inox-tools/astro-tests
 ```

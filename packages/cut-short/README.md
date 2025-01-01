@@ -8,7 +8,7 @@ Immediately halt request processing and return custom responses effortlessly.
 
 ## Install
 
-```js
+```sh
 npm i @inox-tools/cut-short
 ```
 

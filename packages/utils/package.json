@@ -34,13 +34,13 @@
     "@types/xast": "^2.0.4",
     "@vitest/coverage-v8": "catalog:",
     "@vitest/ui": "catalog:",
-    "astro": "^5.1.1",
+    "astro": "catalog:",
     "jest-extended": "catalog:",
     "mdast-util-from-markdown": "^2.0.2",
     "tsup": "catalog:",
     "typescript": "catalog:",
     "unist-util-is": "^6.0.0",
-    "vite": "^6.0.6",
+    "vite": "catalog:",
     "vitest": "catalog:"
   }
 }

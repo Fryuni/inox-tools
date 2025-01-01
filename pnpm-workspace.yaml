@@ -37,7 +37,7 @@ catalogs:
     '@astrojs/starlight': ^0.30
   min:
     astro: ^5
-    astro-integration-kit: ~0.17
+    astro-integration-kit: ~0.17 || ~0.18
     vite: ^4 || ^5 || ^6
 packages:
   - turbo

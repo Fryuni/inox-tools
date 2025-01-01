@@ -41,11 +41,11 @@
     "@playwright/test": "catalog:",
     "@types/content-type": "catalog:",
     "@types/node": "catalog:",
-    "astro": "^5.1.1",
+    "astro": "catalog:lax",
     "jest-extended": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:",
-    "vite": "^6.0.6"
+    "vite": "catalog:"
   },
   "peerDependencies": {
     "astro": "catalog:lax"

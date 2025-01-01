@@ -42,6 +42,7 @@
   "pnpm": {
     "overrides": {
       "@croct/sdk": "0.17.0",
+      "vite": "catalog:",
       "picomatch": "3.0.1"
     },
     "patchedDependencies": {

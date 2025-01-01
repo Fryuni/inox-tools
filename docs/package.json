@@ -12,7 +12,6 @@
     "validate": "astro check"
   },
   "dependencies": {
-    "@astrojs/node": "^9.0.0",
     "@astrojs/starlight": "catalog:",
     "@astrojs/vercel": "^8.0.1",
     "@croct/plug": "^0.16.5",

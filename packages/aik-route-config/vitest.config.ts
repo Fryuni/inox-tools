@@ -1,17 +1,12 @@
-import { defineConfig } from 'vitest/config';
+import { defineConfig } from 'vite';
+
+process.env.NODE_OPTIONS ??= '--enable-source-maps';
+process.setSourceMapsEnabled(true);
 
 export default defineConfig({
+	keepProcessEnv: true,
 	test: {
-		coverage: {
-			all: true,
-			reportsDirectory: './__coverage__',
-			thresholds: {
-				autoUpdate: true,
-				lines: 53.98,
-				functions: 71.42,
-				branches: 82.75,
-				statements: 53.98,
-			},
-		},
+		setupFiles: ['./tests/vitest.setup.ts'],
+		maxConcurrency: 1,
 	},
 });

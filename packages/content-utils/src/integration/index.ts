@@ -7,6 +7,7 @@ import { injectorPlugin } from './injectorPlugin.js';
 import { seedCollections, type SeedCollectionsOptions } from './seedCollections.js';
 import { gitBuildPlugin, gitDevPlugin } from './gitPlugin.js';
 import { debug } from '../internal/debug.js';
+import { z } from 'astro/zod';
 
 export type InjectCollectionOptions = {
 	/**
@@ -27,7 +28,21 @@ export type InjectCollectionOptions = {
 export const integration = withApi(
 	defineIntegration({
 		name: '@inox-tools/content-utils',
-		setup: () => {
+		optionsSchema: z
+			.object({
+				onCommit: z
+					.function(
+						z.tuple([
+							z.custom<
+								Parameters<NonNullable<Astro.IntegrationHooks['@it/content:git:commit']>>[0]
+							>(),
+						]),
+						z.custom<Promise<void> | void>()
+					)
+					.optional(),
+			})
+			.default({}),
+		setup: ({ options }) => {
 			debug('Generating empty state');
 			const state = emptyState();
 			const collectionSeedBuffer: SeedCollectionsOptions[] = [];
@@ -98,6 +113,9 @@ export const integration = withApi(
 						for (const seedOptions of collectionSeedBuffer) {
 							seedCollections(state, seedOptions);
 						}
+					},
+					'@it/content:git:commit': async (params) => {
+						return options.onCommit?.(params);
 					},
 				},
 				...api,

@@ -2,7 +2,7 @@ import { spawnSync } from 'node:child_process';
 import { sep, resolve, relative } from 'node:path';
 import { hooks } from '@inox-tools/modular-station/hooks';
 import { getDebug } from '../internal/debug.js';
-import type { GitTrackingInfo } from '@it-astro:content/git';
+import type { GitCommitInfo, GitTrackingInfo } from '@it-astro:content/git';
 
 let contentPath: string = '';
 
@@ -51,7 +51,7 @@ export async function collectGitInfoForContentFiles(): Promise<[string, RawGitTr
 
 	const args = [
 		'log',
-		'--format=t:%ct %an <%ae>|%(trailers:key=co-authored-by,valueonly,separator=|)',
+		'--format=cmt:%H(%h) %ct %an <%ae>|%(trailers:key=co-authored-by,valueonly,separator=|)',
 		'--name-status',
 		'--',
 		contentPath,
@@ -68,36 +68,64 @@ export async function collectGitInfoForContentFiles(): Promise<[string, RawGitTr
 		return [];
 	}
 
-	const parsingState = {
-		date: 0,
-		author: <GitAuthor>{ name: '', email: '' },
-		coAuthors: <GitAuthor[]>[],
+	let skipping = false;
+	const parsingState: GitCommitInfo = {
+		hash: '',
+		shortHash: '',
+		secondsSinceEpoch: 0,
+		author: { name: '', email: '' },
+		coAuthors: [],
 	};
 
 	const fileInfos = new Map<string, RawGitTrackingInfo>();
 
 	for (const logLine of gitLog.stdout.split('\n')) {
-		if (logLine.startsWith('t:')) {
-			// t:<seconds since epoch> <author name> <author email>|<co-authors>
-			const firstSpace = logLine.indexOf(' ');
-			parsingState.date = Number.parseInt(logLine.slice(2, firstSpace)) * 1000;
+		if (logLine.startsWith('cmt:')) {
+			// New commit, stop skipping
+			skipping = false;
 
-			const authors = logLine
-				.slice(firstSpace + 1)
-				.replace(/\|$/, '')
-				.split('|')
-				.map((author) => {
-					const [name, email] = author.split('<');
-					return {
-						name: name.trim(),
-						email: email.slice(0, -1),
-					};
-				});
-			parsingState.author = authors[0];
-			parsingState.coAuthors = authors.slice(1);
+			const headerLineMatch = logLine.match(
+				/^cmt:(?<hash>[a-f0-9]+)\((?<shortHash>[a-f0-9]+)\) (?<epoch>\d+) (?<authorName>[^<]+) <(?<authorEmail>[^>]+)>\|(?<coAuthors>.*?)$/
+			);
+			if (!headerLineMatch) {
+				// Skip data from unparseable commit
+				skipping = true;
+				continue;
+			}
+
+			const groups = headerLineMatch.groups!;
+
+			parsingState.hash = groups.hash;
+			parsingState.shortHash = groups.shortHash;
+			parsingState.secondsSinceEpoch = Number.parseInt(groups.epoch);
+			parsingState.author.name = groups.authorName;
+			parsingState.author.email = groups.authorEmail;
+			parsingState.coAuthors = groups.coAuthors.split('|').map((author) => {
+				const [name, email] = author.split('<');
+				return {
+					name: name.trim(),
+					email: email.slice(0, -1),
+				};
+			});
+
+			debug('Invoking @it/content:git:commit hook', {
+				trackedFiles: Array.from(fileInfos.keys()),
+			});
+			await hooks.run('@it/content:git:commit', (logger) => [
+				{
+					logger,
+					commitInfo: parsingState,
+					drop: () => {
+						skipping = true;
+					},
+				},
+			]);
 
 			continue;
 		}
+
+		// Skip all entries for a skipped commit
+		if (skipping) continue;
 
 		// TODO: Track git time across renames and moves
 
@@ -116,16 +144,16 @@ export async function collectGitInfoForContentFiles(): Promise<[string, RawGitTr
 
 		if (fileInfo === undefined) {
 			fileInfos.set(fileName, {
-				earliest: parsingState.date,
-				latest: parsingState.date,
+				earliest: parsingState.secondsSinceEpoch,
+				latest: parsingState.secondsSinceEpoch,
 				authors: [parsingState.author],
 				coAuthors: [...parsingState.coAuthors],
 			});
 			continue;
 		}
 
-		fileInfo.earliest = Math.min(fileInfo.earliest, parsingState.date);
-		fileInfo.latest = Math.max(fileInfo.latest, parsingState.date);
+		fileInfo.earliest = Math.min(fileInfo.earliest, parsingState.secondsSinceEpoch);
+		fileInfo.latest = Math.max(fileInfo.latest, parsingState.secondsSinceEpoch);
 	}
 
 	debug('Invoking @it/content:git:listed hook', {
@@ -154,8 +182,8 @@ export async function collectGitInfoForContentFiles(): Promise<[string, RawGitTr
 		const name = contentFilePath.replace(sep, ':');
 
 		const fileInfo: GitTrackingInfo = {
-			earliest: new Date(rawFileInfo.earliest),
-			latest: new Date(rawFileInfo.latest),
+			earliest: new Date(rawFileInfo.earliest * 1000),
+			latest: new Date(rawFileInfo.latest * 1000),
 			authors: rawFileInfo.authors,
 			coAuthors: rawFileInfo.coAuthors,
 		};

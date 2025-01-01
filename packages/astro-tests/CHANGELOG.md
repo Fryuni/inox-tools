@@ -1,5 +1,11 @@
 # @inox-tools/astro-tests
 
+## 0.2.2
+
+### Patch Changes
+
+- 0dcdeaa: Bump Astro Integration Kit
+
 ## 0.2.1
 
 ### Patch Changes

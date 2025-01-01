@@ -1,5 +1,11 @@
 # @inox-tools/star-warp
 
+## 0.2.1
+
+### Patch Changes
+
+- 0dcdeaa: Bump Astro Integration Kit
+
 ## 0.2.0
 
 ### Minor Changes

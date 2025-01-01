@@ -1,5 +1,11 @@
 # @inox-tools/aik-route-config
 
+## 0.8.1
+
+### Patch Changes
+
+- 0dcdeaa: Bump Astro Integration Kit
+
 ## 0.8.0
 
 ### Minor Changes

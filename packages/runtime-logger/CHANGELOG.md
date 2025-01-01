@@ -1,5 +1,13 @@
 # @inox-tools/runtime-logger
 
+## 0.4.1
+
+### Patch Changes
+
+- 0dcdeaa: Bump Astro Integration Kit
+- Updated dependencies [0dcdeaa]
+  - @inox-tools/modular-station@0.4.1
+
 ## 0.4.0
 
 ### Minor Changes

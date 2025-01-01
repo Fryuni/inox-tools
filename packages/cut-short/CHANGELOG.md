@@ -1,5 +1,11 @@
 # @inox-tools/cut-short
 
+## 1.0.2
+
+### Patch Changes
+
+- 0dcdeaa: Bump Astro Integration Kit
+
 ## 1.0.1
 
 ### Patch Changes

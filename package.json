@@ -42,6 +42,8 @@
   "pnpm": {
     "overrides": {
       "@croct/sdk": "0.17.0",
+      "astro": "catalog:lax",
+      "vite": "catalog:min",
       "picomatch": "3.0.1"
     },
     "patchedDependencies": {

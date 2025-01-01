@@ -19,7 +19,7 @@
     "@inox-tools/star-warp": "workspace:^",
     "@inox-tools/utils": "workspace:^",
     "@vercel/analytics": "^1.4.1",
-    "astro": "catalog:",
+    "astro": "^5.1.1",
     "sharp": "^0.33.5",
     "starlight-links-validator": "^0.14.1",
     "starlight-package-managers": "^0.8.1"

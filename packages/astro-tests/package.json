@@ -42,7 +42,7 @@
     "@types/node": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:",
-    "vite": "catalog:",
+    "vite": "^6.0.6",
     "vitest": "catalog:"
   }
 }

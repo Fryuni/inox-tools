@@ -41,10 +41,10 @@
     "@types/debug": "catalog:",
     "@types/node": "catalog:",
     "@vitest/coverage-v8": "catalog:",
-    "astro": "catalog:min",
+    "astro": "^5.1.1",
     "tsup": "catalog:",
     "typescript": "catalog:",
-    "vite": "catalog:",
+    "vite": "^6.0.6",
     "vitest": "catalog:"
   },
   "peerDependencies": {

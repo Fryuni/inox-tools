@@ -1,7 +1,7 @@
 {
   description = "A collection of oxygen-free tools for astronauts.";
   inputs = {
-    nixpkgs.url = "github:Fryuni/nixpkgs/master";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
   };
 

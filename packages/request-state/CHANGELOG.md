@@ -1,5 +1,12 @@
 # @inox-tools/request-state
 
+## 0.3.2
+
+### Patch Changes
+
+- Updated dependencies [094efca]
+  - @inox-tools/utils@0.3.1
+
 ## 0.3.1
 
 ### Patch Changes

@@ -1,5 +1,12 @@
 # @inox-tools/aik-route-config
 
+## 0.8.2
+
+### Patch Changes
+
+- Updated dependencies [094efca]
+  - @inox-tools/utils@0.3.1
+
 ## 0.8.1
 
 ### Patch Changes

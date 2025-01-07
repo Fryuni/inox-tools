@@ -1,6 +1,6 @@
 {
   "name": "@inox-tools/inline-mod",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "Define a virtual module inline with any reference to buildtime values",
   "keywords": [
     "vite-plugin"

@@ -2,4 +2,6 @@
 '@inox-tools/astro-when': patch
 ---
 
-Fixes static build output (without an adapter) not being detected.
+Fixes projects with `output: 'static'` being flagged as `StaticOutput` even when an adapter is present.
+
+Previously, using this was the explicit `output: 'hybrid'`, now this mode is set by the presence of an adapter.

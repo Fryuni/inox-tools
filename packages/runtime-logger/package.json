@@ -1,11 +1,12 @@
 {
   "name": "@inox-tools/runtime-logger",
-  "version": "0.3.1",
+  "version": "0.4.1",
   "description": "Expose Astro Integration Logger at runtime for consistent output",
   "keywords": [
     "astro-integration",
     "withastro",
-    "astro"
+    "astro",
+    "utils"
   ],
   "license": "MIT",
   "author": "Luiz Ferraz <luiz@lferraz.com>",
@@ -37,7 +38,7 @@
     "@types/node": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "@vitest/ui": "catalog:",
-    "astro": "catalog:",
+    "astro": "catalog:lax",
     "jest-extended": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:",

@@ -8,7 +8,7 @@ Expose Astro Integration Logger at runtime for consistent output
 
 ## Install
 
-```js
+```sh
 npm i @inox-tools/runtime-logger
 ```
 

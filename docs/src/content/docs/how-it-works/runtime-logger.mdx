@@ -1,0 +1,425 @@
+---
+title: How Runtime Logger works?
+description: A detailed explanation of how Runtime Logger is implemented
+packageName: '@inox-tools/runtime-logger'
+---
+
+import Mermaid from '@/components/Mermaid.astro';
+import { Steps } from '@astrojs/starlight/components';
+
+:::note
+This page is a deep dive into the implementation details and decisions of the Runtime Logger package. You should have read [what _is_ the package](/runtime-logger) before reading this page as it assumes that you already know what the package is for and how it can be used from a consumers perspective.
+:::
+
+Astro Runtime Logger provides logger objects to the runtime in different ways for different purposes. On a server while rendering on-demand routes it provides a stub implementation of the [`AstroIntegrationLogger`] defined by Astro. During dev and during prerendering it provides the actual implementation from Astro, but scoped to either the integration or the file.
+
+Astro's logger includes a `.fork()` method that allows one logger to be created from another. This means that for the on-demand pages on the server we only need to get one logger there and then we can construct any other by forking it.
+
+During prerendering and dev we can't do that because we provide an extra guarantee for integrations: the logger object they receive will be _the same_ object that is passed to the integration hooks. Not only that, we want the same object from the integration because the official implementation from Astro provides extra features like coloring since it can assume that the code is running on Node and on a terminal.
+
+Additionally, we provice the extra convenience that projects using this package as an integration will receive a different logger for each file that imports it so they know where their logs are coming from.
+
+Overall, there are a few challenges that need to be solved to create this package:
+
+- [Getting a logger implementation to the runtime for on-demand routes](#runtime-logger-for-on-demand-routes)
+- [Transfering logger instances from integration to rendering modules during prerendering and dev](#transfering-logger-instances-during-build-and-dev)
+- [Providing an API for integrations to use that expose their own logger for their modules](#api-for-integrations)
+- [Making an exported constant be different depending on which file is importing it](#automatic-logger-selection)
+
+We'll go through each one of them in turn and the reasoning behind them.
+
+## Structure overview
+
+To achieve this, this package has:
+- An internal integration that is not exposed and defines an API using [Modular Station]
+- A public integration that is exposed for projects
+- An [AIK Utility] for integrations to use loggers on their own modules
+- A Vite plugin for the project integration
+- 2 Vite plugins for the internal integration during build
+- A Vite plugin for the internal integration during development
+
+The structure of this package is as follows:
+
+<Mermaid
+	code={`
+flowchart TD
+    U[AIK Utility for integrations] -->|Uses| IIA
+    PI[Project Integration] -->|Uses| IIA(Internal Integration API)
+    PI -->|Adds| PP(Project plugin)
+
+    IIA --> IIA_IBY{Build}
+    IIA --> IIA_IBN{Not Build}
+    
+    IIA_IBY -->|Adds| ILP(Internal logger plugin)
+    ILP -->|Loads| ILS(Logger stub implementation)
+    
+    IIA_IBY -->|Adds| IBP(Logger build plugin)
+    IBP -->|Defines per module name| ILEB(Logger instance and export)
+
+    LM[@it-astro:logger:*] --- ILEB
+    LM[@it-astro:logger:*] --- ILED
+
+    PP -->|Defines| PPM[@it-astro:logger]
+    PPM -->|Imports __project and forks per importer| LM
+
+    IIA_IBN -->|Adds| IDP(Logger dev plugin)
+    IDP -->|Defines per importer| ILED(Logger transfer module)
+
+    ILEB --x|Tries to read across scopes| BL
+    ILEB -->|Forks stub logger| ILS
+
+    ILED -->|Read across scopes| BL(Official Astro Logger from build time)
+`}
+/>
+
+## Runtime logger for on-demand routes
+
+To get a logger at runtime we can either transfer the logger instance from build time to render runtime or construct something new at runtime. We use both, transfering when possible and constructing new instances otherwise.
+
+For the final build output, the logger has to be entirely independent since there is no build scope to transfer from. To achieve this this package includes a copy the implementation of Astro's own logger and adds it to the bundle. The implementation is slightly modified so it doesn't rely on things that are not supposed to be used on the deployed server, like terminal control characters and Node-only modules. Because Astro's implementation is supposed to be used only during build, it can assume those and be fancier (colors and things), but we don't want to limit your project deployment options.
+
+This runtime implementation is provided by the [internal logger plugin] that loads the [Logger stub implementation][logger stub] as a virtual module:
+
+```ts title="src/internalPlugin.ts" wrap
+import type { Plugin } from 'vite';
+import { readFile } from 'fs/promises';
+
+export const INTERNAL_MODULE = '@it-astro:logger-internal';
+const RESOLVED_INTERNAL_MODULE = '\x00@it-astro:logger-internal';
+
+const templatePath = new URL('../template/loggerStub.mjs', import.meta.url);
+
+export const loggerInternalsPlugin: Plugin = {
+	name: '@inox-tools/runtime-logger/internal',
+	resolveId(id) {
+		if (id === INTERNAL_MODULE) {
+			return RESOLVED_INTERNAL_MODULE;
+		}
+	},
+	load(id) {
+		if (id !== RESOLVED_INTERNAL_MODULE) return;
+
+		return readFile(templatePath, 'utf-8');
+	},
+};
+```
+
+The stub implementation is entirely unexported. Only a single instance is exported at the very end:
+
+```js title="template/loggerStub.mjs" wrap
+// ... stub implementation ...
+
+export const baseLogger = new AstroIntegrationLogger(
+	{
+		level: 'warn',
+		dest: consoleLogDestination,
+	},
+	''
+);
+```
+
+This `baseLogger` constant is never used directly, that is why it has an empty string as its name. It will be forked for each logger instance needed at runtime. Notably, it has the same default level as Astro (`warn`), but that is replaced with the value from build time later on.
+
+## Transfering logger instances during build and dev
+
+While running `astro build` or `astro dev`, Astro already provide it's own implementation of the loggers. That implementation has more features due to the extra assumptions it can make about the environment it is running on. In those cases we transfer the implementation from the scope of the integration to the rendering code.
+
+To do that we use a little tricky that arises from how Astro does the prerendering. Astro generates the final server bundle containing the code to render _all_ routes, not just the on-demand routes. It then imports that generated bundle in the same V8 isolate that is just generated the bundle, where all the build and integration logic is running, and calls the rendering code with a fake request representing each page that should be prerendered. The output HTML is saved and then served in front of the renderer code so it is not re-rendered at runtime.
+
+What that means to us is that the global scope (the value of `globalThis`) for integrations and the render code is the same during dev and prerendering. We can use that value to send references in both directions.
+
+### Dev server
+
+To perform this transfer when running `astro dev`, we [inject a Vite plugin][dev logger plugin] that does the following:
+
+<Steps>
+
+1. Stores a mapping of loggers by import names in the global scope;
+
+   The map is stored in the global scope under a global symbol (`Symbol.for`) created using the plugin name. This avoids collision with other libraries using the global scope for their own reasons.
+2. Resolves a virtual module ID for each import of a virtual module with a naming matching a logger import name;
+3. Loads a source code for a resolved virtual module if the resolved module ID matches a logger import name;
+3. In the source code for the virtual module, reads the appropriate logger from the map stored in the global scope.
+
+</Steps>
+
+```ts title="src/devLoggerPlugin.ts" {"1":10} {"2":15-20} {"3":24-26} {"4":29} wrap
+import type { Plugin } from 'vite';
+import type { AstroIntegrationLogger } from 'astro';
+
+const MODULE_PREFIX = '@it-astro:logger:';
+const RESOLVED_MODULE_PREFIX = '\x00@it-astro:logger:';
+
+const pluginName = '@inox-tools/runtime-logger/integrations';
+
+export const devLoggerPlugin = (loggers: Map<string, AstroIntegrationLogger>): Plugin => {
+	(globalThis as any)[Symbol.for(pluginName)] = loggers;
+
+	return {
+		name: pluginName,
+		resolveId(id) {
+			if (id.startsWith(MODULE_PREFIX)) {
+				const loggerName = id.slice(MODULE_PREFIX.length);
+				if (loggers.has(loggerName)) {
+					return `${RESOLVED_MODULE_PREFIX}${loggerName}`;
+				}
+			}
+			return null;
+		},
+		load(id) {
+			if (!id.startsWith(RESOLVED_MODULE_PREFIX)) return;
+			const loggerName = id.slice(RESOLVED_MODULE_PREFIX.length);
+			if (!loggers.has(loggerName)) return;
+
+			return `
+  const logger = globalThis[Symbol.for(${JSON.stringify(pluginName)})].get(${JSON.stringify(loggerName)});
+
+  export { logger };
+`;
+		},
+	};
+};
+```
+
+### Build prerendering
+
+When running `astro build` we can use the same idea, but there is a catch: the code used to prerender is the exact same code used for on-demand rendering, it is bundled only once. For that reason, we cannot use the same plugin as for `astro dev` that just does the transfer assuming the global scope will be populated. Instead, we need to:
+
+<Steps>
+
+1. Look for the mapping in the global scope to transfer;
+2. If it is there, use it directly;
+3. Otherwise, construct a new one by forking the `baseLogger` exported from the stub implementation [explained above](#runtime-logger-for-on-demand-routes) and configuring it with the same options as the logger had during build.
+
+</Steps>
+
+```ts title="src/buildLoggerPlugin.ts" {"1":12} {"2":14} {"3":16-18} wrap
+// ... same
+export const buildLoggerPlugin = (loggers: Map<string, AstroIntegrationLogger>): Plugin => {
+  // ... same
+	return {
+		// ... same
+		load(id) {
+			// ... same
+
+			return `
+  import { baseLogger } from ${JSON.stringify(INTERNAL_MODULE)};
+
+  const buildLogger = globalThis[Symbol.for(${JSON.stringify(pluginName)})]?.get(${JSON.stringify(loggerName)});
+
+  const logger = buildLogger ?? baseLogger.fork(${JSON.stringify(logger.label)});
+
+  if (buildLogger === undefined) {
+	  logger.options.level = ${JSON.stringify(logger.options.level)};
+  }
+
+  export { logger };
+`;
+		},
+	};
+};
+```
+
+## API for Integrations
+
+Now that we have a way to both reconstruct and transfer loggers into runtime, we need a way to populate that `loggers` mapping that is stored in the global scope.
+
+To do this we wrap those plugins and the conditions for when to use which in an internal integration. This integration is not exported for consumers of the package. This integration exposes an inter-integration APIs using [Modular Station] which is then wrapped on an [AIK Utility] that is exported. The inter-integration API can't be used directly since the integration is not exported.
+
+<Steps>
+
+1. Define an Astro Integration that exposes an API using `withApi` from [Modular Station];
+2. Instantiate the logger mapping that will be sent to the plugins;
+3. Construct the appropriate plugins based on which command is being executed;
+4. Define the API for registering loggers into the mapping;
+
+</Steps>
+
+```ts title="src/index.ts" wrap {"1":8} {"2":9} {"3":15-31} {"4":35-37}
+import { withApi } from '@inox-tools/modular-station';
+import { addVitePlugin, defineIntegration } from 'astro-integration-kit';
+import { buildLoggerPlugin } from './buildLoggerPlugin.js';
+import { loggerInternalsPlugin } from './internalPlugin.js';
+import { devLoggerPlugin } from './devLoggerPlugin.js';
+import type { AstroIntegrationLogger } from 'astro';
+
+ const internalIntegration = withApi(() => {
+	const loggers = new Map<string, AstroIntegrationLogger>();
+
+	return {
+		name: '@inox-tools/runtime-logger/internal',
+		hooks: {
+			'astro:config:setup': (params) => {
+				switch (params.command) {
+					case 'build': {
+						addVitePlugin(params, {
+							plugin: loggerInternalsPlugin,
+							warnDuplicated: true,
+						});
+						addVitePlugin(params, {
+							plugin: buildLoggerPlugin(loggers),
+							warnDuplicated: true,
+						});
+					}
+					case 'dev': {
+						addVitePlugin(params, {
+							plugin: devLoggerPlugin(loggers),
+							warnDuplicated: true,
+						});
+					}
+				}
+			},
+		},
+		addLogger(name: string, logger: AstroIntegrationLogger) {
+			loggers.set(name, logger);
+		},
+	};
+});
+```
+
+<Steps>
+
+5. Define an AIK Utility for the `astro:config:setup` hook that receives a name;
+
+    This `name` parameter is what will be used to import the logger, as seen on the [previous section](#transfering-logger-instances-during-build-and-dev).
+
+6. Load the API from the internal integration;
+
+    This automatically installs the internal integration on the first use.
+
+7. Adds the logger of the calling integration (provided by Astro as a parameter to the `astro:config:setup`) under the given name;
+
+</Steps>
+
+```ts title="src/index.ts" wrap {"5":5-14} {"6":15} {"7":17}
+import { defineUtility } from 'astro-integration-kit';
+import { z } from 'astro/zod';
+import type { HookParameters } from 'astro';
+
+ const schema = z
+	.object({
+		name: z.string(),
+	})
+	.strict();
+
+export const runtimeLogger = defineUtility('astro:config:setup')((
+	params: HookParameters<'astro:config:setup'>,
+	options: z.infer<typeof schema>
+) => {
+	const api = internalIntegration.fromSetup(params);
+
+	api.addLogger(options.name, params.logger);
+});
+```
+
+With everything up to here, we have implemented the behavior available for integration authors described in the ["For integrations" section](/runtime-logger#for-integrations) of this package main page.
+
+## Automatic logger selection
+
+With the above API in place, we can now implement the loggers for project files. These loggers don't come from an integration one-to-one like the what we described before. But you could call `.fork()` on a logger from an integration to get a custom logger. That would be fine, but we provide an additional feature for those using Runtime Logger directly in their projects. You can import a logger from one single place (`@it-astro:logger`) and it will automatically be forked with the name of the file you are importing from.
+
+This feature is implemented using yet another Vite plugin that:
+
+<Steps>
+
+1. Receive a root path so we don't include big absolute paths to files;
+2. Resolve the `@it-astro:logger` module ID to a different value depending on which module is importing it;
+
+    This `importer` value is provided by Vite on the `resolveId` and only there. So we need to encode that in the resolved ID:
+
+    <Steps>
+    
+    1. Compute the relative path between the given root and the importer;
+    2. Add the relative path to an `URLSearchParams` object;
+    3. Include the string representation of the `URLSearchParams` object in the resolved ID.
+    
+    </Steps>
+
+3. Load the module source code for resolved IDs generated by the plugin;
+
+    This includes decoding `importer` from the search params added on `resolveId`.
+4. Import the integration logger named `__project` that should be provided by the internal integration define before;
+5. Fork that logger with the name of the importer module.
+
+</Steps>
+
+```ts title="src/projectLoggerPlugin.ts" wrap {"1":7} {"2":10} {"2.1":13} {"2.2":15} {"2.3":18} {"3":22-24} {"4":27} {"5":29}
+import { relative } from 'path';
+import type { Plugin } from 'vite';
+
+const VIRTUAL_MODULE = '@it-astro:logger';
+const RESOLVED_VIRTUAL_MODULE = '\x00@it-astro:logger?';
+
+export const projectLoggerPlugin = (rootPath: string): Plugin => ({
+	name: '@inox-tools/runtime-logger/project',
+	resolveId(id, importer) {
+		if (id === VIRTUAL_MODULE) {
+			const params = new URLSearchParams();
+			if (importer !== undefined) {
+				const loggerName = relative(rootPath, importer);
+
+				params.set('logger', loggerName);
+			}
+
+			return RESOLVED_VIRTUAL_MODULE + params.toString();
+		}
+	},
+	load(id) {
+		if (!id.startsWith(RESOLVED_VIRTUAL_MODULE)) return;
+		const params = new URLSearchParams(id.slice(RESOLVED_VIRTUAL_MODULE.length));
+		const loggerName = params.get('logger') ?? 'default';
+
+		return `
+import { logger as baseLogger } from '@it-astro:logger:__project';
+
+export const logger = baseLogger.fork(${JSON.stringify(loggerName)});
+`;
+	},
+});
+```
+
+The last piece needed is the public integration that users can use on their projects directly to have this functionality. It is also the integration that will be wired in the Astro config by the `astro add` command.
+
+<Steps>
+
+1. It is exported as the default export from the index file of the integration to match what is expected by `astro add`;
+2. Uses the utility defined before to register its own logger under the `__project` name;
+3. Adds a the project logger plugin we just created to resolve the loggers per file using the project `srcDir` as a base.
+
+</Steps>
+
+```ts title="src/index.ts" wrap {"1":5} {"2":10} {"3":13-15}
+import { addVitePlugin, defineIntegration } from 'astro-integration-kit';
+import { projectLoggerPlugin } from './projectLoggerPlugin.js';
+import { fileURLToPath } from 'url';
+
+export default defineIntegration({
+	name: '@inox-tools/runtime-logger',
+	setup: () => ({
+		hooks: {
+			'astro:config:setup': async (params) => {
+				runtimeLogger(params, { name: '__project' });
+
+				addVitePlugin(params, {
+					plugin: projectLoggerPlugin(
+						fileURLToPath(params.config.srcDir)
+					),
+					warnDuplicated: true,
+				});
+			},
+		},
+	}),
+});
+```
+
+That's it! We have implemented the behavior described in the ["For projects" section](/runtime-logger#for-projects) of this package main page.
+
+This is the entire implementation of the Runtime Logger package. The source code is available on [GitHub](https://github.com/Fryuni/inox-tools/blob/main/packages/runtime-logger) under the MIT license.
+
+
+[`AstroIntegrationLogger`]: https://docs.astro.build/en/reference/integrations-reference/#astrointegrationlogger
+[Modular Station]: /modular-station/api
+[AIK Utility]: https://astro-integration-kit.netlify.app/core/define-utility/
+[internal logger plugin]: https://github.com/Fryuni/inox-tools/blob/main/packages/runtime-logger/src/internalPlugin.ts
+[logger stub]: https://github.com/Fryuni/inox-tools/blob/main/packages/runtime-logger/template/loggerStub.mjs
+[dev logger plugin]: https://github.com/Fryuni/inox-tools/blob/main/packages/runtime-logger/src/devLoggerPlugin.ts

@@ -1,13 +1,14 @@
 {
   "name": "@inox-tools/content-utils",
-  "version": "0.7.0",
+  "version": "0.8.1",
   "description": "Utilities to work with content collections on an Astro project from an integration or library.",
   "keywords": [
     "lifecycle",
     "astro-integration",
     "astro",
     "withastro",
-    "content-collection"
+    "content-collection",
+    "utils"
   ],
   "license": "MIT",
   "author": "Luiz Ferraz <luiz@lferraz.com>",
@@ -44,7 +45,7 @@
   "devDependencies": {
     "@types/debug": "catalog:",
     "@types/node": "catalog:",
-    "astro": "catalog:",
+    "astro": "catalog:min",
     "tsup": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:"

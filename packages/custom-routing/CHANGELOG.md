@@ -1,5 +1,41 @@
 # @inox-tools/inline-mod
 
+## 1.0.3
+
+### Patch Changes
+
+- 0dcdeaa: Bump Astro Integration Kit
+
+## 1.0.2
+
+### Patch Changes
+
+- f2e76e2: Refactor internally to use new Inox Tools template
+
+## 1.0.1
+
+### Patch Changes
+
+- Minimal bump to sync inter-dependencies to Astro 5 and Vite 6
+
+## 1.0.0
+
+### Major Changes
+
+- 21e0744: Bump support to Astro 5
+
+## 1.0.0-beta.0
+
+### Major Changes
+
+- 77f8b1a: Bump support to Astro 5
+
+## 0.4.1
+
+### Patch Changes
+
+- 8f04995: Add new Astro keywords
+
 ## 0.4.0
 
 ### Minor Changes

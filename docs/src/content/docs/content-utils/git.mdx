@@ -2,9 +2,6 @@
 title: Git Info
 packageName: '@inox-tools/content-utils'
 description: Get creation and update time for your content from your git history.
-sidebar:
-  badge:
-    text: Updated
 ---
 
 import { Steps } from '@astrojs/starlight/components';
@@ -15,14 +12,11 @@ Git is only necessary during build, so you can deploy your site anywhere. Even o
 
 ## How to use
 
-import { PackageManagers } from 'starlight-package-managers';
+import InstallCmd from '@/components/InstallCmd.astro';
 
 <Steps>
 
-1. Install `@inox-tools/content-utils`:
-
-   <PackageManagers type="exec" pkg="astro" args="add @inox-tools/content-utils" />
-
+1. <InstallCmd inSteps />
 2. Import the time getter you want from `@it-astro:content/git`:
 
    ```astro title="src/pages/blog/[...slug].astro"

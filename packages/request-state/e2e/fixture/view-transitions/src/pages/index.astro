@@ -1,0 +1,29 @@
+---
+import { ViewTransitions } from 'astro:transitions';
+import { setState } from '@it-astro:state';
+
+const name = Astro.url.searchParams.get('name');
+
+setState('name', name);
+---
+
+<html>
+	<head>
+		<title>Basic example</title>
+		<ViewTransitions />
+	</head>
+	<body>
+		<p>Hello, <span id="name"></span></p>
+		<a href="/?name=John">Greet John</a>
+		<script>
+			import { getState } from '@it-astro:state';
+
+			document.addEventListener('astro:page-load', () => {
+				const name = getState('name');
+				if (typeof name === 'string') {
+					document.querySelector('#name')!.textContent = name;
+				}
+			});
+		</script>
+	</body>
+</html>

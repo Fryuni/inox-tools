@@ -1,0 +1,30 @@
+---
+import { Image } from 'astro:assets';
+import lightBadge from '../img/Partner-badge-light-mode.png';
+import darkBadge from '../img/Partner-badge-dark-mode.png';
+---
+
+<center>
+	<a class="croct-badge" target="_blank" href="https://croct.com">
+		<Image class:list={['light:sl-hidden']} src={darkBadge} alt="Croct Partner" />
+		<Image class:list={['dark:sl-hidden']} src={lightBadge} alt="Croct Partner" />
+	</a>
+</center>
+
+<style>
+	img {
+		width: 100%;
+		height: auto;
+	}
+</style>
+
+<script>
+	import croct from '@/utils/croctClient';
+
+	const croctBadge = document.querySelector<HTMLAnchorElement>('.croct-badge')!;
+
+	croctBadge.addEventListener('click', () => {
+		croct.track('linkOpened', { link: croctBadge.href });
+		croct.track('goalCompleted', { goalId: 'clickPartnerBadge' });
+	});
+</script>

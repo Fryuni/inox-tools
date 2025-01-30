@@ -6,7 +6,7 @@ export const prerender = false;
 export function cookieOptions(url: URL): AstroCookieSetOptions {
 	return {
 		path: '/',
-		domain: url.host,
+		domain: url.hostname,
 		httpOnly: false,
 		secure: url.protocol === 'https:',
 		sameSite: 'strict',

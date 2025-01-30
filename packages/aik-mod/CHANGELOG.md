@@ -1,5 +1,57 @@
 # @inox-tools/aik-mod
 
+## 0.9.1
+
+### Patch Changes
+
+- 0dcdeaa: Bump Astro Integration Kit
+- Updated dependencies [0dcdeaa]
+  - @inox-tools/inline-mod@2.0.2
+
+## 0.9.0
+
+### Minor Changes
+
+- Minimal bump to sync inter-dependencies to Astro 5 and Vite 6
+
+### Patch Changes
+
+- Updated dependencies
+  - @inox-tools/inline-mod@2.0.1
+
+## 0.8.5
+
+### Patch Changes
+
+- Updated dependencies [21e0744]
+  - @inox-tools/inline-mod@2.0.0
+
+## 0.8.5
+
+### Patch Changes
+
+- Updated dependencies [aa73961]
+  - @inox-tools/inline-mod@1.5.3
+
+## 0.8.5-beta.0
+
+### Patch Changes
+
+- Updated dependencies [b4843b9]
+  - @inox-tools/inline-mod@2.0.0-beta.0
+
+## 0.8.4
+
+### Patch Changes
+
+- @inox-tools/inline-mod@1.5.2
+
+## 0.8.3
+
+### Patch Changes
+
+- @inox-tools/inline-mod@1.5.1
+
 ## 0.8.2
 
 ### Patch Changes

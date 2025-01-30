@@ -16,6 +16,18 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    {{#if hasRuntime}}
+    },
+    "./runtime/*": {
+      "types": "./dist/runtime/index.d.ts",
+      "default": "./dist/runtime/index.js"
+    {{/if}}
+    {{#if hasLib}}
+    },
+    "./*": {
+      "types": "./dist/lib/index.d.ts",
+      "default": "./dist/lib/index.js"
+    {{/if}}
     }
   },
   "files": [
@@ -27,8 +39,8 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "prepublish": "pnpm run build",
-    "test": "vitest run --coverage",
-    "test:dev": "vitest --coverage.enabled=true"
+    "test": "vitest run",
+    "test:dev": "vitest"
   },
   "dependencies": {
     "@inox-tools/utils": "workspace:^",
@@ -36,8 +48,8 @@
     "debug": "catalog:"
   },
   "devDependencies": {
+    "@inox-tools/astro-tests": "workspace:",
     "@types/node": "catalog:",
-    "@vitest/coverage-v8": "catalog:",
     "@vitest/ui": "catalog:",
     "jest-extended": "catalog:",
     "astro": "catalog:",

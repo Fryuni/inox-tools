@@ -1,8 +1,20 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
-import vercel from '@astrojs/vercel/serverless';
+import type { StarlightConfig } from '@astrojs/starlight/types';
+import vercel from '@astrojs/vercel';
 import starWarp from '@inox-tools/star-warp';
 import starlightLinksValidator from 'starlight-links-validator';
+
+const badge = {
+	new: {
+		text: 'NEW',
+		variant: 'success',
+	},
+	updated: {
+		text: 'UPDATED',
+		variant: 'default',
+	},
+} satisfies Record<string, NonNullable<NonNullable<StarlightConfig['sidebar']>[number]['badge']>>;
 
 process.env.ASTRO_PROJECT_ROOT = new URL('../', import.meta.url).toString();
 
@@ -13,7 +25,6 @@ const SITE =
 
 // https://astro.build/config
 export default defineConfig({
-	output: 'hybrid',
 	adapter: vercel({
 		skewProtection: true,
 	}),
@@ -31,6 +42,8 @@ export default defineConfig({
 			components: {
 				Head: './src/components/Head.astro',
 				PageTitle: './src/components/PageTitle.astro',
+				Sidebar: './src/components/Sidebar.astro',
+				MarkdownContent: './src/components/MarkdownContent.astro',
 			},
 			sidebar: [
 				{
@@ -60,39 +73,53 @@ export default defineConfig({
 						{
 							label: 'Request State',
 							link: '/request-state',
-							badge: {
-								text: 'NEW',
-								variant: 'success',
-							},
 						},
 						{
 							label: 'Request Nanostores',
 							link: '/request-nanostores',
-							badge: {
-								text: 'NEW',
-								variant: 'success',
+						},
+						{
+							label: 'Cut Short',
+							link: '/cut-short',
+						},
+						{
+							label: 'Portal Gun',
+							link: '/portal-gun',
+						},
+						{
+							label: 'Content Utilities',
+							collapsed: false,
+							autogenerate: {
+								directory: 'content-utils',
 							},
 						},
 					],
 				},
 				{
-					label: 'Modular Station',
+					label: 'Tools for Authors',
 					collapsed: false,
-					autogenerate: {
-						directory: 'modular-station',
-					},
-				},
-				{
-					label: 'Content Utilities',
-					collapsed: false,
-					autogenerate: {
-						directory: 'content-utils',
-					},
-				},
-				{
-					label: 'Inline Module',
-					collapsed: false,
-					autogenerate: { directory: 'inline-mod' },
+					items: [
+						{
+							label: 'Astro Integration Kit',
+							link: 'https://astro-integration-kit.netlify.app',
+						},
+						{
+							label: 'Astro Tests',
+							link: '/astro-tests',
+						},
+						{
+							label: 'Modular Station',
+							collapsed: false,
+							autogenerate: {
+								directory: 'modular-station',
+							},
+						},
+						{
+							label: 'Inline Module',
+							collapsed: true,
+							autogenerate: { directory: 'inline-mod' },
+						},
+					],
 				},
 			],
 			plugins: [
@@ -107,5 +134,8 @@ export default defineConfig({
 		'/content-utils': '/content-utils/integration',
 		'/content-utils/git-time': '/content-utils/git',
 		'/modular-station': '/modular-station/api',
+	},
+	image: {
+		domains: ['mermaid.ink'],
 	},
 });

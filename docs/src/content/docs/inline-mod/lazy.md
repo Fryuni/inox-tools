@@ -105,11 +105,9 @@ export default defineIntegration({
       plugins: [aikMod],
       hooks: {
         'astro:build:setup': ({ pages }) => {
-.
           pagesData.set(pages);
         },
         'astro:build:done': ({ pages }) => {
-.
           pagesDataLate.set(pages);
         },
       },

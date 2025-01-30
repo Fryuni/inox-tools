@@ -1,0 +1,369 @@
+---
+title: Astro Test Utils
+packageName: '@inox-tools/astro-tests'
+description: Utilities for testing your own Astro integrations and libraries based on Astro's own testing tools.
+---
+
+Astro's current ecosystem lacks solutions for testing integrations, adapters, and components without either copying internal entire parts of the Astro code or bypassing package encapsulation to import internal modules from Astro. This tool aims to fill that gap by providing high-level wrapper over the known practices required to test Astro libraries.
+
+It offers utilities for setting up environments, running builds, and inspecting renders, ensuring compatibility and performance without the need to tamper with internal Astro logic.
+
+## Compatibility
+
+Relying on internal details of Astro can lead to your code breaking at any time. Those internal pieces can move, break or be removed from Astro even on patch versions since they are not part of the public API.
+
+Although this library also utilizes some parts of the Astro code that are meant to be internal, projects using this library for their tests will not break in case those parts are changed. This is ensured by how it built and published, although the source code breaks encapsulation, the code in the published library relies only on Astro's public API.
+
+You can check on your `node_modules` directory to see it 😉
+
+:::note[Possibility of an official Astro package]
+There is an [ongoing discussion](https://github.com/withastro/roadmap/discussions/1021) about having this in the Astro core repo to be published under `@astrojs/`.
+
+This package is published as a milestone in that effort. It is also a necessity to test all other packages that are part of Inox Tools until this proposal lands on Astro core. If/when that happens, this package will be published as a thin wrapper around the official test package and deprecated.
+
+If the conversations ends in the decision of not having a test package provided from Astro itself, then this package will continue to work for that purpose.
+:::
+
+## How to install
+
+import InstallCmd from '@/components/InstallCmd.astro';
+
+<InstallCmd type="devLib" />
+
+## Fixtures
+
+### `config`
+
+<p>**Type:** `AstroConfig`</p>
+
+The final config passed to [Astro's programatic CLI entrypoints](https://docs.astro.build/en/reference/cli-reference/#advanced-apis-experimental). This configuration can be overridden for each method call.
+It will automatically be passed to the following methods:
+
+- [`startDevServer()`](#startdevserver)
+- [`build()`](#build)
+- [`preview()`](#preview)
+- [`sync()`](#sync)
+
+### `startDevServer`
+
+{(
+
+<p>
+	<strong>Type: </strong>
+	<code dir="auto" style="padding-right: 0;">
+		(inlineConfig:
+	</code>
+	<a href="https://docs.astro.build/en/reference/cli-reference/#astroinlineconfig">
+		<code dir="auto" style="padding-right: 0;">
+			AstroInlineConfig
+		</code>
+	</a>
+	<code dir="auto" style="padding-left: 0;">
+		) =&gt; Promise&lt;DevServer&gt;
+	</code>
+</p>
+)}
+
+Starts a development server on an available port.
+
+This server cannot run simultaneously with `.preview()` for the same fixture, as they share ports.
+Ensure `devServer.stop()` is called before the test exits.
+
+Equivalent to running [`astro dev`](https://docs.astro.build/en/reference/cli-reference/#astro-dev).
+
+### `build`
+
+{(
+
+<p>
+	<strong>Type: </strong>
+	<code dir="auto" style="padding-right: 0;">
+		(inlineConfig:
+	</code>
+	<a href="https://docs.astro.build/en/reference/cli-reference/#astroinlineconfig">
+		<code dir="auto" style="padding-right: 0;">
+			AstroInlineConfig
+		</code>
+	</a>
+	<code dir="auto" style="padding-left: 0;">
+		) =&gt; Promise&lt;void&gt;
+	</code>
+</p>
+)}
+
+Builds into current folder (will erase previous build).
+
+Equivalent to running [`astro build`](https://docs.astro.build/en/reference/cli-reference/#astro-build).
+
+### `preview`
+
+{(
+
+<p>
+	<strong>Type: </strong>
+	<code dir="auto" style="padding-right: 0;">
+		(inlineConfig:
+	</code>
+	<a href="https://docs.astro.build/en/reference/cli-reference/#astroinlineconfig">
+		<code dir="auto" style="padding-right: 0;">
+			AstroInlineConfig
+		</code>
+	</a>
+	<code dir="auto" style="padding-left: 0;">
+		) =&gt; Promise&lt;PreviewServer&gt;
+	</code>
+</p>
+)}
+
+Starts a preview server.
+
+This server cannot run simultaneously with `.dev()` on the same fixture, as they share ports.
+Ensure `server.stop()` is called before the test exits.
+
+Equivalent to running [`astro preview`](https://docs.astro.build/en/reference/cli-reference/#astro-preview).
+
+### `sync`
+
+{(
+
+<p>
+	<strong>Type: </strong>
+	<code dir="auto" style="padding-right: 0;">
+		(inlineConfig:
+	</code>
+	<a href="https://docs.astro.build/en/reference/cli-reference/#astroinlineconfig">
+		<code dir="auto" style="padding-right: 0;">
+			AstroInlineConfig
+		</code>
+	</a>
+	<code dir="auto" style="padding-left: 0;">
+		) =&gt; Promise&lt;void&gt;
+	</code>
+</p>
+)}
+
+Synchronizes the Astro project and configuration with the generated code, populating the `src/env.d.ts` file and the `.astro` directory.
+
+Equivalent to running [`astro sync`](https://docs.astro.build/en/reference/cli-reference/#astro-sync).
+
+### `clean`
+
+<p>
+  **Type:** `() => Promise<void>`
+</p>
+
+Deletes the generated files from the fixture directory. Specifically, it deletes:
+
+- The output directory (`outDir` config)
+- The cache directory (`cacheDir` config)
+- The `.astro` directory generated in the project
+- the `.astro` directory generated in the `node_modules`
+
+### `resolveUrl`
+
+<p>**Type:** `(url: string) => string`</p>
+
+Resolves a relative URL to the full url of the running server.
+
+This can only be called after either [`.startDevServer()`](#startdevserver) or [`.preview()`](#preview) is called.
+
+### `fetch`
+
+{(
+
+<p>
+	<strong>Type: </strong>
+	<code dir="auto" style="padding-right: 0;">
+		(url: string, opts?:{' '}
+	</code>
+	<a href="https://developer.mozilla.org/en-US/docs/Web/API/RequestInit">
+		<code dir="auto" style="padding-left: 0;padding-right: 0;">
+			RequestInit
+		</code>
+	</a>
+	<code dir="auto" style="padding-left: 0;padding-right: 0;">
+		) =&gt; Promise&lt;
+	</code>
+	<a href="https://developer.mozilla.org/en-US/docs/Web/API/Response">
+		<code dir="auto" style="padding-left: 0;padding-right: 0;">
+			Response
+		</code>
+	</a>
+	<code dir="auto" style="padding-left: 0;">
+		&gt;
+	</code>
+</p>
+)}
+
+Send a request to the given URL. If the URL is relative, it will be resolved relative to the root of the server (without a base path).
+
+This can only be called after either [`.startDevServer()`](#startdevserver) or [`.preview()`](#preview) is called.
+
+### `pathExists`
+
+<p>**Type:** `(path: string) => boolean`</p>
+
+Checks whether the given path exists on the build output (`outDir` config).
+
+### `readFile`
+
+<p>
+  **Type:** `(path: string) => Promise<string>`
+</p>
+
+Read a file from the build (relative to `outDir` config).
+
+### `editFile`
+
+<p>
+  **Type:** `(path: string, updater: string | ((content: string) => string)) => Promise<() => void>`
+</p>
+
+Edit a file in the fixture directory.
+
+The first parameter is a path relative to the root of the fixture.
+
+The second parameter can be the new content of the file or a function that takes the current content and returns the new content.
+
+This function returns a Promise that resolves to another function. This resolved function can be called to revert the changes.
+
+All changes made with `editFile` are automatically reverted before the [process exits](https://nodejs.org/api/process.html#event-exit).
+
+### `resetAllFiles`
+
+<p>**Type:** `() => void`</p>
+
+Reset all changes made with [`.editFile()`](#editfile)
+
+### `readdir`
+
+<p>
+  **Type:** `(path: string) => Promise<string[]>`
+</p>
+
+Read a directory from the build output (relative to `outDir` config).
+
+This is a convenience wrapper for [readdir from Node's FS Promise API](https://nodejs.org/api/fs.html#fspromisesreaddirpath-options).
+
+### `glob`
+
+<p>
+  **Type:** `(pattern: string) => Promise<string[]>`
+</p>
+
+Find entries in the build output matching the glob pattern.
+
+The glob syntax used is from [`fast-glob`](https://www.npmjs.com/package/fast-glob#pattern-syntax).
+
+### `loadNodeAdapterHandler`
+
+{(
+
+<p>
+	<strong>Type: </strong>
+	<code dir="auto" style="padding-right: 0;">
+		() =&gt; Promise&lt;(req:{' '}
+	</code>
+	<a href="https://nodejs.org/api/http.html#class-httpincomingmessage">
+		<code dir="auto" style="padding-left: 0;padding-right: 0;">
+			http.IncomingMessage
+		</code>
+	</a>
+	<code dir="auto" style="padding-left: 0;padding-right: 0;">
+		, res:{' '}
+	</code>
+	<a href="https://nodejs.org/api/http.html#class-httpserverresponse">
+		<code dir="auto" style="padding-left: 0;padding-right: 0;">
+			http.ServerResponse
+		</code>
+	</a>
+	<code dir="auto" style="padding-left: 0;">
+		) =&gt; void&gt;
+	</code>
+</p>
+)}
+
+Load the handler for an app built using the [Node Adapter](https://docs.astro.build/en/guides/integrations-guide/node/).
+
+The handler is the same as a listener for the [`request` event](https://nodejs.org/api/http.html#event-request) from Node's native HTTP module.
+
+### `loadTestAdapterApp`
+
+<p>
+  **Type:** `() => Promise<TestApp>`
+</p>
+
+#### `TestApp`
+
+```ts
+type TestApp = {
+	render: (req: Request) => Promise<Response>;
+	toInternalApp: () => App;
+};
+```
+
+A minimal proxy for the underlying Astro app, provided by the test adapter.
+
+##### `render`
+
+Renders a [`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response) from the given [`Request`](https://developer.mozilla.org/en-US/docs/Web/API/Request).
+
+##### `toInternalApp`
+
+Returns the underlying [Astro App](https://github.com/withastro/astro/blob/ca54e3f819fad009ac3c3c8b57a26014a2652a73/packages/astro/src/core/app/index.ts#L77-L518).
+
+:::danger
+This class is internal, undocumented and highly unstable. Use it at your own risk.
+:::
+
+## Test Adapter
+
+An [Astro Adapter](https://docs.astro.build/en/guides/server-side-rendering/) that exposes the rendering process to be called directly.
+
+It also collects information about the build passed to the adapter to be inspected.
+
+None of the options are required.
+
+### `env`
+
+<p>
+  **Type:** `Record<string, string | undefined>`
+</p>
+
+Server-side environment variables to be used by [`astro:env`](https://docs.astro.build/en/reference/configuration-reference/#experimentalenv).
+
+### `setRoutes`
+
+{(
+
+<p>
+	<strong>Type: </strong>
+	<code dir="auto" style="padding-right: 0;">
+		(routes:{' '}
+	</code>
+	<a href="https://docs.astro.build/en/reference/integrations-reference/#routedata-type-reference">
+		<code dir="auto" style="padding-left: 0;padding-right: 0;">
+			RouteData
+		</code>
+	</a>
+	<code dir="auto" style="padding-left: 0;">
+		[]) =&gt; Promise&lt;void&gt;
+	</code>
+</p>
+)}
+
+A callback function that will receive the final value of the project routes.
+
+## Utilities
+
+### No Node checker
+
+A Vite plugin that ensures no module in the final bundle depends on built-in Node modules.
+
+If any reference to a Node module is found in the generated bundle, the build will fail.
+
+The checked modules are those from the built-in module list provided as [part of `node:modules`](https://nodejs.org/api/module.html#modulebuiltinmodules), both with an without the `node:` prefix, as well as the [prefix-only modules](https://nodejs.org/api/modules.html#built-in-modules-with-mandatory-node-prefix).
+
+## License
+
+Astro Test Utils is available under the MIT license.

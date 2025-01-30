@@ -1,0 +1,65 @@
+{
+  "name": "@inox-tools/portal-gun",
+  "version": "1.0.2",
+  "description": "Transport HTML elements through your page during rendering using Portals.",
+  "keywords": [
+    "astro-integration",
+    "withastro",
+    "astro",
+    "ui",
+    "utils"
+  ],
+  "license": "MIT",
+  "author": "Luiz Ferraz <luiz@lferraz.com>",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./runtime/*": {
+      "types": "./dist/runtime/index.d.ts",
+      "default": "./dist/runtime/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "virtual.d.ts"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "prepublish": "pnpm run build",
+    "test": "vitest run",
+    "test:dev": "vitest"
+  },
+  "dependencies": {
+    "@inox-tools/runtime-logger": "workspace:^",
+    "@inox-tools/utils": "workspace:^",
+    "astro-integration-kit": "catalog:",
+    "debug": "catalog:",
+    "rehype": "catalog:"
+  },
+  "devDependencies": {
+    "@inox-tools/astro-tests": "workspace:^",
+    "@types/hast": "catalog:",
+    "@types/node": "catalog:",
+    "@vitest/ui": "catalog:",
+    "astro": "catalog:lax",
+    "jest-extended": "catalog:",
+    "tsup": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "astro": "catalog:lax",
+    "preact": "*"
+  },
+  "peerDependenciesMeta": {
+    "preact": {
+      "optional": true
+    }
+  }
+}

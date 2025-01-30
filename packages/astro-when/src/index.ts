@@ -16,7 +16,6 @@ export default defineIntegration({
 	setup: () => ({
 		hooks: {
 			'astro:config:setup': (params) => {
-				const outputMode = params.config.output;
 				const command = params.command;
 
 				(globalThis as any)[key] = command === 'build';
@@ -54,7 +53,7 @@ export default defineIntegration({
 								return `${preamble} export const whenAmI = When.DevServer;`;
 							}
 
-							if (outputMode === 'static') {
+							if (!params.config.adapter) {
 								debug('Generating module for static build');
 								return `${preamble} export const whenAmI = When.StaticBuild;`;
 							}
@@ -77,6 +76,9 @@ export default defineIntegration({
 						content: "import '@inox-tools/astro-when';",
 					});
 				}
+			},
+			'astro:build:done': () => {
+				delete (globalThis as any)[key];
 			},
 		},
 	}),

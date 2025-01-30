@@ -12,9 +12,9 @@ When/Where your code is running is made available as an exported constant, so yo
 
 This integration is needed during build time only, so you can install it as a dev dependency.
 
-import { PackageManagers } from 'starlight-package-managers';
+import InstallCmd from '@/components/InstallCmd.astro';
 
-<PackageManagers type="exec" pkg="astro" args="add @inox-tools/astro-when" />
+<InstallCmd />
 
 ## How to use
 

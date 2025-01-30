@@ -20,7 +20,8 @@
     "format": "prettier -w \"**/*\" --ignore-unknown --cache",
     "postinstall": "node ./turbo/cache-key.mjs",
     "release": "pnpm run build && changeset publish",
-    "test": "turbo run test --concurrency=1",
+    "test": "turbo run --concurrency=1 --filter '@inox-tools/*' test",
+    "test:e2e": "turbo run --concurrency=1 --filter '@inox-tools/*' test:e2e",
     "version": "changeset version && pnpm install && pnpm format"
   },
   "lint-staged": {
@@ -28,20 +29,25 @@
   },
   "devDependencies": {
     "@changesets/changelog-github": "^0.5.0",
-    "@changesets/cli": "^2.27.7",
+    "@changesets/cli": "^2.27.11",
     "@types/node": "catalog:",
-    "husky": "^9.1.5",
-    "lint-staged": "^15.2.9",
-    "prettier": "^3.3.3",
+    "@playwright/test": "catalog:",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.3.0",
+    "prettier": "^3.4.2",
     "prettier-plugin-astro": "^0.14.1",
-    "turbo": "^2.0.14",
-    "typescript": "^5.5.4"
+    "turbo": "^2.3.3",
+    "typescript": "^5.7.2"
   },
-  "packageManager": "pnpm@9.7.1+sha512.faf344af2d6ca65c4c5c8c2224ea77a81a5e8859cbc4e06b1511ddce2f0151512431dd19e6aff31f2c6a8f5f2aced9bd2273e1fed7dd4de1868984059d2c4247",
+  "packageManager": "pnpm@9.15.2+sha512.93e57b0126f0df74ce6bff29680394c0ba54ec47246b9cf321f0121d8d9bb03f750a705f24edc3c1180853afd7c2c3b94196d0a3d53d3e069d9e2793ef11f321",
   "pnpm": {
     "overrides": {
       "@croct/sdk": "0.17.0",
+      "vite": "catalog:",
       "picomatch": "3.0.1"
+    },
+    "patchedDependencies": {
+      "astro": "patches/astro.patch"
     }
   }
 }

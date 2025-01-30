@@ -170,7 +170,7 @@ jobs:
         run: pnpm install
 
       - name: Install Playwright browsers
-        run: pnpm dlx playwright@latest install --with-deps
+        run: pnpm exec playwright install --with-deps
 
       - name: Test
         run: pnpm test:e2e

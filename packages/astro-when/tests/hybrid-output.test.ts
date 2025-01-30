@@ -4,12 +4,12 @@ import { describe, test, expect, beforeAll, afterAll } from 'vitest';
 
 const fixture = await loadFixture({
 	root: './fixture/server-output',
-	output: 'server',
+	output: 'static',
 	adapter: testAdapter(),
-	outDir: 'dist/server',
+	outDir: 'dist/hybrid',
 });
 
-describe('Astro when on a server output project', () => {
+describe('Astro when on a static output project with an adapter (old hybrid mode)', () => {
 	describe('dev server', () => {
 		let devServer: DevServer;
 
@@ -69,7 +69,7 @@ describe('Astro when on a server output project', () => {
 			const res = await app.render(new Request('http://example.com/default'));
 			const content = await res.text();
 
-			expect(content).toEqual('server');
+			expect(content).toEqual('prerender');
 		});
 	});
 });

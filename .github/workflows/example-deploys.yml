@@ -8,8 +8,8 @@ on:
   merge_group:
   pull_request:
     paths-ignore:
-      - "**/*.md"
-      - ".github/ISSUE_TEMPLATE/**"
+      - '**/*.md'
+      - '.github/ISSUE_TEMPLATE/**'
 
 # Automatically cancel older in-progress jobs on the same branch
 concurrency:
@@ -37,12 +37,13 @@ jobs:
     strategy:
       matrix:
         example:
-        - sitemap-ext
-        - custom-routing
-        - content-injection
-        - astro-when
-        - request-state
-        - request-nanostores
+          - sitemap-ext
+          - custom-routing
+          - content-injection
+          - astro-when
+          - request-state
+          - request-nanostores
+          - server-islands
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -56,7 +57,7 @@ jobs:
         uses: actions/setup-node@main
         with:
           node-version: 20
-          cache: "pnpm"
+          cache: 'pnpm'
 
       - name: Install dependencies
         run: pnpm install
@@ -73,7 +74,7 @@ jobs:
       - name: Build to Cloudflare
         run: ./examples/deploy-cloudflare.sh ${{ matrix.example }}
         env:
-          DEPLOY_SITE: "https://${{ steps.pages-branch-alias.outputs.branch-alias }}.inox-tools-ex-${{ matrix.example }}.pages.dev"
+          DEPLOY_SITE: 'https://${{ steps.pages-branch-alias.outputs.branch-alias }}.inox-tools-ex-${{ matrix.example }}.pages.dev'
 
       - name: Discard all git changes
         run: git restore .

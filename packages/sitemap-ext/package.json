@@ -41,7 +41,7 @@
     "astro": "catalog:lax",
     "tsup": "catalog:",
     "typescript": "catalog:",
-    "vite": "catalog:"
+    "vite": "^6.0.11"
   },
   "peerDependencies": {
     "astro": "catalog:lax"

@@ -12,13 +12,13 @@
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",
-    "@astrojs/node": "^9.0.0",
-    "@astrojs/preact": "^4.0.1",
+    "@astrojs/node": "^9.0.2",
+    "@astrojs/preact": "^4.0.3",
     "@inox-tools/request-nanostores": "workspace:^",
     "@nanostores/preact": "^0.5.2",
-    "astro": "^5.1.1",
+    "astro": "^5.2.1",
     "nanostores": "^0.11.3",
     "preact": "^10.25.4",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.3"
   }
 }

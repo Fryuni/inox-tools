@@ -1,0 +1,35 @@
+---
+import { deflate } from 'pako';
+import { fromUint8Array } from 'js-base64';
+import { Image } from 'astro:assets';
+
+export interface Props {
+	code: string;
+	alt?: string;
+}
+
+function imgUrlFor(config: any): string {
+	const encodedState = new TextEncoder().encode(
+		JSON.stringify({
+			mermaid: JSON.stringify(config),
+			code: Astro.props.code,
+		})
+	);
+	const compressed = deflate(encodedState, { level: 9 });
+	const encoded = fromUint8Array(compressed, true);
+	return `https://mermaid.ink/img/pako:${encoded}?type=webp`;
+}
+---
+
+<Image
+	class:list={['light:sl-hidden']}
+	alt={Astro.props.alt || 'Mermaid Diagram'}
+	src={imgUrlFor({ theme: 'dark' })}
+	inferSize
+/>
+<Image
+	class:list={['dark:sl-hidden']}
+	alt={Astro.props.alt || 'Mermaid Diagram'}
+	src={imgUrlFor({ theme: 'default' })}
+	inferSize
+/>

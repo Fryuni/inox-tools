@@ -5,7 +5,9 @@
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**"],
-      "outputLogs": "new-only"
+      "inputs": ["$TURBO_DEFAULT$", "!tests", "!e2e"],
+      "outputLogs": "new-only",
+      "passThroughEnv": ["DEBUG"]
     },
     "preview": {
       "dependsOn": ["build"],
@@ -15,7 +17,28 @@
       "cache": false,
       "persistent": true
     },
+    "test:dev": {
+      "dependsOn": ["build"],
+      "cache": false,
+      "persistent": true
+    },
     "test": {
+      "dependsOn": ["build"],
+      "cache": false,
+      "passThroughEnv": ["NODE_OPTIONS", "DEBUG"],
+      "outputLogs": "new-only"
+    },
+    "test:e2e": {
+      "dependsOn": ["build"],
+      "passThroughEnv": [
+        "PLAYWRIGHT_NODEJS_PATH",
+        "PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS",
+        "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD",
+        "PLAYWRIGHT_BROWSERS_PATH",
+        "PLAYWRIGHT_CHROME_BIN",
+        "PLAYWRIGHT_FIREFOX_BIN"
+      ],
+      "cache": false,
       "outputLogs": "new-only"
     }
   }

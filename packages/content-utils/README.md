@@ -8,7 +8,7 @@ Utilities to work with content collections on an Astro project from an integrati
 
 ## Install
 
-```js
+```sh
 npm i -D @inox-tools/content-utils
 ```
 

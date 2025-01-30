@@ -2,6 +2,7 @@
 title: Runtime Logger
 packageName: '@inox-tools/runtime-logger'
 description: Access an Astro Integration Logger from the runtime of a project.
+howItWorks: /how-it-works/runtime-logger
 ---
 
 Astro provides [a logger (typed `AstroIntegrationLogger`)](https://docs.astro.build/en/reference/integrations-reference/#astrointegrationlogger) configured for each integration on all the official [integration hooks](https://docs.astro.build/en/reference/integrations-reference/#hooks). But this logger is only accessible on the code configuring the integration, not for any runtime modules defined by it.
@@ -10,9 +11,9 @@ This package allows you to access Astro's built-in logger from the runtime of a 
 
 ## Installing the dependency
 
-import { PackageManagers } from 'starlight-package-managers';
+import InstallCmd from '@/components/InstallCmd.astro';
 
-<PackageManagers pkg="@inox-tools/runtime-logger" />
+<InstallCmd />
 
 ## For projects
 

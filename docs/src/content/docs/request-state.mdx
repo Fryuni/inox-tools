@@ -17,9 +17,9 @@ This library provides a solution for those problems:
 
 ## Installing the dependency
 
-import { PackageManagers } from 'starlight-package-managers';
+import InstallCmd from '@/components/InstallCmd.astro';
 
-<PackageManagers type="exec" pkg="astro" args="add @inox-tools/request-state" />
+<InstallCmd />
 
 ### Prerequisites
 
@@ -129,6 +129,10 @@ document.addEventListener('@it-astro:server-state-loaded', (event) => {
 	event.preventDefault();
 });
 ```
+
+## Caveats
+
+Enabling Request State disables [response streaming](https://docs.astro.build/en/recipes/streaming-improve-page-performance/). The entire application state must be generated before shipping closing head tag to the client. This behavior prevents data race when client components start hydrating before entire document is loaded.
 
 ## License
 

@@ -1,6 +1,6 @@
 {
   "name": "@inox-tools/aik-route-config",
-  "version": "0.7.2",
+  "version": "0.8.1",
   "description": "",
   "keywords": [
     "aik",
@@ -26,9 +26,9 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "prepublish": "pnpm run build",
-    "validate": "tsc",
     "test": "vitest run --coverage",
-    "test:dev": "vitest --coverage.enabled=true"
+    "test:dev": "vitest --coverage.enabled=true",
+    "validate": "tsc"
   },
   "dependencies": {
     "@inox-tools/utils": "workspace:^",

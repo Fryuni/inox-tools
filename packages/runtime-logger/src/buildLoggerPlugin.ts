@@ -5,7 +5,7 @@ import { INTERNAL_MODULE } from './internalPlugin.js';
 const MODULE_PREFIX = '@it-astro:logger:';
 const RESOLVED_MODULE_PREFIX = '\x00@it-astro:logger:';
 
-const pluginName = '@inox-tools/runtime-logger/dev';
+const pluginName = '@inox-tools/runtime-logger/integrations';
 
 export const buildLoggerPlugin = (loggers: Map<string, AstroIntegrationLogger>): Plugin => {
 	(globalThis as any)[Symbol.for(pluginName)] = loggers;

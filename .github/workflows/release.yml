@@ -16,8 +16,6 @@ defaults:
     shell: bash
 
 env:
-  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
   FORCE_COLOR: true
 
 jobs:
@@ -30,6 +28,14 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v4
+
+      - name: Cache turbo build setup
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-${{ matrix.NODE_VERSION }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.NODE_VERSION }}-turbo-
 
       - name: Setup PNPM
         uses: pnpm/action-setup@v2

@@ -25,7 +25,10 @@ export default defineIntegration({
 						plugin: plugin({
 							command,
 							routeComponents,
-							outputMode: params.config.output,
+							outputMode:
+								params.config.output === 'static' && !params.config.adapter
+									? 'hybrid'
+									: params.config.output,
 							pagesPath: fileURLToPath(new URL('pages/', params.config.srcDir)),
 						}),
 					});

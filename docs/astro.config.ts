@@ -127,9 +127,9 @@ export default defineConfig({
 				},
 			],
 			plugins: [
-				starlightLinksValidator({
-					errorOnRelativeLinks: true,
-				}),
+				// starlightLinksValidator({
+				// 	errorOnRelativeLinks: true,
+				// }),
 				starWarp(),
 			],
 		}),

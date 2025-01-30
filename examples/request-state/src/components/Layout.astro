@@ -1,5 +1,5 @@
 ---
-import { ViewTransitions } from 'astro:transitions';
+import { ClientRouter } from 'astro:transitions';
 ---
 
 <html lang="en" transition:animate="none">
@@ -8,7 +8,7 @@ import { ViewTransitions } from 'astro:transitions';
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
 		<title>Astro When</title>
-		<ViewTransitions />
+		<ClientRouter />
 	</head>
 	<body>
 		<slot />

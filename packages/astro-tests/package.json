@@ -39,10 +39,11 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/debug": "catalog:",
     "@types/node": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:",
-    "vite": "catalog:",
+    "vite": "^6.0.11",
     "vitest": "catalog:"
   }
 }

@@ -48,7 +48,7 @@
     "astro": "catalog:min",
     "tsup": "catalog:",
     "typescript": "catalog:",
-    "vite": "catalog:"
+    "vite": "^6.0.11"
   },
   "peerDependencies": {
     "astro": "catalog:min"

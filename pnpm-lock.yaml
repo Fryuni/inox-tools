@@ -519,6 +519,9 @@ importers:
         specifier: ^3.23.8
         version: 3.24.1
     devDependencies:
+      '@types/debug':
+        specifier: 'catalog:'
+        version: 4.1.12
       '@types/node':
         specifier: 'catalog:'
         version: 22.12.0

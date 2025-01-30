@@ -1,0 +1,10 @@
+---
+import { getServerIslandContext, currentPageUrl } from '@it-astro:server-islands';
+
+const context = getServerIslandContext(Astro);
+---
+
+<p id="is-island">{context == null ? 'false' : 'true'}</p>
+<p id="island-context-url">{context?.pageUrl}</p>
+<p id="astro-url">{Astro.url.toString()}</p>
+<p id="page-url">{currentPageUrl(Astro)}</p>

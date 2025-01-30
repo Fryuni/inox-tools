@@ -87,6 +87,10 @@ export default defineConfig({
 							link: '/portal-gun',
 						},
 						{
+							label: 'Server Islands',
+							link: '/server-islands',
+						},
+						{
 							label: 'Content Utilities',
 							collapsed: false,
 							autogenerate: {

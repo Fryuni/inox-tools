@@ -1115,15 +1115,15 @@ importers:
         specifier: 'catalog:'
         version: 4.4.0
     devDependencies:
+      '@inox-tools/astro-tests':
+        specifier: workspace:^
+        version: link:../astro-tests
+      '@playwright/test':
+        specifier: 'catalog:'
+        version: 1.49.1
       '@types/node':
         specifier: 'catalog:'
         version: 22.10.3
-      '@vitest/coverage-v8':
-        specifier: 'catalog:'
-        version: 2.1.8(vitest@2.1.8)
-      '@vitest/ui':
-        specifier: 'catalog:'
-        version: 2.1.8(vitest@2.1.8)
       astro:
         specifier: 'catalog:'
         version: 5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.3)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
@@ -1139,9 +1139,21 @@ importers:
       vite:
         specifier: ^6.0.6
         version: 6.0.6(@types/node@22.10.3)(jiti@2.0.0)(yaml@2.6.1)
-      vitest:
+
+  packages/server-islands/e2e/fixture/basic:
+    dependencies:
+      '@astrojs/node':
         specifier: 'catalog:'
-        version: 2.1.8(@types/node@22.10.3)(@vitest/ui@2.1.8)(jiti@2.0.0)(yaml@2.6.1)
+        version: 9.0.0(astro@5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.3)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1))
+      '@inox-tools/server-islands':
+        specifier: 'workspace:'
+        version: link:../../..
+      astro:
+        specifier: 'catalog:'
+        version: 5.1.1(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.10.3)(jiti@2.0.0)(rollup@4.29.1)(typescript@5.7.2)(yaml@2.6.1)
+      devalue:
+        specifier: 'catalog:'
+        version: 5.1.1
 
   packages/sitemap-ext:
     dependencies:

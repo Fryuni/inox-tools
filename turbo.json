@@ -11,7 +11,8 @@
     },
     "preview": {
       "dependsOn": ["build"],
-      "outputLogs": "new-only"
+      "outputLogs": "new-only",
+      "persistent": true
     },
     "dev": {
       "cache": false,

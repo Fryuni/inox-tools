@@ -10,6 +10,9 @@ workspace:
 
 ## PACKAGES
 
+pkg/server-islands:
+- 'packages/server-islands/**'
+
 pkg/portal-gun:
 - 'packages/portal-gun/**'
 

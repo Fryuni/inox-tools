@@ -1,0 +1,33 @@
+---
+title: Server Islands Utilities
+packageName: '@inox-tools/server-islands'
+description: Utilities for working with server-islands.
+---
+
+This integration provides a set of utilities to work with Astro's [Server Islands](https://docs.astro.build/en/guides/server-islands/).
+
+import InstallCmd from '@/components/InstallCmd.astro';
+
+<InstallCmd />
+
+## `getServerIslandContext`
+
+Extract information about the current execution in the context of a server island from the `Astro` context object.
+
+```astro title="src/components/MyComponent.astro"
+import {getServerIslandContext} from '@it-astro:server-islands';
+
+const context = getServerIslandContext(Astro);
+```
+
+This function will return `null` when not executing inside a Server Island (running directly on a page with no `server:defer` in this component nor any parent component).
+
+When running in the context of a Server Island, this function returns an object with the following properties:
+
+### `pageUrl`
+
+The URL of the page where the component will be added to. This is the url of the top of the page, no matter how nested the server island is (a server island may return content including another server island).
+
+## License
+
+Server Islands Utilities is available under the MIT license.

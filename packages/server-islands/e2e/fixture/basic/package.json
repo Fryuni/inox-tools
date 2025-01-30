@@ -1,0 +1,12 @@
+{
+  "name": "@server-islands/basic",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@astrojs/node": "catalog:",
+    "@inox-tools/server-islands": "workspace:",
+    "astro": "catalog:",
+    "devalue": "catalog:"
+  }
+}

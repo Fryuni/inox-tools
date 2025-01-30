@@ -30,7 +30,7 @@ fi
 
 # Configure the Astro project to deploy to Cloudflare Pages
 pnpm astro add cloudflare --yes
-pnpm add @astrojs/cloudflare@^12.0.0-beta
+pnpm add @astrojs/cloudflare@latest
 
 # Build the project
 pnpm astro build

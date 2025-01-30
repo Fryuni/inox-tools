@@ -1,5 +1,4 @@
 import { loadFixture, type PreviewServer } from '@inox-tools/astro-tests/astroFixture';
-import * as timers from 'node:timers/promises';
 import { test, expect } from '@playwright/test';
 
 const fixture = await loadFixture({
@@ -22,8 +21,6 @@ test('identify when the component is being used directly on a page', async ({ pa
 	const pageUrl = fixture.resolveUrl('/inline-component');
 	await page.goto(pageUrl);
 
-	await timers.setTimeout(5000);
-
 	await expect(page.locator('css=#is-island')).toHaveText('false');
 	await expect(page.locator('css=#island-context-url')).toHaveText('');
 	await expect(page.locator('css=#astro-url')).toHaveText(pageUrl);
@@ -33,8 +30,6 @@ test('identify when the component is being used directly on a page', async ({ pa
 test('identify when the component is being used on a server island', async ({ page }) => {
 	const pageUrl = fixture.resolveUrl('/island-component');
 	await page.goto(pageUrl);
-
-	await timers.setTimeout(5000);
 
 	await expect(page.locator('css=#is-island')).toHaveText('true');
 	await expect(page.locator('css=#island-context-url')).toHaveText(pageUrl);

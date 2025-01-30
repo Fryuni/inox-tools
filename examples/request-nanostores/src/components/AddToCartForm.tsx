@@ -11,7 +11,7 @@ export default function AddToCartForm({ item, children }: Props) {
 	async function addToCart(e: SubmitEvent) {
 		e.preventDefault();
 		isCartOpen.set(true);
-		await addCartItem(item);
+		addCartItem(item);
 	}
 
 	return <form onSubmit={addToCart}>{children}</form>;

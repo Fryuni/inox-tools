@@ -1,0 +1,15 @@
+{
+  "name": "@request-nanostores/basic",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@astrojs/node": "catalog:",
+    "@astrojs/preact": "^3.5.4",
+    "@inox-tools/request-nanostores": "workspace:",
+    "@nanostores/preact": "^0.5.2",
+    "astro": "catalog:",
+    "nanostores": "catalog:",
+    "preact": "^10.25.1"
+  }
+}

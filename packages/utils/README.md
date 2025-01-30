@@ -8,7 +8,7 @@ A collection of utilities used throughout Inox Tools.
 
 ## Install
 
-```js
+```sh
 npm i -D @inox-tools/utils
 ```
 

@@ -16,7 +16,7 @@ This library provides a solution for those problems:
 
 ## Installing the dependency
 
-```js
+```sh
 npm i @inox-tools/request-state
 ```
 

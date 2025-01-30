@@ -1,0 +1,10 @@
+{
+  "name": "@astro-when/static-output",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@inox-tools/astro-when": "workspace:",
+    "astro": "catalog:"
+  }
+}

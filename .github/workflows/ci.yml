@@ -21,8 +21,6 @@ defaults:
     shell: bash
 
 env:
-  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
   FORCE_COLOR: true
   ASTRO_TELEMETRY_DISABLED: true
   # 7 GiB by default on GitHub, setting to 6 GiB
@@ -37,7 +35,7 @@ jobs:
     timeout-minutes: 3
     strategy:
       matrix:
-        NODE_VERSION: [18, 20, 22]
+        NODE_VERSION: [20, 22]
       fail-fast: true
     steps:
       # # Disable crlf so all OS can share the same Turbo cache
@@ -47,6 +45,14 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Cache turbo build setup
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-${{ matrix.NODE_VERSION }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.NODE_VERSION }}-turbo-
 
       - name: Setup PNPM
         uses: pnpm/action-setup@v2
@@ -98,13 +104,21 @@ jobs:
     needs: build
     strategy:
       matrix:
-        NODE_VERSION: [18, 20, 22]
+        NODE_VERSION: [20, 22]
       fail-fast: false
     env:
       NODE_VERSION: ${{ matrix.NODE_VERSION }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Cache turbo build setup
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-${{ matrix.NODE_VERSION }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.NODE_VERSION }}-turbo-
 
       - name: Setup PNPM
         uses: pnpm/action-setup@v2
@@ -123,6 +137,43 @@ jobs:
 
       - name: Test
         run: pnpm run test
+
+  test-e2e:
+    name: E2E test
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    needs: build
+    env:
+      NODE_VERSION: 22
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache turbo build setup
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-${{ env.NODE_VERSION }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-${{ env.NODE_VERSION }}-turbo-
+
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v2
+
+      - name: Setup node@${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps
+
+      - name: Test
+        run: pnpm test:e2e
 
   duplicated-packages:
     name: Check for duplicated dependencies

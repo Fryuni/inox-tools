@@ -12,7 +12,7 @@ This integration bridges this gap and enables the use of Nanostores in Astro acr
 
 ## Installing the dependency
 
-```js
+```sh
 npm i @inox-tools/request-nanostores
 ```
 

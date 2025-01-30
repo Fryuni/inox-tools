@@ -10,7 +10,4 @@ export default defineConfig({
 	adapter: nodejs({ mode: 'standalone' }),
 	integrations: [react(), tailwind({ applyBaseStyles: false }), serverIslandTools()],
 	devToolbar: { enabled: false },
-	experimental: {
-		serverIslands: true,
-	},
 });

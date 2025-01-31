@@ -1,6 +1,6 @@
 {
   "name": "@example/sitemap-ext",
-  "version": "0.1.16",
+  "version": "0.1.20",
   "private": true,
   "type": "module",
   "scripts": {
@@ -11,12 +11,12 @@
     "start": "astro dev"
   },
   "dependencies": {
-    "@astrojs/check": "^0.8.1",
-    "@astrojs/mdx": "^3.1.2",
-    "@astrojs/node": "^8.3.2",
-    "@astrojs/rss": "^4.0.7",
+    "@astrojs/check": "^0.9.4",
+    "@astrojs/mdx": "^4.0.8",
+    "@astrojs/node": "^9.0.2",
+    "@astrojs/rss": "^4.0.11",
     "@inox-tools/sitemap-ext": "workspace:^",
-    "astro": "^4.11.5",
-    "typescript": "^5.5.3"
+    "astro": "^5.2.1",
+    "typescript": "^5.7.3"
   }
 }

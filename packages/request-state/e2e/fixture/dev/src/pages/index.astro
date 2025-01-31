@@ -1,0 +1,21 @@
+---
+import { setState } from '@it-astro:state';
+import { state } from '../state.js';
+
+setState('state', state);
+---
+
+<html>
+	<head>
+		<title>Basic example</title>
+	</head>
+	<body>
+		<pre id="state"></pre>
+		<script>
+			import { getState } from '@it-astro:state';
+
+			const state = getState('state');
+			document.getElementById('state')!.textContent = JSON.stringify(state, null, 2);
+		</script>
+	</body>
+</html>

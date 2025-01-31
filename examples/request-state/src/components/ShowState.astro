@@ -1,0 +1,52 @@
+---
+import { getState } from '@it-astro:state';
+import { $renderTimeMsg } from '../store';
+
+const state = getState('pageMessage');
+const nanostoreState = $renderTimeMsg.get();
+---
+
+<div>
+	<h2>Page message - direct</h2>
+	<h3>Server state</h3>
+	<pre>{JSON.stringify(state, null, 2)}</pre>
+	<h3>Client state</h3>
+	<pre transition:persist transition:name="state" data-state-name></pre>
+	<script>
+		import { getState } from '@it-astro:state';
+
+		function applyState() {
+			const elements = document.querySelectorAll('pre[data-state-name]');
+
+			elements.forEach((element) => {
+				if (!(element instanceof HTMLElement)) return;
+
+				element.textContent = JSON.stringify(getState('pageMessage'), null, 2);
+			});
+		}
+
+		applyState();
+		document.addEventListener('astro:page-load', applyState);
+	</script>
+</div>
+<hr />
+<div>
+	<h2>Page message - nanostores</h2>
+	<h3>Server state</h3>
+	<pre>{JSON.stringify(nanostoreState, null, 2)}</pre>
+	<h3>Client state</h3>
+	<pre transition:persist transition:name="nanostore-board" data-nanostore-state-name></pre>
+	<script>
+		import { $renderTimeMsg } from '../store';
+
+		$renderTimeMsg.subscribe((value) => {
+			const elements = document.querySelectorAll('pre[data-nanostore-state-name]');
+
+			elements.forEach((element) => {
+				if (!(element instanceof HTMLElement)) return;
+
+				element.textContent = JSON.stringify(value, null, 2);
+			});
+		});
+	</script>
+</div>

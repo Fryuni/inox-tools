@@ -1,5 +1,26 @@
 # @examples/astro-when
 
+## 0.0.8
+
+### Patch Changes
+
+- Updated dependencies [255d6ba]
+  - @inox-tools/astro-when@0.2.1
+
+## 0.0.7
+
+### Patch Changes
+
+- Updated dependencies [0f6cde2]
+  - @inox-tools/astro-when@0.2.0
+
+## 0.0.6
+
+### Patch Changes
+
+- Updated dependencies [f4c2ddb]
+  - @inox-tools/astro-when@0.1.4
+
 ## 0.0.5
 
 ### Patch Changes

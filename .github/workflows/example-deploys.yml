@@ -8,8 +8,8 @@ on:
   merge_group:
   pull_request:
     paths-ignore:
-      - "**/*.md"
-      - ".github/ISSUE_TEMPLATE/**"
+      - '**/*.md'
+      - '.github/ISSUE_TEMPLATE/**'
 
 # Automatically cancel older in-progress jobs on the same branch
 concurrency:
@@ -37,21 +37,26 @@ jobs:
     strategy:
       matrix:
         example:
-        - sitemap-ext
-        - custom-routing
-        - astro-when
+          - sitemap-ext
+          - custom-routing
+          - content-injection
+          - astro-when
+          - request-state
+          - request-nanostores
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup PNPM
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
 
       - name: Setup Node
         uses: actions/setup-node@main
         with:
-          node-version: 20
-          cache: "pnpm"
+          node-version: 22
+          cache: 'pnpm'
 
       - name: Install dependencies
         run: pnpm install
@@ -68,10 +73,18 @@ jobs:
       - name: Build to Cloudflare
         run: ./examples/deploy-cloudflare.sh ${{ matrix.example }}
         env:
-          DEPLOY_SITE: "https://${{ steps.pages-branch-alias.outputs.branch-alias }}.inox-tools-ex-${{ matrix.example }}.pages.dev"
+          DEPLOY_SITE: 'https://${{ steps.pages-branch-alias.outputs.branch-alias }}.inox-tools-ex-${{ matrix.example }}.pages.dev'
 
       - name: Discard all git changes
         run: git restore .
+
+      - name: Create Cloudflare Pages Project
+        run: |-
+          pnpm dlx wrangler pages project create 'inox-tools-ex-${{ matrix.example }}' --production-branch main || true
+        working-directory: examples/${{ matrix.example }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
       - name: Publish to Cloudflare Pages
         run: pnpm dlx wrangler pages deploy dist --project-name 'inox-tools-ex-${{ matrix.example }}' --branch '${{ github.head_ref }}'

@@ -10,35 +10,50 @@ import Default from '@astrojs/starlight/components/PageTitle.astro';
 import Version from './Version.astro';
 
 const { data } = Astro.props.entry;
-const { packageName } = data;
+const { packageName, howItWorks } = data;
 
 const gitHubURL =
 	'https://github.com/Fryuni/inox-tools/tree/main/packages/' +
 	packageName?.replace(/^@inox-tools\//, '');
+
+const hasMeta = !!packageName || !!howItWorks;
 ---
 
 {
-	packageName !== undefined ? (
+	hasMeta ? (
 		<div class="wrapper">
 			<h1 id="_top">
-				<>
-					<span>{data.title}</span>
-				</>
+				<span>{data.title}</span>
 			</h1>
 			<div class="integration-metadata">
-				<Version pkgName={packageName} />
-				<a href={gitHubURL}>
-					<Icon size="1rem" name="github" /> GitHub
-				</a>
-				<a href={'https://www.npmjs.com/package/' + packageName}>
-					<svg width="16" height="16" viewBox="0 0 576 512" fill="currentColor" aria-hidden="true">
-						<path d="M288 288h-32v-64h32v64zm288-128v192H288v32H160v-32H0V160h576zm-416 32H32v128h64v-96h32v96h32V192zm160 0H192v160h64v-32h64V192zm224 0H352v128h64v-96h32v96h32v-96h32v96h32V192z" />
-					</svg>
-					npm
-				</a>
-				<a href={gitHubURL + '/CHANGELOG.md'}>
-					<Icon size="1rem" name="list-format" /> Changelog
-				</a>
+				{!!packageName && (
+					<>
+						<Version pkgName={packageName} />
+						<a href={gitHubURL}>
+							<Icon size="1rem" name="github" /> GitHub
+						</a>
+						<a href={'https://www.npmjs.com/package/' + packageName}>
+							<svg
+								width="16"
+								height="16"
+								viewBox="0 0 576 512"
+								fill="currentColor"
+								aria-hidden="true"
+							>
+								<path d="M288 288h-32v-64h32v64zm288-128v192H288v32H160v-32H0V160h576zm-416 32H32v128h64v-96h32v96h32V192zm160 0H192v160h64v-32h64V192zm224 0H352v128h64v-96h32v96h32v-96h32v96h32V192z" />
+							</svg>
+							npm
+						</a>
+						<a href={gitHubURL + '/CHANGELOG.md'}>
+							<Icon size="1rem" name="list-format" /> Changelog
+						</a>
+					</>
+				)}
+				{!!howItWorks && (
+					<a href={howItWorks}>
+						<Icon size="1rem" name="information" /> How it works
+					</a>
+				)}
 			</div>
 		</div>
 	) : (

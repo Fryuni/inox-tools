@@ -1,0 +1,26 @@
+name: TODO Tracking
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  issues: read
+  repository-projects: read
+  contents: read
+
+jobs:
+  track-todos:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Run tdg-github-action
+      uses: ribtoks/tdg-github-action@master
+      with:
+        TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        REPO: ${{ github.repository }}
+        SHA: ${{ github.sha }}
+        REF: ${{ github.ref }}
+        EXCLUDE_PATTERN: '^turbo/generators/.*/template'
+        DRY_RUN: true
+        COMMENT_ON_ISSUES: true

@@ -1,5 +1,5 @@
 ---
-import { getLatestCommitDate, getOldestCommitDate } from '@it-astro:content/git';
+import { getEntryGitInfo } from '@it-astro:content/git';
 import { getCollection } from 'astro:content';
 import { logger as integrationLogger } from '@it-astro:logger:test-integration';
 import { logger } from '@it-astro:logger';
@@ -10,12 +10,11 @@ const entries = await getCollection('blog');
 integrationLogger.info(`Retrieved ${entries.length} entries`);
 logger.info(`Retrieved ${entries.length} entries`);
 
-const dates = await Promise.all(
+const infos = await Promise.all(
 	entries.map(async (entry) => {
-		const latest = await getLatestCommitDate(entry);
-		const oldest = await getOldestCommitDate(entry);
+		const info = await getEntryGitInfo(entry);
 
-		return [entry, latest, oldest] as const;
+		return [entry, info] as const;
 	})
 );
 ---
@@ -33,13 +32,10 @@ const dates = await Promise.all(
 		<Foo />
 		<ul>
 			{
-				dates.map(([entry, latest, oldest]) => (
+				infos.map(([entry, fileInfo]) => (
 					<li>
 						Entry "{entry.slug}" of collection "{entry.collection}":
-						<ul>
-							<li>Latest: {latest}</li>
-							<li>Oldest: {oldest}</li>
-						</ul>
+						<pre set:html={JSON.stringify(fileInfo, null, 2)} />
 					</li>
 				))
 			}

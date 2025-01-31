@@ -2,6 +2,7 @@ import { definePlugin, addVitePlugin } from 'astro-integration-kit';
 import { hoistGlobalPlugin } from './hoistGlobalPlugin.js';
 import { integrate, convertContext } from './contextResolution.js';
 import type { ConfigContext, InnerContext } from './contextResolution.js';
+import { debug } from './debug.js';
 
 type ConfigHandler<T> = (context: ConfigContext, value: T) => Promise<void> | void;
 
@@ -31,6 +32,8 @@ export default definePlugin({
 					const innerHandler: InnerHandler<T> = async (context, value) => {
 						// Do nothing while running dev or preview server
 						if (command !== 'build') return;
+
+						debug(`Loading route config from ${context.sourceFile} from ${options.importName}`);
 
 						const outerContext = convertContext(context);
 						if (outerContext) {

@@ -1,6 +1,6 @@
 ---
 /*
- * Directly copied from Astro Docs:
+ * Modified copy from Astro Docs:
  * https://github.com/withastro/docs/blob/35b56b0a76eb0e2f59c13355a88765f76e45609d/src/components/Version.astro
  */
 
@@ -10,7 +10,7 @@ import { join } from 'node:path';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 
 export const localPackages = Lazy.of(() => {
-	const packagesDir = new URL('../../../packages/', import.meta.url);
+	const packagesDir = new URL('packages/', import.meta.env.ASTRO_PROJECT_ROOT);
 
 	const entries = readdirSync(packagesDir, {
 		recursive: false,

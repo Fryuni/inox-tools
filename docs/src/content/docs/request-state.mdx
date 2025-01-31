@@ -1,0 +1,139 @@
+---
+title: Request State
+description: Request State
+packageName: '@inox-tools/request-state'
+challenger: [Florian, Oliver]
+---
+
+Astro provides [`Astro.locals`/`context.locals`](https://docs.astro.build/en/reference/api-reference/#astrolocals) for shared state between different components being rendered in a page.
+
+This state can only be accessed from an Astro component using the `Astro` constant or from middlewares from the context. Sharing state between framework components is not provided and inconvenient. State using `Astro.locals` is also not shared with the client after the request completes, resulting in problems with the server and the client rendering different contents.
+
+This library provides a solution for those problems:
+
+- You can share state between any component used in a request, even between frameworks.
+- The final state formed in the server while rendering a request is available for all client code running in the rendered page.
+- UI framework components can keep their state from server to client.
+
+## Installing the dependency
+
+import InstallCmd from '@/components/InstallCmd.astro';
+
+<InstallCmd />
+
+### Prerequisites
+
+When using the Cloudflare adapter, you'll need to [enable AsyncLocalStorage manually](https://developers.cloudflare.com/workers/runtime-apis/nodejs/#enable-only-asynclocalstorage).
+
+## Demo
+
+A demo showing values passing from prerendering to the client and from server to the client is available here:
+
+- Deployed site: https://inox-tools-ex-request-state.pages.dev/
+- Source code: https://github.com/Fryuni/inox-tools/tree/main/examples/request-state
+
+## How to use
+
+Import the two functions anywhere in your code:
+
+```ts
+import { getState, setState } from '@it-astro:state';
+
+setState('some key', 'some value');
+
+const state = getState('some key');
+```
+
+Alternatively, provide an initial value to be used if not present in the state:
+
+```ts
+import { getState } from '@it-astro:state';
+
+// `'initial value'` will be used if `'some key'` is not in the state
+const state = getState('some key', 'initial value');
+```
+
+The state can be any value supported by the [`devalue` library](https://www.npmjs.com/package/devalue) plus:
+
+- `Date`s
+- `URL`s
+- Global symbols (`Symbol.for`)
+- Well-known symbols (`Symbol.XXX`)
+
+### `setState`
+
+Params:
+
+- `key` (`string`): The key of a value in the state
+- `value` (`unknown`): The value to be set
+
+### `getState`
+
+Params:
+
+- `key` (`string`): The key of a value in the state
+- `valueIfMissing` (`unknown`): An optional value to set if there is no value in the state for the given key.
+
+Returns the value of the state for the given key, if present. If now, sets the value to `valueIfMissing` and returns it.
+
+## Using with View Transitions
+
+If you are using Astro's [View Transitions](https://docs.astro.build/en/guides/view-transitions/), the client-side state will be cleared out and entirely replaced with the server state used to render the page the client is navigating to.
+
+For example:
+
+1. You open page `/one`
+2. Server state of page `/one` is loaded on the client
+3. You modify the state one the client using `setState`
+4. You navigate to `/two`
+5. Server state of page `/two` is loaded on the client. All changes from step 3 are lost.
+
+The state is loaded during the `astro:after-swap` event, so:
+
+```ts
+document.addEventListener('astro:before-preparation', () => {
+	// State of the previous page is present
+});
+document.addEventListener('astro:after-preparation', () => {
+	// State of the previous page is present
+});
+document.addEventListener('astro:before-swap', () => {
+	// State of the previous page is present
+});
+document.addEventListener('astro:after-swap', () => {
+	// State of the next page is set
+	// If this listener was registered before the state loader,
+	// the state of the previous page would still be present.
+	// Otherwise, the state of the new page would be present.
+});
+document.addEventListener('astro:page-load', () => {
+	// State of the next page is present
+});
+```
+
+## State loaded event
+
+On the client, after the server state is loaded but before it is made available to client modules an event `@it-astro:server-state-loaded` is triggered on the document.
+
+```ts
+document.addEventListener('@it-astro:server-state-loaded', (event) => {
+	// A shallow copy of the current client state.
+	// Modifying it won't affect the state already available to client modules.
+	event.previousState.get('foo');
+
+	// The state loaded from the server.
+	// You can modify this state before it is made available to client modules.
+	event.serverState.set('foo', 'bar');
+
+	// The client state won't change at all if the default is prevented.
+	event.preventDefault();
+});
+```
+
+## Caveats
+
+Enabling Request State disables [response streaming](https://docs.astro.build/en/recipes/streaming-improve-page-performance/). The entire application state must be generated before shipping closing head tag to the client. This behavior prevents data race when client components start hydrating before entire document is loaded.
+
+## License
+
+Astro Request State is available under the MIT license.

@@ -8,6 +8,20 @@ workspace:
 - '*.{js,json}'
 - '.*'
 
+## PACKAGES
+
+pkg/server-islands:
+- 'packages/server-islands/**'
+
+pkg/portal-gun:
+- 'packages/portal-gun/**'
+
+pkg/cut-short:
+- 'packages/cut-short/**'
+
+pkg/request-nanostores:
+- 'packages/request-nanostores/**'
+
 pkg/aik-mod:
 - 'packages/aik-mod/**'
 
@@ -29,8 +43,14 @@ pkg/modular-station:
 pkg/sitemap-ext:
 - 'packages/sitemap-ext/**'
 
+pkg/request-state:
+- 'packages/request-state/**'
+
 pkg/content-utils:
 - 'packages/content-utils/**'
+
+pkg/astro-tests:
+- 'packages/astro-tests/**'
 
 pkg/velox-luna:
 - 'packages/velox-luna/**'

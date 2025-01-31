@@ -16,8 +16,6 @@ defaults:
     shell: bash
 
 env:
-  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
   FORCE_COLOR: true
 
 jobs:
@@ -31,25 +29,30 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Cache turbo build setup
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-${{ matrix.NODE_VERSION }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.NODE_VERSION }}-turbo-
+
       - name: Setup PNPM
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v4.2.0
         with:
-          node-version: 18
-          cache: "pnpm"
+          node-version: 22
+          cache: 'pnpm'
           registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
         run: pnpm install
 
-      - name: Build Packages
-        run: pnpm run build
-
       - name: Publish preview
         if: ${{ contains(github.event.pull_request.labels.*.name, 'preview') }}
-        run: pnpm exec changeset publish
+        run: 'pnpm run build && pnpm exec changeset publish'
         env:
           # Use Node auth from above
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -61,7 +64,7 @@ jobs:
         with:
           # Note: pnpm install after versioning is necessary to refresh lockfile
           version: pnpm run version
-          publish: pnpm exec changeset publish
+          publish: 'pnpm run build && pnpm exec changeset publish'
           commit: '[ci] release'
           title: '[ci] release'
         env:

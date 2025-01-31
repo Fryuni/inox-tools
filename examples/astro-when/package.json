@@ -1,20 +1,20 @@
 {
   "name": "@examples/astro-when",
+  "version": "0.0.8",
   "private": true,
   "type": "module",
-  "version": "0.0.5",
   "scripts": {
-    "dev": "astro dev",
-    "start": "astro dev",
+    "astro": "astro",
     "build": "astro check && astro build",
+    "dev": "astro dev",
     "preview": "astro preview",
-    "astro": "astro"
+    "start": "astro dev"
   },
   "dependencies": {
-    "@astrojs/check": "^0.8.1",
-    "@astrojs/node": "^8.3.2",
+    "@astrojs/check": "^0.9.4",
+    "@astrojs/node": "^9.0.2",
     "@inox-tools/astro-when": "workspace:^",
-    "astro": "^4.11.5",
-    "typescript": "^5.5.3"
+    "astro": "^5.2.1",
+    "typescript": "^5.7.3"
   }
 }

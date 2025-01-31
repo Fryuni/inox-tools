@@ -1,5 +1,84 @@
 # @inox-tools/sitemap-ext
 
+## 0.4.1
+
+### Patch Changes
+
+- 0dcdeaa: Bump Astro Integration Kit
+- Updated dependencies [0dcdeaa]
+  - @inox-tools/aik-route-config@0.8.1
+
+## 0.4.0
+
+### Minor Changes
+
+- Minimal bump to sync inter-dependencies to Astro 5 and Vite 6
+
+### Patch Changes
+
+- Updated dependencies
+  - @inox-tools/aik-route-config@0.8.0
+
+## 0.3.6
+
+### Patch Changes
+
+- @inox-tools/aik-route-config@0.7.5
+
+## 0.3.6-beta.0
+
+### Patch Changes
+
+- @inox-tools/aik-route-config@0.7.5-beta.0
+
+## 0.3.5
+
+### Patch Changes
+
+- @inox-tools/aik-route-config@0.7.4
+
+## 0.3.4
+
+### Patch Changes
+
+- @inox-tools/aik-route-config@0.7.3
+
+## 0.3.3
+
+### Patch Changes
+
+- Updated dependencies [8400096]
+  - @inox-tools/aik-route-config@0.7.2
+
+## 0.3.2
+
+### Patch Changes
+
+- 255d6ba: Relax peer dependency restriction on Astro
+- Updated dependencies [255d6ba]
+  - @inox-tools/aik-route-config@0.7.1
+
+## 0.3.1
+
+### Patch Changes
+
+- Updated dependencies [03369f7]
+  - @inox-tools/aik-route-config@0.7.0
+
+## 0.3.0
+
+### Minor Changes
+
+- 0f6cde2: Bump Astro version to 4.12
+
+## 0.2.15
+
+### Patch Changes
+
+- f4c2ddb: Migrate to pnpm catalogs for consistency across packages
+- Updated dependencies [f4c2ddb]
+  - @inox-tools/aik-route-config@0.6.2
+
 ## 0.2.14
 
 ### Patch Changes

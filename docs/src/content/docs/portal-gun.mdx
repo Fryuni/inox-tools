@@ -1,0 +1,84 @@
+---
+title: Portal Gun
+packageName: '@inox-tools/portal-gun'
+description: Transport HTML elements through your page during rendering using Portals.
+---
+
+When an element requires rendering outside of the usual component hierarchy, challenges related to stacking contents and z-index can interfere with the desired intention or look of an application[^1]. Portal Gun enables server-side portal functionality for Astro projects, allowing a component to render an element somewhere else in the document.
+
+## Installing the integration
+
+import InstallCmd from '@/components/InstallCmd.astro';
+
+<InstallCmd />
+
+## How to use
+
+Use a `<portal-gate>` element with a `to` attribute to send all children to the target portal:
+
+```html
+<portal-gate to="group">
+	<dialog>
+		<p>Dialog</p>
+	</dialog>
+</portal-gate>
+```
+
+### Target Portal
+
+You can define output portals anywhere on the page. They are replaced with every element teleported to it.
+
+Use a `<portal-landzone>` element with a `name` attribute:
+
+```html
+<portal-landzone name="group"></portal-landzone>
+```
+
+### ID boundary portals
+
+Any element with an `id` has two implicit portals targets:
+
+- `start:#<id>`: the children of the source portals are prepended to the children of the target element
+- `end:#<id>`: the children of the source portals are append to the children of the target element
+
+Given the following document:
+
+```html
+<div id="element-id">
+	<p>Hello</p>
+</div>
+
+<portal-gate to="start:#element-id">
+	<p>Before</p>
+</portal-gate>
+<portal-gate to="end:#element-id">
+	<p>After</p>
+</portal-gate>
+```
+
+The HTML sent to the client will be:
+
+```html
+<div id="element-id">
+	<p>Before</p>
+	<p>Hello</p>
+	<p>After</p>
+</div>
+```
+
+### Global portals
+
+The `<head>` and `<body>` elements have implicit portals for prepending and appending:
+
+- `start:head`: targets the start of the `<head>` element
+- `end:head`: targets the end of the `<head>` element, right before `</head>`
+- `start:body`: targets the start of the `<body>` element
+- `end:body`: targets the end of the `<body>` element, right before `</body>`
+
+## Caveats
+
+Enabling portals disables [response streaming](https://docs.astro.build/en/recipes/streaming-improve-page-performance/). The entire document has to be generated in order for the elements in the portals to be teleported to the appropriate place. After that, the updated document is sent to the client.
+
+---
+
+[^1]: Taken from SolidJS' [`Portal`](https://docs.solidjs.com/concepts/control-flow/portal) component.

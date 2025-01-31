@@ -1,6 +1,6 @@
 {
   "name": "@inox-tools/aik-mod",
-  "version": "0.7.1",
+  "version": "0.9.1",
   "description": "AIK Plugin for inline modules",
   "keywords": [
     "aik",
@@ -29,17 +29,19 @@
     "test": "echo 'No tests'"
   },
   "dependencies": {
-    "@inox-tools/inline-mod": "workspace:^"
+    "@inox-tools/inline-mod": "workspace:^",
+    "debug": "catalog:"
   },
   "devDependencies": {
+    "@types/debug": "catalog:",
     "@types/node": "catalog:",
     "astro": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:",
-    "vite": "catalog:"
+    "vite": "^6.0.11"
   },
   "peerDependencies": {
-    "astro": "catalog:min",
+    "astro": "catalog:lax",
     "astro-integration-kit": "catalog:min"
   }
 }

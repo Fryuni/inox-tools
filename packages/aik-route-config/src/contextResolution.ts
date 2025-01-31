@@ -5,6 +5,7 @@ import { defineIntegration, addIntegration, addVitePlugin } from 'astro-integrat
 import { fileURLToPath } from 'node:url';
 import { normalizePath } from 'vite';
 import { inspect } from 'node:util';
+import { debug } from './debug.js';
 
 export type ConfigContext = {
 	route: string[];
@@ -102,6 +103,7 @@ type IntegrateParams = HookParameters<'astro:config:setup'>;
 
 export function integrate(params: IntegrateParams) {
 	integrateOnce.do(() => {
+		debug('Injecting route-config integration');
 		addIntegration(params, {
 			integration: integration(),
 			ensureUnique: true,

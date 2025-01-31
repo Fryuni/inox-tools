@@ -1,0 +1,49 @@
+{
+  "name": "@inox-tools/astro-tests",
+  "version": "0.2.2",
+  "description": "Utilities for testing your own Astro integrations and libraries based on Astro's own testing tools",
+  "keywords": [
+    "withastro",
+    "utils",
+    "tests"
+  ],
+  "license": "MIT",
+  "author": "Luiz Ferraz <luiz@lferraz.com>",
+  "type": "module",
+  "exports": {
+    "./*": {
+      "types": "./dist/*.d.ts",
+      "default": "./dist/*.js"
+    }
+  },
+  "files": [
+    "README.md",
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "echo 'This is the test utility, there are no tests for it'"
+  },
+  "dependencies": {
+    "@astrojs/internal-helpers": "catalog:",
+    "@astrojs/markdown-remark": "^5.3.0",
+    "@inox-tools/utils": "workspace:^",
+    "astro": "catalog:",
+    "debug": "catalog:",
+    "fast-glob": "^3.3.2",
+    "shiki": "^1.24.0",
+    "strip-ansi": "^7.1.0",
+    "undici": "^6.21.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/debug": "catalog:",
+    "@types/node": "catalog:",
+    "tsup": "catalog:",
+    "typescript": "catalog:",
+    "vite": "^6.0.11",
+    "vitest": "catalog:"
+  }
+}

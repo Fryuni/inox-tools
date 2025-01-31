@@ -1,23 +1,23 @@
-type Response = {
+type ResponseData = {
 	ok: boolean;
 	status?: number;
 	body: unknown;
 };
 
-const simpleFetchCache = new Map<string, Promise<Response> | Response>();
+const simpleFetchCache = new Map<string, Promise<ResponseData> | ResponseData>();
 
-export function simpleFetch(url: string | URL): Promise<Response> {
+export function simpleFetch(url: string | URL): Promise<ResponseData> {
 	const cached = simpleFetchCache.get(url.toString());
 	if (cached) {
 		return Promise.resolve(cached);
 	}
 
-	const promise = new Promise<Response>(async (resolve, reject) => {
+	const promise = new Promise<ResponseData>(async (resolve, reject) => {
 		try {
 			const res = await fetch(url);
 			const content = await res.json();
 
-			const response: Response = {
+			const response: ResponseData = {
 				ok: res.ok,
 				status: res.status,
 				body: content,

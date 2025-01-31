@@ -1,0 +1,25 @@
+---
+import Layout from '../components/Layout.astro';
+import ShowState from '../components/ShowState.astro';
+import { setState } from '@it-astro:state';
+import { $renderTimeMsg } from '../store';
+
+export const prerender = false;
+
+const renderTime = `On-demand server at ${new Date().toISOString()}`;
+
+setState('pageMessage', renderTime);
+$renderTimeMsg.set(renderTime);
+---
+
+<Layout>
+	<h1>Opting out of prerendering</h1>
+	<hr />
+	<p>Other pages:</p>
+	<ul>
+		<li><a href="/">Home</a></li>
+		<li><a href="/prerender/">Opting in to prerendering</a></li>
+	</ul>
+	<hr />
+	<ShowState />
+</Layout>

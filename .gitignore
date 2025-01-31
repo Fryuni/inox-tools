@@ -40,11 +40,11 @@ node_modules/
 /turbo/cache-key.json
 .pnpm-store
 .parcel-cache
+.direnv
 
 # dotenv environment variable files
 .env
 *.env
-.env.*
 
 # IDEs stuff
 .idea
@@ -52,6 +52,15 @@ node_modules/
 
 # Build outputs
 dist/
+.astro/
+**/src/env.d.ts
 build/
 .inox-tools/
 *.js.map
+
+# Test results
+test-results/
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/

@@ -1,6 +1,6 @@
 {
   "name": "@inox-tools/aik-route-config",
-  "version": "0.6.1",
+  "version": "0.8.1",
   "description": "",
   "keywords": [
     "aik",
@@ -26,17 +26,19 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "prepublish": "pnpm run build",
-    "validate": "tsc",
     "test": "vitest run --coverage",
-    "test:dev": "vitest --coverage.enabled=true"
+    "test:dev": "vitest --coverage.enabled=true",
+    "validate": "tsc"
   },
   "dependencies": {
     "@inox-tools/utils": "workspace:^",
+    "debug": "catalog:",
     "recast": "catalog:",
     "vite": "catalog:"
   },
   "devDependencies": {
     "@astrojs/compiler": "catalog:",
+    "@types/debug": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "ast-types": "catalog:",
     "tsup": "catalog:",
@@ -44,7 +46,7 @@
     "vitest": "catalog:"
   },
   "peerDependencies": {
-    "astro": "catalog:min",
+    "astro": "catalog:lax",
     "astro-integration-kit": "catalog:min"
   }
 }

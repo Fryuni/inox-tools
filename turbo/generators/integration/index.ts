@@ -33,15 +33,58 @@ export default (plop: PlopTypes.NodePlopAPI, { destBasePath }: PlopTypes.PlopCfg
 				filter: (desc) => desc || undefined,
 				transformer: (desc) => desc || '<empty>',
 			},
-		],
-		actions: [
 			{
-				type: 'addMany',
-				destination: '{{ turbo.paths.root }}/packages/{{ dashCase name }}',
-				templateFiles: `${__dirname}/templates/**/*`,
-				base: `${__dirname}/templates`,
-				verbose: true,
+				name: 'hasRuntime',
+				message: 'Has runtime exports?',
+				type: 'confirm',
+			},
+			{
+				name: 'hasLib',
+				message: 'Has library exports?',
+				type: 'confirm',
 			},
 		],
+		actions: (ans) => {
+			const actions: PlopTypes.Actions = [
+				{
+					type: 'addMany',
+					destination: '{{ turbo.paths.root }}/packages/{{ dashCase name }}',
+					templateFiles: `${__dirname}/templates/**/*`,
+					base: `${__dirname}/templates`,
+					verbose: true,
+				},
+				{
+					type: 'modify',
+					path: '{{ turbo.paths.root }}/.github/labeler.yml',
+					pattern: '## PACKAGES',
+					template: `
+## PACKAGES
+
+pkg/{{ dashCase name }}:
+- 'packages/{{ dashCase name }}/**'
+`.trim(),
+				},
+			];
+
+			if (ans?.hasLib) {
+				actions.push({
+					type: 'add',
+					path: '{{ turbo.paths.root }}/packages/{{ dashCase name }}/src/lib/sample.ts',
+					template: '// This is a sample lib file\n// Users will import this module directly',
+					skipIfExists: true,
+				});
+			}
+
+			if (ans?.hasRuntime) {
+				actions.push({
+					type: 'add',
+					path: '{{ turbo.paths.root }}/packages/{{ dashCase name }}/src/runtime/sample.ts',
+					template: '// This is a sample runtime file\n// It will be imported by Astro',
+					skipIfExists: true,
+				});
+			}
+
+			return actions;
+		},
 	});
 };

@@ -1,0 +1,126 @@
+---
+title: Request Scoped Nanostores
+description: Make your Nanostores concurrent safe and shared from server to client
+packageName: '@inox-tools/request-nanostores'
+challenger: [Florian, Oliver]
+---
+
+[Nanostores](https://github.com/nanostores/nanostores) is a great and super compact state management library that is compatible with multiple frameworks, even with multiple at the same time. Nanostores has been Astro's recommended option for sharing state [between components](https://docs.astro.build/en/recipes/sharing-state/) and [between client islands](https://docs.astro.build/en/recipes/sharing-state-islands/).
+
+Using Nanostores directly with Astro has some caveats, as explained on Astro's ["Why Nano Stores?" FAQ](https://docs.astro.build/en/recipes/sharing-state-islands/#why-nano-stores). They are meant for the client-side. Using them on the server, be it on framework components or on the frontmatter of Astro components, may cause problems with data race between requests. Once the page is rendered, the stores on the client won't have the data from the stores on the server, which may cause flickering and flashing of content on the screen as the client renders a different content from the server.
+
+This integration bridges this gap and enables the use of Nanostores in Astro across server and client isolated on each request.
+
+## Installing the dependency
+
+import InstallCmd from '@/components/InstallCmd.astro';
+
+<InstallCmd />
+
+### Prerequisites
+
+When using the Cloudflare adapter, you'll need to [enable AsyncLocalStorage manually](https://developers.cloudflare.com/workers/runtime-apis/nodejs/#enable-only-asynclocalstorage).
+
+## Demo
+
+A demo reading cookies to set the request state on the server and use it interactively on the client is available here:
+
+- Deployed site: https://inox-tools-ex-request-nanostores.pages.dev/
+- Source code: https://github.com/Fryuni/inox-tools/tree/main/examples/request-nanostores
+
+This demo project is based on Astro's [`with-nanostores` template](https://github.com/withastro/astro/tree/main/examples/with-nanostores).
+
+## How to use
+
+Wrap your stores using the `shared` function, giving it a name.
+
+**The store name must be unique across your entire project!**.
+
+```ts del={4} ins={5}
+import { atom } from 'nanostores';
+import { shared } from '@it-astro:request-nanostores';
+
+export const $cart = atom([]);
+export const $cart = shared('cart', atom([]));
+```
+
+It doesn't have to be an atom! You can use any store that is based on an atom:
+
+```ts
+import { shared } from '@it-astro:request-nanostores';
+import { atom, map, deepMap } from 'nanostores';
+
+export const $atom = shared('atom', atom([]));
+export const $map = shared('map', map({}));
+export const $deepMap = shared('deepMap', deepMap({}));
+```
+
+:::tip[Is it an Atom?]
+If you don't know if a Nano Store is based on an Atom or not to use with this library, just try it!
+
+Nano Stores are very well typed, so TypeScript will know if they are compatible or not.
+:::
+
+### Example
+
+If you have a comments section on your page, you can create a store that will be shared between the page and all components.
+
+```ts title="src/stores/comments.ts"
+import { atom } from 'nanostores';
+import { shared } from '@it-astro:request-nanostores';
+
+export const $comments = shared('comments', atom([]));
+```
+
+A Preact component to show the comments.
+
+```ts title="src/components/Comments.tsx"
+import { useStore } from '@nanostores/preact';
+import { $comments } from '../stores/comments';
+
+export default function Comments() {
+  const $comments = useStore($comments);
+
+  return <ul>
+    { $comments.map(comment => <li>{ comment }</li>) }
+  </ul>;
+}
+```
+
+A Solid component to show the number of comments.
+
+```ts title="src/components/CommentCount.tsx"
+import { useStore } from '@nanostores/solid';
+import { $comments } from '../stores/comments';
+
+export default function Comments() {
+  const $comments = useStore($comments);
+
+  return <p>
+    Comments: { $comments().length }
+  </p>
+}
+```
+
+And an Astro page that loads the comments for the page and uses both components. The comments will be available for the components to render on the server and on the client for interactivity.
+
+```astro title="src/pages/article.astro"
+---
+import Comments from '../components/Comments.tsx';
+import CommentCount from '../components/CommentCount.tsx';
+import { $comments } from '../stores/comments';
+
+$comments.set(await loadCommentsForArticle());
+---
+
+<CommentCount client:load />
+<Comments client:load />
+```
+
+## Caveats
+
+Enabling Request-Scoped Nanostores disables [response streaming](https://docs.astro.build/en/recipes/streaming-improve-page-performance/). This behavior caused by [request-state](/request-state) package that prevents race condition where nanostores not initialized before client components starts hydrating.
+
+## License
+
+Request Nanostores is available under the MIT license.

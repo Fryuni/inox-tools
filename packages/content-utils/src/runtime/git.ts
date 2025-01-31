@@ -1,8 +1,12 @@
 import { spawnSync } from 'node:child_process';
-import { basename, dirname, join, sep, resolve } from 'node:path';
+import { sep, resolve, relative } from 'node:path';
 import { hooks } from '@inox-tools/modular-station/hooks';
+import { getDebug } from '../internal/debug.js';
+import type { GitTrackingInfo } from '@it-astro:content/git';
 
 let contentPath: string = '';
+
+const debug = getDebug('git');
 
 /**
  * @internal
@@ -11,109 +15,174 @@ export function setContentPath(path: string) {
 	contentPath = path;
 }
 
-/**
- * @internal
- */
-export async function getCommitDate(file: string, age: 'oldest' | 'latest'): Promise<Date> {
-	const args = ['log', '--format=%ct', '--max-count=1'];
-
-	if (age === 'oldest') {
-		args.push('--follow', '--diff-filter=A');
-	}
-
-	args.push(basename(file));
-
-	const result = spawnSync('git', args, {
-		cwd: resolve(join(contentPath, dirname(file))),
+function getRepoRoot(): string {
+	debug('Retrieving git repo root');
+	const result = spawnSync('git', ['rev-parse', '--show-toplevel'], {
+		cwd: contentPath,
 		encoding: 'utf-8',
 	});
 
 	if (result.error) {
-		console.error(result.error, result.stderr);
-		return new Date();
-	}
-	const output = result.stdout.trim();
-	const regex = /^(?<timestamp>\d+)$/;
-	const match = output.match(regex);
-
-	if (!match?.groups?.timestamp) {
-		console.error(result.stderr, result.stdout);
-		return new Date();
+		debug(`Failed to retrieve repo root:`, result.error, result.stderr);
+		debug('Falling back to contentPath:', contentPath);
+		return contentPath;
 	}
 
-	let resolvedDate = new Date(Number(match.groups.timestamp) * 1000);
-
-	await hooks.run('@it/content:git:resolved', (logger) => [
-		{
-			logger,
-			resolvedDate,
-			age,
-			file,
-			overrideDate: (newDate) => {
-				resolvedDate = newDate;
-			},
-		},
-	]);
-
-	return resolvedDate;
+	return result.stdout.trim();
 }
 
-/**
- * @internal
- */
-export async function listGitTrackedFiles(): Promise<string[]> {
-	const result = spawnSync('git', ['ls-files'], {
-		cwd: resolve(contentPath),
-		encoding: 'utf-8',
-	});
+type GitAuthor = {
+	name: string;
+	email: string;
+};
 
-	if (result.error) {
-		return [];
-	}
-
-	const output = result.stdout.trim();
-	let files = output.split('\n');
-
-	await hooks.run('@it/content:git:listed', (logger) => [
-		{
-			logger,
-			trackedFiles: Array.from(files),
-			ignoreFiles: (ignore) => {
-				for (const file of ignore) {
-					const index = files.indexOf(file);
-					if (index !== -1) {
-						files.splice(index, 1);
-					}
-				}
-			},
-		},
-	]);
-
-	return files;
-}
-
-type TrackedCommits = {
-	oldest: [string, Date][];
-	latest: [string, Date][];
+type RawGitTrackingInfo = {
+	earliest: number;
+	latest: number;
+	authors: GitAuthor[];
+	coAuthors: GitAuthor[];
 };
 
 /**
  * @internal
  */
-export async function getAllTrackedCommitDates(): Promise<TrackedCommits> {
-	const trackedFiles = await listGitTrackedFiles();
+export async function collectGitInfoForContentFiles(): Promise<[string, RawGitTrackingInfo][]> {
+	const repoRoot = getRepoRoot();
 
-	const result: TrackedCommits = {
-		oldest: [],
-		latest: [],
+	const args = [
+		'log',
+		'--format=t:%ct %an <%ae>|%(trailers:key=co-authored-by,valueonly,separator=|)',
+		'--name-status',
+		'--',
+		contentPath,
+	];
+
+	debug('Retrieving content git log:', args.join(' '));
+	const gitLog = spawnSync('git', args, {
+		cwd: repoRoot,
+		encoding: 'utf-8',
+	});
+
+	if (gitLog.error) {
+		debug('Failed to retrieve content git log:', gitLog.error, gitLog.stderr);
+		return [];
+	}
+
+	const parsingState = {
+		date: 0,
+		author: <GitAuthor>{ name: '', email: '' },
+		coAuthors: <GitAuthor[]>[],
 	};
 
-	for (const file of trackedFiles) {
-		// Replace the first occurrence of the separator so it doesn't get partially normalized when mixin Windows and Unix-like systems.
-		const name = file.replace(sep, ':');
+	const fileInfos = new Map<string, RawGitTrackingInfo>();
 
-		result.oldest.push([name, await getCommitDate(file, 'oldest')]);
-		result.latest.push([name, await getCommitDate(file, 'latest')]);
+	for (const logLine of gitLog.stdout.split('\n')) {
+		if (logLine.startsWith('t:')) {
+			// t:<seconds since epoch> <author name> <author email>|<co-authors>
+			const firstSpace = logLine.indexOf(' ');
+			parsingState.date = Number.parseInt(logLine.slice(2, firstSpace)) * 1000;
+
+			const authors = logLine
+				.slice(firstSpace + 1)
+				.replace(/\|$/, '')
+				.split('|')
+				.map((author) => {
+					const [name, email] = author.split('<');
+					return {
+						name: name.trim(),
+						email: email.slice(0, -1),
+					};
+				});
+			parsingState.author = authors[0];
+			parsingState.coAuthors = authors.slice(1);
+
+			continue;
+		}
+
+		// TODO: Track git time across renames and moves
+
+		// - Added files take the format `A\t<file>`
+		// - Modified files take the format `M\t<file>`
+		// - Deleted files take the format `D\t<file>`
+		// - Renamed files take the format `R<count>\t<old>\t<new>`
+		// - Copied files take the format `C<count>\t<old>\t<new>`
+		// The name of the file as of the commit being processed is always
+		// the last part of the log line.
+		const tabSplit = logLine.lastIndexOf('\t');
+		if (tabSplit === -1) continue;
+		const fileName = logLine.slice(tabSplit + 1);
+
+		const fileInfo = fileInfos.get(fileName);
+
+		if (fileInfo === undefined) {
+			fileInfos.set(fileName, {
+				earliest: parsingState.date,
+				latest: parsingState.date,
+				authors: [parsingState.author],
+				coAuthors: [...parsingState.coAuthors],
+			});
+			continue;
+		}
+
+		fileInfo.earliest = Math.min(fileInfo.earliest, parsingState.date);
+		fileInfo.latest = Math.max(fileInfo.latest, parsingState.date);
+	}
+
+	debug('Invoking @it/content:git:listed hook', {
+		trackedFiles: Array.from(fileInfos.keys()),
+	});
+	await hooks.run('@it/content:git:listed', (logger) => [
+		{
+			logger,
+			trackedFiles: Array.from(fileInfos.keys()),
+			ignoreFiles: (ignore) => {
+				for (const file of ignore) {
+					fileInfos.delete(file);
+				}
+			},
+		},
+	]);
+
+	const result: [string, RawGitTrackingInfo][] = [];
+
+	for (const [file, rawFileInfo] of fileInfos.entries()) {
+		// git log returns file names relative to the repo root
+		// convert the tracked paths to match that format
+		const contentFilePath = relative(contentPath, resolve(repoRoot, file));
+
+		// Replace the first occurrence of the separator so it doesn't get partially normalized when mixin Windows and Unix-like systems.
+		const name = contentFilePath.replace(sep, ':');
+
+		const fileInfo: GitTrackingInfo = {
+			earliest: new Date(rawFileInfo.earliest),
+			latest: new Date(rawFileInfo.latest),
+			authors: rawFileInfo.authors,
+			coAuthors: rawFileInfo.coAuthors,
+		};
+
+		let dropped = false;
+
+		debug('Invoking @it/content:git:resolved hook', {
+			file,
+			fileInfo,
+		});
+		await hooks.run('@it/content:git:resolved', (logger) => [
+			{
+				logger,
+				file,
+				fileInfo,
+				drop: () => {
+					dropped = true;
+				},
+			},
+		]);
+
+		if (dropped) continue;
+
+		rawFileInfo.earliest = fileInfo.earliest.valueOf();
+		rawFileInfo.latest = fileInfo.latest.valueOf();
+
+		result.push([name, rawFileInfo]);
 	}
 
 	return result;

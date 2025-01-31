@@ -1,0 +1,23 @@
+---
+import { state } from '../state.js';
+
+const injectedState = JSON.parse(process.env.INJECTED_STATE || '[123]');
+
+state.set(injectedState);
+---
+
+<html>
+	<head>
+		<title>Basic example</title>
+	</head>
+	<body>
+		<pre id="injected-state"></pre>
+		<script>
+			import { serializedState } from '../state.js';
+
+			serializedState.subscribe((value) => {
+				document.getElementById('injected-state')!.innerHTML = value;
+			});
+		</script>
+	</body>
+</html>

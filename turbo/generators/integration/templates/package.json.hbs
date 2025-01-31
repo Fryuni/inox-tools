@@ -16,6 +16,18 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    {{#if hasRuntime}}
+    },
+    "./runtime/*": {
+      "types": "./dist/runtime/index.d.ts",
+      "default": "./dist/runtime/index.js"
+    {{/if}}
+    {{#if hasLib}}
+    },
+    "./*": {
+      "types": "./dist/lib/index.d.ts",
+      "default": "./dist/lib/index.js"
+    {{/if}}
     }
   },
   "files": [
@@ -27,25 +39,26 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "prepublish": "pnpm run build",
-    "test": "vitest run --coverage",
-    "test:dev": "vitest --coverage.enabled=true"
+    "test": "vitest run",
+    "test:dev": "vitest"
   },
   "dependencies": {
-    "astro-integration-kit": "^0.14",
-    "@inox-tools/utils": "workspace:^"
+    "@inox-tools/utils": "workspace:^",
+    "astro-integration-kit": "catalog:",
+    "debug": "catalog:"
   },
   "devDependencies": {
-    "@types/node": "^20",
-    "@vitest/coverage-v8": "^1",
-    "@vitest/ui": "^1",
-    "jest-extended": "^4",
-    "astro": "^4",
-    "tsup": "^8",
-    "typescript": "^5",
-    "vite": "^5",
-    "vitest": "^1"
+    "@inox-tools/astro-tests": "workspace:",
+    "@types/node": "catalog:",
+    "@vitest/ui": "catalog:",
+    "jest-extended": "catalog:",
+    "astro": "catalog:",
+    "tsup": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
   },
   "peerDependencies": {
-    "astro": "^4"
+    "astro": "catalog:lax"
   }
 }

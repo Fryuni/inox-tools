@@ -1,0 +1,23 @@
+---
+import { Display } from '../components/Display.tsx';
+import { state } from '../state.js';
+
+state.set({
+	obj: {
+		a: 1,
+		b: 2,
+		c: 3,
+	},
+	array: [1, 2, 3],
+});
+---
+
+<html>
+	<head>
+		<title>Islands example</title>
+	</head>
+	<body>
+		<Display id="server" />
+		<Display id="client" client:only="preact" />
+	</body>
+</html>

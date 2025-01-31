@@ -1,0 +1,24 @@
+{
+  "name": "@example/request-nanostores",
+  "version": "0.0.2",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "astro": "astro",
+    "build": "astro check && astro build",
+    "dev": "astro dev",
+    "preview": "astro preview",
+    "start": "astro dev"
+  },
+  "dependencies": {
+    "@astrojs/check": "^0.9.4",
+    "@astrojs/node": "^9.0.2",
+    "@astrojs/preact": "^4.0.3",
+    "@inox-tools/request-nanostores": "workspace:^",
+    "@nanostores/preact": "^0.5.2",
+    "astro": "^5.2.1",
+    "nanostores": "^0.11.3",
+    "preact": "^10.25.4",
+    "typescript": "^5.7.3"
+  }
+}

@@ -17,3 +17,6 @@
 
 # Files
 pnpm-lock.yaml
+flake.lock
+
+**/*.mdx

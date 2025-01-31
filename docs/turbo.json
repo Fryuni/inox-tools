@@ -3,7 +3,8 @@
   "extends": ["//"],
   "tasks": {
     "build": {
-      "inputs": ["*", "src/**", "public/**", "../packages/*/package.json"]
+      "inputs": ["*", "src/**", "public/**", "../packages/*/package.json"],
+      "outputs": [".vercel", ".astro"]
     }
   }
 }

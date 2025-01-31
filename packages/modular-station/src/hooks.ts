@@ -1,7 +1,6 @@
-import type { HookParameters, Hooks } from 'astro-integration-kit';
-import type { AstroIntegration, AstroIntegrationLogger } from 'astro';
+import type { Hooks } from 'astro-integration-kit';
+import type { AstroIntegration, AstroIntegrationLogger, HookParameters } from 'astro';
 import { DEFAULT_HOOK_FACTORY, allHooksPlugin } from './allHooksPlugin.js';
-import { Once } from '@inox-tools/utils/once';
 import { setGlobal } from './globalHooks.js';
 
 type ToHookFunction<F> = F extends (...params: infer P) => any

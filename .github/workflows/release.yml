@@ -52,7 +52,7 @@ jobs:
 
       - name: Publish preview
         if: ${{ contains(github.event.pull_request.labels.*.name, 'preview') }}
-        run: 'pnpm run build && pnpm exec changeset publish'
+        run: pnpm cut-release
         env:
           # Use Node auth from above
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -64,7 +64,7 @@ jobs:
         with:
           # Note: pnpm install after versioning is necessary to refresh lockfile
           version: pnpm run version
-          publish: 'pnpm run build && pnpm exec changeset publish'
+          publish: pnpm cut-release
           commit: '[ci] release'
           title: '[ci] release'
         env:

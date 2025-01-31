@@ -1,11 +1,7 @@
 {
   "extends": "astro/tsconfigs/strict",
   "compilerOptions": {
-    "lib": [
-      "dom"
-    ]
+    "lib": ["dom"]
   },
-  "exclude": [
-    "dist"
-  ]
+  "exclude": ["dist"]
 }

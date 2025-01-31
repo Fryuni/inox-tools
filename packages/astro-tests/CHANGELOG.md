@@ -1,5 +1,16 @@
 # @inox-tools/astro-tests
 
+## 0.3.0
+
+### Minor Changes
+
+- dea57f8: Publish package unbundled to work better with multiple versions of PlayWright
+
+### Patch Changes
+
+- Updated dependencies [094efca]
+  - @inox-tools/utils@0.3.1
+
 ## 0.2.2
 
 ### Patch Changes

@@ -3,10 +3,9 @@ import testAdapter from '@inox-tools/astro-tests/testAdapter';
 import { describe, test, expect, beforeAll, afterAll } from 'vitest';
 
 const fixture = await loadFixture({
-	root: './fixture/server-output',
+	root: './fixture/hybrid-output',
 	output: 'static',
 	adapter: testAdapter(),
-	outDir: 'dist/hybrid',
 });
 
 describe('Astro when on a static output project with an adapter (old hybrid mode)', () => {

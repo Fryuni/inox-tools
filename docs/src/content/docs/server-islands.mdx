@@ -10,9 +10,23 @@ import InstallCmd from '@/components/InstallCmd.astro';
 
 <InstallCmd />
 
+## `currentPageUrl`
+
+**Type:** `(Astro: AstroGlobal) => URL`
+
+Extracts the URL of the current page from the `Astro` context object, automatically taking into account whether the current component is being executed on a Server Island.
+
+```astro title="src/components/MyComponent.astro"
+import {currentPageUrl} from '@it-astro:server-islands';
+
+const pageUrl = currentPageUrl(Astro);
+```
+
+The `Astro.url` property is not the URL of the page when running inside a server island. This function is a convenient wrapper that returns `getServerIslandContext().pageUrl` when running on a Server Island and `Astro.url` when not.
+
 ## `getServerIslandContext`
 
-Extract information about the current execution in the context of a server island from the `Astro` context object.
+Extracts information about the current execution in the context of a server island from the `Astro` context object.
 
 ```astro title="src/components/MyComponent.astro"
 import {getServerIslandContext} from '@it-astro:server-islands';
@@ -25,6 +39,8 @@ This function will return `null` when not executing inside a Server Island (runn
 When running in the context of a Server Island, this function returns an object with the following properties:
 
 ### `pageUrl`
+
+**Type:** `URL`
 
 The URL of the page where the component will be added to. This is the url of the top of the page, no matter how nested the server island is (a server island may return content including another server island).
 

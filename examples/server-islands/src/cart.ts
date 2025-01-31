@@ -1,4 +1,3 @@
-
 const channel = new MessageChannel();
 
 function onNewCartItem(cb: (m: any) => void) {
@@ -14,7 +13,4 @@ function addToCart(item: any) {
 	channel.port1.postMessage(item);
 }
 
-export {
-	onNewCartItem,
-	addToCart
-}
+export { onNewCartItem, addToCart };

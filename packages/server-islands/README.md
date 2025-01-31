@@ -16,10 +16,10 @@ Add the integration to your `astro.config.mjs`:
 
 ```js
 // astro.config.mjs
-import { defineConfig } from 'astro'
+import { defineConfig } from 'astro';
 import serverIslands from '@inox-tools/server-islands';
 
 export default defineConfig({
-    integrations: [serverIslands({})]
-})
+  integrations: [serverIslands({})],
+});
 ```

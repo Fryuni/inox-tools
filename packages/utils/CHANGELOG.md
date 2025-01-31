@@ -1,5 +1,11 @@
 # @inox-tools/utils
 
+## 0.3.1
+
+### Patch Changes
+
+- 094efca: Fixes Response type name collision
+
 ## 0.3.0
 
 ### Minor Changes

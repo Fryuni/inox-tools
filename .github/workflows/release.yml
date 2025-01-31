@@ -44,18 +44,15 @@ jobs:
         uses: actions/setup-node@v4.2.0
         with:
           node-version: 22
-          cache: "pnpm"
+          cache: 'pnpm'
           registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
         run: pnpm install
 
-      - name: Build Packages
-        run: pnpm run build
-
       - name: Publish preview
         if: ${{ contains(github.event.pull_request.labels.*.name, 'preview') }}
-        run: pnpm exec changeset publish
+        run: 'pnpm run build && pnpm exec changeset publish'
         env:
           # Use Node auth from above
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -67,7 +64,7 @@ jobs:
         with:
           # Note: pnpm install after versioning is necessary to refresh lockfile
           version: pnpm run version
-          publish: pnpm exec changeset publish
+          publish: 'pnpm run build && pnpm exec changeset publish'
           commit: '[ci] release'
           title: '[ci] release'
         env:

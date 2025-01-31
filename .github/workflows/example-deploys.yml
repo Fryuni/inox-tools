@@ -43,7 +43,6 @@ jobs:
           - astro-when
           - request-state
           - request-nanostores
-          - server-islands
     steps:
       - name: Checkout
         uses: actions/checkout@v4

@@ -8,8 +8,8 @@ on:
   merge_group:
   pull_request:
     paths-ignore:
-      - "**/*.md"
-      - ".github/ISSUE_TEMPLATE/**"
+      - '**/*.md'
+      - '.github/ISSUE_TEMPLATE/**'
 
 # Automatically cancel older in-progress jobs on the same branch
 concurrency:
@@ -30,7 +30,7 @@ env:
 jobs:
   # Build primes out Turbo build cache and pnpm cache
   build:
-    name: "Build - Node ${{ matrix.NODE_VERSION }}"
+    name: 'Build - Node ${{ matrix.NODE_VERSION }}'
     runs-on: ubuntu-latest
     timeout-minutes: 3
     strategy:
@@ -55,13 +55,13 @@ jobs:
             ${{ runner.os }}-${{ matrix.NODE_VERSION }}-turbo-
 
       - name: Setup PNPM
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
 
       - name: Setup node@${{ matrix.NODE_VERSION }}
         uses: actions/setup-node@main
         with:
           node-version: ${{ matrix.NODE_VERSION }}
-          cache: "pnpm"
+          cache: 'pnpm'
 
       - name: Install dependencies
         run: pnpm install
@@ -82,13 +82,13 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup PNPM
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v4.2.0
         with:
-          node-version: 20
-          cache: "pnpm"
+          node-version: 22
+          cache: 'pnpm'
 
       - name: Install dependencies
         run: pnpm install
@@ -98,7 +98,7 @@ jobs:
           pnpm run format --check
 
   test:
-    name: "Test: Node ${{ matrix.NODE_VERSION }}"
+    name: 'Test: Node ${{ matrix.NODE_VERSION }}'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     needs: build
@@ -121,13 +121,13 @@ jobs:
             ${{ runner.os }}-${{ matrix.NODE_VERSION }}-turbo-
 
       - name: Setup PNPM
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
 
       - name: Setup node@${{ matrix.NODE_VERSION }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v4.2.0
         with:
           node-version: ${{ matrix.NODE_VERSION }}
-          cache: "pnpm"
+          cache: 'pnpm'
 
       - name: Install dependencies
         run: pnpm install
@@ -158,13 +158,13 @@ jobs:
             ${{ runner.os }}-${{ env.NODE_VERSION }}-turbo-
 
       - name: Setup PNPM
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
 
       - name: Setup node@${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v4.2.0
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "pnpm"
+          cache: 'pnpm'
 
       - name: Install dependencies
         run: pnpm install
@@ -178,20 +178,18 @@ jobs:
   duplicated-packages:
     name: Check for duplicated dependencies
     runs-on: ubuntu-latest
-    env:
-      NODE_VERSION: 22
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup PNPM
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
 
-      - name: Setup node@${{ matrix.NODE_VERSION }}
-        uses: actions/setup-node@v4
+      - name: Setup node
+        uses: actions/setup-node@v4.2.0
         with:
-          node-version: ${{ matrix.NODE_VERSION }}
-          cache: "pnpm"
+          node-version: 22
+          cache: 'pnpm'
 
       - name: Install dependencies
         run: pnpm install

@@ -185,6 +185,9 @@ importers:
       sharp:
         specifier: ^0.33.5
         version: 0.33.5
+      starlight-cooler-credit:
+        specifier: ^0.2.3
+        version: 0.2.3(@astrojs/starlight@0.31.1(astro@5.2.3(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.12.0)(jiti@2.0.0)(rollup@4.32.1)(typescript@5.7.3)(yaml@2.7.0)))
       starlight-links-validator:
         specifier: ^0.14.1
         version: 0.14.1(@astrojs/starlight@0.31.1(astro@5.2.3(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.12.0)(jiti@2.0.0)(rollup@4.32.1)(typescript@5.7.3)(yaml@2.7.0)))
@@ -2731,6 +2734,9 @@ packages:
   change-case@3.1.0:
     resolution: {integrity: sha512-2AZp7uJZbYEzRPsFoa+ijKdvp9zsrnnt6+yFokfwEpeJm0xuJDVoxiRCAaTzyJND8GJkofo2IcKWaUZ/OECVzw==}
 
+  change-case@5.4.4:
+    resolution: {integrity: sha512-HRQyTk2/YPEkt9TnUPbOpr64Uw3KOicFWPVBb+xiHvd6eBx/qPr9xqfBFDT8P2vWsvvz4jbEkfDe71W3VyNu2w==}
+
   character-entities-html4@2.1.0:
     resolution: {integrity: sha512-1v7fgQRj6hnSwFpq1Eu0ynr/CDEw0rXo2B61qXrLNdHZmPKgb7fqS1a2JwF0rISo9q77jDI8VMEHoApn8qDoZA==}
 
@@ -4849,6 +4855,12 @@ packages:
 
   stackback@0.0.2:
     resolution: {integrity: sha512-1XMJE5fQo1jGH6Y/7ebnwPOBEkIEnT4QF32d5R1+VXdXveM0IBMJt8zfaxX1P3QhVwrYe+576+jkANtSS2mBbw==}
+
+  starlight-cooler-credit@0.2.3:
+    resolution: {integrity: sha512-sofhZVZgE5Umk0o5xNtZLeEuy72u+85jcUjZ0fOKZMiLlT7uax17LFYHxYpwAFa4yQWhbk0nyNc+TOfyNhtofA==}
+    engines: {node: ^18.17.1 || ^20.3.0 || >=21.0.0}
+    peerDependencies:
+      '@astrojs/starlight': '>=0.30'
 
   starlight-links-validator@0.14.1:
     resolution: {integrity: sha512-qd5zMBezFhE3R/RBW2am58jVMK3ydcHs8TqOOBLimjn+iXqWV/ZkLlpcavoIOd//w72cX3L//lN4TA+a7vdaZg==}
@@ -7621,6 +7633,8 @@ snapshots:
       upper-case: 1.1.3
       upper-case-first: 1.1.2
 
+  change-case@5.4.4: {}
+
   character-entities-html4@2.1.0: {}
 
   character-entities-legacy@3.0.0: {}
@@ -10233,6 +10247,11 @@ snapshots:
   stack-trace@1.0.0-pre2: {}
 
   stackback@0.0.2: {}
+
+  starlight-cooler-credit@0.2.3(@astrojs/starlight@0.31.1(astro@5.2.3(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.12.0)(jiti@2.0.0)(rollup@4.32.1)(typescript@5.7.3)(yaml@2.7.0))):
+    dependencies:
+      '@astrojs/starlight': 0.31.1(astro@5.2.3(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.12.0)(jiti@2.0.0)(rollup@4.32.1)(typescript@5.7.3)(yaml@2.7.0))
+      change-case: 5.4.4
 
   starlight-links-validator@0.14.1(@astrojs/starlight@0.31.1(astro@5.2.3(patch_hash=4hepzxt2ecxpinknws2mzmplbu)(@types/node@22.12.0)(jiti@2.0.0)(rollup@4.32.1)(typescript@5.7.3)(yaml@2.7.0))):
     dependencies:

@@ -44,11 +44,16 @@
     "jest-extended": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:",
-    "vite": "^6.0.11",
+    "vite": "catalog:",
     "vitest": "catalog:"
   },
   "peerDependencies": {
     "@astrojs/starlight": "catalog:lax",
     "astro": "catalog:lax"
+  },
+  "peerDependenciesMeta": {
+    "@astrojs/starlight": {
+      "optional": true
+    }
   }
 }

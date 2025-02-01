@@ -4,6 +4,7 @@ import type { StarlightConfig } from '@astrojs/starlight/types';
 import vercel from '@astrojs/vercel';
 import starWarp from '@inox-tools/star-warp';
 import starlightLinksValidator from 'starlight-links-validator';
+import starlightCoolerCredit from 'starlight-cooler-credit';
 
 const badge = {
 	new: {
@@ -129,6 +130,13 @@ export default defineConfig({
 			plugins: [
 				starlightLinksValidator({
 					errorOnRelativeLinks: true,
+				}),
+				starlightCoolerCredit({
+					credit: {
+						title: 'Built for Astro',
+						description: 'Use these tools on your Astro project',
+						href: 'https://docs.astro.build',
+					},
 				}),
 				starWarp(),
 			],

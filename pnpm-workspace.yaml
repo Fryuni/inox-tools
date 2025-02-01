@@ -1,10 +1,10 @@
 catalog:
-  astro: ^5.2.1
+  astro: ^5.2.3
   astro-integration-kit: ~0.18.0
   '@astrojs/compiler': ^2.10.3
   '@astrojs/sitemap': ^3.2.1
   '@astrojs/node': ^9.0.2
-  '@astrojs/starlight': ^0.31.1
+  '@astrojs/starlight': ~0.31
   '@astrojs/internal-helpers': ^0.5.0
   '@types/content-type': ^1.1.8
   '@types/debug': ^4.1.12
@@ -34,7 +34,7 @@ catalog:
 catalogs:
   lax:
     astro: ^5
-    '@astrojs/starlight': ^0.30
+    '@astrojs/starlight': '>=0.29 <0.32'
   min:
     astro: ^5
     astro-integration-kit: ~0.17 || ~0.18

@@ -33,7 +33,7 @@
     "astro": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:",
-    "vite": "^6.0.11"
+    "vite": "catalog:"
   },
   "peerDependencies": {
     "astro": ">=3"

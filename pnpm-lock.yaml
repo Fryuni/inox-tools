@@ -709,7 +709,7 @@ importers:
         specifier: 'catalog:'
         version: 3.0.5(@types/debug@4.1.12)(@types/node@22.13.1)(@vitest/ui@3.0.5)(jiti@2.0.0)(yaml@2.7.0)
 
-  packages/content-utils/tests/fixture/static-output:
+  packages/content-utils/tests/fixture/static-collections:
     dependencies:
       '@inox-tools/content-utils':
         specifier: 'workspace:'

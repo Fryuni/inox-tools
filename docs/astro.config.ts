@@ -34,8 +34,11 @@ export default defineConfig({
 	integrations: [
 		starlight({
 			title: 'Inox Tools',
-			credits: true,
 			favicon: '/favicon.png',
+			credits: true,
+			lastUpdated: true,
+			editLink: { baseUrl: 'https://github.com/Fryuni/inox-tools/edit/main/docs' },
+			pagination: false,
 			social: {
 				github: 'https://github.com/Fryuni/inox-tools',
 				discord: 'https://discord.com/channels/830184174198718474/1197638002764152843',
@@ -143,8 +146,8 @@ export default defineConfig({
 		}),
 	],
 	redirects: {
-		'/content-utils': '/content-utils/integration',
-		'/content-utils/git-time': '/content-utils/git',
+		'/content-utils/git': '/content-utils',
+		'/content-utils/git-time': '/content-utils',
 		'/modular-station': '/modular-station/api',
 	},
 	image: {

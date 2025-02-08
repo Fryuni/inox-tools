@@ -5,6 +5,8 @@ import { logger as integrationLogger } from '@it-astro:logger:test-integration';
 import { logger } from '@it-astro:logger';
 import Foo from '../component/Foo.astro';
 
+export const prerender = true;
+
 const entries = await getCollection('blog');
 
 integrationLogger.info(`Retrieved ${entries.length} entries`);

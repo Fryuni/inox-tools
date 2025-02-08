@@ -15,7 +15,7 @@
     "@astrojs/node": "catalog:",
     "@inox-tools/content-utils": "workspace:^",
     "@inox-tools/runtime-logger": "workspace:^",
-    "astro": "^5.2.5",
+    "astro": "catalog:",
     "astro-integration-kit": "^0.18.0",
     "typescript": "catalog:"
   }

@@ -15,7 +15,7 @@
     "@astrojs/mdx": "^4.0.8",
     "@astrojs/rss": "^4.0.11",
     "@astrojs/sitemap": "catalog:",
-    "astro": "^5.2.5",
+    "astro": "catalog:",
     "typescript": "catalog:"
   },
   "devDependencies": {

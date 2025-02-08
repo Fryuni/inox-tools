@@ -98,6 +98,12 @@ type Fixture = {
 	 */
 	readFile: (path: string) => Promise<string | null>;
 	/**
+	 * Read a file from the project.
+	 *
+	 * Returns null if the file doesn't exist.
+	 */
+	readSrcFile: (path: string) => Promise<string | null>;
+	/**
 	 * Edit a file in the fixture.
 	 *
 	 * The second parameter can be the new content of the file
@@ -354,6 +360,15 @@ export async function loadFixture(inlineConfig: InlineConfig): Promise<Fixture> 
 		pathExists: (p) => fs.existsSync(resolveOutPath(p)),
 		readFile: async (filePath) => {
 			const path = resolveOutPath(filePath);
+
+			if (!fs.existsSync(path)) {
+				return null;
+			}
+
+			return fs.promises.readFile(path, 'utf8');
+		},
+		readSrcFile: async (filePath) => {
+			const path = resolveProjectPath(filePath);
 
 			if (!fs.existsSync(path)) {
 				return null;

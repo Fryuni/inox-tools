@@ -1,0 +1,5 @@
+{
+  "dynamic-1": {
+    "content": "This is available on build time and server time"
+  }
+}

@@ -15,7 +15,7 @@
     "@astrojs/node": "catalog:",
     "@inox-tools/request-nanostores": "workspace:^",
     "@inox-tools/request-state": "workspace:^",
-    "astro": "^5.2.5",
+    "astro": "catalog:",
     "nanostores": "catalog:",
     "typescript": "catalog:"
   }

@@ -107,7 +107,7 @@ export const injectorPlugin = (state: IntegrationState): Plugin => {
 					if (node.kind !== 'const') {
 						logger.warn(
 							'Exporting collections config using "let" may have unintended consequences. ' +
-							`Prefer "export const collections" in your "${configFile}".`
+								`Prefer "export const collections" in your "${configFile}".`
 						);
 					}
 

@@ -93,31 +93,17 @@ type Fixture = {
 	pathExists: (path: string) => boolean;
 	/**
 	 * Read a file from the build.
-	 *
-	 * Returns null if the file doesn't exist.
 	 */
-	readFile: (path: string) => Promise<string | null>;
-	/**
-	 * Read a file from the project.
-	 *
-	 * Returns null if the file doesn't exist.
-	 */
-	readSrcFile: (path: string) => Promise<string | null>;
+	readFile: (path: string) => Promise<string>;
 	/**
 	 * Edit a file in the fixture.
 	 *
 	 * The second parameter can be the new content of the file
 	 * or a function that takes the current content and returns the new content.
 	 *
-	 * The content passed to the function will be null if the file doesn't exist.
-	 * If the returned content is null, the file will be deleted.
-	 *
 	 * Returns a function that can be called to revert the edit.
 	 */
-	editFile: (
-		path: string,
-		updater: string | null | ((content: string | null) => string | null)
-	) => Promise<() => void>;
+	editFile: (path: string, updater: string | ((content: string) => string)) => Promise<() => void>;
 	/**
 	 * Reset all changes made with .editFile()
 	 */
@@ -238,16 +224,13 @@ export async function loadFixture(inlineConfig: InlineConfig): Promise<Fixture> 
 	const onNextChange = () =>
 		devServer
 			? new Promise<void>((resolve) =>
-				// TODO: Implement filter to only resolve on changes to a given file.
-				devServer.watcher.once('change', () => resolve())
-			)
+					// TODO: Implement filter to only resolve on changes to a given file.
+					devServer.watcher.once('change', () => resolve())
+				)
 			: Promise.reject(new Error('No dev server running'));
 
 	// Also do it on process exit, just in case.
 	process.on('exit', resetAllFiles);
-
-	const resolveOutPath = (path: string) => new URL(path.replace(/^\//, ''), config.outDir);
-	const resolveProjectPath = (path: string) => new URL(path.replace(/^\//, ''), config.root);
 
 	return {
 		config,
@@ -291,7 +274,7 @@ export async function loadFixture(inlineConfig: InlineConfig): Promise<Fixture> 
 			});
 
 			debug(`Removing node_modules/.astro`);
-			await fs.promises.rm(resolveProjectPath('./node_modules/.astro'), {
+			await fs.promises.rm(new URL('./node_modules/.astro', config.root), {
 				maxRetries: 10,
 				recursive: true,
 				force: true,
@@ -305,7 +288,7 @@ export async function loadFixture(inlineConfig: InlineConfig): Promise<Fixture> 
 			});
 
 			debug(`Removing .astro`);
-			await fs.promises.rm(resolveProjectPath('./.astro'), {
+			await fs.promises.rm(new URL('./.astro', config.root), {
 				maxRetries: 10,
 				recursive: true,
 				force: true,
@@ -357,39 +340,16 @@ export async function loadFixture(inlineConfig: InlineConfig): Promise<Fixture> 
 			}
 		},
 
-		pathExists: (p) => fs.existsSync(resolveOutPath(p)),
-		readFile: async (filePath) => {
-			const path = resolveOutPath(filePath);
-
-			if (!fs.existsSync(path)) {
-				return null;
-			}
-
-			return fs.promises.readFile(path, 'utf8');
-		},
-		readSrcFile: async (filePath) => {
-			const path = resolveProjectPath(filePath);
-
-			if (!fs.existsSync(path)) {
-				return null;
-			}
-
-			return fs.promises.readFile(path, 'utf8');
-		},
+		pathExists: (p) => fs.existsSync(new URL(p.replace(/^\//, ''), config.outDir)),
+		readFile: (filePath) =>
+			fs.promises.readFile(new URL(filePath.replace(/^\//, ''), config.outDir), 'utf8'),
 		editFile: async (filePath, newContentsOrCallback) => {
-			const fileUrl = resolveProjectPath(filePath);
-
-			const contents = fs.existsSync(fileUrl) ? await fs.promises.readFile(fileUrl, 'utf-8') : null;
-
+			const fileUrl = new URL(filePath.replace(/^\//, ''), config.root);
+			const contents = await fs.promises.readFile(fileUrl, 'utf-8');
 			const reset = () => {
 				debug(`Resetting ${filePath}`);
-				if (contents) {
-					fs.writeFileSync(fileUrl, contents);
-				} else {
-					fs.rmSync(fileUrl, { force: true });
-				}
+				fs.writeFileSync(fileUrl, contents);
 			};
-
 			// Only save this reset if not already in the map, in case multiple edits happen
 			// to the same file.
 			if (!fileEdits.has(fileUrl.toString())) {
@@ -397,21 +357,12 @@ export async function loadFixture(inlineConfig: InlineConfig): Promise<Fixture> 
 			}
 
 			debug(`Editing ${filePath}`);
-
 			const newContents =
 				typeof newContentsOrCallback === 'function'
 					? newContentsOrCallback(contents)
 					: newContentsOrCallback;
-
 			const nextChange = devServer ? onNextChange() : Promise.resolve();
-
-			if (newContents) {
-				await fs.promises.mkdir(path.dirname(fileURLToPath(fileUrl)), { recursive: true });
-				await fs.promises.writeFile(fileUrl, newContents);
-			} else {
-				await fs.promises.rm(fileUrl, { force: true });
-			}
-
+			await fs.promises.writeFile(fileUrl, newContents);
 			await nextChange;
 			return reset;
 		},

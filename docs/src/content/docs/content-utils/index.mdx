@@ -11,15 +11,47 @@ tableOfContents:
 import { Steps } from '@astrojs/starlight/components';
 import InstallCmd from '@/components/InstallCmd.astro';
 
+This integration offers a set of extra functionalities for your content collections. It also allows other integrations to inject their own content collections into the project (see the docs for [how to use it on other integrations](/content-utils/integration)).
+
+Each feature in this integration is designed to have zero runtime cost when not used without the need to explicitly disable them. This means that you can use this library for some of its features without worrying about the cost of everything else.
+
+Each feature is also individually optimized such that whenever a trade-off is present, we optimize in favor of minimal runtime cost, moving as much of the processing to the initial built-time (before prerendering). This ensure that as your project grows the processing cost of this features to render your pages do not grow out of control.
+
 ## Installing the package
 
-<InstallCmd inSteps />
+<InstallCmd />
+
+## Static only collections
+
+Sometimes you might want to use small content collections for small dynamic pages-like tags, authors and other metadata-alongside large collections for prerendered pages (like the contents of a blog or docs).
+
+In such situation, Astro will include all the content of every Content Collection entry of your project in the server bundle, which can be limiting on some platform and overall a bad experience.
+
+### How to use
+
+Pass a list of collection names that shouldn't be added to the server bundle to the `staticOnlyCollections` options in the integration:
+
+```ts title="astro.config.ts" ins={6}
+import { defineConfig } from 'astro/config';
+import contentUtils from '@inox-tools/content-utils';
+
+export default defineConfig({
+	integrations: [contentUtils({
+		staticOnlyCollections: ['blog'],
+	})],
+});
+```
+
+Attempting to access any entry from the collections listed during from the server-side will behave as if the collection was empty (returning null for any entry and an empty list for the collection).
+
+### Optimizations and Trade-offs
+
+- Astro already has it's own optimization that completely removes all content collection data from the server bundle if it can prove that no on-demand route will use any entry. This optimization is not affected by using this feature, in such case this feature does nothing.
+- If an integration that _is_ used on the server is marked as static only, Astro will emit a log warning that the collection is empty. There is no option in Astro to skip this warning in case this is intentional.
 
 ## Git Times
 
 When writing a content rich site a common requirement is to show when some content was published, when it was last updated and who participated in authoring that content. Instead of tracking this manually for each entry in your content collections, this library allows you to retrieve that information from your Git history.
-
-Git is only necessary during build, so you can deploy your site anywhere. Even on platforms that don't provide Git, access to binaries or native modules (yes, even on Cloudflare).
 
 #### How to use
 
@@ -188,3 +220,23 @@ Date resolved from the Git history.
 **Type:** `(newDate: Date) => void`
 
 Callback function to override the resolved date.
+
+### Optimizations and Trade-offs
+
+#### Loaded only when imported
+
+The entire git processing logic is triggered by importing the `@it-astro:content/git` module. If your project does not import this module then no git processing is done at all.
+
+#### Git executable requirement
+
+Git is only necessary during build and the result of the git processing is added as an internal virtual module, so you can deploy your site anywhere. Even on platforms that don't provide Git, access to binaries or native modules (yes, even on Cloudflare).
+
+#### Multi-repository projects
+
+Instead of executing a Git command to inspect each entry from every collection, the implementation invokes Git a single time to retrieve the necessary information about _all_ files in the repository and selects those that are used by content collections. This avoids the linear growth of the overhead that comes from invoking the Git executable.
+
+As a consequence, this means that collection entries coming from different repositories won't be detected, be them submodules or due to a split-repository project.
+
+## License
+
+Content Utils is available under the MIT license.

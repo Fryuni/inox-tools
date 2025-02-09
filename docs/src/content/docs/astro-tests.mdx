@@ -208,22 +208,32 @@ Checks whether the given path exists on the build output (`outDir` config).
 ### `readFile`
 
 <p>
-  **Type:** `(path: string) => Promise<string>`
+  **Type:** `(path: string) => Promise<string | null>`
 </p>
 
-Read a file from the build (relative to `outDir` config).
+Read a file from the build (relative to the `outDir` config). Returns null if the file doesn't exist.
+
+### `readSrcFile`
+
+<p>
+  **Type:** `(path: string) => Promise<string | null>`
+</p>
+
+Read a file from the project (relative to the `root` config). Returns null if the file doesn't exist.
 
 ### `editFile`
 
 <p>
-  **Type:** `(path: string, updater: string | ((content: string) => string)) => Promise<() => void>`
+  **Type:** `(path: string, updater: string | null | ((content: string | null) => string | null)) => Promise<() => void>`
 </p>
 
 Edit a file in the fixture directory.
 
 The first parameter is a path relative to the root of the fixture.
 
-The second parameter can be the new content of the file or a function that takes the current content and returns the new content.
+The second parameter can be the new content of the file or a function that takes the current content and returns the new content. The content passed to the function will be null if the file doesn't exist.
+
+If the given content or content returned from the given function is null, the file will be deleted.
 
 This function returns a Promise that resolves to another function. This resolved function can be called to revert the changes.
 

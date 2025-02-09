@@ -107,7 +107,7 @@ export const injectorPlugin = (state: IntegrationState): Plugin => {
 					if (node.kind !== 'const') {
 						logger.warn(
 							'Exporting collections config using "let" may have unintended consequences. ' +
-								`Prefer "export const collections" in your "${configFile}".`
+							`Prefer "export const collections" in your "${configFile}".`
 						);
 					}
 
@@ -129,6 +129,7 @@ export const injectorPlugin = (state: IntegrationState): Plugin => {
 				if (chunk.type !== 'chunk') continue;
 				if (chunk.moduleIds.length === 1 && chunk.moduleIds[0] === '\0astro:data-layer-content') {
 					state.contentDataEntrypoint = joinPath(info.dir, chunk.fileName);
+					break;
 				}
 			}
 		},

@@ -1,0 +1,335 @@
+---
+title: How Static-only Collections Work?
+packageName: '@inox-tools/content-utils'
+description: A deep dive into the journey and implementation details of this well-requested optimization.
+---
+
+:::note
+This page is a deep dive into the implementation details and decisions of the Content Utils package's "static-only" content collections feature. You should have read [what _is_ the package](/content-utils#static-only-collections) before reading this page as it assumes that you already know what the package is for and how it can be used from a consumers perspective.
+:::
+
+When you use Content Collections in Astro, the code that powers those collections – the code that fetches, validates, and transforms your content – gets bundled into your server build. This is essential for dynamic routes or any situation where you need to access your content at runtime.
+
+However, what if you _only_ use a particular content collection for static pages? In that case, all that code becomes dead weight in your server bundle. It's just sitting there, increasing the size of your deployment and potentially slowing things down.
+
+The `staticOnlyCollections` option in Content Utils solves this problem by allowing you to mark certain collections as "static-only." When you do this, Content Utils will ensure that the code for those collections is _not_ included in your server build.
+
+Sounds simple, right? But like many things in software, the path to a simple solution is paved with layers of complexity. We'll unravel how we leveraged Astro's internals and a few clever tricks to achieve this optimization. Let's dive in!
+
+## How Astro handles Content Collections
+
+We know the final perceived effect that we want to achieve, but what would have to change exactly in the bundled code for us to achieve that? Essentially, what we need to know first is: What does Astro actually add to the server bundle that we want to remove?
+
+When you define Content Collections in your Astro project, you're leveraging a loader that runs during build time—*before* the bundling even starts—to fetch all the collection entries that need to be processed into your project. This loader is the workhorse responsible for gathering everything needed for pre-rendering your pages.
+
+The results of such loaders are collected into an in-memory state that's structured as a map of maps. In other words, it maintains a `Map<string, Map<string, any>>` where:
+
+- The **first-level map** uses the collection name as its key.
+- The **nested map** uses the entry IDs as keys, with each value containing the entry's data.
+
+This design provides the flexibility to handle multiple types of content entries using the same underlying structure.
+
+Now, during the bundling phase, Astro takes this in-memory mapping and flattens it using the `devalue.flatten` function of the [`devalue`](https://github.com/Rich-Harris/devalue) library. The beauty of `devalue` is that it can turn complex native JavaScript objects—like our `Map`—into JSON-serializable values and then later turn them back into the original value, all while preserving their original structure.
+
+Astro then turns that flattened value into a module source code exporting it as its default export using [`@rollup/pluginutils`](https://www.npmjs.com/package/@rollup/pluginutils). The module code is then injected into your server bundle as a virtual module named `astro:data-layer-content`. This virtual module is what contains all the content collection data in the final server bundle.
+
+For "static-only" collections, though, we want to keep this build-time process untouched—since it's what powers pre-rendering—but we also want to avoid shipping the serialized content mapping for collections that aren't needed at runtime. In other words, the goal is to ensure that while the pre-render understands everything just fine during build time, our final server bundle is leaner by excluding unnecessary content data. So we can't just change the data _during_ the bundling since it would also make the data unavailable for pre-rendering.
+
+## When and where to change
+
+If we aren't tweaking the data _during bundling_, then when exactly do we remove the static-only collections from the final server bundle? Even more so, _where_ do we change it? Isn't the point of bundling that the code of multiple modules can be mixed together to be more compact? How can we change it safely if we don't even know where it will be? WE'RE DOOMED!
+
+Well, calm down. Baby steps[^1]. At first glance, it might seem impossible to change the bundle when everything is already merged together. But with a systematic approach, we can pinpoint exactly where and when to make our changes. We have these problems to resolve:
+1. How to have a stable point to change in the bundle?
+2. Where would that point be in the bundle?
+3. When can we change it?
+
+Let's investigate each one of these in turn.
+
+[^1]: No, I'm not talking about [Niko's amazing blog](https://smallcultfollowing.com/babysteps/) here. But you should check it out if you like Rust and its internals.
+
+### A needle in... a bunch of needles
+
+First let's analyze that problem about the code getting mixed up together. Indeed, the whole point of a bundler is that it can add correlated code in the same file, deduplicate and prune parts of the code to have a more compact code to execute, allowing for faster cold starts and less dependency loading (many times removing those altogether).
+
+This would be a problem for us, since we wouldn't know where inside the pile of JS emitted by the build that we need to change. Thankfully, Vite/Rollup allows plugins to set a module to be in its own independent chunk. This can be done in a few ways:
+- Calling `this.emitFile` to emit a chunk with the file;
+- Adding the module to the `input` list of entry points to the build;
+- Defining or overriding the `manualChunks` option to manually set the module to a specific chunk.
+
+But wait! That is all the theory behind chunks in bundler and how Vite/Rollup exposes things. Do we even need to do that? Before we start messing with chunks ourselves, let's investigate what happens when we actually make the bundle already. And if you do that... That module is going into an independent chunk on it's own! Why?
+
+Remember I said before that Astro already includes a portion of this optimization we are building? Astro already does some detection and replaces the content of the chunk with a [simple comment][comment replace]. An interesting thing about how Astro does it is that Astro never tells Vite that the module should go into a separate chunk, the `isEntry` value in that case is even `false`. Astro relies on the module getting turned into a dynamic entry point by Rollup's heuristic, something that is not really documented.
+
+This is kind of how some codebases have a code that have some obvious optimization missing and a comment saying "the compiler will figure out the last piece of the optimization". Sometimes that is a good idea since the obvious code optimization will make the compiler miss some other more important optimization later. I haven't checked why it was done this way in Astro, other modules that need to go in their own chunks are [declared explicitly][explicit chunking in Astro]. Something to ask Bjorn (who wrote the code)!
+
+[comment replace]: https://github.com/withastro/astro/blob/7bc825649bfb790a0206abd31df1676513a03b22/packages/astro/src/core/build/static-build.ts?plain=1#L336-L340
+[explicit chunking in Astro]: https://github.com/withastro/astro/blob/7bc825649bfb790a0206abd31df1676513a03b22/packages/astro/src/core/build/plugins/plugin-chunks.ts?plain=1#L9-L20
+
+But that is way too deeply into Rollup's internals, we don't need to go that deep to solve our problems so we can add a note and ask them later. All that matters to us here is that the module is already added to a separate chunk, and that changes to this behavior would break Astro's own optimization. So we can count on the Astro team (hey, me included) to fix it if the assumption that it will happen automatically no longer holds.
+
+That solves our first problem of having a stable point to change. Next step is to find this point.
+
+### Where is the module?
+
+Finally let's start looking at some code. As we saw from our previous experiment, the name of the file includes a hash, so we can't hard-code it. We need to get this information from the bundle.
+
+This is simple to do with a Vite plugin! Vite exposes a lot of hooks that we can use, and all the hooks from Rollup, the underlying bundler, are also available to us. In this case, the information we need is available on the `generateBundle` and the `writeBundle` hooks. Since we only care about builds to the filesystem that can be deployed, we'll use the `writeBundle` hook.
+
+The `writeBundle` hook is called as soon as all the files from the bundle have been written to disk. At this point, Astro hasn't yet rendered any page, so we won't change anything and only extract information. The second parameter of this hook is an object relating each chunk to information about what went inside of it. We can look for the chunk that contains a single module, the one we want to change:
+
+```ts wrap {"      1. We iterate over all the entries in the bundle": 2-3} {"      2. If the entry is not a chunk, skip it": 5-6} {"      3. If the chunk has a single module, the one we want, we found the chunk": 8-12}
+		writeBundle(info, bundle) {
+
+			for (const chunk of Object.values(bundle)) {
+
+
+				if (chunk.type !== 'chunk') continue;
+
+
+				if (chunk.moduleIds.length === 1 && chunk.moduleIds[0] === '\0astro:data-layer-content') {
+					console.log('We found the chunk:', chunk.fileName);
+					break;
+				}
+			}
+		},
+```
+
+Notice that the module ID we are checking is `\0astro:data-layer-content`, with that null byte in front of the name. That is the resolved ID, it is a convention within the Rollup ecosystem to add a null byte in front of resolved IDs for virtual modules to ensure that they won't ever collide with a module provided by Node or some dependency since a null byte is not allowed in those.
+
+Running that code we get the name of the chunk, but it is a relative path. Relative to what? You might think it is the `outDir` option we get from Astro, but no, it will be a directory inside of it. We can get the path from the first argument of the hook and store it to use later:
+
+```ts wrap {" 1. Declare a value outside the plugin":1-2} {"  2. Make sure this plugin runs after other plugins that might modify the chunks":6-7} {"        3. Store the resolved path in the variable from 1":14-15} 
+.
+let chunkEntrypoint: string | null = null;
+
+{
+  name: 'chunk-finder',
+
+  enforce: 'post',
+	writeBundle(info, bundle) {
+
+		if (!info.dir) return;
+		for (const chunk of Object.values(bundle)) {
+			if (chunk.type !== 'chunk') continue;
+			if (chunk.moduleIds.length === 1 && chunk.moduleIds[0] === '\0astro:data-layer-content') {
+
+        chunkEntrypoint = joinPath(info.dir, chunk.fileName);
+				break;
+			}
+		}
+	},
+}
+```
+
+The type for that value claims that it can be undefined, but I didn't find any scenario where this function would be called without it being defined. In any way, we can add a check for safety and do nothing in case we can't resolve relative to what the chunk name is.
+
+Another problem solved! We know _what_ to change, but we don't know _when_ to change it yet. Next problem.
+
+### Build is done! Time to clean.
+
+Remember: Our pre-rendering process relies entirely on the full content map. We need that complete picture to generate all the static pages without a hitch. So, rather than modifying things during bundling—which would deprive pre-rendering of necessary data—we delay the cleanup until pre-rendering is already done.
+
+Thankfully, Astro exposes a hook for that exact moment. The [`astro:build:done` hook][build done hook] is called once all the pre-rendering is done, and we can edit the chunk we found in the previous section on it:
+
+```ts
+      'astro:build:done': async () => {
+				await clearStaticCollections(staticOnlyCollections, chunkEntrypoint);
+      },
+```
+
+Wow, this one was easy. Thanks to the Astro's amazing [Integration API]. We know what to change, we know when to change it and we know what is the change. Now we just need to do it!
+
+[build done hook]: https://docs.astro.build/en/reference/integrations-reference/#astrobuilddone
+[Integration API]: https://docs.astro.build/en/reference/integrations-reference/
+
+## Edit the chunk
+
+Finally! Let's piece what we got together and edit the chunk. We still haven't changed anything, just looped over the chunks to find a file name, barely anything at all. Because we want to remain efficient, we first add some checks so we don't do unnecessary work, these sanity checks ensure that we never attempt to modify the chunk if there are no static-only collections, or if the chunk is missing, or has already been processed by Astro's own optimizations:
+
+```ts {"      If there are no collections to make static-only,":7-8} {"      If the chunk wasn't found,":9-10} {"      Or if it was already deleted by something else":11-12} {"    Skip and do nothing":15-16}
+async function clearStaticCollections(
+  staticOnlyCollections: string[],
+  chunkEntrypoint: string | null
+) {
+	if (
+		!(
+
+			staticOnlyCollections.length > 0 &&
+
+			chunkEntrypoint &&
+
+			existsSync(chunkEntrypoint)
+		)
+	)
+
+		return;
+}
+```
+
+Next, we read the content of the file and check whether Astro already optimized everything out of the chunk. As seen before, Astro replaces the entire content of the file with a comment, so we can detect it when the file doesn't have an `export` statement:
+
+```ts ins={7-10}
+async function clearStaticCollections(
+  staticOnlyCollections: string[],
+  contentEntrypoint: string | null
+) {
+	...
+
+	const originalContent = readFileSync(contentEntrypoint, 'utf-8');
+
+	// Content was already cleared by Astro.
+	if (!originalContent.includes('export')) return;
+}
+```
+
+Ok, now we can do some real work! We need to import that entrypoint to get the value with all the entries. We can use the `import()` function for a dynamic import to get the `devalue` flattened value exported by the module and call `devalue.unflatten` to get the map we want to modify:
+
+```ts ins={7-11}
+async function clearStaticCollections(
+  staticOnlyCollections: string[],
+  contentEntrypoint: string | null
+) {
+	...
+
+	// Import the chunk, which exports a devalue flattened map as the default export
+	const { default: value } = await import(/*@vite-ignore*/ contentEntrypoint);
+
+	// Unflatten the map
+	const map: Map<string, Map<string, unknown>> = devalue.unflatten(value);
+}
+```
+
+Notice that we added a `/* @vite-ignore */` comment to the import to tell Vite to ignore it. We don't want Vite to warn us about dynamically defined imports when bundling, we know it is dynamic and we know the file will be there, we checked it just above.
+
+Now we can iterate through all the collections we don't want to be present in the server bundle and delete them from the map:
+
+```ts ins={7-10}
+async function clearStaticCollections(
+  staticOnlyCollections: string[],
+  contentEntrypoint: string | null
+) {
+	...
+
+	// Remove all the collections we promise we won't use on the server
+	for (const collection of staticOnlyCollections) {
+		map.delete(collection);
+	}
+}
+```
+
+And lastly, we can encode that back into a module exporting the `devalue` flattened map and write it back to the file:
+
+```ts ins={7-14}
+async function clearStaticCollections(
+  staticOnlyCollections: string[],
+  contentEntrypoint: string | null
+) {
+	...
+
+	// Build the source code with the new map flattened
+	const newContent = [
+		`const _astro_dataLayerContent = ${devalue.stringify(map)}`,
+		'\nexport { _astro_dataLayerContent as default }',
+	].join('\n');
+
+	// Write it back
+	writeFileSync(contentEntrypoint, newContent, 'utf-8');
+}
+```
+
+At this point, the chunk in the server bundle now exports a flattened map that no longer includes any static-only collections. This bundle with the trimmed down chunk can be deployed to serve on-demand pages, while pre-rendering has already benefited from the complete content map.
+
+## Conclusion
+
+In this guide, we explored how Astro flattens Content Collections into a virtual module and how we strategically remove static-only collections after pre-rendering—ensuring that the full content is available when needed while keeping the final server bundle lean.
+
+Keep in mind that the code examples here are simplified to explain the core idea. The final implementation is more robust, complete with tests, assertions, and debugging tools.
+
+Before we close, remember: in the realm of build optimizations, there's always a hint of magic lurking behind the curtain. We hope you've enjoyed peering into the abyss of our bundle wizardry and unveiling some of that hidden magic.
+
+Happy coding fellow cosmic adventurers! May your bundles be ever smaller and your services ever faster!
+
+<details>
+<summary>The final code</summary>
+
+```ts
+import type { AstroIntegration } from 'astro';
+import * as devalue from 'devalue';
+import * as path from 'node:path';
+import * as fs from 'node:fs';
+
+export default ({ staticCollections }: { staticCollections: string[] }): AstroIntegration => {
+  let contentEntrypoint: string | null = null;
+
+  return {
+    name: 'remove-collection-from-server',
+    hooks: {
+      'astro:config:setup': ({ updateConfig }) => {
+        updateConfig({
+          vite: {
+            plugins: [{
+              name: 'chunk-finder',
+              enforce: 'post',
+              writeBundle(info, bundle) {
+                if (!info.dir) return;
+                for (const chunk of Object.values(bundle)) {
+                  if (chunk.type !== 'chunk') continue;
+                  if (chunk.moduleIds.length === 1 && chunk.moduleIds[0] === '\0astro:data-layer-content') {
+                    contentEntrypoint = path.join(info.dir, chunk.fileName);
+                    break;
+                  }
+                }
+              },
+            }],
+          },
+        });
+      },
+      'astro:build:done': async () => {
+        await clearStaticCollections(staticCollections, contentEntrypoint);
+      },
+    }
+  }
+}
+
+async function clearStaticCollections(
+  staticOnlyCollections: string[],
+  contentEntrypoint: string | null
+) {
+	if (
+		!(
+			staticOnlyCollections.length > 0 &&
+			contentEntrypoint &&
+			existsSync(contentEntrypoint)
+		)
+	)
+		return;
+
+	const originalContent = readFileSync(contentEntrypoint, 'utf-8');
+
+	// Content was already cleared by Astro. Collections are not used anywhere on server bundle
+	if (!originalContent.includes('export')) return;
+
+	// Import the chunk, which exports a devalue flattened map as the default export
+	const { default: value } = await import(/*@vite-ignore*/ contentEntrypoint);
+
+	// Unflatten the map
+	const map: Map<string, Map<string, unknown>> = devalue.unflatten(value);
+
+	// Remove all the collections we promise we won't use on the server
+	for (const collection of staticOnlyCollections) {
+		map.delete(collection);
+	}
+
+	// Build the source code with the new map flattened
+	const newContent = [
+		`const _astro_dataLayerContent = ${devalue.stringify(map)}`,
+		'\nexport { _astro_dataLayerContent as default }',
+	].join('\n');
+
+	// Write it back
+	writeFileSync(contentEntrypoint, newContent, 'utf-8');
+}
+```
+</details>
+

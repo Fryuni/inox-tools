@@ -1,0 +1,10 @@
+{
+  "name": "@content-utils/default-rendering",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@inox-tools/content-utils": "workspace:",
+    "astro": "catalog:"
+  }
+}

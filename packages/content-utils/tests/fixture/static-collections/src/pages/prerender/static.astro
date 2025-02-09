@@ -1,0 +1,16 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+
+export const prerender = true;
+export const partial = true;
+
+const entries: CollectionEntry<'static-only'>[] = await getCollection('static-only');
+---
+
+{
+	entries.map((entry) => (
+		<p>
+			{entry.id}: {entry.data.content}
+		</p>
+	))
+}

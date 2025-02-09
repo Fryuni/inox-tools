@@ -32,23 +32,30 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "prepublish": "pnpm run build",
-    "test": "echo 'No tests'"
+    "test": "vitest run",
+    "test:dev": "vitest"
   },
   "dependencies": {
     "@inox-tools/modular-station": "workspace:^",
     "@inox-tools/utils": "workspace:^",
     "astro-integration-kit": "catalog:",
     "debug": "catalog:",
+    "devalue": "catalog:",
     "estree-walker": "catalog:",
     "magic-string": "catalog:"
   },
   "devDependencies": {
     "@types/debug": "catalog:",
     "@types/node": "catalog:",
+    "@inox-tools/astro-tests": "workspace:",
+    "@vitest/coverage-v8": "catalog:",
+    "@vitest/ui": "catalog:",
     "astro": "catalog:min",
+    "jest-extended": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:",
-    "vite": "catalog:"
+    "vite": "catalog:",
+    "vitest": "catalog:"
   },
   "peerDependencies": {
     "astro": "catalog:min"

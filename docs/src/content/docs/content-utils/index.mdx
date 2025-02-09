@@ -16,7 +16,7 @@ This integration offers a set of extra functionalities for your content collecti
 
 Each feature in this integration is designed to have zero runtime cost when not used without the need to explicitly disable them. This means that you can use this library for some of its features without worrying about the cost of everything else.
 
-Each feature is also individually optimized such that, whenever a trade-off is needed, we optimize in favor of minimal runtime cost by moving as much of the processing as possible to the initial built-time (before prerendering). This ensure that as your project grows, the processing cost of this features to render your pages do not grow out of control.
+Each feature is also individually optimized such that, whenever a trade-off is needed, we optimize in favor of minimal runtime cost by moving as much of the processing as possible to the initial built-time (before prerendering). This ensures that as your project grows, the processing cost of this features to render your pages doesn't grow out of control.
 
 ## Installing the package
 
@@ -47,8 +47,8 @@ Attempting to access any entry from the collections listed during from the serve
 
 ### Optimizations and Trade-offs
 
-- Astro already has it's own optimization that completely removes all content collection data from the server bundle if it can prove that no on-demand route will use any entry. This optimization is not affected by using this feature, in such case this feature does nothing;
-- Astro already has its own optimization that completely removes all content collection data from the server bundle if it can prove that no on-demand route will use any entry. This optimization remains unaffected by this feature; if it apples, this feature is disabled automatically.
+- Astro already has its own optimization that completely removes all content collection data from the server bundle if it can prove that no on-demand route will use any entry. This optimization remains unaffected by this feature; if it applies, this feature is disabled automatically.
+- If an integration that _is_ used on the server is marked as static only, Astro will emit a log warning that the collection is empty. There is no option in Astro to skip this warning in case this is intentional.
 
 ## Git Times
 

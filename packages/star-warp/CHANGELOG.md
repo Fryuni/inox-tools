@@ -1,5 +1,11 @@
 # @inox-tools/star-warp
 
+## 0.2.3
+
+### Patch Changes
+
+- 91120ab: Expand Starlight compatibility range
+
 ## 0.2.2
 
 ### Patch Changes

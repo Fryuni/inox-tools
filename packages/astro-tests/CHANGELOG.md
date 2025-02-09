@@ -1,5 +1,11 @@
 # @inox-tools/astro-tests
 
+## 0.4.0
+
+### Minor Changes
+
+- 86edf1c: Allow file edits and resets to create and delete files in the source code
+
 ## 0.3.0
 
 ### Minor Changes

@@ -1,5 +1,17 @@
 # @inox-tools/content-utils
 
+## 0.9.0
+
+### Minor Changes
+
+- 02f1df8: Add static only collection feature.
+
+  Now users can pass `staticOnlyCollections` to the integration to make the entries of those integration not be shipped in the server bundle.
+
+### Patch Changes
+
+- 42eadc0: Add support for new content collections config file
+
 ## 0.8.2
 
 ### Patch Changes

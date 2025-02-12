@@ -17,6 +17,7 @@
     "@croct/plug": "^0.16.5",
     "@inox-tools/star-warp": "workspace:^",
     "@inox-tools/utils": "workspace:^",
+    "@orama/wc-components": "^0.4.1",
     "@vercel/analytics": "^1.4.1",
     "astro": "catalog:",
     "sharp": "^0.33.5",

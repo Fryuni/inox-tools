@@ -1,4 +1,4 @@
-import { defineConfig } from 'astro/config';
+import { defineConfig, envField } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import type { StarlightConfig } from '@astrojs/starlight/types';
 import vercel from '@astrojs/vercel';
@@ -39,6 +39,7 @@ export default defineConfig({
 			lastUpdated: true,
 			editLink: { baseUrl: 'https://github.com/Fryuni/inox-tools/edit/main/docs' },
 			pagination: false,
+			pagefind: true,
 			social: {
 				github: 'https://github.com/Fryuni/inox-tools',
 				discord: 'https://discord.com/channels/830184174198718474/1197638002764152843',
@@ -48,6 +49,7 @@ export default defineConfig({
 				PageTitle: './src/components/PageTitle.astro',
 				Sidebar: './src/components/Sidebar.astro',
 				MarkdownContent: './src/components/MarkdownContent.astro',
+				Search: './src/components/Search.astro',
 			},
 			sidebar: [
 				{
@@ -145,6 +147,21 @@ export default defineConfig({
 			],
 		}),
 	],
+	env: {
+		validateSecrets: true,
+		schema: {
+			ORAMA_CLOUD_ENDPOINT: envField.string({
+				context: 'client',
+				access: 'public',
+				optional: false,
+			}),
+			ORAMA_CLOUD_API_KEY: envField.string({
+				context: 'client',
+				access: 'public',
+				optional: false,
+			}),
+		},
+	},
 	redirects: {
 		'/content-utils/git': '/content-utils',
 		'/content-utils/git-time': '/content-utils',

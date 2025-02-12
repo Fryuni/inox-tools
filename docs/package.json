@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "astro": "astro",
-    "build": "rm -rf node_modules/.astro && astro build",
+    "build": "rm -rf .astro node_modules/.astro && astro build",
     "dev": "astro dev",
     "preview": "astro preview",
     "start": "astro dev",

@@ -1,66 +1,66 @@
 ---
-// import { Search as ReactSearch } from './Search';
-// import BaseSearch from '@astrojs/starlight/components/Search.astro';
 import '@orama/wc-components/dist/orama-ui/orama-ui.css';
 
 export type { Props } from '@astrojs/starlight/props';
-
-console.log('Redering custom search');
 ---
 
 <div class="orama-search-bar">
-  <orama-search-box />
-	<orama-search-button colorScheme="dark" />
+	<orama-search-box></orama-search-box>
+	<orama-search-button colorScheme="dark"></orama-search-button>
 </div>
 
 <script>
-import { defineCustomElements } from '@orama/wc-components/loader';
-import { ORAMA_CLOUD_API_KEY, ORAMA_CLOUD_ENDPOINT } from 'astro:env/client';
+	import { defineCustomElements } from '@orama/wc-components/loader';
+	import { ORAMA_CLOUD_API_KEY, ORAMA_CLOUD_ENDPOINT } from 'astro:env/client';
 
-document.querySelectorAll<HTMLOramaSearchBoxElement>('.orama-search-bar orama-search-box').forEach((el) => {
-  Object.assign(el, {
-    index: {
-      endpoint: ORAMA_CLOUD_ENDPOINT,
-      api_key: ORAMA_CLOUD_API_KEY,
-    },
-    disableChat: true,
-    sourcesMap: {
-      title: 'title',
-      description: 'content',
-    },
-    resultMap: {
-      title: 'title',
-      description: 'content',
-    },
-    searchPlaceholder: 'Search something...',
-    chatPlaceholder: 'What do you dream of doing with Inox Tools?',
-    suggestions: [
-      'What is Inox Tools?',
-      'How to use Nanostores on the server?',
-      'How to use Portals in Astro?',
-    ],
-  } satisfies Partial<HTMLOramaSearchBoxElement>);
-});
+	document
+		.querySelectorAll<HTMLOramaSearchBoxElement>('.orama-search-bar orama-search-box')
+		.forEach((el) => {
+			Object.assign(el, {
+				index: {
+					endpoint: ORAMA_CLOUD_ENDPOINT,
+					api_key: ORAMA_CLOUD_API_KEY,
+				},
+				disableChat: false,
+				sourcesMap: {
+					title: 'title',
+					path: 'url',
+					description: 'content',
+				},
+				resultMap: {
+					title: 'title',
+					description: 'content',
+					section: 'category',
+				},
+				searchPlaceholder: 'Search something...',
+				chatPlaceholder: 'What do you dream of doing with Inox Tools?',
+				suggestions: [
+					'What is Inox Tools?',
+					'How to use Nanostores on the server?',
+					'How to use Portals in Astro?',
+				],
+			} satisfies Partial<HTMLOramaSearchBoxElement>);
+		});
 
-		function updateSearchTheme() {
-			const theme = document.documentElement.dataset.theme || 'dark';
-			document.querySelectorAll('.orama-search-bar').forEach((el) => {
-				const button = el.querySelector('orama-search-button');
-				const box = el.querySelector('orama-search-box');
-		    if (button) button.colorScheme = theme as any;
-        if (box) box.colorScheme = theme as any;
-			});
-		}
+	function updateSearchTheme() {
+		const theme = document.documentElement.dataset.theme || 'dark';
+		document.querySelectorAll('.orama-search-bar').forEach((el) => {
+			const button = el.querySelector('orama-search-button');
+			const box = el.querySelector('orama-search-box');
+			if (button) button.colorScheme = theme as any;
+			if (box) box.colorScheme = theme as any;
+		});
+	}
 
-		updateSearchTheme();
+	updateSearchTheme();
 
-		const observer = new MutationObserver(updateSearchTheme);
-		observer.observe(document.documentElement, { attributes: true, subtree: false });
+	const observer = new MutationObserver(updateSearchTheme);
+	observer.observe(document.documentElement, { attributes: true, subtree: false });
 
-  defineCustomElements();
+	defineCustomElements();
 
 	document.querySelectorAll('.orama-search-bar orama-search-button').forEach((el) => {
-	  el.appendChild(document.createTextNode('Search'))
+		el.appendChild(document.createTextNode('Search'));
 	});
 </script>
 

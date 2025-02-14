@@ -44,11 +44,15 @@
   "pnpm": {
     "overrides": {
       "@croct/sdk": "0.17.0",
+      "astro": "$astro",
       "vite": "catalog:",
       "picomatch": "3.0.1"
     },
     "patchedDependencies": {
       "astro": "patches/astro.patch"
     }
+  },
+  "dependencies": {
+    "astro": "file:astro.tgz"
   }
 }

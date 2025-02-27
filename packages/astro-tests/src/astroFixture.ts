@@ -5,9 +5,7 @@ import fastGlob from 'fast-glob';
 import { Agent, request } from 'undici';
 import { build, dev, preview, sync } from 'astro';
 import type { AstroConfig, AstroInlineConfig } from 'astro';
-import { mergeConfig } from '../node_modules/astro/dist/core/config/merge.js';
-import { validateConfig } from '../node_modules/astro/dist/core/config/validate.js';
-import { getViteConfig } from 'astro/config';
+import { getViteConfig, mergeConfig, validateConfig } from 'astro/config';
 import { callsites } from './utils.js';
 import type { App } from 'astro/app';
 import { getDebug } from './internal/log.js';
@@ -154,8 +152,9 @@ let nextDefaultPort = 10000 + Math.floor(Math.random() * 40000);
  *   });
  *   ```
  */
-export async function loadFixture(inlineConfig: InlineConfig): Promise<Fixture> {
-	if (!inlineConfig?.root) throw new Error("Must provide { root: './fixtures/...' }");
+export async function loadFixture({ root, ...remaining }: InlineConfig): Promise<Fixture> {
+	if (!root) throw new Error("Must provide { root: './fixtures/...' }");
+	const inlineConfig: AstroInlineConfig = remaining;
 
 	debug('Setting default log level to "silent"');
 	// Silent by default during tests to not pollute the console output
@@ -179,14 +178,13 @@ export async function loadFixture(inlineConfig: InlineConfig): Promise<Fixture> 
 		inlineConfig.server.port ??= nextDefaultPort++;
 	}
 
-	let root = inlineConfig.root;
 	if (typeof root !== 'string') {
 		// Handle URL, should already be absolute so just convert to path
-		root = fileURLToPath(root);
+		inlineConfig.root = fileURLToPath(root);
 	} else if (root.startsWith('file://')) {
 		debug('Root is a file URL, converting to path');
 		// Handle "file:///C:/Users/fred", convert to "C:/Users/fred"
-		root = fileURLToPath(new URL(root));
+		inlineConfig.root = fileURLToPath(new URL(root));
 	} else if (!path.isAbsolute(root)) {
 		debug('Root is a relative path, resolving to absolute path relative to caller');
 		const [caller] = callsites().slice(1);
@@ -196,19 +194,20 @@ export async function loadFixture(inlineConfig: InlineConfig): Promise<Fixture> 
 		}
 		debug(`Fixture loaded from ${callerUrl}`);
 		// Handle "./fixtures/...", convert to absolute path relative to the caller of this function.
-		root = fileURLToPath(new URL(root, callerUrl));
+		inlineConfig.root = fileURLToPath(new URL(root, callerUrl));
 		debug(`Resolved fixture root to ${root}`);
+	} else {
+		inlineConfig.root = root;
 	}
 
-	inlineConfig.root = root;
-	const config = await validateConfig(inlineConfig, root, 'dev');
+	const config = await validateConfig(inlineConfig, inlineConfig.root, 'dev');
 
 	debug('Output dir:', config.outDir);
 	debug('Src dir:', config.srcDir);
 
 	const viteConfig = await getViteConfig(
 		{},
-		{ ...inlineConfig, root }
+		inlineConfig
 	)({
 		command: 'serve',
 		mode: 'dev',

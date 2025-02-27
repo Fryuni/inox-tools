@@ -1,5 +1,11 @@
 # @inox-tools/astro-tests
 
+## 0.5.0
+
+### Minor Changes
+
+- 2e64078: Use stable Astro APIs
+
 ## 0.4.0
 
 ### Minor Changes

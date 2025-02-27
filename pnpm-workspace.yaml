@@ -1,5 +1,5 @@
 catalog:
-  astro: ^5.2.5
+  astro: ^5.4.0
   astro-integration-kit: ~0.18.0
   '@astrojs/compiler': ^2.10.4
   '@astrojs/sitemap': ^3.2.1

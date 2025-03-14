@@ -58,8 +58,10 @@ export const gitBuildPlugin = (state: IntegrationState): Plugin => {
 				switch (chunk.moduleIds[0]) {
 					case RESOLVED_INNER_MODULE_ID:
 						gitStateEntrypoint = joinPath(info.dir, chunk.fileName);
+						break;
 					case '\0astro:data-layer-content':
 						contentDataEntrypoint = joinPath(info.dir, chunk.fileName);
+						break;
 				}
 			}
 
@@ -159,7 +161,7 @@ export async function getLatestCommitDate(...args) {
   const cached = latestCommits.get(entry.filePath);
   if (cached !== undefined) return cached;
   const now = new Date();
-  latestCommits.set(file, now);
+  latestCommits.set(entry.filePath, now);
   return now;
 }
 
@@ -175,7 +177,7 @@ export async function getOldestCommitDate(...args) {
   const cached = oldestCommits.get(entry.filePath);
   if (cached !== undefined) return cached;
   const now = new Date();
-  oldestCommits.set(file, now);
+  oldestCommits.set(entry.filePath, now);
   return now;
 }
 `;

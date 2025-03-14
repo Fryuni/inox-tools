@@ -16,6 +16,7 @@ const possibleConfigs = [
 ];
 
 export type ResolvedContentPaths = {
+	projectRoot: string;
 	contentPath: string;
 	configPath: string;
 	configExists: boolean;
@@ -37,6 +38,7 @@ export function resolveContentPaths(config: AstroConfig): ResolvedContentPaths {
 	const configFile = existingConfig ?? validConfigPaths[0];
 
 	return {
+		projectRoot: fileURLToPath(config.root),
 		contentPath,
 		configPath: configFile,
 		configExists: existingConfig !== undefined,

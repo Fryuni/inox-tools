@@ -8,7 +8,7 @@ const RESOLVED_MODULE_ID = '\x00@it-astro:content/git';
 
 const debug = getDebug('git-time-plugin');
 
-export const gitDevPlugin = ({ contentPaths: { contentPath } }: IntegrationState): Plugin => ({
+export const gitDevPlugin = ({ contentPaths: { projectRoot } }: IntegrationState): Plugin => ({
 	name: '@inox-tools/content-utils/gitTimes',
 	resolveId(id) {
 		if (id === MODULE_ID) return RESOLVED_MODULE_ID;
@@ -16,21 +16,21 @@ export const gitDevPlugin = ({ contentPaths: { contentPath } }: IntegrationState
 	load(id, { ssr } = {}) {
 		if (id !== RESOLVED_MODULE_ID || !ssr) return;
 
-		debug(`Generated dev mode git time plugin for ${contentPath}`);
+		debug(`Generated dev mode git time plugin for ${projectRoot}`);
 		return `
-import {setContentPath} from '@inox-tools/content-utils/runtime/git';
+import {setProjectRoot} from '@inox-tools/content-utils/runtime/git';
 export {
 	getLatestCommitDate,
 	getOldestCommitDate,
 	getEntryGitInfo,
 } from '@inox-tools/content-utils/runtime/liveGit';
 
-setContentPath(${JSON.stringify(contentPath)});
+setProjectRoot(${JSON.stringify(projectRoot)});
 `;
 	},
 });
 
-export const gitBuildPlugin = ({ contentPaths: { contentPath } }: IntegrationState): Plugin => ({
+export const gitBuildPlugin = ({ contentPaths: { projectRoot } }: IntegrationState): Plugin => ({
 	name: '@inox-tools/content-utils/gitTimes',
 	resolveId(id) {
 		if (id === MODULE_ID) return RESOLVED_MODULE_ID;
@@ -38,8 +38,8 @@ export const gitBuildPlugin = ({ contentPaths: { contentPath } }: IntegrationSta
 	async load(id, { ssr } = {}) {
 		if (id !== RESOLVED_MODULE_ID || !ssr) return;
 
-		debug('Registering content path:', contentPath);
-		liveGit.setContentPath(contentPath);
+		debug('Registering project root:', projectRoot);
+		liveGit.setProjectRoot(projectRoot);
 		const trackedFiles = await liveGit.collectGitInfoForContentFiles();
 		debug('Git tracked file dates:', trackedFiles);
 
@@ -52,8 +52,7 @@ export async function getEntryGitInfo(...args) {
 	const params = args.length > 1 ? args : [args[0].collection, args[0].slug ?? args[0].id];
 	const entry = await getEntry(...params);
 
-	const file = \`\${entry.collection}:\${entry.id}\`;
-	const rawInfo = trackedFiles.get(file);
+	const rawInfo = trackedFiles.get(entry.filePath);
 	if (!rawInfo) return;
 	return {
 		earliest: new Date(rawInfo.earliest),
@@ -65,15 +64,15 @@ export async function getEntryGitInfo(...args) {
 
 const latestCommits = new Map([
 ${trackedFiles
-	.map(([file, fileInfo]) => `[${JSON.stringify(file)}, new Date(${fileInfo.latest.valueOf()})]`)
-	.join(',')}
+				.map(([file, fileInfo]) => `[${JSON.stringify(file)}, new Date(${fileInfo.latest.valueOf()})]`)
+				.join(',')}
 ]);
 
 export async function getLatestCommitDate(...args) {
 	const params = args.length > 1 ? args : [args[0].collection, args[0].slug ?? args[0].id];
 	const entry = await getEntry(...params);
 
-	const file = \`\${entry.collection}:\${entry.id}\`;
+	const file = \`\${entry.collection}:\${entry.filePath}\`;
   const cached = latestCommits.get(file);
   if (cached !== undefined) return cached;
   const now = new Date();
@@ -83,8 +82,8 @@ export async function getLatestCommitDate(...args) {
 
 const oldestCommits = new Map([
 ${trackedFiles
-	.map(([file, fileInfo]) => `[${JSON.stringify(file)}, new Date(${fileInfo.earliest.valueOf()})]`)
-	.join(',')}
+				.map(([file, fileInfo]) => `[${JSON.stringify(file)}, new Date(${fileInfo.earliest.valueOf()})]`)
+				.join(',')}
 ]);
 
 export async function getOldestCommitDate(...args) {

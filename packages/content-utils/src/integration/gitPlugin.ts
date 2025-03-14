@@ -156,8 +156,7 @@ export async function getLatestCommitDate(...args) {
 	const params = args.length > 1 ? args : [args[0].collection, args[0].slug ?? args[0].id];
 	const entry = await getEntry(...params);
 
-	const file = \`\${entry.collection}:\${entry.filePath}\`;
-  const cached = latestCommits.get(file);
+  const cached = latestCommits.get(entry.filePath);
   if (cached !== undefined) return cached;
   const now = new Date();
   latestCommits.set(file, now);
@@ -173,8 +172,7 @@ export async function getOldestCommitDate(...args) {
 	const params = args.length > 1 ? args : [args[0].collection, args[0].slug ?? args[0].id];
 	const entry = await getEntry(...params);
 
-	const file = \`\${entry.collection}:\${entry.id}\`;
-  const cached = oldestCommits.get(file);
+  const cached = oldestCommits.get(entry.filePath);
   if (cached !== undefined) return cached;
   const now = new Date();
   oldestCommits.set(file, now);

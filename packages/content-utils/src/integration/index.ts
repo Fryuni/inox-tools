@@ -110,6 +110,9 @@ export const integration = withApi(
 					},
 					'astro:build:done': async () => {
 						await clearStaticCollections(state);
+						for (const cleanup of state.cleanups) {
+							await cleanup();
+						}
 					},
 				},
 				...api,

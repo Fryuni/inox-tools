@@ -10,6 +10,7 @@ import { callsites } from './utils.js';
 import type { App } from 'astro/app';
 import { getDebug } from './internal/log.js';
 import { setNestedIfNullish } from '@inox-tools/utils/values';
+import type { readFile } from 'node:fs/promises';
 
 const debug = getDebug('fixture');
 
@@ -90,17 +91,35 @@ type Fixture = {
 	 */
 	pathExists: (path: string) => boolean;
 	/**
-	 * Read a file from the build.
+	 * Read a unicode text file from the build. Do NOT use this for non-text files (e.g. images).
 	 *
 	 * Returns null if the file doesn't exist.
 	 */
 	readFile: (path: string) => Promise<string | null>;
 	/**
-	 * Read a file from the project.
+	 * Read a file from the build. This is a thin wrapper around `fs.promises.readFile` and will not modify the encoding, making it suitable for reading binary files (e.g. images).
+	 *
+	 * Returns null if the file doesn't exist.
+	 */
+	readRawFile: (
+		path: string,
+		options?: Parameters<typeof readFile>[1]
+	) => Promise<null | Awaited<ReturnType<typeof readFile>>>;
+	/**
+	 * Read a unicode text file from the project. Do NOT use this for non-text files (e.g. images).
 	 *
 	 * Returns null if the file doesn't exist.
 	 */
 	readSrcFile: (path: string) => Promise<string | null>;
+	/**
+	 * Read a file from the build. This is a thin wrapper around `fs.promises.readFile` and will not modify the encoding, making it suitable for reading binary files (e.g. images).
+	 *
+	 * Returns null if the file doesn't exist.
+	 */
+	readRawSrcFile: (
+		path: string,
+		options?: Parameters<typeof readFile>[1]
+	) => Promise<null | Awaited<ReturnType<typeof readFile>>>;
 	/**
 	 * Edit a file in the fixture.
 	 *
@@ -366,6 +385,15 @@ export async function loadFixture({ root, ...remaining }: InlineConfig): Promise
 
 			return fs.promises.readFile(path, 'utf8');
 		},
+		readRawFile: async (filePath, options) => {
+			const path = resolveOutPath(filePath);
+
+			if (!fs.existsSync(path)) {
+				return null;
+			}
+
+			return fs.promises.readFile(path, options);
+		},
 		readSrcFile: async (filePath) => {
 			const path = resolveProjectPath(filePath);
 
@@ -374,6 +402,15 @@ export async function loadFixture({ root, ...remaining }: InlineConfig): Promise
 			}
 
 			return fs.promises.readFile(path, 'utf8');
+		},
+		readRawSrcFile: async (filePath, options) => {
+			const path = resolveProjectPath(filePath);
+
+			if (!fs.existsSync(path)) {
+				return null;
+			}
+
+			return fs.promises.readFile(path, options);
 		},
 		editFile: async (filePath, newContentsOrCallback) => {
 			const fileUrl = resolveProjectPath(filePath);

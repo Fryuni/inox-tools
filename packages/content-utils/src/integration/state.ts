@@ -7,11 +7,13 @@ export interface IntegrationState {
 	staticOnlyCollections: string[];
 	contentPaths: ResolvedContentPaths;
 	contentDataEntrypoint?: string;
+	cleanups: (() => Promise<void>)[];
 }
 
 export function emptyState(): IntegrationState {
 	return {
 		injectedCollectionsEntrypoints: [],
 		staticOnlyCollections: [],
+		cleanups: [],
 	} as Partial<IntegrationState> as IntegrationState;
 }

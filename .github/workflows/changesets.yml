@@ -1,6 +1,6 @@
 name: Surface PR Changesets
 
-on: pull_request
+on: pull_request_target
 
 permissions:
   pull-requests: write
@@ -16,11 +16,12 @@ jobs:
           fetch-depth: 0
 
       - name: Get changed files in the .changeset folder
-        id: changed-files
-        uses: tj-actions/changed-files@v35
-        with:
-          files: |
-            .changeset/**/*.md
+        run: |
+          {
+            echo "all_changed_files<<EOF"
+            git diff --names-only origin/main HEAD -- .changeset
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Check if any changesets contain minor or major changes
         id: check

@@ -10,7 +10,6 @@ import { callsites } from './utils.js';
 import type { App } from 'astro/app';
 import { getDebug } from './internal/log.js';
 import { setNestedIfNullish } from '@inox-tools/utils/values';
-import type { readFile } from 'node:fs/promises';
 
 const debug = getDebug('fixture');
 
@@ -91,35 +90,29 @@ type Fixture = {
 	 */
 	pathExists: (path: string) => boolean;
 	/**
-	 * Read a unicode text file from the build. Do NOT use this for non-text files (e.g. images).
+	 * Read a file (as a string) from the build. Do NOT use this for binary files (e.g. images).
 	 *
 	 * Returns null if the file doesn't exist.
 	 */
-	readFile: (path: string) => Promise<string | null>;
+	readFile: (path: string, encoding?: BufferEncoding) => Promise<string | null>;
 	/**
-	 * Read a file from the build. This is a thin wrapper around `fs.promises.readFile` and will not modify the encoding, making it suitable for reading binary files (e.g. images).
+	 * Read a file (as a buffer) from the build. DO use this for binary files (e.g. images).
 	 *
 	 * Returns null if the file doesn't exist.
 	 */
-	readRawFile: (
-		path: string,
-		options?: Parameters<typeof readFile>[1]
-	) => Promise<null | Awaited<ReturnType<typeof readFile>>>;
+	readFileAsBuffer: (path: string) => Promise<Buffer | null>;
 	/**
-	 * Read a unicode text file from the project. Do NOT use this for non-text files (e.g. images).
+	 * Read a file (as a string) from the project. Do NOT use this for binary files (e.g. images).
 	 *
 	 * Returns null if the file doesn't exist.
 	 */
-	readSrcFile: (path: string) => Promise<string | null>;
+	readSrcFile: (path: string, encoding?: BufferEncoding) => Promise<string | null>;
 	/**
-	 * Read a file from the build. This is a thin wrapper around `fs.promises.readFile` and will not modify the encoding, making it suitable for reading binary files (e.g. images).
+	 * Read a file (as a buffer) from the project. DO use this for binary files (e.g. images).
 	 *
 	 * Returns null if the file doesn't exist.
 	 */
-	readRawSrcFile: (
-		path: string,
-		options?: Parameters<typeof readFile>[1]
-	) => Promise<null | Awaited<ReturnType<typeof readFile>>>;
+	readSrcFileAsBuffer: (path: string) => Promise<Buffer | null>;
 	/**
 	 * Edit a file in the fixture.
 	 *
@@ -376,41 +369,41 @@ export async function loadFixture({ root, ...remaining }: InlineConfig): Promise
 		},
 
 		pathExists: (p) => fs.existsSync(resolveOutPath(p)),
-		readFile: async (filePath) => {
+		readFile: async (filePath, encoding = 'utf8') => {
 			const path = resolveOutPath(filePath);
 
 			if (!fs.existsSync(path)) {
 				return null;
 			}
 
-			return fs.promises.readFile(path, 'utf8');
+			return fs.promises.readFile(path, encoding);
 		},
-		readRawFile: async (filePath, options) => {
+		readFileAsBuffer: async (filePath) => {
 			const path = resolveOutPath(filePath);
 
 			if (!fs.existsSync(path)) {
 				return null;
 			}
 
-			return fs.promises.readFile(path, options);
+			return fs.promises.readFile(path);
 		},
-		readSrcFile: async (filePath) => {
+		readSrcFile: async (filePath, encoding = 'utf8') => {
 			const path = resolveProjectPath(filePath);
 
 			if (!fs.existsSync(path)) {
 				return null;
 			}
 
-			return fs.promises.readFile(path, 'utf8');
+			return fs.promises.readFile(path, encoding);
 		},
-		readRawSrcFile: async (filePath, options) => {
+		readSrcFileAsBuffer: async (filePath) => {
 			const path = resolveProjectPath(filePath);
 
 			if (!fs.existsSync(path)) {
 				return null;
 			}
 
-			return fs.promises.readFile(path, options);
+			return fs.promises.readFile(path);
 		},
 		editFile: async (filePath, newContentsOrCallback) => {
 			const fileUrl = resolveProjectPath(filePath);

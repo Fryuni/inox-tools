@@ -90,17 +90,29 @@ type Fixture = {
 	 */
 	pathExists: (path: string) => boolean;
 	/**
-	 * Read a file from the build.
+	 * Read a file (as a string) from the build. Do NOT use this for binary files (e.g. images).
 	 *
 	 * Returns null if the file doesn't exist.
 	 */
-	readFile: (path: string) => Promise<string | null>;
+	readFile: (path: string, encoding?: BufferEncoding) => Promise<string | null>;
 	/**
-	 * Read a file from the project.
+	 * Read a file (as a buffer) from the build. DO use this for binary files (e.g. images).
 	 *
 	 * Returns null if the file doesn't exist.
 	 */
-	readSrcFile: (path: string) => Promise<string | null>;
+	readFileAsBuffer: (path: string) => Promise<Buffer | null>;
+	/**
+	 * Read a file (as a string) from the project. Do NOT use this for binary files (e.g. images).
+	 *
+	 * Returns null if the file doesn't exist.
+	 */
+	readSrcFile: (path: string, encoding?: BufferEncoding) => Promise<string | null>;
+	/**
+	 * Read a file (as a buffer) from the project. DO use this for binary files (e.g. images).
+	 *
+	 * Returns null if the file doesn't exist.
+	 */
+	readSrcFileAsBuffer: (path: string) => Promise<Buffer | null>;
 	/**
 	 * Edit a file in the fixture.
 	 *
@@ -357,23 +369,41 @@ export async function loadFixture({ root, ...remaining }: InlineConfig): Promise
 		},
 
 		pathExists: (p) => fs.existsSync(resolveOutPath(p)),
-		readFile: async (filePath) => {
+		readFile: async (filePath, encoding = 'utf8') => {
 			const path = resolveOutPath(filePath);
 
 			if (!fs.existsSync(path)) {
 				return null;
 			}
 
-			return fs.promises.readFile(path, 'utf8');
+			return fs.promises.readFile(path, encoding);
 		},
-		readSrcFile: async (filePath) => {
+		readFileAsBuffer: async (filePath) => {
+			const path = resolveOutPath(filePath);
+
+			if (!fs.existsSync(path)) {
+				return null;
+			}
+
+			return fs.promises.readFile(path);
+		},
+		readSrcFile: async (filePath, encoding = 'utf8') => {
 			const path = resolveProjectPath(filePath);
 
 			if (!fs.existsSync(path)) {
 				return null;
 			}
 
-			return fs.promises.readFile(path, 'utf8');
+			return fs.promises.readFile(path, encoding);
+		},
+		readSrcFileAsBuffer: async (filePath) => {
+			const path = resolveProjectPath(filePath);
+
+			if (!fs.existsSync(path)) {
+				return null;
+			}
+
+			return fs.promises.readFile(path);
 		},
 		editFile: async (filePath, newContentsOrCallback) => {
 			const fileUrl = resolveProjectPath(filePath);

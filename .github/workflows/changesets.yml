@@ -19,7 +19,7 @@ jobs:
         run: |
           {
             echo "all_changed_files<<EOF"
-            git diff --names-only origin/main HEAD -- .changeset
+            git diff --name-only origin/main -- .changeset
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 

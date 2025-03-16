@@ -21,17 +21,18 @@ injectedState.circular = injectedState;
 test.beforeAll(async () => {
 	delete process.env.INJECTED_STATE;
 	await fixture.build({});
-	process.env.INJECTED_STATE = devalue.stringify(injectedState);
-	server = await fixture.preview({});
 });
 
-test.afterAll(async () => {
+test.afterEach(async () => {
 	delete process.env.INJECTED_STATE;
 	await server?.stop();
 	await server?.closed();
 });
 
 test('share state', async ({ page }) => {
+	process.env.INJECTED_STATE = devalue.stringify(injectedState);
+	server = await fixture.preview({});
+
 	let assertionFailed = false;
 	page.on('console', async (msg) => {
 		if (msg.type() === 'assert') {
@@ -48,5 +49,27 @@ test('share state', async ({ page }) => {
 	const pageState = devalue.parse(await page.locator('pre#injected-state').innerHTML());
 
 	expect(pageState).toStrictEqual(injectedState);
+	expect(assertionFailed).toBe(false);
+});
+
+test('avoid xss', async ({ page }) => {
+	process.env.INJECTED_STATE = devalue.stringify(
+		'</script><script>alert("xss");</script><script type="text/plain">'
+	);
+	server = await fixture.preview({});
+
+	let assertionFailed = false;
+	page.on('dialog', async (dialog) => {
+		if (dialog.type() === 'alert') {
+			assertionFailed = true;
+		}
+
+		await dialog.accept();
+	});
+
+	const pageUrl = fixture.resolveUrl('/?name=John+Doe');
+
+	await page.goto(pageUrl);
+
 	expect(assertionFailed).toBe(false);
 });

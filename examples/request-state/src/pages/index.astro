@@ -4,6 +4,10 @@ import ShowState from '../components/ShowState.astro';
 import { setState } from '@it-astro:state';
 import { $renderTimeMsg } from '../store';
 
+const xssScript = "</script><script>alert('xss')</script><script text='text/plain'>";
+
+setState('xssAttempt', xssScript);
+
 const renderTime = `Index server at ${new Date().toISOString()}`;
 
 setState('pageMessage', renderTime);

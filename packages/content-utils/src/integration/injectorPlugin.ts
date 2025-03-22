@@ -8,16 +8,18 @@ import { fileURLToPath } from 'node:url';
 import { dirname, resolve, join as joinPath } from 'node:path';
 import { getDebug } from '../internal/debug.js';
 
+const debug = getDebug('injector-plugin');
+
 const thisFile = fileURLToPath(import.meta.url);
 const thisDir = dirname(thisFile);
+
+debug('Resolution base:', { thisFile, thisDir });
 
 const INJECTOR_VIRTUAL_MODULE = '@it-astro:content/injector';
 const RESOLVED_INJECTOR_VIRTUAL_MODULE = `\0${INJECTOR_VIRTUAL_MODULE}`;
 
 const CONTENT_VIRTUAL_MODULE = '@it-astro:content';
 const RESOLVED_CONTENT_VIRTUAL_MODULE = `\0${CONTENT_VIRTUAL_MODULE}`;
-
-const debug = getDebug('injector-plugin');
 
 export const injectorPlugin = (state: IntegrationState): Plugin => {
 	const {

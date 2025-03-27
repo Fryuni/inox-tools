@@ -2,9 +2,10 @@ import type { Plugin } from 'vite';
 import type { IntegrationState } from './state.js';
 import * as liveGit from '../runtime/git.js';
 import * as devalue from 'devalue';
-import { join as joinPath } from 'node:path';
+import { dirname, join as joinPath, resolve } from 'node:path';
 import { getDebug } from '../internal/debug.js';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 const MODULE_ID = '@it-astro:content/git';
 const RESOLVED_MODULE_ID = '\x00@it-astro:content/git';
@@ -13,6 +14,11 @@ const INNER_MODULE_ID = '@it-astro:content/git/internal';
 const RESOLVED_INNER_MODULE_ID = '\x00@it-astro:content/git/internal';
 
 const debug = getDebug('git-time-plugin');
+
+const thisFile = fileURLToPath(import.meta.url);
+const thisDir = dirname(thisFile);
+
+debug('Resolution base:', { thisFile, thisDir });
 
 export const gitDevPlugin = ({ contentPaths: { projectRoot } }: IntegrationState): Plugin => ({
 	name: '@inox-tools/content-utils/gitTimes',
@@ -24,12 +30,12 @@ export const gitDevPlugin = ({ contentPaths: { projectRoot } }: IntegrationState
 
 		debug(`Generated dev mode git time plugin for ${projectRoot}`);
 		return `
-import {setProjectRoot} from '@inox-tools/content-utils/runtime/git';
+import {setProjectRoot} from ${JSON.stringify(resolve(thisDir, 'runtime/git.js'))};
 export {
 	getLatestCommitDate,
 	getOldestCommitDate,
 	getEntryGitInfo,
-} from '@inox-tools/content-utils/runtime/liveGit';
+} from ${JSON.stringify(resolve(thisDir, 'runtime/liveGit.js'))};
 
 setProjectRoot(${JSON.stringify(projectRoot)});
 `;

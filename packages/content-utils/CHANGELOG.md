@@ -1,5 +1,11 @@
 # @inox-tools/content-utils
 
+## 0.9.2
+
+### Patch Changes
+
+- 1066b82: Fixes incorrect virtual module imports when Content Utils is only a transitive dependency of the root project.
+
 ## 0.9.1
 
 ### Patch Changes

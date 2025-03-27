@@ -9,8 +9,6 @@ defaults:
     shell: bash
 
 env:
-  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
   FORCE_COLOR: true
 
 jobs:
@@ -23,6 +21,8 @@ jobs:
       id-token: write
       issues: write
       pull-requests: write
+    environment:
+      NODE_VERSION: 22
     steps:
       - name: "Check if user has admin access"
         uses: "lannonbr/repo-permission-check-action@2.0.0"
@@ -64,13 +64,21 @@ jobs:
 
       - run: git fetch origin main:main
 
+      - name: Cache turbo build setup
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-${{ env.NODE_VERSION }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-${{ env.NODE_VERSION }}-turbo-
+
       - name: Setup PNPM
         uses: pnpm/action-setup@v4
 
       - name: Setup Node
         uses: actions/setup-node@v4.2.0
         with:
-          node-version: 22
+          node-version: "${{ env.NODE_VERSION }}"
           registry-url: "https://registry.npmjs.org"
           cache: "pnpm"
 

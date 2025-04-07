@@ -11,7 +11,7 @@ export type Props = {
 
 const { type: packageType = 'integration', inSteps, version = 'latest' } = Astro.props;
 const packageName: string | undefined =
-	Astro.locals.starlight.entry.data.packageName ?? Astro.props.packageName;
+	Astro.locals.starlightRoute.entry.data.packageName ?? Astro.props.packageName;
 
 if (!packageName) {
 	throw new AstroError('Missing package name.');

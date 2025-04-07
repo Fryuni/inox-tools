@@ -4,12 +4,11 @@
  * https://github.com/withastro/docs/blob/35b56b0a76eb0e2f59c13355a88765f76e45609d/src/components/starlight/PageTitle.astro
  */
 
-import type { Props } from '@astrojs/starlight/props';
 import { Icon } from '@astrojs/starlight/components';
 import Default from '@astrojs/starlight/components/PageTitle.astro';
 import Version from './Version.astro';
 
-const { data } = Astro.props.entry;
+const { data } = Astro.locals.starlightRoute.entry;
 const { packageName, howItWorks } = data;
 
 const gitHubURL =

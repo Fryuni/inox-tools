@@ -1,5 +1,11 @@
 # @inox-tools/cut-short
 
+## 1.1.0
+
+### Minor Changes
+
+- 9a061db: Adds option to disable HTML streaming and lift its limitations
+
 ## 1.0.3
 
 ### Patch Changes

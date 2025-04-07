@@ -8,7 +8,7 @@ export type { Props } from '@astrojs/starlight/props';
 ---
 
 {/*<SidebarPersister {...Astro.props}>*/}
-<SidebarSublist sublist={Astro.props.sidebar} />
+<SidebarSublist sublist={Astro.locals.starlightRoute.sidebar} />
 {/*</SidebarPersister>*/}
 
 <PartnerBadge />

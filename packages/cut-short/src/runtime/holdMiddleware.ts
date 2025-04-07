@@ -20,9 +20,7 @@ export const onRequest: MiddlewareHandler = async (ctx, next) => {
 		const state: ControlState = (ctx.locals[LOCALS_KEY] = {});
 
 		const res = await next();
-		const body = import.meta.env.DEV
-			? await awaitBodyWithoutChange(ctx, res.body)
-			: await res.arrayBuffer();
+		const body = await awaitBodyWithoutChange(ctx, res.body);
 
 		if (state.innerError) {
 			if (state.innerError instanceof CarrierError) {
@@ -70,11 +68,15 @@ async function awaitBodyWithoutChange(
 			chunks.push({ k: 'chunk', v: chunk });
 		}
 	} catch (error) {
-		chunks.push({ k: 'error', v: error });
+		if (import.meta.env.DEV === true) {
+			chunks.push({ k: 'error', v: error });
+		} else {
+			throw error;
+		}
 	}
 
-	if (ctx.props.error) {
-		debug('Propagating error from previous page');
+	if (import.meta.env.DEV === true && ctx.props.error) {
+		debug('Propagating error from previous page for dev overlay');
 		chunks.push({ k: 'error', v: ctx.props.error });
 	}
 

@@ -38,7 +38,7 @@ export type MaybeAsyncThunk<T> = MaybeThunk<MaybePromise<T>>;
  * @see MaybeThunk
  */
 export function loadThunkValue<T>(value: MaybeThunk<T>): T {
-	return typeof value === 'function' ? value() : value;
+	return typeof value === 'function' ? value() : (value as T);
 }
 
 type NextDepth = [1, 2, 3, 4, 5, 6, 7];

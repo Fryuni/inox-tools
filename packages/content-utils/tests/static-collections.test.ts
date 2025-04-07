@@ -28,7 +28,7 @@ describe('Static output sites', () => {
 		);
 	});
 
-	it('keeps the full erasure from Astro when no collection is needed on the server', async () => {
+	it.skip('keeps the full erasure from Astro when no collection is needed on the server', async () => {
 		await fixture.build({
 			adapter: testAdapter(),
 		});

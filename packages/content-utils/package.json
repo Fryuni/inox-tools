@@ -45,9 +45,9 @@
     "magic-string": "catalog:"
   },
   "devDependencies": {
+    "@inox-tools/astro-tests": "workspace:^",
     "@types/debug": "catalog:",
     "@types/node": "catalog:",
-    "@inox-tools/astro-tests": "workspace:",
     "@vitest/coverage-v8": "catalog:",
     "@vitest/ui": "catalog:",
     "astro": "catalog:min",

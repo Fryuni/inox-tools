@@ -29,22 +29,23 @@
     "*.{js,ts,jsx,tsx,astro,json,md,mdx}": "prettier --write"
   },
   "devDependencies": {
-    "@changesets/changelog-github": "^0.5.0",
-    "@changesets/cli": "^2.27.12",
+    "@changesets/changelog-github": "^0.5.1",
+    "@changesets/cli": "^2.28.1",
     "@playwright/test": "catalog:",
     "@types/node": "catalog:",
     "husky": "^9.1.7",
-    "lint-staged": "^15.4.3",
-    "prettier": "^3.4.2",
+    "lint-staged": "^15.5.0",
+    "prettier": "^3.5.3",
     "prettier-plugin-astro": "^0.14.1",
-    "turbo": "^2.4.0",
+    "turbo": "^2.5.0",
     "typescript": "catalog:"
   },
-  "packageManager": "pnpm@9.15.5+sha512.845196026aab1cc3f098a0474b64dfbab2afe7a1b4e91dd86895d8e4aa32a7a6d03049e2d0ad770bbe4de023a7122fb68c1a1d6e0d033c7076085f9d5d4800d4",
+  "packageManager": "pnpm@10.7.1+sha512.2d92c86b7928dc8284f53494fb4201f983da65f0fb4f0d40baafa5cf628fa31dae3e5968f12466f17df7e97310e30f343a648baea1b9b350685dafafffdf5808",
   "pnpm": {
     "overrides": {
       "@croct/sdk": "0.17.0",
       "vite": "catalog:",
+      "astro": "catalog:",
       "picomatch": "3.0.1"
     },
     "patchedDependencies": {

@@ -81,6 +81,9 @@ catalogs:
     rehype:
       specifier: ^13.0.2
       version: 13.0.2
+    rollup:
+      specifier: ^4.34.6
+      version: 4.39.0
     sitemap:
       specifier: ^8.0.0
       version: 8.0.0
@@ -758,9 +761,18 @@ importers:
       astro:
         specifier: ^5.6.1
         version: 5.6.1(patch_hash=895775bbfdbe16954cf40a9d53bd1f1b451f595c13167116b675e2bdc118ff0a)(@types/node@22.14.0)(jiti@2.0.0)(rollup@4.39.0)(typescript@5.8.3)(yaml@2.7.1)
+      estree-walker:
+        specifier: 'catalog:'
+        version: 3.0.3
       jest-extended:
         specifier: 'catalog:'
         version: 4.0.2
+      magic-string:
+        specifier: 'catalog:'
+        version: 0.30.17
+      rollup:
+        specifier: 'catalog:'
+        version: 4.39.0
       tsup:
         specifier: 'catalog:'
         version: 8.4.0(jiti@2.0.0)(postcss@8.5.3)(typescript@5.8.3)(yaml@2.7.1)
@@ -775,6 +787,15 @@ importers:
         version: 3.1.1(@types/debug@4.1.12)(@types/node@22.14.0)(@vitest/ui@3.1.1)(jiti@2.0.0)(yaml@2.7.1)
 
   packages/cut-short/tests/fixture/basic:
+    dependencies:
+      '@inox-tools/cut-short':
+        specifier: 'workspace:'
+        version: link:../../..
+      astro:
+        specifier: ^5.6.1
+        version: 5.6.1(patch_hash=895775bbfdbe16954cf40a9d53bd1f1b451f595c13167116b675e2bdc118ff0a)(@types/node@22.14.0)(jiti@2.0.0)(rollup@4.39.0)(typescript@5.8.3)(yaml@2.7.1)
+
+  packages/cut-short/tests/fixture/nestedComponents:
     dependencies:
       '@inox-tools/cut-short':
         specifier: 'workspace:'

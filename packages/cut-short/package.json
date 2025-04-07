@@ -43,6 +43,9 @@
     "jest-extended": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:",
+    "estree-walker": "catalog:",
+    "magic-string": "catalog:",
+    "rollup": "catalog:",
     "vite": "catalog:",
     "vitest": "catalog:"
   },

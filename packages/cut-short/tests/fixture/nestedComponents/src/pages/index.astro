@@ -1,0 +1,7 @@
+---
+import { endRequest } from '@it-astro:cut-short';
+
+endRequest(Response.json({ cutShort: true, from: 'index page' }));
+---
+
+<div>You shouldn't see this</div>

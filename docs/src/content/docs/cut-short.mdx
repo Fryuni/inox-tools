@@ -137,7 +137,7 @@ This is not only limited to returning a response. Other features for on-demand r
 
 Angelika Cathor wrote a [great summary](https://angelika.me/2025/03/16/implications-of-astro-html-streaming/) of those limitations and caveats, along with a few others external to Astro like SEO and instrumentation[^1]. I am not well-versed in SEO, so I don't know what are the impacts it can have. 
 
-[^1]: The Sentry limitation is a bug on the integration and not a streaming limitation. Integrations can detect errors coming thrown from components even with streaming enabled, they just can't change the page status based on the error. This bug should be fixed soon.
+[^1]: The Sentry limitation ws a bug on the integration and not a streaming limitation. Integrations can detect errors thrown from components even with streaming enabled, they just can't change the page status based on the error. This bug was fixed on https://github.com/getsentry/sentry-javascript/pull/15995
 
 ## License
 

@@ -167,7 +167,11 @@ let nextDefaultPort = 10000 + Math.floor(Math.random() * 40000);
  *   });
  *   ```
  */
-export async function loadFixture({ root, ci = false, ...remaining }: InlineConfig): Promise<Fixture> {
+export async function loadFixture({
+	root,
+	ci = false,
+	...remaining
+}: InlineConfig): Promise<Fixture> {
 	if (!root) throw new Error("Must provide { root: './fixtures/...' }");
 	const inlineConfig: AstroInlineConfig = remaining;
 
@@ -279,24 +283,24 @@ export async function loadFixture({ root, ci = false, ...remaining }: InlineConf
 			debug(`Dev server for ${root} running at ${resolveUrl('/')}`);
 			return devServer;
 		},
-    build: async (extraInlineConfig = {}) => {
-      process.env.NODE_ENV = 'production';
-      debug(`Building fixture ${root}`);
-      
-      if (ci) {
-        const { execSync } = await import('node:child_process');
-        
+		build: async (extraInlineConfig = {}) => {
+			process.env.NODE_ENV = 'production';
+			debug(`Building fixture ${root}`);
+
+			if (ci) {
+				const { execSync } = await import('node:child_process');
+
 				debug('Using CLI build for CI environment');
 				execSync('astro build', {
 					cwd: inlineConfig.root,
 					env: { ...process.env, NODE_ENV: 'production' },
-					stdio: 'inherit'
+					stdio: 'inherit',
 				});
-      } else { 
+			} else {
 				debug('Using programmatic build');
 				return build(mergeConfig(inlineConfig, extraInlineConfig));
 			}
-    },
+		},
 		preview: async (extraInlineConfig = {}) => {
 			process.env.NODE_ENV = 'production';
 			debug(`Starting preview server for fixture ${root}`);

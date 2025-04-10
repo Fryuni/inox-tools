@@ -16,7 +16,10 @@ const debug = getDebug('fixture');
 // Disable telemetry when running tests
 process.env.ASTRO_TELEMETRY_DISABLED = 'true';
 
-type InlineConfig = Omit<AstroInlineConfig, 'root'> & { root: string | URL };
+type InlineConfig = Omit<AstroInlineConfig, 'root'> & {
+	root: string | URL;
+	ci?: boolean;
+};
 export type NodeRequest = import('node:http').IncomingMessage;
 export type NodeResponse = import('node:http').ServerResponse;
 export type DevServer = Awaited<ReturnType<typeof dev>>;
@@ -164,7 +167,7 @@ let nextDefaultPort = 10000 + Math.floor(Math.random() * 40000);
  *   });
  *   ```
  */
-export async function loadFixture({ root, ...remaining }: InlineConfig): Promise<Fixture> {
+export async function loadFixture({ root, ci = false, ...remaining }: InlineConfig): Promise<Fixture> {
 	if (!root) throw new Error("Must provide { root: './fixtures/...' }");
 	const inlineConfig: AstroInlineConfig = remaining;
 
@@ -276,11 +279,24 @@ export async function loadFixture({ root, ...remaining }: InlineConfig): Promise
 			debug(`Dev server for ${root} running at ${resolveUrl('/')}`);
 			return devServer;
 		},
-		build: async (extraInlineConfig = {}) => {
-			process.env.NODE_ENV = 'production';
-			debug(`Building fixture ${root}`);
-			return build(mergeConfig(inlineConfig, extraInlineConfig));
-		},
+    build: async (extraInlineConfig = {}) => {
+      process.env.NODE_ENV = 'production';
+      debug(`Building fixture ${root}`);
+      
+      if (ci) {
+        const { execSync } = await import('node:child_process');
+        
+				debug('Using CLI build for CI environment');
+				execSync('astro build', {
+					cwd: inlineConfig.root,
+					env: { ...process.env, NODE_ENV: 'production' },
+					stdio: 'inherit'
+				});
+      } else { 
+				debug('Using programmatic build');
+				return build(mergeConfig(inlineConfig, extraInlineConfig));
+			}
+    },
 		preview: async (extraInlineConfig = {}) => {
 			process.env.NODE_ENV = 'production';
 			debug(`Starting preview server for fixture ${root}`);

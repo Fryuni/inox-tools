@@ -291,11 +291,16 @@ export async function loadFixture({
 				const { execSync } = await import('node:child_process');
 
 				debug('Using CLI build for CI environment');
-				execSync('astro build', {
-					cwd: inlineConfig.root,
-					env: { ...process.env, NODE_ENV: 'production' },
-					stdio: 'inherit',
-				});
+				try {
+					execSync('astro build', {
+						cwd: inlineConfig.root,
+						env: { ...process.env, NODE_ENV: 'production' },
+						stdio: 'inherit',
+					});
+				} catch (error) {
+					debug('CLI build failed');
+					throw new Error(`CI build failed: ${error}`);
+				}
 			} else {
 				debug('Using programmatic build');
 				return build(mergeConfig(inlineConfig, extraInlineConfig));

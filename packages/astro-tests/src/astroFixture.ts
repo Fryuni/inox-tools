@@ -18,7 +18,6 @@ process.env.ASTRO_TELEMETRY_DISABLED = 'true';
 
 type InlineConfig = Omit<AstroInlineConfig, 'root'> & {
 	root: string | URL;
-	ci?: boolean;
 };
 export type NodeRequest = import('node:http').IncomingMessage;
 export type NodeResponse = import('node:http').ServerResponse;
@@ -55,6 +54,13 @@ type Fixture = {
 	 * Equivalent to running `astro build`.
 	 */
 	build: typeof build;
+	/**
+	 * Builds using the CLI's `astro build` command in a child process.
+	 * This bypasses inline configs and is useful for black-box testing.
+	 *
+	 * Equivalent to running the `astro build` command in a shell.
+	 */
+	buildWithCli: () => Promise<import('node:child_process').ChildProcess>;
 	/**
 	 * Starts a preview server.
 	 *
@@ -167,11 +173,7 @@ let nextDefaultPort = 10000 + Math.floor(Math.random() * 40000);
  *   });
  *   ```
  */
-export async function loadFixture({
-	root,
-	ci = false,
-	...remaining
-}: InlineConfig): Promise<Fixture> {
+export async function loadFixture({ root, ...remaining }: InlineConfig): Promise<Fixture> {
 	if (!root) throw new Error("Must provide { root: './fixtures/...' }");
 	const inlineConfig: AstroInlineConfig = remaining;
 
@@ -286,25 +288,14 @@ export async function loadFixture({
 		build: async (extraInlineConfig = {}) => {
 			process.env.NODE_ENV = 'production';
 			debug(`Building fixture ${root}`);
-
-			if (ci) {
-				const { execSync } = await import('node:child_process');
-
-				debug('Using CLI build for CI environment');
-				try {
-					execSync('astro build', {
-						cwd: inlineConfig.root,
-						env: { ...process.env, NODE_ENV: 'production' },
-						stdio: 'inherit',
-					});
-				} catch (error) {
-					debug('CLI build failed');
-					throw new Error(`CI build failed: ${error}`);
-				}
-			} else {
-				debug('Using programmatic build');
-				return build(mergeConfig(inlineConfig, extraInlineConfig));
-			}
+			return build(mergeConfig(inlineConfig, extraInlineConfig));
+		},
+		buildWithCli: async () => {
+			const { exec } = await import('node:child_process');
+			return exec('astro build', {
+				cwd: inlineConfig.root,
+				env: { ...process.env, NODE_ENV: 'production' },
+			});
 		},
 		preview: async (extraInlineConfig = {}) => {
 			process.env.NODE_ENV = 'production';
@@ -460,7 +451,9 @@ export async function loadFixture({
 			const nextChange = devServer ? onNextChange() : Promise.resolve();
 
 			if (newContents) {
-				await fs.promises.mkdir(path.dirname(fileURLToPath(fileUrl)), { recursive: true });
+				await fs.promises.mkdir(path.dirname(fileURLToPath(fileUrl)), {
+					recursive: true,
+				});
 				await fs.promises.writeFile(fileUrl, newContents);
 			} else {
 				await fs.promises.rm(fileUrl, { force: true });

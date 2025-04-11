@@ -95,6 +95,22 @@ Builds into current folder (will erase previous build).
 
 Equivalent to running [`astro build`](https://docs.astro.build/en/reference/cli-reference/#astro-build).
 
+### `buildWithCli`
+
+<p>
+  **Type:** `() => Promise<import("node:child_process").ChildProcess>`
+</p>
+
+Builds using the CLI's `astro build` command in a child process.
+
+This method runs the build in a separate process, bypassing the programmatic API. It doesn't accept configuration parameters since it uses the project's configuration files directly.
+
+While not an ideal solution for most testing scenarios, this can be useful in specific cases where the programmatic build API behaves differently from the CLI execution, particularly in CI environments.
+
+Equivalent to running `astro build` in a shell directly from your project's root.
+
+
+
 ### `preview`
 
 {(

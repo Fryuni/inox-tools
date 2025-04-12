@@ -451,9 +451,7 @@ export async function loadFixture({ root, ...remaining }: InlineConfig): Promise
 			const nextChange = devServer ? onNextChange() : Promise.resolve();
 
 			if (newContents) {
-				await fs.promises.mkdir(path.dirname(fileURLToPath(fileUrl)), {
-					recursive: true,
-				});
+				await fs.promises.mkdir(path.dirname(fileURLToPath(fileUrl)), { recursive: true });
 				await fs.promises.writeFile(fileUrl, newContents);
 			} else {
 				await fs.promises.rm(fileUrl, { force: true });

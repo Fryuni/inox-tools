@@ -60,7 +60,7 @@ type Fixture = {
 	 *
 	 * Equivalent to running the `astro build` command in a shell.
 	 */
-	buildWithCli: () => Promise<import('node:child_process').ChildProcess>;
+	buildWithCli: () => Promise<{ stdout: string; stderr: string }>;
 	/**
 	 * Starts a preview server.
 	 *
@@ -292,7 +292,9 @@ export async function loadFixture({ root, ...remaining }: InlineConfig): Promise
 		},
 		buildWithCli: async () => {
 			const { exec } = await import('node:child_process');
-			return exec('astro build', {
+			const { promisify } = await import('node:util');
+			const execPromise = promisify(exec);
+			return execPromise('astro build', {
 				cwd: inlineConfig.root,
 				env: { ...process.env, NODE_ENV: 'production' },
 			});

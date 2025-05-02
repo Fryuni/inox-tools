@@ -16,7 +16,9 @@ const debug = getDebug('fixture');
 // Disable telemetry when running tests
 process.env.ASTRO_TELEMETRY_DISABLED = 'true';
 
-type InlineConfig = Omit<AstroInlineConfig, 'root'> & { root: string | URL };
+type InlineConfig = Omit<AstroInlineConfig, 'root'> & {
+	root: string | URL;
+};
 export type NodeRequest = import('node:http').IncomingMessage;
 export type NodeResponse = import('node:http').ServerResponse;
 export type DevServer = Awaited<ReturnType<typeof dev>>;
@@ -52,6 +54,13 @@ type Fixture = {
 	 * Equivalent to running `astro build`.
 	 */
 	build: typeof build;
+	/**
+	 * Builds using the CLI's `astro build` command in a child process.
+	 * This bypasses inline configs and is useful for black-box testing.
+	 *
+	 * Equivalent to running the `astro build` command in a shell.
+	 */
+	buildWithCli: () => Promise<{ stdout: string; stderr: string }>;
 	/**
 	 * Starts a preview server.
 	 *
@@ -280,6 +289,15 @@ export async function loadFixture({ root, ...remaining }: InlineConfig): Promise
 			process.env.NODE_ENV = 'production';
 			debug(`Building fixture ${root}`);
 			return build(mergeConfig(inlineConfig, extraInlineConfig));
+		},
+		buildWithCli: async () => {
+			const { exec } = await import('node:child_process');
+			const { promisify } = await import('node:util');
+			const execPromise = promisify(exec);
+			return execPromise('astro build', {
+				cwd: inlineConfig.root,
+				env: { ...process.env, NODE_ENV: 'production' },
+			});
 		},
 		preview: async (extraInlineConfig = {}) => {
 			process.env.NODE_ENV = 'production';

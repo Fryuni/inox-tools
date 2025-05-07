@@ -26,6 +26,6 @@ jobs:
         run: pnpm run build
 
       - name: Publish Preview Release
-        run: pnpx pkg-pr-new publish ./packages/*
+        run: pnpx pkg-pr-new publish --pnpm ./packages/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

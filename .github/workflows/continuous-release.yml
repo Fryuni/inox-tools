@@ -19,7 +19,13 @@ jobs:
           node-version: 20
           cache: "pnpm"
 
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Packages
+        run: pnpm run build
+
       - name: Publish Preview Release
-        run: pnpx pkg-pr-new publish ./packages/*/dist
+        run: pnpx pkg-pr-new publish ./packages/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

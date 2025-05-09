@@ -7,7 +7,7 @@
     "@astrojs/node": "catalog:",
     "@astrojs/preact": "^3.5.4",
     "@inox-tools/request-nanostores": "workspace:",
-    "@nanostores/preact": "^0.5.2",
+    "@nanostores/preact": "^1",
     "astro": "catalog:",
     "nanostores": "catalog:",
     "preact": "^10.25.1"

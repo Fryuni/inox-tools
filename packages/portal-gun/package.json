@@ -46,7 +46,7 @@
     "@types/hast": "catalog:",
     "@types/node": "catalog:",
     "@vitest/ui": "catalog:",
-    "astro": "catalog:lax",
+    "astro": "catalog:",
     "jest-extended": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:",

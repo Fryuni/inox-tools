@@ -13,17 +13,17 @@
   },
   "dependencies": {
     "@astrojs/starlight": "catalog:",
-    "@astrojs/vercel": "^8.1.3",
-    "@croct/plug": "^0.17.2",
+    "@astrojs/vercel": "^8.1.4",
+    "@croct/plug": "^0.18.1",
     "@inox-tools/star-warp": "workspace:^",
     "@inox-tools/utils": "workspace:^",
     "@orama/wc-components": "^0.6.4",
     "@vercel/analytics": "^1.5.0",
     "astro": "catalog:",
-    "sharp": "^0.34.0",
-    "starlight-cooler-credit": "^0.3.1",
-    "starlight-links-validator": "^0.15.0",
-    "starlight-package-managers": "^0.10.0"
+    "sharp": "^0.34.1",
+    "starlight-cooler-credit": "^0.4.0",
+    "starlight-links-validator": "^0.16.0",
+    "starlight-package-managers": "^0.11.0"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.4",
@@ -31,6 +31,5 @@
     "js-base64": "^3.7.7",
     "pako": "^2.1.0",
     "typescript": "catalog:"
-  },
-  "packageManager": "pnpm@10.7.1+sha512.2d92c86b7928dc8284f53494fb4201f983da65f0fb4f0d40baafa5cf628fa31dae3e5968f12466f17df7e97310e30f343a648baea1b9b350685dafafffdf5808"
+  }
 }

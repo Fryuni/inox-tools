@@ -1,5 +1,11 @@
 # @inox-tools/request-state
 
+## 0.4.0
+
+### Minor Changes
+
+- 5392c77: Bump Astro version
+
 ## 0.3.2
 
 ### Patch Changes

@@ -1,5 +1,17 @@
 # @inox-tools/request-nanostores
 
+## 0.3.0
+
+### Minor Changes
+
+- 5392c77: Bump Astro version
+- 5392c77: Bump Nanostores to v1
+
+### Patch Changes
+
+- Updated dependencies [5392c77]
+  - @inox-tools/request-state@0.4.0
+
 ## 0.2.3
 
 ### Patch Changes

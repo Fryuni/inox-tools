@@ -1,5 +1,11 @@
 # @inox-tools/modular-station
 
+## 0.5.0
+
+### Minor Changes
+
+- 5392c77: Bump Astro version
+
 ## 0.4.2
 
 ### Patch Changes

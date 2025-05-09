@@ -1,5 +1,16 @@
 # @inox-tools/portal-gun
 
+## 1.1.0
+
+### Minor Changes
+
+- 5392c77: Bump Astro version
+
+### Patch Changes
+
+- Updated dependencies [5392c77]
+  - @inox-tools/runtime-logger@0.5.0
+
 ## 1.0.3
 
 ### Patch Changes

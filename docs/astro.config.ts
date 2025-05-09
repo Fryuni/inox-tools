@@ -40,10 +40,18 @@ export default defineConfig({
 			editLink: { baseUrl: 'https://github.com/Fryuni/inox-tools/edit/main/docs' },
 			pagination: false,
 			pagefind: true,
-			social: {
-				github: 'https://github.com/Fryuni/inox-tools',
-				discord: 'https://discord.com/channels/830184174198718474/1197638002764152843',
-			},
+			social: [
+				{
+					icon: 'github',
+					label: 'GitHub',
+					href: 'https://github.com/Fryuni/inox-tools',
+				},
+				{
+					icon: 'discord',
+					label: 'Discord',
+					href: 'https://discord.com/channels/830184174198718474/1197638002764152843',
+				},
+			],
 			components: {
 				Head: './src/components/Head.astro',
 				PageTitle: './src/components/PageTitle.astro',

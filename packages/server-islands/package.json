@@ -1,6 +1,6 @@
 {
   "name": "@inox-tools/server-islands",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Common tools and utilities for working with Server Islands.",
   "keywords": [
     "astro-integration",

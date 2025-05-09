@@ -1,5 +1,15 @@
 # @inox-tools/utils
 
+## 0.4.0
+
+### Minor Changes
+
+- 1a1687b: Fixes behavior of `Once#doAsync` when called concurrently with other async contexts.
+
+### Patch Changes
+
+- 10fe460: Add new `Lazy.wrap` static method that returns a memoized function with the same signature instead of a `Lazy` instance.
+
 ## 0.3.1
 
 ### Patch Changes

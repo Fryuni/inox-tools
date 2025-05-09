@@ -4,12 +4,6 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    types:
-      - opened
-      - reopened
-      - synchronize
-      - labeled
 
 defaults:
   run:
@@ -22,7 +16,6 @@ jobs:
   changelog:
     name: Changelog PR or Release
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'push' || contains(github.event.pull_request.labels.*.name, 'preview') }}
     permissions:
       contents: write
       id-token: write
@@ -50,16 +43,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Publish preview
-        if: ${{ contains(github.event.pull_request.labels.*.name, 'preview') }}
-        run: pnpm cut-release
-        env:
-          # Use Node auth from above
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
       - name: Create Release Pull Request or Publish
         id: changesets
-        if: ${{ github.event_name == 'push' }}
         uses: changesets/action@v1
         with:
           # Note: pnpm install after versioning is necessary to refresh lockfile

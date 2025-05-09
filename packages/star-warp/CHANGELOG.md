@@ -1,5 +1,11 @@
 # @inox-tools/star-warp
 
+## 0.3.0
+
+### Minor Changes
+
+- 5392c77: Bump Astro version
+
 ## 0.2.3
 
 ### Patch Changes

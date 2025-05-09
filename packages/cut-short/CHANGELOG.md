@@ -1,5 +1,11 @@
 # @inox-tools/cut-short
 
+## 1.2.0
+
+### Minor Changes
+
+- 5392c77: Bump Astro version
+
 ## 1.1.0
 
 ### Minor Changes

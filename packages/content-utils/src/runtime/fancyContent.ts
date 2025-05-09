@@ -18,8 +18,8 @@ export type ExtendedSchema<S extends BaseSchema, T extends BaseSchema | never = 
 ] extends [never]
 	? S
 	: T extends BaseSchema
-	? z.ZodIntersection<S, T>
-	: S;
+		? z.ZodIntersection<S, T>
+		: S;
 
 type CollectionConfig<S extends BaseSchema> = ReturnType<typeof defineNative<S>>;
 
@@ -29,8 +29,8 @@ export interface CollectionExtensionOptions<E extends BaseSchema> {
 
 export type ExtendedCollection<S extends BaseSchema, E extends BaseSchema> =
 	ExtendedSchema<S, E> extends BaseSchema
-	? CollectionConfig<ExtendedSchema<S, E>>
-	: CollectionConfig<S>;
+		? CollectionConfig<ExtendedSchema<S, E>>
+		: CollectionConfig<S>;
 
 export type FancyCollection<S extends BaseSchema = BaseSchema> = <E extends BaseSchema>(
 	options?: CollectionExtensionOptions<E>

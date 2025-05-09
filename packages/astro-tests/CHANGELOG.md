@@ -1,5 +1,17 @@
 # @inox-tools/astro-tests
 
+## 0.6.0
+
+### Minor Changes
+
+- 5392c77: Bump Astro version
+
+### Patch Changes
+
+- ea893f2: Added fixture.buildWithCli() to build using the `astro build` command in a child process.
+
+  Useful when build behavior needs to be different from the programmatic API.
+
 ## 0.5.1
 
 ### Patch Changes

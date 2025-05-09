@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",
-    "@astrojs/mdx": "^4.2.3",
+    "@astrojs/mdx": "^4.2.6",
     "@astrojs/node": "catalog:",
     "@astrojs/rss": "^4.0.11",
     "@inox-tools/sitemap-ext": "workspace:^",

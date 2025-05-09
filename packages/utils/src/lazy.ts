@@ -8,7 +8,7 @@ export class Lazy<T> {
 	private initialized = false;
 	private value?: T;
 
-	private constructor(private factory: () => T) { }
+	private constructor(private factory: () => T) {}
 
 	public static of<T>(factory: () => T): Lazy<T> {
 		return new this(factory);

@@ -1,5 +1,60 @@
 # @inox-tools/content-utils
 
+## 0.10.1
+
+### Patch Changes
+
+- Updated dependencies [10fe460]
+- Updated dependencies [1a1687b]
+  - @inox-tools/utils@0.4.0
+  - @inox-tools/modular-station@0.5.1
+
+## 0.10.0
+
+### Minor Changes
+
+- 5392c77: Bump Astro version
+
+### Patch Changes
+
+- Updated dependencies [5392c77]
+  - @inox-tools/modular-station@0.5.0
+
+## 0.9.2
+
+### Patch Changes
+
+- 1066b82: Fixes incorrect virtual module imports when Content Utils is only a transitive dependency of the root project.
+
+## 0.9.1
+
+### Patch Changes
+
+- 828837c: Adds support for Git information associated with entries using Content Layer loaders instead of only legacy collections.
+  Previously, git information was only available for collection entries made using the legacy behavior and only from the `src/content` directory.
+
+  Now it is available for collection entries made from any loader that populates `filePath` referring to a file within the project tree (within the direction containing the Astro config file).
+
+## 0.9.0
+
+### Minor Changes
+
+- 02f1df8: Add static only collection feature.
+
+  Now users can pass `staticOnlyCollections` to the integration to make the entries of those integration not be shipped in the server bundle.
+
+### Patch Changes
+
+- 42eadc0: Add support for new content collections config file
+
+## 0.8.2
+
+### Patch Changes
+
+- Updated dependencies [094efca]
+  - @inox-tools/utils@0.3.1
+  - @inox-tools/modular-station@0.4.2
+
 ## 0.8.1
 
 ### Patch Changes

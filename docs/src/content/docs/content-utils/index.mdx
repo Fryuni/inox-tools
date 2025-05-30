@@ -1,0 +1,243 @@
+---
+title: Content Utils
+packageName: '@inox-tools/content-utils'
+description: Get creation and update time for your content from your git history.
+howItWorks: /how-it-works/content-utils
+sidebar:
+  label: For projects
+tableOfContents:
+  maxHeadingLevel: 4
+---
+
+import { Steps } from '@astrojs/starlight/components';
+import InstallCmd from '@/components/InstallCmd.astro';
+
+This integration offers a set of extra functionalities for your content collections. It also allows other integrations to inject their own content collections into the project (see the docs for [how to use it on other integrations](/content-utils/integration)).
+
+Each feature in this integration is designed to have zero runtime cost when not used without the need to explicitly disable them. This means that you can use this library for some of its features without worrying about the cost of everything else.
+
+Each feature is also individually optimized such that, whenever a trade-off is needed, we optimize in favor of minimal runtime cost by moving as much of the processing as possible to the initial built-time (before prerendering). This ensures that as your project grows, the processing cost of this features to render your pages doesn't grow out of control.
+
+## Installing the package
+
+<InstallCmd />
+
+## Static only collections
+
+Sometimes you might want to use small content collections for small dynamic pages-like tags, authors and other metadata-alongside large collections for prerendered pages (like the contents of a blog or docs).
+
+In such situation, Astro will include all the content of every Content Collection entry of your project in the server bundle, which can be limiting on some platform and overall a bad experience.
+
+### How to use
+
+Pass a list of collection names that shouldn't be added to the server bundle to the `staticOnlyCollections` options in the integration:
+
+```ts title="astro.config.ts" ins={6}
+import { defineConfig } from 'astro/config';
+import contentUtils from '@inox-tools/content-utils';
+
+export default defineConfig({
+	integrations: [contentUtils({
+		staticOnlyCollections: ['blog'],
+	})],
+});
+```
+
+Attempting to access any entry from the collections listed during from the server-side will behave as if the collection was empty (returning null for any entry and an empty list for the collection).
+
+### Optimizations and Trade-offs
+
+- Astro already has its own optimization that completely removes all content collection data from the server bundle if it can prove that no on-demand route will use any entry. This optimization remains unaffected by this feature; if it applies, this feature is disabled automatically.
+- If an integration that _is_ used on the server is marked as static only, Astro will emit a log warning that the collection is empty. There is no option in Astro to skip this warning in case this is intentional.
+
+## Git Times
+
+When writing a content rich site a common requirement is to show when some content was published, when it was last updated and who participated in authoring that content. Instead of tracking this manually for each entry in your content collections, this library allows you to retrieve that information from your Git history.
+
+#### How to use
+
+<Steps>
+
+1. Import the time getter you want from `@it-astro:content/git`:
+
+   ```astro title="src/pages/blog/[...slug].astro"
+   ---
+   import {
+   	getLatestCommitDate,
+   	getOldestCommitDate,
+   	getEntryGitInfo,
+   } from '@it-astro:content/git';
+   ---
+   ```
+
+2. Get the time or information about any collection entry using the same signature as Astro's [`getEntry`](https://docs.astro.build/en/reference/api-reference/#getentry):
+
+   ```astro title="src/pages/blog/[...slug].astro" ins={2,7,9}
+   ---
+   import { getOldestCommitDate } from '@it-astro:content/git';
+
+   const { slug } = Astro.params;
+
+   const entry = await getEntry('blog', slug);
+   const creationDate = await getOldestCommitDate('blog', slug);
+   // OR
+   const creationDate = await getOldestCommitDate(entry);
+   ---
+   ```
+
+</Steps>
+
+### API
+
+The API for Git times can be imported from `@it-astro:content/git`. All the logic related to Git times is included in your project only if this module is imported, so using this library without this feature brings no extra build-time nor runtime cost.
+
+#### `getLatestCommitDate`
+
+Returns the commit time of the last commit that changed the selected entry.  
+If the entry has not been commited yet, this function returns the current time.
+
+#### `getOldestCommitDate`
+
+Returns the commit time of the first commit that created the selected entry.  
+If the entry has not been commited yet, this function returns the current time.
+
+#### `getEntryGitInfo`
+
+Returns all the collected Git information related to the selected entry.
+If the entry has not been commited yet, this function returns undefined.
+
+- `earliest`: Commit time of the commit that first created the path of the collection entry, same as returned by [`getOldestCommitDate`].
+- `latest`: Commit time of the last commit that modified the path of the collection entry.
+- `authors`: The [authors](https://git-scm.com/docs/git-commit#_commit_information) of the commits that modified the path of the collection entry.
+- `coAuthors`: The co-authors of the commits that modified the path of the collection entry. This is inferred from the `Co-Authored-By` commit trailers. Although this is not part of any specification, this is the practiced followed by most Git UIs and Git hosting platforms.
+
+_Type definition:_
+
+```ts
+type GitTrackingInfo = {
+	earliest: Date;
+	latest: Date;
+	authors: GitAuthor[];
+	coAuthors: GitAuthor[];
+};
+
+type GitAuthor = {
+	name: string;
+	email: string;
+};
+```
+
+### Hooks
+
+Integrations can hook into the lifecycle of the content collections git times, this allows you to:
+
+- Ignore some collection entries;
+- Override times for entries.
+
+#### `@it/content:git:listed`
+
+This hook is called on `astro build` once the collection entries tracked by Git are listed.
+
+```ts ins={3,10-12}
+// your-integration/index.ts
+import { defineIntegration } from 'astro-integration-kit';
+import '@inox-tools/content-utils';
+
+export default defineIntegration({
+	name: 'your-integration',
+	setup() {
+		return {
+			hooks: {
+				'@it/content:git:listed': ({ trackedFiles, ignoreFiles, logger }) => {
+					// your code
+				},
+			},
+		};
+	},
+});
+```
+
+##### `trackedFiles`
+
+**Type:** `string[]`
+
+List of all content collection entry files that are tracked by Git. The values are in
+
+##### `ignoreFiles`
+
+**Type:** `(files: string[]) => void`
+
+A callback to exclude files from tracking. Values that is not on [`trackedFiles`](#trackedfiles) are ignored.
+
+##### `logger`
+
+**Type:** `AstroIntegrationLogger`
+
+[A standard `AstroIntegrationLogger`](https://docs.astro.build/en/reference/integrations-reference/#astrointegrationlogger), configured the same as for the official Astro hooks.
+
+#### `@it/content:git:resolved`
+
+This hook is called twice for each tracked content collection entry, once for each git time that is resolved (oldest and latest).
+
+```ts ins={3,10-12}
+// your-integration/index.ts
+import { defineIntegration } from 'astro-integration-kit';
+import '@inox-tools/content-utils';
+
+export default defineIntegration({
+	name: 'your-integration',
+	setup() {
+		return {
+			hooks: {
+				'@it/content:git:resolved': ({ age, file, resolvedDate, overrideDate, logger }) => {
+					// your code
+				},
+			},
+		};
+	},
+});
+```
+
+##### `age`
+
+**Type:** `'oldest' | 'latest'`
+
+Which age of the entry is being resolved, `oldest`, `latest`.
+
+##### `file`
+
+**Type:** `string`
+
+Absolute path to the content collection entry file.
+
+##### `resolvedDate`
+
+**Type:** `Date`
+
+Date resolved from the Git history.
+
+##### `overrideDate`
+
+**Type:** `(newDate: Date) => void`
+
+Callback function to override the resolved date.
+
+### Optimizations and Trade-offs
+
+#### Loaded only when imported
+
+The entire git processing logic is triggered by importing the `@it-astro:content/git` module. If your project does not import this module then no git processing is done at all.
+
+#### Git executable requirement
+
+Git is only necessary during build and the result of the git processing is added as an internal virtual module, so you can deploy your site anywhere. Even on platforms that don't provide Git, access to binaries or native modules (yes, even on Cloudflare).
+
+#### Multi-repository projects
+
+Instead of executing a Git command to inspect each entry from every collection, the implementation invokes Git a single time to retrieve the necessary information about _all_ files in the repository and selects those that are used by content collections. This avoids the linear growth of the overhead that comes from invoking the Git executable.
+
+As a consequence, this means that collection entries coming from different repositories won't be detected, be them submodules or due to a split-repository project.
+
+## License
+
+Content Utils is available under the MIT license.

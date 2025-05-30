@@ -4,9 +4,19 @@ import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 // https://github.com/withastro/astro/blob/fd508a0f/packages/astro/src/content/utils.ts#L456
-const possibleConfigs = ['config.mjs', 'config.js', 'config.mts', 'config.ts'];
+const possibleConfigs = [
+	'content.config.ts',
+	'content.config.mjs',
+	'content.config.js',
+	'content.config.mts',
+	'content/config.ts',
+	'content/config.mjs',
+	'content/config.js',
+	'content/config.mts',
+];
 
 export type ResolvedContentPaths = {
+	projectRoot: string;
 	contentPath: string;
 	configPath: string;
 	configExists: boolean;
@@ -19,13 +29,16 @@ export function resolveContentPaths(config: AstroConfig): ResolvedContentPaths {
 	const contentPath = baseResolver.resolve('content');
 	const resolver = createResolver(contentPath);
 
-	const existingConfig = possibleConfigs
-		.map((configPath) => resolver.resolve(`${configPath}`))
-		.find((configPath) => existsSync(configPath));
+	const validConfigPaths = possibleConfigs.map((configPath) =>
+		baseResolver.resolve(`${configPath}`)
+	);
 
-	const configFile = existingConfig ?? resolver.resolve('config.ts');
+	const existingConfig = validConfigPaths.find((configPath) => existsSync(configPath));
+
+	const configFile = existingConfig ?? validConfigPaths[0];
 
 	return {
+		projectRoot: fileURLToPath(config.root),
 		contentPath,
 		configPath: configFile,
 		configExists: existingConfig !== undefined,

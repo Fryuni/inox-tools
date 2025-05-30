@@ -4,7 +4,14 @@
   "tasks": {
     "build": {
       "inputs": ["*", "src/**", "public/**", "../packages/*/package.json"],
-      "outputs": [".vercel", ".astro"]
+      "outputs": [".vercel", ".astro"],
+      "passThroughEnv": [
+        "ORAMA_CLOUD_ENDPOINT",
+        "ORAMA_CLOUD_API_KEY",
+        "PUBLIC_CROCT_APP_ID",
+        "CROCT_API_KEY",
+        "ORAMA_CLOUD_PROXY_KEY"
+      ]
     }
   }
 }

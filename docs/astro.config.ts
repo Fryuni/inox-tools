@@ -1,9 +1,10 @@
-import { defineConfig } from 'astro/config';
+import { defineConfig, envField } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import type { StarlightConfig } from '@astrojs/starlight/types';
 import vercel from '@astrojs/vercel';
 import starWarp from '@inox-tools/star-warp';
 import starlightLinksValidator from 'starlight-links-validator';
+import starlightCoolerCredit from 'starlight-cooler-credit';
 
 const badge = {
 	new: {
@@ -33,17 +34,29 @@ export default defineConfig({
 	integrations: [
 		starlight({
 			title: 'Inox Tools',
-			credits: true,
 			favicon: '/favicon.png',
-			social: {
-				github: 'https://github.com/Fryuni/inox-tools',
-				discord: 'https://discord.com/channels/830184174198718474/1197638002764152843',
-			},
+			credits: true,
+			lastUpdated: true,
+			editLink: { baseUrl: 'https://github.com/Fryuni/inox-tools/edit/main/docs' },
+			pagination: false,
+			pagefind: true,
+			social: [
+				{
+					icon: 'github',
+					label: 'GitHub',
+					href: 'https://github.com/Fryuni/inox-tools',
+				},
+				{
+					icon: 'discord',
+					label: 'Discord',
+					href: 'https://discord.com/channels/830184174198718474/1197638002764152843',
+				},
+			],
 			components: {
 				Head: './src/components/Head.astro',
 				PageTitle: './src/components/PageTitle.astro',
 				Sidebar: './src/components/Sidebar.astro',
-				MarkdownContent: './src/components/MarkdownContent.astro',
+				Search: './src/components/Search.astro',
 			},
 			sidebar: [
 				{
@@ -87,6 +100,10 @@ export default defineConfig({
 							link: '/portal-gun',
 						},
 						{
+							label: 'Server Islands',
+							link: '/server-islands',
+						},
+						{
 							label: 'Content Utilities',
 							collapsed: false,
 							autogenerate: {
@@ -126,13 +143,35 @@ export default defineConfig({
 				starlightLinksValidator({
 					errorOnRelativeLinks: true,
 				}),
+				starlightCoolerCredit({
+					credit: {
+						title: 'Built for Astro',
+						description: 'Use these tools on your Astro project',
+						href: 'https://docs.astro.build',
+					},
+				}),
 				starWarp(),
 			],
 		}),
 	],
+	env: {
+		validateSecrets: true,
+		schema: {
+			ORAMA_CLOUD_ENDPOINT: envField.string({
+				context: 'client',
+				access: 'public',
+				optional: false,
+			}),
+			ORAMA_CLOUD_API_KEY: envField.string({
+				context: 'client',
+				access: 'public',
+				optional: false,
+			}),
+		},
+	},
 	redirects: {
-		'/content-utils': '/content-utils/integration',
-		'/content-utils/git-time': '/content-utils/git',
+		'/content-utils/git': '/content-utils',
+		'/content-utils/git-time': '/content-utils',
 		'/modular-station': '/modular-station/api',
 	},
 	image: {

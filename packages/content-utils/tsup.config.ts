@@ -1,4 +1,12 @@
 import { defineConfig } from 'tsup';
+import { readFileSync } from 'node:fs';
+
+const packageJson = JSON.parse(readFileSync('./package.json', 'utf-8'));
+const dependencies = [
+	...Object.keys(packageJson.dependencies || {}),
+	...Object.keys(packageJson.peerDependencies || {}),
+];
+const devDependencies = [...Object.keys(packageJson.devDependencies || {})];
 
 export default defineConfig({
 	entry: ['src/index.ts', 'src/runtime/**.ts'],
@@ -12,16 +20,8 @@ export default defineConfig({
 	clean: true,
 	splitting: true,
 	minify: false,
-	external: [
-		'astro',
-		'astro-integration-kit',
-		'./virtual.d.ts',
-		'vite',
-		/^@inox-tools\//,
-		/^@it-astro:/,
-		/^astro:/,
-	],
-	noExternal: [],
+	external: [...dependencies, './virtual.d.ts', /^@it-astro:/, /^astro:/],
+	noExternal: devDependencies,
 	treeshake: 'smallest',
 	tsconfig: 'tsconfig.json',
 });

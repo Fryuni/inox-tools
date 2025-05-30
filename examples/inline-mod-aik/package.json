@@ -12,10 +12,10 @@
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",
-    "@astrojs/node": "^9.0.0",
-    "astro": "^5.1.1",
-    "typescript": "^5.7.2",
-    "vite": "^6.0.6"
+    "@astrojs/node": "catalog:",
+    "astro": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:"
   },
   "devDependencies": {
     "@inox-tools/aik-mod": "workspace:^",

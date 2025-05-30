@@ -6,7 +6,6 @@ const fixture = await loadFixture({
 	root: './fixture/server-output',
 	output: 'server',
 	adapter: testAdapter(),
-	outDir: 'dist/server',
 });
 
 describe('Astro when on a server output project', () => {

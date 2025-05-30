@@ -11,14 +11,14 @@ const devDependencies = [...Object.keys(packageJson.devDependencies || {})]
 	.map((name) => new RegExp(`^${name}/?$`));
 
 export default defineConfig({
-	entry: ['src/*.ts'],
+	entry: ['src/**/*.ts'],
 	format: ['esm'],
 	target: 'node18',
-	bundle: true,
+	bundle: false,
 	dts: true,
 	sourcemap: true,
 	clean: true,
-	splitting: true,
+	splitting: false,
 	minify: false,
 	external: [...dependencies, 'vite', './virtual.d.ts'],
 	noExternal: [

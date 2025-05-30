@@ -11,9 +11,11 @@
     },
     "preview": {
       "dependsOn": ["build"],
-      "outputLogs": "new-only"
+      "outputLogs": "new-only",
+      "persistent": true
     },
     "dev": {
+      "dependsOn": ["^build"],
       "cache": false,
       "persistent": true
     },

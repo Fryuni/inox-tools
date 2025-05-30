@@ -1,5 +1,60 @@
 # @inox-tools/astro-tests
 
+## 0.6.1
+
+### Patch Changes
+
+- Updated dependencies [10fe460]
+- Updated dependencies [1a1687b]
+  - @inox-tools/utils@0.4.0
+
+## 0.6.0
+
+### Minor Changes
+
+- 5392c77: Bump Astro version
+
+### Patch Changes
+
+- ea893f2: Added fixture.buildWithCli() to build using the `astro build` command in a child process.
+
+  Useful when build behavior needs to be different from the programmatic API.
+
+## 0.5.1
+
+### Patch Changes
+
+- 21391cf: Add methods to read binary files using a test fixture.
+
+  The existing `readFile` and `readSrcFile` methods retain their behavior, reading files as strings,
+  but now also accept an optional `encoding` parameter to change how the file is decoded into a string.
+
+  Two new methods, `readFileAsBuffer` and `readSrcFileAsBuffer` mirror the existing `readFile` and `readSrcFile` methods,
+  but return a `Buffer` object containing the raw bytes read from the file.
+
+## 0.5.0
+
+### Minor Changes
+
+- 2e64078: Use stable Astro APIs
+
+## 0.4.0
+
+### Minor Changes
+
+- 86edf1c: Allow file edits and resets to create and delete files in the source code
+
+## 0.3.0
+
+### Minor Changes
+
+- dea57f8: Publish package unbundled to work better with multiple versions of PlayWright
+
+### Patch Changes
+
+- Updated dependencies [094efca]
+  - @inox-tools/utils@0.3.1
+
 ## 0.2.2
 
 ### Patch Changes

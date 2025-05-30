@@ -1,5 +1,28 @@
 # @inox-tools/aik-mod
 
+## 0.10.1
+
+### Patch Changes
+
+- @inox-tools/inline-mod@2.1.1
+
+## 0.10.0
+
+### Minor Changes
+
+- 5392c77: Bump Astro version
+
+### Patch Changes
+
+- Updated dependencies [5392c77]
+  - @inox-tools/inline-mod@2.1.0
+
+## 0.9.2
+
+### Patch Changes
+
+- @inox-tools/inline-mod@2.0.3
+
 ## 0.9.1
 
 ### Patch Changes

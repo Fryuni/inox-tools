@@ -1,5 +1,11 @@
 # @inox-tools/inline-mod
 
+## 1.1.0
+
+### Minor Changes
+
+- 5392c77: Bump Astro version
+
 ## 1.0.3
 
 ### Patch Changes

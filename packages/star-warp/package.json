@@ -1,6 +1,6 @@
 {
   "name": "@inox-tools/star-warp",
-  "version": "0.2.1",
+  "version": "0.3.1",
   "description": "Warp-drive search for Astro sites using Pagefind",
   "keywords": [
     "astro-integration",
@@ -50,5 +50,10 @@
   "peerDependencies": {
     "@astrojs/starlight": "catalog:lax",
     "astro": "catalog:lax"
+  },
+  "peerDependenciesMeta": {
+    "@astrojs/starlight": {
+      "optional": true
+    }
   }
 }

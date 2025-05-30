@@ -1,11 +1,11 @@
 {
   "name": "docs",
-  "version": "0.0.5",
+  "version": "0.0.0",
   "private": true,
   "type": "module",
   "scripts": {
     "astro": "astro",
-    "build": "astro build",
+    "build": "rm -rf .astro node_modules/.astro && astro build",
     "dev": "astro dev",
     "preview": "astro preview",
     "start": "astro dev",
@@ -13,15 +13,17 @@
   },
   "dependencies": {
     "@astrojs/starlight": "catalog:",
-    "@astrojs/vercel": "^8.0.1",
-    "@croct/plug": "^0.16.5",
+    "@astrojs/vercel": "^8.1.4",
+    "@croct/plug": "^0.18.1",
     "@inox-tools/star-warp": "workspace:^",
     "@inox-tools/utils": "workspace:^",
-    "@vercel/analytics": "^1.4.1",
+    "@orama/wc-components": "^0.6.4",
+    "@vercel/analytics": "^1.5.0",
     "astro": "catalog:",
-    "sharp": "^0.33.5",
-    "starlight-links-validator": "^0.14.1",
-    "starlight-package-managers": "^0.8.1"
+    "sharp": "^0.34.1",
+    "starlight-cooler-credit": "^0.4.0",
+    "starlight-links-validator": "^0.16.0",
+    "starlight-package-managers": "^0.11.0"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.4",

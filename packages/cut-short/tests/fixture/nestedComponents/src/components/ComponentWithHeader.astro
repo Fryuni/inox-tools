@@ -1,0 +1,9 @@
+---
+import * as timers from 'node:timers/promises';
+
+await timers.setTimeout(100);
+
+Astro.response.headers.set('foo', 'bar');
+Astro.cookies.delete('bar');
+Astro.cookies.set('foo', 'bar');
+---

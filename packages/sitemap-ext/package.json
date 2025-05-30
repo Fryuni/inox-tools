@@ -1,6 +1,6 @@
 {
   "name": "@inox-tools/sitemap-ext",
-  "version": "0.4.1",
+  "version": "0.5.1",
   "description": "Higher level extension over Astro's official sitemap integration",
   "keywords": [
     "sitemap",
@@ -38,7 +38,7 @@
   },
   "devDependencies": {
     "@types/node": "catalog:",
-    "astro": "catalog:lax",
+    "astro": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:"

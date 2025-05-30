@@ -12,11 +12,11 @@
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",
-    "@astrojs/mdx": "^4.0.3",
-    "@astrojs/rss": "^4.0.10",
-    "@astrojs/sitemap": "^3.2.1",
-    "astro": "^5.1.1",
-    "typescript": "^5.7.2"
+    "@astrojs/mdx": "^4.2.6",
+    "@astrojs/rss": "^4.0.11",
+    "@astrojs/sitemap": "catalog:",
+    "astro": "catalog:",
+    "typescript": "catalog:"
   },
   "devDependencies": {
     "@inox-tools/custom-routing": "workspace:*"

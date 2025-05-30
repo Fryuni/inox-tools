@@ -9,3 +9,5 @@ export class CarrierError extends Error {
 		return Promise.resolve(loadThunkValue(this.response));
 	}
 }
+
+export const LOCALS_KEY = Symbol();

@@ -1,0 +1,5 @@
+{
+  "static-1": {
+    "content": "This is available only on build time"
+  }
+}

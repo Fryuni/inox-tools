@@ -56,10 +56,10 @@ flowchart TD
     IIA_IBY -->|Adds| IBP(Logger build plugin)
     IBP -->|Defines per module name| ILEB(Logger instance and export)
 
-    LM[@it-astro:logger:*] --- ILEB
-    LM[@it-astro:logger:*] --- ILED
+    LM["@it-astro:logger:*"] --- ILEB
+    LM["@it-astro:logger:*"] --- ILED
 
-    PP -->|Defines| PPM[@it-astro:logger]
+    PP -->|Defines| PPM["@it-astro:logger"]
     PPM -->|Imports __project and forks per importer| LM
 
     IIA_IBN -->|Adds| IDP(Logger dev plugin)

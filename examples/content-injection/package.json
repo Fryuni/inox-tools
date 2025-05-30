@@ -12,10 +12,11 @@
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",
+    "@astrojs/node": "catalog:",
     "@inox-tools/content-utils": "workspace:^",
     "@inox-tools/runtime-logger": "workspace:^",
-    "astro": "^5.1.1",
+    "astro": "catalog:",
     "astro-integration-kit": "^0.18.0",
-    "typescript": "^5.7.2"
+    "typescript": "catalog:"
   }
 }

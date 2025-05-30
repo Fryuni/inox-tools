@@ -4,12 +4,6 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    types:
-      - opened
-      - reopened
-      - synchronize
-      - labeled
 
 defaults:
   run:
@@ -22,7 +16,6 @@ jobs:
   changelog:
     name: Changelog PR or Release
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'push' || contains(github.event.pull_request.labels.*.name, 'preview') }}
     permissions:
       contents: write
       id-token: write
@@ -38,36 +31,25 @@ jobs:
             ${{ runner.os }}-${{ matrix.NODE_VERSION }}-turbo-
 
       - name: Setup PNPM
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v4.2.0
         with:
-          node-version: 18
-          cache: "pnpm"
+          node-version: 22
+          cache: 'pnpm'
           registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
         run: pnpm install
 
-      - name: Build Packages
-        run: pnpm run build
-
-      - name: Publish preview
-        if: ${{ contains(github.event.pull_request.labels.*.name, 'preview') }}
-        run: pnpm exec changeset publish
-        env:
-          # Use Node auth from above
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
       - name: Create Release Pull Request or Publish
         id: changesets
-        if: ${{ github.event_name == 'push' }}
         uses: changesets/action@v1
         with:
           # Note: pnpm install after versioning is necessary to refresh lockfile
           version: pnpm run version
-          publish: pnpm exec changeset publish
+          publish: pnpm cut-release
           commit: '[ci] release'
           title: '[ci] release'
         env:

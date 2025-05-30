@@ -5,9 +5,7 @@ import fastGlob from 'fast-glob';
 import { Agent, request } from 'undici';
 import { build, dev, preview, sync } from 'astro';
 import type { AstroConfig, AstroInlineConfig } from 'astro';
-import { mergeConfig } from '../node_modules/astro/dist/core/config/merge.js';
-import { validateConfig } from '../node_modules/astro/dist/core/config/validate.js';
-import { getViteConfig } from 'astro/config';
+import { getViteConfig, mergeConfig, validateConfig } from 'astro/config';
 import { callsites } from './utils.js';
 import type { App } from 'astro/app';
 import { getDebug } from './internal/log.js';
@@ -18,7 +16,9 @@ const debug = getDebug('fixture');
 // Disable telemetry when running tests
 process.env.ASTRO_TELEMETRY_DISABLED = 'true';
 
-type InlineConfig = Omit<AstroInlineConfig, 'root'> & { root: string | URL };
+type InlineConfig = Omit<AstroInlineConfig, 'root'> & {
+	root: string | URL;
+};
 export type NodeRequest = import('node:http').IncomingMessage;
 export type NodeResponse = import('node:http').ServerResponse;
 export type DevServer = Awaited<ReturnType<typeof dev>>;
@@ -54,6 +54,13 @@ type Fixture = {
 	 * Equivalent to running `astro build`.
 	 */
 	build: typeof build;
+	/**
+	 * Builds using the CLI's `astro build` command in a child process.
+	 * This bypasses inline configs and is useful for black-box testing.
+	 *
+	 * Equivalent to running the `astro build` command in a shell.
+	 */
+	buildWithCli: () => Promise<{ stdout: string; stderr: string }>;
 	/**
 	 * Starts a preview server.
 	 *
@@ -92,18 +99,44 @@ type Fixture = {
 	 */
 	pathExists: (path: string) => boolean;
 	/**
-	 * Read a file from the build.
+	 * Read a file (as a string) from the build. Do NOT use this for binary files (e.g. images).
+	 *
+	 * Returns null if the file doesn't exist.
 	 */
-	readFile: (path: string) => Promise<string>;
+	readFile: (path: string, encoding?: BufferEncoding) => Promise<string | null>;
+	/**
+	 * Read a file (as a buffer) from the build. DO use this for binary files (e.g. images).
+	 *
+	 * Returns null if the file doesn't exist.
+	 */
+	readFileAsBuffer: (path: string) => Promise<Buffer | null>;
+	/**
+	 * Read a file (as a string) from the project. Do NOT use this for binary files (e.g. images).
+	 *
+	 * Returns null if the file doesn't exist.
+	 */
+	readSrcFile: (path: string, encoding?: BufferEncoding) => Promise<string | null>;
+	/**
+	 * Read a file (as a buffer) from the project. DO use this for binary files (e.g. images).
+	 *
+	 * Returns null if the file doesn't exist.
+	 */
+	readSrcFileAsBuffer: (path: string) => Promise<Buffer | null>;
 	/**
 	 * Edit a file in the fixture.
 	 *
 	 * The second parameter can be the new content of the file
 	 * or a function that takes the current content and returns the new content.
 	 *
+	 * The content passed to the function will be null if the file doesn't exist.
+	 * If the returned content is null, the file will be deleted.
+	 *
 	 * Returns a function that can be called to revert the edit.
 	 */
-	editFile: (path: string, updater: string | ((content: string) => string)) => Promise<() => void>;
+	editFile: (
+		path: string,
+		updater: string | null | ((content: string | null) => string | null)
+	) => Promise<() => void>;
 	/**
 	 * Reset all changes made with .editFile()
 	 */
@@ -140,8 +173,9 @@ let nextDefaultPort = 10000 + Math.floor(Math.random() * 40000);
  *   });
  *   ```
  */
-export async function loadFixture(inlineConfig: InlineConfig): Promise<Fixture> {
-	if (!inlineConfig?.root) throw new Error("Must provide { root: './fixtures/...' }");
+export async function loadFixture({ root, ...remaining }: InlineConfig): Promise<Fixture> {
+	if (!root) throw new Error("Must provide { root: './fixtures/...' }");
+	const inlineConfig: AstroInlineConfig = remaining;
 
 	debug('Setting default log level to "silent"');
 	// Silent by default during tests to not pollute the console output
@@ -165,14 +199,13 @@ export async function loadFixture(inlineConfig: InlineConfig): Promise<Fixture> 
 		inlineConfig.server.port ??= nextDefaultPort++;
 	}
 
-	let root = inlineConfig.root;
 	if (typeof root !== 'string') {
 		// Handle URL, should already be absolute so just convert to path
-		root = fileURLToPath(root);
+		inlineConfig.root = fileURLToPath(root);
 	} else if (root.startsWith('file://')) {
 		debug('Root is a file URL, converting to path');
 		// Handle "file:///C:/Users/fred", convert to "C:/Users/fred"
-		root = fileURLToPath(new URL(root));
+		inlineConfig.root = fileURLToPath(new URL(root));
 	} else if (!path.isAbsolute(root)) {
 		debug('Root is a relative path, resolving to absolute path relative to caller');
 		const [caller] = callsites().slice(1);
@@ -182,19 +215,20 @@ export async function loadFixture(inlineConfig: InlineConfig): Promise<Fixture> 
 		}
 		debug(`Fixture loaded from ${callerUrl}`);
 		// Handle "./fixtures/...", convert to absolute path relative to the caller of this function.
-		root = fileURLToPath(new URL(root, callerUrl));
+		inlineConfig.root = fileURLToPath(new URL(root, callerUrl));
 		debug(`Resolved fixture root to ${root}`);
+	} else {
+		inlineConfig.root = root;
 	}
 
-	inlineConfig.root = root;
-	const config = await validateConfig(inlineConfig, root, 'dev');
+	const config = await validateConfig(inlineConfig, inlineConfig.root, 'dev');
 
 	debug('Output dir:', config.outDir);
 	debug('Src dir:', config.srcDir);
 
 	const viteConfig = await getViteConfig(
 		{},
-		{ ...inlineConfig, root }
+		inlineConfig
 	)({
 		command: 'serve',
 		mode: 'dev',
@@ -232,6 +266,9 @@ export async function loadFixture(inlineConfig: InlineConfig): Promise<Fixture> 
 	// Also do it on process exit, just in case.
 	process.on('exit', resetAllFiles);
 
+	const resolveOutPath = (path: string) => new URL(path.replace(/^\//, ''), config.outDir);
+	const resolveProjectPath = (path: string) => new URL(path.replace(/^\//, ''), config.root);
+
 	return {
 		config,
 		startDevServer: async (extraInlineConfig = {}) => {
@@ -252,6 +289,15 @@ export async function loadFixture(inlineConfig: InlineConfig): Promise<Fixture> 
 			process.env.NODE_ENV = 'production';
 			debug(`Building fixture ${root}`);
 			return build(mergeConfig(inlineConfig, extraInlineConfig));
+		},
+		buildWithCli: async () => {
+			const { exec } = await import('node:child_process');
+			const { promisify } = await import('node:util');
+			const execPromise = promisify(exec);
+			return execPromise('astro build', {
+				cwd: inlineConfig.root,
+				env: { ...process.env, NODE_ENV: 'production' },
+			});
 		},
 		preview: async (extraInlineConfig = {}) => {
 			process.env.NODE_ENV = 'production';
@@ -274,7 +320,7 @@ export async function loadFixture(inlineConfig: InlineConfig): Promise<Fixture> 
 			});
 
 			debug(`Removing node_modules/.astro`);
-			await fs.promises.rm(new URL('./node_modules/.astro', config.root), {
+			await fs.promises.rm(resolveProjectPath('./node_modules/.astro'), {
 				maxRetries: 10,
 				recursive: true,
 				force: true,
@@ -288,7 +334,7 @@ export async function loadFixture(inlineConfig: InlineConfig): Promise<Fixture> 
 			});
 
 			debug(`Removing .astro`);
-			await fs.promises.rm(new URL('./.astro', config.root), {
+			await fs.promises.rm(resolveProjectPath('./.astro'), {
 				maxRetries: 10,
 				recursive: true,
 				force: true,
@@ -340,16 +386,57 @@ export async function loadFixture(inlineConfig: InlineConfig): Promise<Fixture> 
 			}
 		},
 
-		pathExists: (p) => fs.existsSync(new URL(p.replace(/^\//, ''), config.outDir)),
-		readFile: (filePath) =>
-			fs.promises.readFile(new URL(filePath.replace(/^\//, ''), config.outDir), 'utf8'),
+		pathExists: (p) => fs.existsSync(resolveOutPath(p)),
+		readFile: async (filePath, encoding = 'utf8') => {
+			const path = resolveOutPath(filePath);
+
+			if (!fs.existsSync(path)) {
+				return null;
+			}
+
+			return fs.promises.readFile(path, encoding);
+		},
+		readFileAsBuffer: async (filePath) => {
+			const path = resolveOutPath(filePath);
+
+			if (!fs.existsSync(path)) {
+				return null;
+			}
+
+			return fs.promises.readFile(path);
+		},
+		readSrcFile: async (filePath, encoding = 'utf8') => {
+			const path = resolveProjectPath(filePath);
+
+			if (!fs.existsSync(path)) {
+				return null;
+			}
+
+			return fs.promises.readFile(path, encoding);
+		},
+		readSrcFileAsBuffer: async (filePath) => {
+			const path = resolveProjectPath(filePath);
+
+			if (!fs.existsSync(path)) {
+				return null;
+			}
+
+			return fs.promises.readFile(path);
+		},
 		editFile: async (filePath, newContentsOrCallback) => {
-			const fileUrl = new URL(filePath.replace(/^\//, ''), config.root);
-			const contents = await fs.promises.readFile(fileUrl, 'utf-8');
+			const fileUrl = resolveProjectPath(filePath);
+
+			const contents = fs.existsSync(fileUrl) ? await fs.promises.readFile(fileUrl, 'utf-8') : null;
+
 			const reset = () => {
 				debug(`Resetting ${filePath}`);
-				fs.writeFileSync(fileUrl, contents);
+				if (contents) {
+					fs.writeFileSync(fileUrl, contents);
+				} else {
+					fs.rmSync(fileUrl, { force: true });
+				}
 			};
+
 			// Only save this reset if not already in the map, in case multiple edits happen
 			// to the same file.
 			if (!fileEdits.has(fileUrl.toString())) {
@@ -357,12 +444,21 @@ export async function loadFixture(inlineConfig: InlineConfig): Promise<Fixture> 
 			}
 
 			debug(`Editing ${filePath}`);
+
 			const newContents =
 				typeof newContentsOrCallback === 'function'
 					? newContentsOrCallback(contents)
 					: newContentsOrCallback;
+
 			const nextChange = devServer ? onNextChange() : Promise.resolve();
-			await fs.promises.writeFile(fileUrl, newContents);
+
+			if (newContents) {
+				await fs.promises.mkdir(path.dirname(fileURLToPath(fileUrl)), { recursive: true });
+				await fs.promises.writeFile(fileUrl, newContents);
+			} else {
+				await fs.promises.rm(fileUrl, { force: true });
+			}
+
 			await nextChange;
 			return reset;
 		},

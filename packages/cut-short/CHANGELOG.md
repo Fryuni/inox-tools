@@ -1,5 +1,32 @@
 # @inox-tools/cut-short
 
+## 1.2.1
+
+### Patch Changes
+
+- Updated dependencies [10fe460]
+- Updated dependencies [1a1687b]
+  - @inox-tools/utils@0.4.0
+
+## 1.2.0
+
+### Minor Changes
+
+- 5392c77: Bump Astro version
+
+## 1.1.0
+
+### Minor Changes
+
+- 9a061db: Adds option to disable HTML streaming and lift its limitations
+
+## 1.0.3
+
+### Patch Changes
+
+- Updated dependencies [094efca]
+  - @inox-tools/utils@0.3.1
+
 ## 1.0.2
 
 ### Patch Changes

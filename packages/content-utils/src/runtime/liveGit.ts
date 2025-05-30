@@ -1,5 +1,4 @@
 import { getEntry } from 'astro:content';
-import { join } from 'node:path';
 import { collectGitInfoForContentFiles } from './git.js';
 import type { GitTrackingInfo } from '@it-astro:content/git';
 
@@ -10,8 +9,7 @@ export async function getEntryGitInfoInner(
 ): Promise<[string, GitTrackingInfo?]> {
 	const params = args.length > 1 ? args : [args[0].collection, args[0].slug ?? args[0].id];
 	const entry = await getEntry(...params);
-
-	const file = `${entry.collection}:${entry.id}`;
+	const file = entry.filePath;
 
 	const info = trackedInfo.get(file);
 	if (!info) return [file];

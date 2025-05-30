@@ -1,6 +1,6 @@
 {
   "name": "@inox-tools/request-nanostores",
-  "version": "0.2.2",
+  "version": "0.3.1",
   "description": "Make your Nanostores concurrent safe and shared from server to client",
   "keywords": [
     "astro-integration",
@@ -41,7 +41,7 @@
     "@playwright/test": "catalog:",
     "@types/node": "catalog:",
     "@vitest/ui": "catalog:",
-    "astro": "catalog:lax",
+    "astro": "catalog:",
     "jest-extended": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:",

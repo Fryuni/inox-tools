@@ -41,7 +41,7 @@ export function getUser() {
 ```
 
   </TabItem>
-  <TabItem label="Page">
+  <TabItem label="Page or Component">
 
 ```astro title="src/pages/dashboard.astro"
 ---
@@ -82,9 +82,23 @@ Stop the current request and send back a custom response.
 
 The argument can be a `Response` object to be used directly or a function that returns a `Response` object or a promise that resolves to a `Response`.
 
+## Options
+
+### `disableStreaming`
+
+**Type:** `boolean`  
+**Default:** `false`
+
+Disables [HTML streaming](#streaming), lifting its limitations. 
+
 ## Streaming
 
-Once Astro executes the frontmatter of the page component, the HTML response is streamed to the client _as it is rendered_. This means that when the frontmatter of components deep in the page is executed the response has already been partially sent. In the example below, when `MyComponent` is executed, the response has already been constructed and is being streamed.
+Astro serves all server-rendered pages using [HTML streaming], which brings improved performance for users by allowing the page to start rendering earlier while parts of the page still being generated on the server. You can lean even more on streaming by passing promises around to components and into the final templates instead of awaiting them on the frontmatter, as shown on Astro's [streaming guide].
+
+[HTML streaming]: https://docs.astro.build/en/guides/on-demand-rendering/#html-streaming
+[streaming guide]: https://docs.astro.build/en/recipes/streaming-improve-page-performance/
+
+Although this is benefial for _most_ sites, and is a sane default for Astro, HTML streaming has some caveats. Once Astro executes the frontmatter of the page component, the HTML response is streamed to the client _as it is rendered_. This means that when the frontmatter of components deep in the page is executed the response has already been partially sent. In the example below, when `MyComponent` is executed, the response has already been constructed and is being streamed.
 
 ```astro title="src/pages/index.astro"
 ---
@@ -113,6 +127,20 @@ return new Response('Page not found', { status: 404 });
 ---
 ```
 
+This is not only limited to returning a response. Other features for on-demand rendering are also restricted to the frontmatter of the page and unavailable for any other component, such as:
+- Setting response headers using `Astro.response.headers`
+- Setting the page status using `Astro.response.status`
+- Setting cookies using `Astro.cookies`
+- Redirecting to a different page using `return Astro.redirect()`
+- Rewriting the page as a different page using `return Astro.rewrite()`
+- Showing the 500 error page when an error is thrown from a component
+
+Angelika Cathor wrote a [great summary](https://angelika.me/2025/03/16/implications-of-astro-html-streaming/) of those limitations and caveats, along with a few others external to Astro like SEO and instrumentation[^1]. I am not well-versed in SEO, so I don't know what are the impacts it can have. 
+
+[^1]: The Sentry limitation ws a bug on the integration and not a streaming limitation. Integrations can detect errors thrown from components even with streaming enabled, they just can't change the page status based on the error. This bug was fixed on https://github.com/getsentry/sentry-javascript/pull/15995
+
 ## License
 
 Cut-Short Requests is available under the MIT license.
+
+---

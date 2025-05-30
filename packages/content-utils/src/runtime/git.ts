@@ -4,28 +4,28 @@ import { hooks } from '@inox-tools/modular-station/hooks';
 import { getDebug } from '../internal/debug.js';
 import type { GitTrackingInfo } from '@it-astro:content/git';
 
-let contentPath: string = '';
+let projectRoot: string = process.cwd();
 
 const debug = getDebug('git');
 
 /**
  * @internal
  */
-export function setContentPath(path: string) {
-	contentPath = path;
+export function setProjectRoot(path: string) {
+	projectRoot = path;
 }
 
 function getRepoRoot(): string {
-	debug('Retrieving git repo root');
+	debug('Retrieving git repo root', { projectRoot });
 	const result = spawnSync('git', ['rev-parse', '--show-toplevel'], {
-		cwd: contentPath,
+		cwd: projectRoot,
 		encoding: 'utf-8',
 	});
 
 	if (result.error) {
 		debug(`Failed to retrieve repo root:`, result.error, result.stderr);
-		debug('Falling back to contentPath:', contentPath);
-		return contentPath;
+		debug('Falling back to contentPath:', projectRoot);
+		return projectRoot;
 	}
 
 	return result.stdout.trim();
@@ -54,7 +54,7 @@ export async function collectGitInfoForContentFiles(): Promise<[string, RawGitTr
 		'--format=t:%ct %an <%ae>|%(trailers:key=co-authored-by,valueonly,separator=|)',
 		'--name-status',
 		'--',
-		contentPath,
+		projectRoot,
 	];
 
 	debug('Retrieving content git log:', args.join(' '));
@@ -110,7 +110,7 @@ export async function collectGitInfoForContentFiles(): Promise<[string, RawGitTr
 		// the last part of the log line.
 		const tabSplit = logLine.lastIndexOf('\t');
 		if (tabSplit === -1) continue;
-		const fileName = logLine.slice(tabSplit + 1);
+		const fileName = relative(projectRoot, resolve(repoRoot, logLine.slice(tabSplit + 1)));
 
 		const fileInfo = fileInfos.get(fileName);
 
@@ -146,13 +146,6 @@ export async function collectGitInfoForContentFiles(): Promise<[string, RawGitTr
 	const result: [string, RawGitTrackingInfo][] = [];
 
 	for (const [file, rawFileInfo] of fileInfos.entries()) {
-		// git log returns file names relative to the repo root
-		// convert the tracked paths to match that format
-		const contentFilePath = relative(contentPath, resolve(repoRoot, file));
-
-		// Replace the first occurrence of the separator so it doesn't get partially normalized when mixin Windows and Unix-like systems.
-		const name = contentFilePath.replace(sep, ':');
-
 		const fileInfo: GitTrackingInfo = {
 			earliest: new Date(rawFileInfo.earliest),
 			latest: new Date(rawFileInfo.latest),
@@ -182,7 +175,7 @@ export async function collectGitInfoForContentFiles(): Promise<[string, RawGitTr
 		rawFileInfo.earliest = fileInfo.earliest.valueOf();
 		rawFileInfo.latest = fileInfo.latest.valueOf();
 
-		result.push([name, rawFileInfo]);
+		result.push([file, rawFileInfo]);
 	}
 
 	return result;

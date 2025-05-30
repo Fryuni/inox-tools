@@ -1,5 +1,32 @@
 # @inox-tools/star-warp
 
+## 0.3.1
+
+### Patch Changes
+
+- Updated dependencies [10fe460]
+- Updated dependencies [1a1687b]
+  - @inox-tools/utils@0.4.0
+
+## 0.3.0
+
+### Minor Changes
+
+- 5392c77: Bump Astro version
+
+## 0.2.3
+
+### Patch Changes
+
+- 91120ab: Expand Starlight compatibility range
+
+## 0.2.2
+
+### Patch Changes
+
+- Updated dependencies [094efca]
+  - @inox-tools/utils@0.3.1
+
 ## 0.2.1
 
 ### Patch Changes

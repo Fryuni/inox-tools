@@ -1,6 +1,6 @@
 {
   "name": "@inox-tools/content-utils",
-  "version": "0.8.1",
+  "version": "0.10.1",
   "description": "Utilities to work with content collections on an Astro project from an integration or library.",
   "keywords": [
     "lifecycle",
@@ -32,23 +32,30 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "prepublish": "pnpm run build",
-    "test": "echo 'No tests'"
+    "test": "vitest run",
+    "test:dev": "vitest"
   },
   "dependencies": {
     "@inox-tools/modular-station": "workspace:^",
     "@inox-tools/utils": "workspace:^",
     "astro-integration-kit": "catalog:",
     "debug": "catalog:",
+    "devalue": "catalog:",
     "estree-walker": "catalog:",
     "magic-string": "catalog:"
   },
   "devDependencies": {
+    "@inox-tools/astro-tests": "workspace:^",
     "@types/debug": "catalog:",
     "@types/node": "catalog:",
-    "astro": "catalog:min",
+    "@vitest/coverage-v8": "catalog:",
+    "@vitest/ui": "catalog:",
+    "astro": "catalog:",
+    "jest-extended": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:",
-    "vite": "catalog:"
+    "vite": "catalog:",
+    "vitest": "catalog:"
   },
   "peerDependencies": {
     "astro": "catalog:min"

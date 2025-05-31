@@ -9,8 +9,8 @@ const { prerenderStopMark } = (globalThis as any)[Symbol.for('@it/cut-short')] ?
 
 export const cancelPrerender = prerenderStopMark
 	? () => {
-		throw new CarrierError(new Response(prerenderStopMark));
-	}
+			throw new CarrierError(new Response(prerenderStopMark));
+		}
 	: () => {
-		throw new Error('Cannot stop prerendering on server-rendered routes.');
-	};
+			throw new Error('Cannot stop prerendering on server-rendered routes.');
+		};

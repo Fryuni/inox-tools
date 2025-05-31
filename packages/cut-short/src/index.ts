@@ -75,19 +75,23 @@ export default defineIntegration({
 						});
 					}
 				},
-				'astro:build:done': async (params) => {
-					const pairs = Array.from(params.assets.entries());
+				'astro:build:done': async ({ assets, logger }) => {
+					const pairs = Array.from(assets.entries());
 
 					const foldersToClean = new Set<string>();
 
 					await Promise.all(
 						pairs.map(async ([key, urls]) => {
 							for (const url of urls) {
-								const fileContent = await fs.readFile(url, 'utf-8');
-								if (fileContent.trim() === prerenderStopMark) {
-									await fs.unlink(url);
-									params.assets.delete(key);
-									foldersToClean.add(path.dirname(fileURLToPath(url)));
+								try {
+									const fileContent = await fs.readFile(url, 'utf-8');
+									if (fileContent.trim() === prerenderStopMark) {
+										await fs.unlink(url);
+										assets.delete(key);
+										foldersToClean.add(path.dirname(fileURLToPath(url)));
+									}
+								} catch (error) {
+									console.error(`Failed to process asset at ${url}:`, error);
 								}
 							}
 						})
@@ -98,10 +102,14 @@ export default defineIntegration({
 						if (folder === undefined) break;
 						foldersToClean.delete(folder);
 
-						const children = await fs.readdir(folder, { encoding: null });
-						if (children.length === 0) {
-							await fs.rmdir(folder);
-							foldersToClean.add(path.dirname(folder));
+						try {
+							const children = await fs.readdir(folder, { encoding: null });
+							if (children.length === 0) {
+								await fs.rmdir(folder);
+								foldersToClean.add(path.dirname(folder));
+							}
+						} catch (error) {
+							logger.error(`Failed to clear empty directory ${folder}: ${error}`);
 						}
 					}
 				},

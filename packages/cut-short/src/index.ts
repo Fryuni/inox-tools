@@ -5,6 +5,11 @@ import MagicString, { type SourceMap } from 'magic-string';
 import { z } from 'astro/zod';
 import { debug } from './internal/debug.js';
 import { AstroError } from 'astro/errors';
+import { randomUUID } from 'node:crypto';
+import * as fs from 'node:fs/promises';
+import * as assert from 'node:assert';
+import * as path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 type ParseNode = ETreeNode & AstNode;
 
@@ -18,6 +23,10 @@ export default defineIntegration({
 		})
 		.default({}),
 	setup({ options }) {
+		const { prerenderStopMark } = ((globalThis as any)[Symbol.for('@it/cut-short')] = {
+			prerenderStopMark: randomUUID(),
+		});
+
 		return {
 			hooks: {
 				'astro:config:setup': (params) => {
@@ -64,6 +73,44 @@ export default defineIntegration({
 							filename: 'types.d.ts',
 							content: "import '@inox-tools/cut-short';",
 						});
+					}
+				},
+				'astro:build:done': async ({ assets, logger }) => {
+					const pairs = Array.from(assets.entries());
+
+					const foldersToClean = new Set<string>();
+
+					await Promise.all(
+						pairs.map(async ([key, urls]) => {
+							for (const url of urls) {
+								try {
+									const fileContent = await fs.readFile(url, 'utf-8');
+									if (fileContent.trim() === prerenderStopMark) {
+										await fs.unlink(url);
+										assets.delete(key);
+										foldersToClean.add(path.dirname(fileURLToPath(url)));
+									}
+								} catch (error) {
+									console.error(`Failed to process asset at ${url}:`, error);
+								}
+							}
+						})
+					);
+
+					while (true) {
+						const { value: folder } = foldersToClean.values().next();
+						if (folder === undefined) break;
+						foldersToClean.delete(folder);
+
+						try {
+							const children = await fs.readdir(folder, { encoding: null });
+							if (children.length === 0) {
+								await fs.rmdir(folder);
+								foldersToClean.add(path.dirname(folder));
+							}
+						} catch (error) {
+							logger.error(`Failed to clear empty directory ${folder}: ${error}`);
+						}
 					}
 				},
 			},

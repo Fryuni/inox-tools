@@ -16,7 +16,7 @@ import InstallCmd from '@/components/InstallCmd.astro';
 
 ## How to use
 
-From any code that is reachable from a page rendering context can use the `endRequest` function to stop the.
+From any code that is reachable from a page rendering context can use the `endRequest` function to stop the rendering process and immediately return a web-standard `Response` for the ongoing request.
 
 A page-rendering context is when you are inside of:
 
@@ -74,6 +74,14 @@ export const GET = () => {
   </TabItem>
 </Tabs>
 
+### Pre-rendering
+
+On static sites or pre-rendered pages for hybrid sites, the `endRequest` function can be used to set the content of the pre-rendered file that will be generated. This will change the _static_ file, so the same content will be served for every request to that page.
+
+Additionally, while prerendering, you can also call the `cancelPrerender` function to skip the currently rendering page/route. In that case, the static file won't be present in the final output of your build and requests to that path will be handled by the hosting platform however it handles non-static paths (for most platforms, that will be calling the Astro server, but on fully static sites it might show a static 404 page).
+
+## Reference
+
 ### `endRequest()`
 
 **Type:** `(withResponse: Response | (() => Response | Promise<Response>)) => void`
@@ -81,6 +89,14 @@ export const GET = () => {
 Stop the current request and send back a custom response.
 
 The argument can be a `Response` object to be used directly or a function that returns a `Response` object or a promise that resolves to a `Response`.
+
+### `cancelPrerender()`
+
+**Type:** `() => void`
+
+Stop the current rendering page and mark it such that there is no rendered file on the final output.
+
+Calling this on the server will cause an internal server error.
 
 ## Options
 

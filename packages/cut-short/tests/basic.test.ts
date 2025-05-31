@@ -23,3 +23,7 @@ test('ending request on page frontmatter', async () => {
 	const content = await res.json();
 	expect(content).toEqual({ cutShort: true });
 });
+
+test('skipped prerenderd page should not exist', async () => {
+	expect(fixture.pathExists('block-render/index.html')).toBeFalse();
+});

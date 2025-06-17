@@ -1,6 +1,6 @@
 {
   "name": "@inox-tools/aik-mod",
-  "version": "0.10.1",
+  "version": "0.10.2",
   "description": "AIK Plugin for inline modules",
   "keywords": [
     "aik",

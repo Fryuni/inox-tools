@@ -1,5 +1,12 @@
 # @inox-tools/astro-tests
 
+## 0.6.2
+
+### Patch Changes
+
+- Updated dependencies [ed7e31e]
+  - @inox-tools/utils@0.5.0
+
 ## 0.6.1
 
 ### Patch Changes

@@ -1,5 +1,12 @@
 # @inox-tools/server-islands
 
+## 0.2.2
+
+### Patch Changes
+
+- Updated dependencies [ed7e31e]
+  - @inox-tools/utils@0.5.0
+
 ## 0.2.1
 
 ### Patch Changes

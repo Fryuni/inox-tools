@@ -1,6 +1,6 @@
 {
   "name": "@inox-tools/request-state",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Shared request state between server and client",
   "keywords": [
     "astro-integration",

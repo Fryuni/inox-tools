@@ -25,7 +25,7 @@ export type Options<Tree extends import('unist').Node, Check extends Test> = {
 	reverse?: boolean;
 };
 
-export function visitParents<Tree extends import('unist').Node, Check extends Test>({
+export function visitParents<Tree extends import('unist').Node, const Check extends Test>({
 	tree,
 	test,
 	enter: enterVisitor,

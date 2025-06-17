@@ -2,10 +2,9 @@ import * as assert from 'node:assert/strict';
 import { test } from 'vitest';
 import { fromMarkdown } from 'mdast-util-from-markdown';
 import { EXIT, SKIP, CONTINUE, visitParents } from '../../src/unist/visit.js';
-import type { Parents, PhrasingContent, Root } from 'mdast';
+import type { Parents, PhrasingContent } from 'mdast';
 
-// To do: remove cast when `mdast-util-from-markdown` is updated.
-const tree = fromMarkdown('Some _emphasis_, **importance**, and `code`.') as Root;
+const tree = fromMarkdown('Some _emphasis_, **importance**, and `code`.');
 
 const paragraph = tree.children[0];
 assert.ok(paragraph.type === 'paragraph');
@@ -129,6 +128,22 @@ test('should only visit a given `type`', function () {
 	visitParents({
 		tree,
 		test: 'text',
+		enter: function (node, parents) {
+			assert.strictEqual(node.type, 'text');
+			assert.deepStrictEqual(parents, textAncestors[n]);
+			n++;
+		},
+	});
+
+	assert.equal(n, textNodes, 'should visit all nodes');
+});
+
+test('should only visit a given fields with proper type narrowing', function () {
+	let n = 0;
+
+	visitParents({
+		tree,
+		test: { type: 'text' },
 		enter: function (node, parents) {
 			assert.strictEqual(node.type, 'text');
 			assert.deepStrictEqual(parents, textAncestors[n]);

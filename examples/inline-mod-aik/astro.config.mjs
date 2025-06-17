@@ -19,7 +19,7 @@ export default defineConfig({
 				try {
 					// Fetch configuration from some remote place when the server is initialized
 					const res = await fetch('https://httpbin.org/json');
-					return res.json();
+					return await res.json();
 				} catch (e) {
 					return { status: 'error', message: e.message };
 				}

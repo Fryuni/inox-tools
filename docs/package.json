@@ -13,16 +13,16 @@
   },
   "dependencies": {
     "@astrojs/starlight": "catalog:",
-    "@astrojs/vercel": "^8.1.4",
+    "@astrojs/vercel": "^8.2.0",
     "@croct/plug": "^0.18.1",
     "@inox-tools/star-warp": "workspace:^",
     "@inox-tools/utils": "workspace:^",
-    "@orama/wc-components": "^0.6.4",
+    "@orama/wc-components": "^0.8.1",
     "@vercel/analytics": "^1.5.0",
     "astro": "catalog:",
-    "sharp": "^0.34.1",
+    "sharp": "^0.34.2",
     "starlight-cooler-credit": "^0.4.0",
-    "starlight-links-validator": "^0.16.0",
+    "starlight-links-validator": "^0.17.0",
     "starlight-package-managers": "^0.11.0"
   },
   "devDependencies": {

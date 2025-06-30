@@ -1,20 +1,27 @@
+packages:
+  - turbo
+  - docs
+  - packages/*
+  - examples/*
+  - packages/*/tests/fixture/*
+  - packages/*/e2e/fixture/*
 catalog:
-  astro: ^5.7.12
+  astro: ^5.10.1
   astro-integration-kit: ~0.18.0
-  '@astrojs/compiler': ^2.12.0
-  '@astrojs/sitemap': ^3.3.1
-  '@astrojs/node': ^9.2.1
-  '@astrojs/starlight': ~0.34.3
+  '@astrojs/compiler': ^2.12.2
+  '@astrojs/sitemap': ^3.4.1
+  '@astrojs/node': ^9.2.2
+  '@astrojs/starlight': ~0.34.4
   '@astrojs/internal-helpers': ^0.6.1
-  '@types/content-type': ^1.1.8
+  '@types/content-type': ^1.1.9
   '@types/debug': ^4.1.12
   '@types/hast': ^3.0.4
-  '@types/node': ^22.15.17
-  '@faker-js/faker': ^9.7.0
+  '@types/node': ^24.0.7
+  '@faker-js/faker': ^9.8.0
   '@lunariajs/core': ^0.1.1
-  '@playwright/test': ^1.52.0
+  '@playwright/test': ^1.53.1
   content-type: ^1.0.5
-  debug: ^4.4.0
+  debug: ^4.4.1
   devalue: ^5.1.1
   sitemap: ^8.0.0
   ast-types: ^0.14.2
@@ -24,14 +31,14 @@ catalog:
   recast: ^0.23.11
   rehype: ^13.0.2
   upath: ^2.0.1
-  tsup: 8.4.0
+  tsup: 8.5.0
   typescript: ^5.8.3
-  vite: ^6.3.5
-  rollup: ^4.40.2
-  vitest: ^3.1.3
-  '@vitest/ui': ^3.1.3
-  '@vitest/coverage-v8': ^3.1.3
-  jest-extended: ^4.0.2
+  vite: ^7.0.0
+  rollup: ^4.44.1
+  vitest: ^3.2.4
+  '@vitest/ui': ^3.2.4
+  '@vitest/coverage-v8': ^3.2.4
+  jest-extended: ^6.0.0
 catalogs:
   lax:
     astro: ^5
@@ -40,10 +47,3 @@ catalogs:
     astro: ^5
     astro-integration-kit: ~0.17 || ~0.18
     vite: ^4 || ^5 || ^6
-packages:
-  - turbo
-  - docs
-  - packages/*
-  - examples/*
-  - packages/*/tests/fixture/*
-  - packages/*/e2e/fixture/*

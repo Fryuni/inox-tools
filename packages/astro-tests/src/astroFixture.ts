@@ -29,7 +29,7 @@ export type TestApp = {
 	toInternalApp: () => App;
 };
 
-type Fixture = {
+export type Fixture = {
 	/**
 	 * Returns the final config.
 	 * Will be automatically passed to the methods below:

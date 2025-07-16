@@ -6,7 +6,7 @@
   "author": "Luiz Ferraz <luiz@lferraz.com>",
   "devDependencies": {
     "@turbo/gen": "^2.5.4",
-    "@types/lodash": "^4.17.19",
+    "@types/lodash": "^4.17.20",
     "lodash": "^4.17.21",
     "typescript": "catalog:"
   }

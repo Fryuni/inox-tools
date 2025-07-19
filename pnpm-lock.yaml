@@ -245,7 +245,7 @@ importers:
         specifier: ^5.10.1
         version: 5.10.1(patch_hash=895775bbfdbe16954cf40a9d53bd1f1b451f595c13167116b675e2bdc118ff0a)(@types/node@24.0.7)(jiti@2.0.0)(rollup@4.44.1)(typescript@5.8.3)(yaml@2.8.0)
       astro-integration-kit:
-        specifier: ^0.18.0
+        specifier: 'catalog:'
         version: 0.18.0(astro@5.10.1(patch_hash=895775bbfdbe16954cf40a9d53bd1f1b451f595c13167116b675e2bdc118ff0a)(@types/node@24.0.7)(jiti@2.0.0)(rollup@4.44.1)(typescript@5.8.3)(yaml@2.8.0))
       typescript:
         specifier: 'catalog:'
@@ -310,7 +310,7 @@ importers:
         specifier: workspace:^
         version: link:../../packages/aik-mod
       astro-integration-kit:
-        specifier: ^0.18.0
+        specifier: 'catalog:'
         version: 0.18.0(astro@5.10.1(patch_hash=895775bbfdbe16954cf40a9d53bd1f1b451f595c13167116b675e2bdc118ff0a)(@types/node@24.0.7)(jiti@2.0.0)(rollup@4.44.1)(typescript@5.8.3)(yaml@2.8.0))
 
   examples/inline-mod-astro:

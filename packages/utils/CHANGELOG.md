@@ -1,5 +1,11 @@
 # @inox-tools/utils
 
+## 0.6.0
+
+### Minor Changes
+
+- cbae8d9: Updated dependencies
+
 ## 0.5.0
 
 ### Minor Changes

@@ -1,5 +1,16 @@
 # @inox-tools/request-state
 
+## 0.5.0
+
+### Minor Changes
+
+- cbae8d9: Updated dependencies
+
+### Patch Changes
+
+- Updated dependencies [cbae8d9]
+  - @inox-tools/utils@0.6.0
+
 ## 0.4.2
 
 ### Patch Changes

@@ -100,8 +100,6 @@ export default defineIntegration({
 			},
 		});
 
-		debugger;
-
 		return withPlugins({
 			name,
 			plugins: [routeConfigPlugin],

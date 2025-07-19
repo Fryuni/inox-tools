@@ -39,11 +39,27 @@ catalog:
   '@vitest/ui': ^3.2.4
   '@vitest/coverage-v8': ^3.2.4
   jest-extended: ^6.0.0
+catalogMode: prefer
+
 catalogs:
   lax:
-    astro: ^5
     '@astrojs/starlight': '>=0.29 <0.32'
+    astro: ^5
   min:
     astro: ^5
     astro-integration-kit: ~0.17 || ~0.18
     vite: ^4 || ^5 || ^6
+
+onlyBuiltDependencies:
+  - core-js-pure
+  - esbuild
+  - sharp
+
+overrides:
+  '@croct/sdk': 0.17.0
+  astro: 'catalog:'
+  picomatch: 3.0.1
+  vite: 'catalog:'
+
+patchedDependencies:
+  astro: patches/astro.patch

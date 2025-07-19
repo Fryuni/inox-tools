@@ -56,7 +56,6 @@ onlyBuiltDependencies:
   - sharp
 
 overrides:
-  '@croct/sdk': 0.17.0
   '@orama/core': 0.1.11
   astro: 'catalog:'
   picomatch: 3.0.1

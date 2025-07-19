@@ -11,9 +11,9 @@
     "start": "astro dev"
   },
   "dependencies": {
-    "@astrojs/check": "^0.9.4",
-    "@astrojs/mdx": "^4.3.0",
-    "@astrojs/rss": "^4.0.12",
+    "@astrojs/check": "catalog:",
+    "@astrojs/mdx": "catalog:",
+    "@astrojs/rss": "catalog:",
     "@astrojs/sitemap": "catalog:",
     "astro": "catalog:",
     "typescript": "catalog:"

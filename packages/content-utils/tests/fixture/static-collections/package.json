@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@inox-tools/content-utils": "workspace:",
+    "@inox-tools/content-utils": "workspace:^",
     "astro": "catalog:"
   }
 }

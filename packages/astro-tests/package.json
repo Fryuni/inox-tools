@@ -28,14 +28,14 @@
   },
   "dependencies": {
     "@astrojs/internal-helpers": "catalog:",
-    "@astrojs/markdown-remark": "^5.3.0",
+    "@astrojs/markdown-remark": "catalog:",
     "@inox-tools/utils": "workspace:^",
     "debug": "catalog:",
-    "fast-glob": "^3.3.2",
-    "shiki": "^1.24.0",
-    "strip-ansi": "^7.1.0",
-    "undici": "^6.21.0",
-    "zod": "^3.23.8"
+    "fast-glob": "catalog:",
+    "shiki": "catalog:",
+    "strip-ansi": "catalog:",
+    "undici": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@types/debug": "catalog:",

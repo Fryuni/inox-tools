@@ -111,6 +111,7 @@ catalogs:
 overrides:
   '@croct/sdk': 0.17.0
   vite: ^7.0.0
+  '@orama/core': 0.1.11
   astro: ^5.10.1
   picomatch: 3.0.1
 
@@ -2190,7 +2191,7 @@ packages:
   '@orama/switch@3.1.9':
     resolution: {integrity: sha512-xOuhvg3e0SnJtYJMEwlKOEpOiuwqWsYanqqsiOWIJne+l+rKA1D1QPJUueN7Vb+IV+iG/1f/ueVVRw1H0ldb7Q==}
     peerDependencies:
-      '@orama/core': ^0.0.10
+      '@orama/core': 0.1.11
       '@orama/orama': 3.1.9
       '@oramacloud/client': ^2.1.1
 

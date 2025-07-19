@@ -1,6 +1,7 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "globalDependencies": ["turbo/cache-key.json"],
+  "globalPassThroughEnv": ["COREPACK_HOME"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],

@@ -1,4 +1,4 @@
-# @inox-tools/inline-mod
+# @inox-tools/custom-routing
 
 ## 1.1.0
 

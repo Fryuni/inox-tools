@@ -109,6 +109,7 @@ export default defineIntegration({
 					const { defineRouteConfig, config } = params;
 					trailingSlash = config.trailingSlash !== 'never';
 					basePath = config.base ?? '';
+					basePath = new URL(config.base ?? '', config.site).pathname;
 					logger = params.logger;
 					baseUrl = new URL(config.base ?? '', config.site);
 

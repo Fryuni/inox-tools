@@ -11,16 +11,16 @@
   },
   "devDependencies": {
     "@astrojs/node": "catalog:",
-    "@astrojs/react": "^4.3.0",
-    "@fortawesome/fontawesome-free": "^6.7.2",
-    "@types/react": "^19.1.8",
-    "@types/react-dom": "^19.1.6",
-    "postcss": "^8.5.6",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "@astrojs/react": "catalog:",
+    "@fortawesome/fontawesome-free": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "postcss": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:"
   },
   "dependencies": {
-    "@astrojs/check": "^0.9.4",
+    "@astrojs/check": "catalog:",
     "@inox-tools/server-islands": "workspace:^",
     "astro": "catalog:",
     "typescript": "catalog:"

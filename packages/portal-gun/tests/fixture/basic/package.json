@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@astrojs/preact": "^3.5.4",
-    "@inox-tools/portal-gun": "workspace:",
+    "@astrojs/preact": "catalog:",
+    "@inox-tools/portal-gun": "workspace:^",
     "astro": "catalog:",
-    "preact": "^10.25.1"
+    "preact": "catalog:"
   }
 }

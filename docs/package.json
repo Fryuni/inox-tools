@@ -13,23 +13,23 @@
   },
   "dependencies": {
     "@astrojs/starlight": "catalog:",
-    "@astrojs/vercel": "^8.2.0",
-    "@croct/plug": "^0.18.1",
+    "@astrojs/vercel": "catalog:",
+    "@croct/plug": "catalog:",
     "@inox-tools/star-warp": "workspace:^",
     "@inox-tools/utils": "workspace:^",
-    "@orama/wc-components": "^0.8.1",
-    "@vercel/analytics": "^1.5.0",
+    "@orama/wc-components": "catalog:",
+    "@vercel/analytics": "catalog:",
     "astro": "catalog:",
-    "sharp": "^0.34.2",
-    "starlight-cooler-credit": "^0.4.0",
-    "starlight-links-validator": "^0.17.0",
-    "starlight-package-managers": "^0.11.0"
+    "sharp": "catalog:",
+    "starlight-cooler-credit": "catalog:",
+    "starlight-links-validator": "catalog:",
+    "starlight-package-managers": "catalog:"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.4",
-    "@types/pako": "^2.0.3",
-    "js-base64": "^3.7.7",
-    "pako": "^2.1.0",
+    "@astrojs/check": "catalog:",
+    "@types/pako": "catalog:",
+    "js-base64": "catalog:",
+    "pako": "catalog:",
     "typescript": "catalog:"
   }
 }

@@ -5,11 +5,11 @@
   "type": "module",
   "dependencies": {
     "@astrojs/node": "catalog:",
-    "@astrojs/preact": "^3.5.4",
-    "@inox-tools/request-nanostores": "workspace:",
-    "@nanostores/preact": "^1",
+    "@astrojs/preact": "catalog:",
+    "@inox-tools/request-nanostores": "workspace:^",
+    "@nanostores/preact": "catalog:",
     "astro": "catalog:",
     "nanostores": "catalog:",
-    "preact": "^10.25.1"
+    "preact": "catalog:"
   }
 }

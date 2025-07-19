@@ -5,7 +5,7 @@
   "type": "module",
   "dependencies": {
     "@astrojs/node": "catalog:",
-    "@inox-tools/server-islands": "workspace:",
+    "@inox-tools/server-islands": "workspace:^",
     "astro": "catalog:",
     "devalue": "catalog:"
   }

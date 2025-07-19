@@ -31,7 +31,7 @@ test('apply new as edited during development', async ({ page }) => {
 			source: 'Original',
 		});
 
-	await fixture.editFile('./src/state.ts', (code) => code.replace('Original', 'Updated'));
+	await fixture.editFile('./src/state.ts', (code) => (code ?? '').replace('Original', 'Updated'));
 
 	await expect
 		.poll(async () => JSON.parse(await page.locator('pre#state').innerHTML()))

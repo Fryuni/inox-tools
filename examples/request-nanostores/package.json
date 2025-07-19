@@ -11,14 +11,14 @@
     "start": "astro dev"
   },
   "dependencies": {
-    "@astrojs/check": "^0.9.4",
+    "@astrojs/check": "catalog:",
     "@astrojs/node": "catalog:",
-    "@astrojs/preact": "^4.1.0",
+    "@astrojs/preact": "catalog:",
     "@inox-tools/request-nanostores": "workspace:^",
-    "@nanostores/preact": "^1.0.0",
+    "@nanostores/preact": "catalog:",
     "astro": "catalog:",
     "nanostores": "catalog:",
-    "preact": "^10.26.9",
+    "preact": "catalog:",
     "typescript": "catalog:"
   }
 }

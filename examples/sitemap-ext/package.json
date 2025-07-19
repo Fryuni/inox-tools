@@ -11,10 +11,10 @@
     "start": "astro dev"
   },
   "dependencies": {
-    "@astrojs/check": "^0.9.4",
-    "@astrojs/mdx": "^4.3.0",
+    "@astrojs/check": "catalog:",
+    "@astrojs/mdx": "catalog:",
     "@astrojs/node": "catalog:",
-    "@astrojs/rss": "^4.0.12",
+    "@astrojs/rss": "catalog:",
     "@inox-tools/sitemap-ext": "workspace:^",
     "astro": "catalog:",
     "typescript": "catalog:"

@@ -11,7 +11,7 @@
     "start": "astro dev"
   },
   "dependencies": {
-    "@astrojs/check": "^0.9.4",
+    "@astrojs/check": "catalog:",
     "@astrojs/node": "catalog:",
     "@inox-tools/astro-when": "workspace:^",
     "astro": "catalog:",

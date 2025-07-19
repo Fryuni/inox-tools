@@ -6,7 +6,7 @@ import {
 } from 'astro-integration-kit';
 import routeConfigPlugin from '@inox-tools/aik-route-config';
 import { AstroError } from 'astro/errors';
-import { type RouteData } from 'astro';
+import { type AstroIntegrationLogger, type RouteData } from 'astro';
 import { EnumChangefreq } from 'sitemap';
 import { z } from 'astro/zod';
 import * as path from 'node:path';
@@ -75,16 +75,44 @@ export default defineIntegration({
 		const extraPages: string[] = [...(_externalPages ?? [])];
 
 		let trailingSlash = false;
-
 		let baseUrl!: URL;
+		let basePath!: string;
+		let logger!: AstroIntegrationLogger;
+
+		const innerIntegration = sitemap({
+			...options,
+			// This relies on an internal detail of the sitemap integration that the reference
+			// to the array is passed around without being copied.
+			customPages: extraPages,
+			filter: (page) => {
+				const url = new URL(page);
+				const route = onlyLeadingSlash(path.relative(basePath, url.pathname));
+
+				const ruling = inclusions.find(
+					(r) =>
+						(r.type === 'static' && r.comparePath === route) ||
+						(r.type === 'regex' && r.regex.test(route))
+				);
+
+				logger.debug(`Ruling for ${route}: ${inspect(ruling ?? includeByDefault)}`);
+
+				return ruling?.decision ?? includeByDefault;
+			},
+		});
+
+		debugger;
 
 		return withPlugins({
 			name,
 			plugins: [routeConfigPlugin],
 			hooks: {
-				'astro:config:setup': (params) => {
-					const { defineRouteConfig, logger, config } = params;
+				...innerIntegration.hooks,
+				'astro:config:setup': async (params) => {
+					const { defineRouteConfig, config } = params;
 					trailingSlash = config.trailingSlash !== 'never';
+					basePath = config.base ?? '';
+					logger = params.logger;
+					baseUrl = new URL(config.base ?? '', config.site);
 
 					if (hasIntegration(params, { name: '@astrojs/sitemap' })) {
 						throw new AstroError(
@@ -92,8 +120,6 @@ export default defineIntegration({
 							'Remove the `@astrojs/sitemap` integration from your project to use `@inox-tools/sitemap-ext`.'
 						);
 					}
-
-					baseUrl = new URL(config.base ?? '', config.site);
 
 					type ConfigCallback = (hooks: {
 						addToSitemap: (routeParams?: Record<string, string | undefined>[]) => void;
@@ -139,32 +165,17 @@ export default defineIntegration({
 						},
 					});
 
-					// The sitemap integration will run _after_ the build is done, so after the build re-mapping done below.
+					// Add dummy integration so other integrations can detect that sitemap is present.
 					addIntegration(params, {
-						ensureUnique: true,
-						integration: sitemap({
-							...options,
-							// This relies on an internal detail of the sitemap integration that the reference
-							// to the array is passed around without being copied.
-							customPages: extraPages,
-							filter: (page) => {
-								const url = new URL(page);
-								const route = onlyLeadingSlash(path.relative(config.base, url.pathname));
-
-								const ruling = inclusions.find(
-									(r) =>
-										(r.type === 'static' && r.comparePath === route) ||
-										(r.type === 'regex' && r.regex.test(route))
-								);
-
-								logger.debug(`Ruling for ${route}: ${inspect(ruling ?? includeByDefault)}`);
-
-								return ruling?.decision ?? includeByDefault;
-							},
-						}),
+						integration: {
+							name: innerIntegration.name,
+							hooks: {},
+						},
 					});
+
+					await innerIntegration.hooks['astro:config:setup']?.(params);
 				},
-				'astro:build:done': async ({ pages }) => {
+				'astro:build:done': async (params) => {
 					const extraPagesSet = new Set<string>(
 						inclusions
 							.filter(
@@ -174,7 +185,7 @@ export default defineIntegration({
 							.map((i) => trimSlashes(i.path))
 					);
 
-					for (const page of pages) {
+					for (const page of params.pages) {
 						extraPagesSet.delete(trimSlashes(page.pathname));
 					}
 
@@ -182,6 +193,8 @@ export default defineIntegration({
 						const url = trimSlashes(new URL(page, baseUrl).toString());
 						extraPages.push(trailingSlash ? url + '/' : url);
 					}
+
+					await innerIntegration.hooks['astro:build:done']?.(params);
 				},
 			},
 		});

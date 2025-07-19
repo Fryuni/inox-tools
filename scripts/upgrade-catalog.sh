@@ -20,7 +20,7 @@ pnpm dedupe
 
 AFFECTED_PACKAGES=$(git diff pnpm-workspace.yaml |
   rg '\+  (.*):.*' -r '$1' |
-  xargs pnpm why -r --json |
+  xargs pnpm why -r --prod --json |
   jq -r '[.[].name|select(startswith("@inox-tools/"))|{name:.,value:"minor"}]|from_entries' |
   yq -P)
 

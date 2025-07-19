@@ -1,5 +1,17 @@
 # @inox-tools/sitemap-ext
 
+## 0.6.0
+
+### Minor Changes
+
+- cbae8d9: Updated dependencies
+
+### Patch Changes
+
+- d54e0bf: Fixes sitemap being ignored when used with Vercel adapter.
+- Updated dependencies [cbae8d9]
+  - @inox-tools/aik-route-config@0.10.0
+
 ## 0.5.2
 
 ### Patch Changes

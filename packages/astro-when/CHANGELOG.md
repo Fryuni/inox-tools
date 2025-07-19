@@ -1,5 +1,11 @@
 # @inox-tools/astro-when
 
+## 1.2.0
+
+### Minor Changes
+
+- cbae8d9: Updated dependencies
+
 ## 1.1.0
 
 ### Minor Changes

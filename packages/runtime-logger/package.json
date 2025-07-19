@@ -1,6 +1,6 @@
 {
   "name": "@inox-tools/runtime-logger",
-  "version": "0.5.2",
+  "version": "0.6.0",
   "description": "Expose Astro Integration Logger at runtime for consistent output",
   "keywords": [
     "astro-integration",

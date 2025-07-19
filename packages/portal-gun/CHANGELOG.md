@@ -1,5 +1,17 @@
 # @inox-tools/portal-gun
 
+## 1.2.0
+
+### Minor Changes
+
+- cbae8d9: Updated dependencies
+
+### Patch Changes
+
+- Updated dependencies [cbae8d9]
+  - @inox-tools/runtime-logger@0.6.0
+  - @inox-tools/utils@0.6.0
+
 ## 1.1.2
 
 ### Patch Changes

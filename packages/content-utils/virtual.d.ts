@@ -19,6 +19,8 @@ declare module '@it-astro:content/injector' {
 }
 
 declare module '@it-astro:content/git' {
+	import type { GitAuthor } from '@inox-tools/content-utils/runtime/git';
+
 	export type EntryKey =
 		| [collection: string, idOrSlug: string]
 		| [{ collection: string; id: string }]

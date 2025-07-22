@@ -31,7 +31,7 @@ function getRepoRoot(): string {
 	return result.stdout.trim();
 }
 
-type GitAuthor = {
+export type GitAuthor = {
 	name: string;
 	email: string;
 };

@@ -1,5 +1,11 @@
 # @inox-tools/content-utils
 
+## 0.11.1
+
+### Patch Changes
+
+- 139b481: Fixes the `GitAuthor` type
+
 ## 0.11.0
 
 ### Minor Changes

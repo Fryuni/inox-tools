@@ -1,5 +1,11 @@
 # @inox-tools/velox-luna
 
+## 0.5.0
+
+### Minor Changes
+
+- 1b9922c: Updated dependencies
+
 ## 0.4.0
 
 ### Minor Changes

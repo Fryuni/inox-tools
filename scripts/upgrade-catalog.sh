@@ -10,9 +10,10 @@ corepack use pnpm@latest
 # Relock dependencies
 pnpm upgrade -r --no-save
 pnpm dedupe
+nix flake update
 
-git add pnpm-lock.yaml || true
-git commit -m "chore: Relock dependencies" -- pnpm-lock.yaml || true
+git add package.json pnpm-lock.yaml flake.lock || true
+git commit -m "chore: Relock dependencies" -- package.json pnpm-lock.yaml flake.lock || true
 
 # Upgrade all dependencies breaking
 pnpm upgrade -r --latest

@@ -9,6 +9,9 @@ cd "$PROJECT_ROOT"
 
 # Unstage any changes
 git restore --staged .
+git restore .
+git switch main
+git pull origin main
 
 NON_BREAKING_BRANCH="chore/upgrade-non-breaking-dependencies"
 BREAKING_BRANCH="chore/upgrade-dependencies"
@@ -32,26 +35,19 @@ git commit -m "chore: Relock dependencies" -- package.json pnpm-lock.yaml flake.
 pnpm upgrade -r
 pnpm dedupe
 
-if pnpm test && pnpm build:examples && pnpm -r --filter docs build && pnpm test:e2e; then
-  echo "All tests passed, safe to commit directly"
-else
-  echo "Tests failed, commiting changes to a branch for manual review"
-  # Create and switch to branch
-  git switch -c "$NON_BREAKING_BRANCH"
-fi
+git push origin main
+
+# Create and switch to branch
+git switch -c "$NON_BREAKING_BRANCH"
 
 git add '**/package.json' package.json pnpm-lock.yaml pnpm-workspace.yaml || true
-git commit -m "chore: Upgrade non-breaking dependencies" \
-  -- '**/package.json' package.json pnpm-lock.yaml pnpm-workspace.yaml || true
-
-if [ "$(git branch --show-current)" = "$NON_BREAKING_BRANCH" ]; then
+if git commit -m "chore: Upgrade non-breaking dependencies" \
+  -- '**/package.json' package.json pnpm-lock.yaml pnpm-workspace.yaml; then
   git push --set-upstream origin "$NON_BREAKING_BRANCH" --force
-  gh pr create --draft \
+  gh pr create \
     --title "chore: Upgrade non-breaking dependencies" \
     --body "" || true
-
-  echo "On upgrade-non-breaking-dependencies branch, stopping here"
-  exit 0
+  gh pr merge --squash --body '' --delete-branch --auto || true
 fi
 
 # Upgrade all dependencies breaking
@@ -78,5 +74,10 @@ EOF
 git switch -c chore/upgrade-dependencies || true
 
 git add '**/package.json' "$CHANGESET" package.json pnpm-lock.yaml pnpm-workspace.yaml || true
-git commit -m "chore!: Upgrade breaking dependencies" \
-  -- '**/package.json' "$CHANGESET" package.json pnpm-lock.yaml pnpm-workspace.yaml || true
+if git commit -m "chore!: Upgrade breaking dependencies" \
+  -- '**/package.json' "$CHANGESET" package.json pnpm-lock.yaml pnpm-workspace.yaml; then
+  git push --set-upstream origin "$BREAKING_BRANCH" --force
+  gh pr create \
+    --title "chore!: Upgrade breaking dependencies" \
+    --body "" || true
+fi

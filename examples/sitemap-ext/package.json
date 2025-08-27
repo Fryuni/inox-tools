@@ -16,7 +16,7 @@
     "@astrojs/node": "catalog:",
     "@astrojs/rss": "catalog:",
     "@inox-tools/sitemap-ext": "workspace:^",
-    "astro": "catalog:",
+    "astro": "^5.13.3",
     "typescript": "catalog:"
   }
 }

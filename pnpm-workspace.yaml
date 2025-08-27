@@ -10,34 +10,34 @@ catalog:
   '@astrojs/check': ^0.9.4
   '@astrojs/compiler': ^2.12.2
   '@astrojs/internal-helpers': ^0.6.1
-  '@astrojs/markdown-remark': ^6.3.3
-  '@astrojs/mdx': ^4.3.1
-  '@astrojs/node': ^9.3.0
+  '@astrojs/markdown-remark': ^6.3.6
+  '@astrojs/mdx': ^4.3.4
+  '@astrojs/node': ^9.4.3
   '@astrojs/preact': ^4.1.0
   '@astrojs/react': ^4.3.0
   '@astrojs/rss': ^4.0.12
-  '@astrojs/sitemap': ^3.4.1
-  '@astrojs/starlight': ~0.35.1
-  '@astrojs/vercel': ^8.2.2
+  '@astrojs/sitemap': ^3.5.1
+  '@astrojs/starlight': ~0.35.2
+  '@astrojs/vercel': ^8.2.6
   '@changesets/changelog-github': ^0.5.1
-  '@changesets/cli': ^2.29.5
+  '@changesets/cli': ^2.29.6
   '@croct/plug': ^0.18.1
   '@faker-js/faker': ^9.9.0
   '@fortawesome/fontawesome-free': ^6.7.2
   '@lunariajs/core': ^0.1.1
   '@nanostores/preact': ^1.0.0
   '@orama/wc-components': ^0.8.1
-  '@playwright/test': ^1.54.1
-  '@turbo/gen': ^2.5.5
+  '@playwright/test': ^1.55.0
+  '@turbo/gen': ^2.5.6
   '@types/content-type': ^1.1.9
   '@types/debug': ^4.1.12
   '@types/hast': ^3.0.4
   '@types/lodash': ^4.17.20
   '@types/mdast': ^4.0.4
-  '@types/node': ^24.0.15
-  '@types/pako': ^2.0.3
-  '@types/react': ^19.1.8
-  '@types/react-dom': ^19.1.6
+  '@types/node': ^24.3.0
+  '@types/pako': ^2.0.4
+  '@types/react': ^19.1.11
+  '@types/react-dom': ^19.1.8
   '@types/unist': ^3.0.3
   '@types/xast': ^2.0.4
   '@vercel/analytics': ^1.5.0
@@ -48,53 +48,53 @@ catalog:
   astro-integration-kit: ~0.18.0
   content-type: ^1.0.5
   debug: ^4.4.1
-  devalue: ^5.1.1
+  devalue: ^5.3.2
   estree-walker: ^3.0.3
   fast-glob: ^3.3.3
   husky: ^9.1.7
   jest-extended: ^6.0.0
-  js-base64: ^3.7.7
-  lint-staged: ^16.1.2
+  js-base64: ^3.7.8
+  lint-staged: ^16.1.5
   lodash: ^4.17.21
-  magic-string: ^0.30.17
+  magic-string: ^0.30.18
   mdast-util-from-markdown: ^2.0.2
   nanostores: ^1.0.1
   pako: ^2.1.0
   postcss: ^8.5.6
-  preact: ^10.26.9
+  preact: ^10.27.1
   prettier: ^3.6.2
   prettier-plugin-astro: ^0.14.1
-  react: ^19.1.0
-  react-dom: ^19.1.0
+  react: ^19.1.1
+  react-dom: ^19.1.1
   recast: ^0.23.11
   rehype: ^13.0.2
-  rollup: ^4.45.1
+  rollup: ^4.48.1
   sharp: ^0.34.3
-  shiki: ^3.8.1
+  shiki: ^3.12.0
   sitemap: ^8.0.0
   starlight-cooler-credit: ^0.4.0
-  starlight-links-validator: ^0.17.0
+  starlight-links-validator: ^0.17.1
   starlight-package-managers: ^0.11.0
   strip-ansi: ^7.1.0
   tsup: 8.5.0
-  turbo: ^2.5.5
-  typescript: ^5.8.3
-  undici: ^7.12.0
+  turbo: ^2.5.6
+  typescript: ^5.9.2
+  undici: ^7.15.0
   unist-util-is: ^6.0.0
   upath: ^2.0.1
   vite: ^7.0.5
   vitest: ^3.2.4
-  zod: ^4.0.5
+  zod: ^4.1.3
 
 catalogMode: prefer
 
 catalogs:
   lax:
-    '@astrojs/starlight': '>=0.29 <0.32'
+    '@astrojs/starlight': ^0.31.1
     astro: ^5
   min:
     astro: ^5
-    astro-integration-kit: ~0.17 || ~0.18
+    astro-integration-kit: ^0.18.0
     vite: ^4 || ^5 || ^6
 
 onlyBuiltDependencies:

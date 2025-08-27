@@ -16,7 +16,7 @@
     "@astrojs/preact": "catalog:",
     "@inox-tools/request-nanostores": "workspace:^",
     "@nanostores/preact": "catalog:",
-    "astro": "catalog:",
+    "astro": "^5.13.3",
     "nanostores": "catalog:",
     "preact": "catalog:",
     "typescript": "catalog:"

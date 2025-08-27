@@ -1,0 +1,13 @@
+diff --git a/dist/core/types.d.ts b/dist/core/types.d.ts
+index 7a49f2f16d8ce5e184c8bd4206e4aec295f44153..b6f58366e0b6d12440f01bf572558b65baf957f9 100644
+--- a/dist/core/types.d.ts
++++ b/dist/core/types.d.ts
+@@ -12,7 +12,7 @@ type Plugin<TName extends string, THooks extends PluginHooksConstraint> = {
+         name: string;
+     }) => PluginPerHookSetup<THooks>;
+ };
+-type AnyPlugin = Plugin<string, Record<string, any>>;
++type AnyPlugin = Plugin<string, Record<never, any>>;
+ type Hooks = Required<Astro.IntegrationHooks>;
+ type AnyFunction = (...args: Array<any>) => any;
+ /**

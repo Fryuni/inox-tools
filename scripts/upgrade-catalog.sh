@@ -13,12 +13,10 @@ git restore .
 git switch main
 git pull origin main
 
-NON_BREAKING_BRANCH="chore/upgrade-non-breaking-dependencies"
-BREAKING_BRANCH="chore/upgrade-dependencies"
+UPDATE_BRANCH="chore/upgrade-dependencies"
 
 # Delete upgrade branch if it exists, we are creating a new one
-git branch -D "$NON_BREAKING_BRANCH" || true
-git branch -D "$BREAKING_BRANCH" || true
+git branch -D "$UPDATE_BRANCH" || true
 
 # Update to latest pnpm
 corepack use pnpm@latest
@@ -31,24 +29,7 @@ nix flake update
 git add package.json pnpm-lock.yaml flake.lock || true
 git commit -m "chore: Relock dependencies" -- package.json pnpm-lock.yaml flake.lock || true
 
-# Upgrade all dependencies non-breaking
-pnpm upgrade -r
-pnpm dedupe
-
 git push origin main
-
-# Create and switch to branch
-git switch -c "$NON_BREAKING_BRANCH"
-
-git add '**/package.json' package.json pnpm-lock.yaml pnpm-workspace.yaml || true
-if git commit -m "chore: Upgrade non-breaking dependencies" \
-  -- '**/package.json' package.json pnpm-lock.yaml pnpm-workspace.yaml; then
-  git push --set-upstream origin "$NON_BREAKING_BRANCH" --force
-  gh pr create \
-    --title "chore: Upgrade non-breaking dependencies" \
-    --body "" || true
-  gh pr merge --squash --body '' --delete-branch --auto || true
-fi
 
 # Upgrade all dependencies breaking
 pnpm upgrade -r --latest
@@ -74,10 +55,10 @@ EOF
 git switch -c chore/upgrade-dependencies || true
 
 git add '**/package.json' "$CHANGESET" package.json pnpm-lock.yaml pnpm-workspace.yaml || true
-if git commit -m "chore!: Upgrade breaking dependencies" \
+if git commit -m "chore!: Upgrade dependencies" \
   -- '**/package.json' "$CHANGESET" package.json pnpm-lock.yaml pnpm-workspace.yaml; then
-  git push --set-upstream origin "$BREAKING_BRANCH" --force
+  git push --set-upstream origin "$UPDATE_BRANCH" --force
   gh pr create \
-    --title "chore!: Upgrade breaking dependencies" \
+    --title "chore!: Upgrade dependencies" \
     --body "" || true
 fi

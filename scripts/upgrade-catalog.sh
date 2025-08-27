@@ -31,24 +31,7 @@ nix flake update
 git add package.json pnpm-lock.yaml flake.lock || true
 git commit -m "chore: Relock dependencies" -- package.json pnpm-lock.yaml flake.lock || true
 
-# Upgrade all dependencies non-breaking
-pnpm upgrade -r
-pnpm dedupe
-
 git push origin main
-
-# Create and switch to branch
-git switch -c "$NON_BREAKING_BRANCH"
-
-git add '**/package.json' package.json pnpm-lock.yaml pnpm-workspace.yaml || true
-if git commit -m "chore: Upgrade non-breaking dependencies" \
-  -- '**/package.json' package.json pnpm-lock.yaml pnpm-workspace.yaml; then
-  git push --set-upstream origin "$NON_BREAKING_BRANCH" --force
-  gh pr create \
-    --title "chore: Upgrade non-breaking dependencies" \
-    --body "" || true
-  gh pr merge --squash --body '' --delete-branch --auto || true
-fi
 
 # Upgrade all dependencies breaking
 pnpm upgrade -r --latest

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -exo pipefail
+set -euxo pipefail
 
 export CI=1
 
@@ -10,12 +10,12 @@ cd "$PROJECT_ROOT"
 # Unstage any changes
 git restore --staged .
 
-# Switch to main
-git switch main
-git pull origin main --rebase
+NON_BREAKING_BRANCH="chore/upgrade-non-breaking-dependencies"
+BREAKING_BRANCH="chore/upgrade-dependencies"
 
 # Delete upgrade branch if it exists, we are creating a new one
-git branch -D chore/upgrade-dependencies || true
+git branch -D "$NON_BREAKING_BRANCH" || true
+git branch -D "$BREAKING_BRANCH" || true
 
 # Update to latest pnpm
 corepack use pnpm@latest
@@ -37,12 +37,22 @@ if pnpm test && pnpm build:examples && pnpm -r --filter docs build && pnpm test:
 else
   echo "Tests failed, commiting changes to a branch for manual review"
   # Create and switch to branch
-  git switch -c chore/upgrade-dependencies
+  git switch -c "$NON_BREAKING_BRANCH"
 fi
 
 git add '**/package.json' package.json pnpm-lock.yaml pnpm-workspace.yaml || true
-git commit -m "chore: Upgrade dependencies non-breaking" \
+git commit -m "chore: Upgrade non-breaking dependencies" \
   -- '**/package.json' package.json pnpm-lock.yaml pnpm-workspace.yaml || true
+
+if [ "$(git branch --show-current)" = "$NON_BREAKING_BRANCH" ]; then
+  git push --set-upstream origin "$NON_BREAKING_BRANCH" --force
+  gh pr create --draft \
+    --title "chore: Upgrade non-breaking dependencies" \
+    --body "" || true
+
+  echo "On upgrade-non-breaking-dependencies branch, stopping here"
+  exit 0
+fi
 
 # Upgrade all dependencies breaking
 pnpm upgrade -r --latest
@@ -64,16 +74,8 @@ ${AFFECTED_PACKAGES}
 Updated dependencies
 EOF
 
-# If current branch is main
-if [ "$(git branch --show-current)" = "main" ]; then
-  if pnpm test && pnpm build:examples && pnpm -r --filter docs build && pnpm test:e2e; then
-    echo "All tests passed, safe to commit directly"
-  else
-    echo "Tests failed, commiting changes to a branch for manual review"
-    # Create and switch to branch
-    git switch -c chore/upgrade-dependencies || true
-  fi
-fi
+# Create and switch to branch
+git switch -c chore/upgrade-dependencies || true
 
 git add '**/package.json' "$CHANGESET" package.json pnpm-lock.yaml pnpm-workspace.yaml || true
 git commit -m "chore!: Upgrade breaking dependencies" \

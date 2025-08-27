@@ -6,6 +6,6 @@
   "dependencies": {
     "@astrojs/node": "catalog:",
     "@inox-tools/request-state": "workspace:^",
-    "astro": "^5.13.3"
+    "astro": "catalog:"
   }
 }

@@ -6,7 +6,7 @@
   "dependencies": {
     "@astrojs/preact": "catalog:",
     "@inox-tools/portal-gun": "workspace:^",
-    "astro": "^5.13.3",
+    "astro": "catalog:",
     "preact": "catalog:"
   }
 }

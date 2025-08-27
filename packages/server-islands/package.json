@@ -41,10 +41,10 @@
     "@inox-tools/astro-tests": "workspace:^",
     "@playwright/test": "catalog:",
     "@types/node": "catalog:",
-    "astro": "^5.13.3",
+    "astro": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:",
-    "vite": "^7.1.3"
+    "vite": "catalog:"
   },
   "peerDependencies": {
     "astro": "catalog:lax"

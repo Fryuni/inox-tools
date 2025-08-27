@@ -94,8 +94,8 @@ catalogs:
     astro: ^5
   min:
     astro: ^5
-    astro-integration-kit: ^0.18.0
-    vite: ^4 || ^5 || ^6
+    astro-integration-kit: ^0.18 || ^0.19
+    vite: ^5 || ^6 || ^7
 
 onlyBuiltDependencies:
   - core-js-pure
@@ -105,9 +105,9 @@ onlyBuiltDependencies:
 overrides:
   '@orama/core': 0.1.11
   astro: 'catalog:'
+  astro-integration-kit: 'catalog:'
   picomatch: 3.0.1
   vite: 'catalog:'
 
 patchedDependencies:
   astro: patches/astro.patch
-  astro-integration-kit: patches/astro-integration-kit.patch

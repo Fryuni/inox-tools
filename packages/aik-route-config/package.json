@@ -34,7 +34,7 @@
     "@inox-tools/utils": "workspace:^",
     "debug": "catalog:",
     "recast": "catalog:",
-    "vite": "catalog:"
+    "vite": "catalog:min"
   },
   "devDependencies": {
     "@astrojs/compiler": "catalog:",

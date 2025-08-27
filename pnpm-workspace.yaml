@@ -110,3 +110,4 @@ overrides:
 
 patchedDependencies:
   astro: patches/astro.patch
+  astro-integration-kit: patches/astro-integration-kit.patch

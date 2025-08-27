@@ -8,7 +8,7 @@
     "@astrojs/preact": "catalog:",
     "@inox-tools/request-nanostores": "workspace:^",
     "@nanostores/preact": "catalog:",
-    "astro": "^5.13.3",
+    "astro": "catalog:",
     "nanostores": "catalog:",
     "preact": "catalog:"
   }

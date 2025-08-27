@@ -19,7 +19,7 @@
     "@inox-tools/utils": "workspace:^",
     "@orama/wc-components": "catalog:",
     "@vercel/analytics": "catalog:",
-    "astro": "^5.13.3",
+    "astro": "catalog:",
     "sharp": "catalog:",
     "starlight-cooler-credit": "catalog:",
     "starlight-links-validator": "catalog:",

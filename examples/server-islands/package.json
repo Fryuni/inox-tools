@@ -22,7 +22,7 @@
   "dependencies": {
     "@astrojs/check": "catalog:",
     "@inox-tools/server-islands": "workspace:^",
-    "astro": "catalog:",
+    "astro": "^5.13.3",
     "typescript": "catalog:"
   }
 }

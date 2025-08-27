@@ -37,7 +37,7 @@ if pnpm test && pnpm build:examples && pnpm -r --filter docs build && pnpm test:
 else
   echo "Tests failed, commiting changes to a branch for manual review"
   # Create and switch to branch
-  git switch -c chore/upgrade-dependencies
+  git switch -c chore/upgrade-dependencies-non-breaking
 fi
 
 git add '**/package.json' package.json pnpm-lock.yaml pnpm-workspace.yaml || true
@@ -64,16 +64,8 @@ ${AFFECTED_PACKAGES}
 Updated dependencies
 EOF
 
-# If current branch is main
-if [ "$(git branch --show-current)" = "main" ]; then
-  if pnpm test && pnpm build:examples && pnpm -r --filter docs build && pnpm test:e2e; then
-    echo "All tests passed, safe to commit directly"
-  else
-    echo "Tests failed, commiting changes to a branch for manual review"
-    # Create and switch to branch
-    git switch -c chore/upgrade-dependencies || true
-  fi
-fi
+# Create and switch to branch
+git switch -c chore/upgrade-dependencies || true
 
 git add '**/package.json' "$CHANGESET" package.json pnpm-lock.yaml pnpm-workspace.yaml || true
 git commit -m "chore!: Upgrade breaking dependencies" \

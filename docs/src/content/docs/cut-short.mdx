@@ -31,7 +31,7 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
   <TabItem label="Common module">
 
 ```ts title="src/lib/auth.js"
-import { endRequest } from '@it-astro/cut-short';
+import { endRequest } from '@it-astro:cut-short';
 
 export function getUser() {
   if (noUser) endRequest(new Response('No user', { status: 401 }));
@@ -58,7 +58,7 @@ const user = getUser();
   <TabItem label="Endpoint">
 
 ```ts title="src/pages/userId.ts"
-import { endRequest } from '@it-astro/cut-short';
+import { endRequest } from '@it-astro:cut-short';
 import { getUser } from '../lib/auth';
 
 export const GET = () => {
@@ -135,7 +135,7 @@ This prevents components from changing the status code of the response and from 
 
 ```astro title="src/components/MyComponent.astro"
 ---
-import { endRequest } from '@it-astro/cut-short';
+import { endRequest } from '@it-astro:cut-short';
 
 // Neither of these is allowed
 endRequest(new Response('Page not found', { status: 404 }));

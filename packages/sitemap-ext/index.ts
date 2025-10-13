@@ -7,33 +7,34 @@ import {
 import routeConfigPlugin from '@inox-tools/aik-route-config';
 import { AstroError } from 'astro/errors';
 import { type AstroIntegrationLogger, type RouteData } from 'astro';
-import { EnumChangefreq } from 'sitemap';
 import { z } from 'astro/zod';
 import * as path from 'node:path';
-import sitemap from '@astrojs/sitemap';
+import sitemap, { type SitemapOptions as _SitemapOptions } from '@astrojs/sitemap';
 import './virtual.d.ts';
 import { inspect } from 'node:util';
 
 process.setSourceMapsEnabled(true);
 
+const baseSchema = z.object({
+	includeByDefault: z.boolean().default(false),
+	customPages: z.array(z.string()).optional(),
+});
+
+type SitemapOptions = Omit<NonNullable<_SitemapOptions>, keyof typeof baseSchema.shape | 'filter'>;
+
+const optionsSchema = baseSchema.passthrough().default({}) as unknown as z.ZodDefault<
+	z.ZodObject<
+		typeof baseSchema.shape,
+		'strip',
+		z.ZodTypeAny,
+		typeof baseSchema._output & SitemapOptions,
+		typeof baseSchema._input & SitemapOptions
+	>
+>;
+
 export default defineIntegration({
 	name: '@inox-tools/sitemap-ext',
-	optionsSchema: z
-		.object({
-			includeByDefault: z.boolean().default(false),
-			customPages: z.array(z.string()).optional(),
-			i18n: z
-				.object({
-					defaultLocale: z.string(),
-					locales: z.record(z.string()),
-				})
-				.optional(),
-			entryLimit: z.number().optional(),
-			changefreq: z.nativeEnum(EnumChangefreq).optional(),
-			lastmod: z.date().optional(),
-			priority: z.number().optional(),
-		})
-		.default({}),
+	optionsSchema,
 	setup: ({ name, options: { includeByDefault, customPages: _externalPages, ...options } }) => {
 		type InclusionRule =
 			| { type: 'regex'; regex: RegExp; decision: boolean }

@@ -1,5 +1,11 @@
 # @inox-tools/sitemap-ext
 
+## 0.7.1
+
+### Patch Changes
+
+- 4a1a305: Fixes types to align with the official sitemap integration options
+
 ## 0.7.0
 
 ### Minor Changes

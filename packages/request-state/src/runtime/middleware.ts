@@ -15,16 +15,19 @@ export const onRequest = defineMiddleware(async (_, next) => {
 
 	const originalBody = await result.text();
 
-	const headCloseIndex = originalBody.indexOf('</head>');
-	if (headCloseIndex > -1) {
-		const state = getState();
-		if (state) {
-			const stateScript = `<script id="it-astro-state" type="application/json+devalue">${state}</script>`;
-
+	const state = getState();
+	const stateScript = state
+		? `<script id="it-astro-state" type="application/json+devalue">${state}</script>`
+		: null;
+	if (stateScript) {
+		const headCloseIndex = originalBody.indexOf('</head>');
+		if (headCloseIndex > -1) {
 			return new Response(
 				originalBody.slice(0, headCloseIndex) + stateScript + originalBody.slice(headCloseIndex),
 				result
 			);
+		} else {
+			return new Response(stateScript + originalBody, result);
 		}
 	}
 

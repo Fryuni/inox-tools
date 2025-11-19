@@ -8,36 +8,67 @@ const revivers: Record<string, (value: any) => any> = {
 	WellKnownSymbol: (value) => Symbol[value as keyof typeof Symbol],
 };
 
-const loadState = (doc: Document): State | undefined => {
-	const element = doc.getElementById('it-astro-state');
-
-	if (element?.textContent) {
-		const state = parse(element.textContent, revivers);
-		element.remove();
-		return state;
-	}
+const loadState = (doc: Document, caller?: string): State[] => {
+	const elements = Array.from(doc.querySelectorAll('.it-astro-state'));
+	const scripts = elements
+		.map((element) => {
+			if (element?.textContent) {
+				const state = parse(element.textContent, revivers);
+				element.remove();
+				return state;
+			}
+		})
+		.filter(Boolean);
+	return scripts;
 };
 
-let nextState = loadState(document);
-const state = new Map();
+let nextState = loadState(document, 'global');
 
-const applyState = () => {
-	const event = new ServerStateLoaded(new Map(state), nextState ?? new Map());
+const initialiseState = (): State => {
+	const STATE_WINDOW_NAMESPACE = '__@it-astro:request-state-data' as const;
+	if (!(STATE_WINDOW_NAMESPACE in window)) {
+		window[STATE_WINDOW_NAMESPACE] = new Map();
+	}
+	return window[STATE_WINDOW_NAMESPACE] as State;
+};
 
-	if (document.dispatchEvent(event)) {
-		state.clear();
-		for (const [key, value] of event.serverState.entries()) {
-			state.set(key, value);
+export const state = initialiseState();
+
+const mergeState = (oldState: State, newState: State) => {
+	for (const [newKey, newValue] of newState.entries()) {
+		const isHit = oldState.has(newKey);
+		if (isHit) {
+			if (process.env.NODE_ENV === 'development') {
+				console.warn(
+					`@inox-tools/request-state: tried to insert duplicate key ${newKey} with value ${newValue} but already had value ${oldState.get(newKey)}. Ignoring.`
+				);
+			}
+			continue;
 		}
+		oldState?.set(newKey, newValue);
 	}
+	return oldState;
 };
 
-applyState();
+const applyState =
+	(isViewTransition: boolean = false) =>
+	() => {
+		const nextStateMerged = nextState?.reduce(mergeState, isViewTransition ? new Map() : state);
+		const event = new ServerStateLoaded(new Map(state), nextStateMerged);
+
+		if (document.dispatchEvent(event)) {
+			for (const [key, value] of event.serverState.entries()) {
+				state.set(key, value);
+			}
+		}
+	};
+
+applyState()();
 
 document.addEventListener('astro:before-swap', (event) => {
 	nextState = loadState(event.newDocument);
 });
-document.addEventListener('astro:after-swap', applyState);
+document.addEventListener('astro:after-swap', applyState(true));
 
 export const getState = (key: string, valueIfMissing?: unknown): unknown => {
 	if (!state.has(key)) {
@@ -47,6 +78,8 @@ export const getState = (key: string, valueIfMissing?: unknown): unknown => {
 	}
 	return state.get(key);
 };
+
+export const getAllState = () => state;
 
 export const setState = (key: string, value: unknown): void => {
 	if (value === undefined) {

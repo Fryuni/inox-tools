@@ -17,7 +17,7 @@ export const onRequest = defineMiddleware(async (_, next) => {
 
 	const state = getState();
 	const stateScript = state
-		? `<script id="it-astro-state" type="application/json+devalue">${state}</script>`
+		? `<script class="it-astro-state" type="application/json+devalue">${state}</script>`
 		: null;
 	if (stateScript) {
 		const headCloseIndex = originalBody.indexOf('</head>');

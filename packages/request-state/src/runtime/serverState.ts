@@ -17,6 +17,8 @@ export const getState = (key: string, valueIfMissing?: unknown): unknown => {
 	return state.get(key);
 };
 
+export const getAllState = () => store.getStore()
+
 export const setState = (key: string, value: unknown): void => {
 	const state = store.getStore();
 	if (value === undefined) {

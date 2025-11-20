@@ -22,7 +22,7 @@ const loadState = (doc: Document, caller?: string): State[] => {
 	return scripts;
 };
 
-let nextState = loadState(document, 'global');
+let nextStates = loadState(document, 'global');
 
 const initialiseState = (): State => {
 	const STATE_WINDOW_NAMESPACE = '__@it-astro:request-state-data' as const;
@@ -45,7 +45,7 @@ const mergeState = (oldState: State, newState: State) => {
 			}
 			continue;
 		}
-		oldState?.set(newKey, newValue);
+		oldState.set(newKey, newValue);
 	}
 	return oldState;
 };
@@ -53,8 +53,9 @@ const mergeState = (oldState: State, newState: State) => {
 const applyState =
 	(isViewTransition: boolean = false) =>
 	() => {
-		const nextStateMerged = nextState?.reduce(mergeState, isViewTransition ? new Map() : state);
-		const event = new ServerStateLoaded(new Map(state), nextStateMerged);
+		const startingState = isViewTransition ? new Map() : new Map(state); // if it's a view transition, we want a completely new state (otherwise the new view will 'lose' to the old view in the case of a conflict). If it's not a view transition, we want to shallow clone the state object. mergeState will update the top-level keys of the state passed to it, but if the user calls preventDefault on the serverStateLoaded we're supposed to abort the update. So it won't do to have already updated the underlying global state map. And on the other hand we do a shallow, not deep, clone because the user can mutate their own stored values any time they want.
+		nextStates?.reduce(mergeState, startingState);
+		const event = new ServerStateLoaded(new Map(state), startingState);
 
 		if (document.dispatchEvent(event)) {
 			for (const [key, value] of event.serverState.entries()) {
@@ -66,7 +67,7 @@ const applyState =
 applyState()();
 
 document.addEventListener('astro:before-swap', (event) => {
-	nextState = loadState(event.newDocument);
+	nextStates = loadState(event.newDocument);
 });
 document.addEventListener('astro:after-swap', applyState(true));
 

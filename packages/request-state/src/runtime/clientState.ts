@@ -63,6 +63,7 @@ const applyState =
 		const event = new ServerStateLoaded(new Map(state), startingState);
 
 		if (document.dispatchEvent(event)) {
+			state.clear();
 			for (const [key, value] of event.serverState.entries()) {
 				state.set(key, value);
 			}

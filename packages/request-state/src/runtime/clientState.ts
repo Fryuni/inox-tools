@@ -86,7 +86,7 @@ export const getState = (key: string, valueIfMissing?: unknown): unknown => {
 	return state.get(key);
 };
 
-export const getAllState = () => state;
+export const hasState = (key: string) => state.has(key);
 
 export const setState = (key: string, value: unknown): void => {
 	if (value === undefined) {

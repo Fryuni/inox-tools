@@ -2,7 +2,7 @@ import type { State } from './src/events.js';
 
 declare module '@it-astro:state' {
 	export const getState: (key: string, valueIfMissing?: unknown) => unknown;
-	export const getAllState: () => State;
+	export const hasState: (key: string) => boolean;
 	export const setState: (key: string, value: unknown) => void;
 
 	export { ServerStateLoaded } from './src/events.js';

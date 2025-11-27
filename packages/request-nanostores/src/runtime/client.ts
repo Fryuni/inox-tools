@@ -1,5 +1,5 @@
 import { onMount, type ReadableAtom } from 'nanostores';
-import { getAllState } from '@it-astro:state';
+import { hasState, setState, getState } from '@it-astro:state';
 
 const storesToNotify: Array<ReadableAtom<any>> = [];
 
@@ -12,15 +12,13 @@ export const shared = <A extends ReadableAtom<any>>(name: string, store: A): A =
 		configurable: false,
 		enumerable: true,
 		get() {
-			const store = getAllState();
-			if (!store.has(STATE_NAMESPACE + name)) {
-				store.set(STATE_NAMESPACE + name, structuredClone(baseValue));
+			if (!hasState(STATE_NAMESPACE + name)) {
+				setState(STATE_NAMESPACE + name, structuredClone(baseValue));
 			}
-			return store.get(STATE_NAMESPACE + name);
+			return getState(STATE_NAMESPACE + name);
 		},
 		set(value) {
-			const store = getAllState();
-			store.set(STATE_NAMESPACE + name, value);
+			setState(STATE_NAMESPACE + name, value);
 		},
 	});
 

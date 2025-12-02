@@ -1,0 +1,15 @@
+{
+  "name": "@request-nanostores/partials-foo-second",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@astrojs/node": "catalog:",
+    "@astrojs/preact": "catalog:",
+    "@inox-tools/request-nanostores": "workspace:^",
+    "@nanostores/preact": "catalog:",
+    "astro": "catalog:",
+    "nanostores": "catalog:",
+    "preact": "catalog:"
+  }
+}

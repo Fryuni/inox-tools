@@ -1,0 +1,17 @@
+---
+import { state } from '../state.js';
+
+const injectedState = 'foo-first';
+
+state.set(injectedState);
+export const partial = true;
+---
+
+<pre id="injected-state-foo-first"></pre>
+<script>
+	import { serializedState } from '../state.js';
+
+	serializedState.subscribe((value) => {
+		document.getElementById('injected-state-foo-first')!.innerHTML = value;
+	});
+</script>

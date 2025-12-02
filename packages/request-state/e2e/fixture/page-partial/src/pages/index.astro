@@ -1,0 +1,34 @@
+---
+import { setState } from '@it-astro:state';
+import * as devalue from 'devalue';
+
+const state = devalue.parse(process.env.INJECTED_STATE || '[123]');
+
+setState('injected-state', state);
+setState('fancy-objects', {
+	url: new URL('https://example.com/foo/bar'),
+	date: new Date('2022-01-01T00:00:00.000Z'),
+});
+
+export const partial = true;
+---
+
+<pre id="injected-state"></pre>
+<script>
+	import { getState } from '@it-astro:state';
+	import * as devalue from 'devalue';
+
+	const state = getState('injected-state');
+	document.getElementById('injected-state')!.innerHTML = devalue.stringify(state);
+
+	const fancyObjects: any = getState('fancy-objects');
+	console.assert(
+		fancyObjects.url instanceof URL && fancyObjects.url.href === 'https://example.com/foo/bar',
+		`fancyObjects.url.href: ${fancyObjects.url.constructor.name}(${fancyObjects.url})`
+	);
+	console.assert(
+		fancyObjects.date instanceof Date &&
+			fancyObjects.date.toISOString() === '2022-01-01T00:00:00.000Z',
+		`fancyObjects.date: ${fancyObjects.date.constructor.name}(${fancyObjects.date.toISOString()})`
+	);
+</script>

@@ -5,6 +5,7 @@ packages:
   - examples/*
   - packages/*/tests/fixture/*
   - packages/*/e2e/fixture/*
+  - packages/*/e2e/fixture/partials/*
 
 catalog:
   '@astrojs/check': ^0.9.4

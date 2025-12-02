@@ -1,13 +1,7 @@
 import type { ReadableAtom } from 'nanostores';
-import { getState } from '@it-astro:state';
+import { hasState, setState, getState } from '@it-astro:state';
 
-const STATE_NAMESPACE = '@inox-tools/request-nanostores';
-
-type Stores = Map<string, any>;
-
-function getAtomStore(): Stores {
-	return getState(STATE_NAMESPACE, new Map()) as Stores;
-}
+const STATE_NAMESPACE = '@inox-tools/request-nanostores:';
 
 export const shared = <A extends ReadableAtom<any>>(name: string, store: A): A => {
 	const baseValue = store.value;
@@ -16,15 +10,13 @@ export const shared = <A extends ReadableAtom<any>>(name: string, store: A): A =
 		configurable: false,
 		enumerable: true,
 		get() {
-			const store = getAtomStore();
-			if (!store.has(name)) {
-				store.set(name, structuredClone(baseValue));
+			if (!hasState(STATE_NAMESPACE + name)) {
+				setState(STATE_NAMESPACE + name, structuredClone(baseValue));
 			}
-			return store.get(name);
+			return getState(STATE_NAMESPACE + name);
 		},
 		set(value) {
-			const store = getAtomStore();
-			store.set(name, value);
+			setState(STATE_NAMESPACE + name, value);
 		},
 	});
 

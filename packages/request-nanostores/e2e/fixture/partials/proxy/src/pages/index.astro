@@ -1,0 +1,22 @@
+---
+const [fooFirstPartial, fooSecondPartial, barPartial] = await Promise.all(
+	[4000, 4001, 4002].map((port) =>
+		fetch(`http://localhost:${port}/`)
+			.then((res) => res.text())
+			.then((res) => res.replace('src="/src/pages', `src="http://localhost:${port}/src/pages`))
+	)
+); // TODO this should really be coming from astro assetsPrefix, figure out why not
+---
+
+<html>
+	<head>
+		<title>Partials example</title>
+	</head>
+	<body>
+		<h1>Hello, world</h1>
+
+		<Fragment set:html={fooFirstPartial} />
+		<Fragment set:html={fooSecondPartial} />
+		<Fragment set:html={barPartial} />
+	</body>
+</html>

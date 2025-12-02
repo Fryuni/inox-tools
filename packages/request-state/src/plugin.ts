@@ -29,7 +29,7 @@ export const plugin = (): Plugin => {
 			const importPath = resolve('runtime', stateSource);
 
 			return `
-export {setState, getState} from '${importPath}';
+export {setState, getState, hasState} from '${importPath}';
 export {ServerStateLoaded} from '${resolve('events.js')}';
 `.trim();
 		},

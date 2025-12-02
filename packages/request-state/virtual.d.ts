@@ -1,5 +1,3 @@
-import type { State } from './src/events.js';
-
 declare module '@it-astro:state' {
 	export const getState: (key: string, valueIfMissing?: unknown) => unknown;
 	export const hasState: (key: string) => boolean;
@@ -14,6 +12,6 @@ declare global {
 	}
 
 	interface Window {
-		'__@it-astro:request-state-data'?: State;
+		'__@it-astro:request-state-data'?: import('./src/events.js').State;
 	}
 }

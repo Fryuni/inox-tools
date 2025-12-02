@@ -10,7 +10,7 @@ export const shared = <A extends ReadableAtom<any>>(name: string, store: A): A =
 		configurable: false,
 		enumerable: true,
 		get() {
-			if (hasState(STATE_NAMESPACE + name)) {
+			if (!hasState(STATE_NAMESPACE + name)) {
 				setState(STATE_NAMESPACE + name, structuredClone(baseValue));
 			}
 			return getState(STATE_NAMESPACE + name);

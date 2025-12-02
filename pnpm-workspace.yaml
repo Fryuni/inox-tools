@@ -7,7 +7,6 @@ packages:
   - packages/*/e2e/fixture/*
   - packages/*/e2e/fixture/partials/*
 
-
 catalog:
   '@astrojs/check': ^0.9.4
   '@astrojs/compiler': ^2.12.2

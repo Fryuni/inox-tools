@@ -61,7 +61,7 @@ const applyState =
 		const startingState = isViewTransition ? new Map() : new Map(state);
 		nextStates?.reduce(mergeState, startingState);
 		const event = new ServerStateLoaded(new Map(state), startingState, {
-		  cancelable: true,
+			cancelable: true,
 		});
 
 		if (document.dispatchEvent(event)) {

@@ -10,9 +10,9 @@ export default defineConfig({
 	integrations: [requestNanostores(), preact()],
 	devToolbar: { enabled: false },
 	server: {
-		port: 4002
+		port: 4002,
 	},
-	build:{
-		assetsPrefix: "http://localhost:4002/"
-	}
+	build: {
+		assetsPrefix: 'http://localhost:4002/',
+	},
 });

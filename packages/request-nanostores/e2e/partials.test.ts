@@ -34,7 +34,7 @@ test.beforeAll(async () => {
 
 test.afterAll(async () => {
 	await proxyServer?.stop();
-	await Promise.all(partialServers.map(server => server.stop()))
+	await Promise.all(partialServers.map((server) => server.stop()));
 });
 
 test('can collect partials from other servers', async ({ page }) => {
@@ -50,4 +50,3 @@ test('can collect partials from other servers', async ({ page }) => {
 	expect(fooSecondState).toBe('foo-first'); // not a mistake - when a partial tries to overwrite an existing partial, it should fail
 	expect(barState).toBe('bar');
 });
-

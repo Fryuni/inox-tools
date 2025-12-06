@@ -54,6 +54,8 @@ Attempting to access any entry from the collections listed during from the serve
 
 When writing a content rich site a common requirement is to show when some content was published, when it was last updated and who participated in authoring that content. Instead of tracking this manually for each entry in your content collections, this library allows you to retrieve that information from your Git history.
 
+Before using these utilities, confirm that you can fetch your repository's entire history at build time. This is an issue on hosted build services like Cloudflare's and Vercel's, which only shallow fetch (`git fetch --depth=1`), resulting in all file times resolving to the date of the tip commit. You will need to modify your service's fetching behavior, if possible, or consider moving your build pipeline to a more customizable service e.g. Vercel allows deploying via [Github Actions](https://vercel.com/kb/guide/how-can-i-use-github-actions-with-vercel). More in-depth review of this issue [here](https://fryuni.dev/notes/vercel-git/).
+
 #### How to use
 
 <Steps>

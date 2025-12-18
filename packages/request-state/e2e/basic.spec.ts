@@ -73,3 +73,23 @@ test('avoid xss', async ({ page }) => {
 
 	expect(assertionFailed).toBe(false);
 });
+
+test('can set state to undefined', async ({ page }) => {
+	server = await fixture.preview({});
+
+	const pageUrl = fixture.resolveUrl('/undefined-test');
+
+	await page.goto(pageUrl);
+
+	// The undefined state should exist (hasState returns true)
+	const hasUndefined = await page.locator('pre#has-undefined').innerHTML();
+	expect(hasUndefined).toBe('true');
+
+	// The undefined state value should be undefined (displayed as "undefined" string)
+	const undefinedResult = await page.locator('pre#undefined-result').innerHTML();
+	expect(undefinedResult).toBe('undefined');
+
+	// The regular state should work as expected
+	const regularResult = await page.locator('pre#regular-result').innerHTML();
+	expect(regularResult).toBe('hello');
+});

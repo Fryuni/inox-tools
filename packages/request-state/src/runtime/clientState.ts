@@ -2,6 +2,7 @@ import { parse } from 'devalue';
 import { type State, ServerStateLoaded } from '../events.js';
 
 const revivers: Record<string, (value: any) => any> = {
+	undefined: () => undefined,
 	URL: (value) => new URL(value),
 	Date: (value) => new Date(value),
 	GlobalSymbol: (value) => Symbol.for(value),
@@ -91,9 +92,5 @@ export const getState = (key: string, valueIfMissing?: unknown): unknown => {
 export const hasState = (key: string) => state.has(key);
 
 export const setState = (key: string, value: unknown): void => {
-	if (value === undefined) {
-		state.delete(key);
-	} else {
-		state.set(key, value);
-	}
+	state.set(key, value);
 };

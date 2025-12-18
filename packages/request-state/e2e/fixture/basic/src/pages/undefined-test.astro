@@ -1,0 +1,34 @@
+---
+import { setState } from '@it-astro:state';
+
+// Explicitly set a state to undefined
+setState('undefined-value', undefined);
+// Also set a regular value to compare
+setState('regular-value', 'hello');
+---
+
+<html>
+	<head>
+		<title>Undefined State Test</title>
+	</head>
+	<body>
+		<pre id="undefined-result"></pre>
+		<pre id="regular-result"></pre>
+		<pre id="has-undefined"></pre>
+		<script>
+			import { getState, hasState } from '@it-astro:state';
+
+			// Check if the undefined state exists
+			const hasUndefinedState = hasState('undefined-value');
+			document.getElementById('has-undefined')!.innerHTML = String(hasUndefinedState);
+
+			// Get the undefined value
+			const undefinedValue = getState('undefined-value');
+			document.getElementById('undefined-result')!.innerHTML = String(undefinedValue);
+
+			// Get the regular value for comparison
+			const regularValue = getState('regular-value');
+			document.getElementById('regular-result')!.innerHTML = String(regularValue);
+		</script>
+	</body>
+</html>

@@ -21,11 +21,7 @@ export const hasState = (key: string) => store.getStore()?.has(key) || false;
 
 export const setState = (key: string, value: unknown): void => {
 	const state = store.getStore();
-	if (value === undefined) {
-		state?.delete(key);
-	} else {
-		state?.set(key, value);
-	}
+	state?.set(key, value);
 };
 
 export type CollectedState<T> = {
@@ -40,6 +36,7 @@ const wellKnownSymbols = new Map(
 );
 
 const reducers: Record<string, (value: any) => any> = {
+	undefined: (value) => value === undefined,
 	URL: (value) => value instanceof URL && value.href,
 	Date: (value) => value instanceof Date && value.valueOf(),
 	GlobalSymbol: (value) =>

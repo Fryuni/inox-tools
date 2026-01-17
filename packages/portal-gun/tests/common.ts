@@ -1,6 +1,12 @@
 import { expect, test } from 'vitest';
 
-export const defineCommonTests = (loadPath: (path: string) => Promise<string>) => {
+export const defineCommonTests = (loadPathRaw: (path: string) => Promise<string | null>) => {
+	const loadPath = async (path: string) => {
+		const result = await loadPathRaw(path);
+		if (result === null) throw new Error(`Could not load path: ${path}`);
+		return result;
+	};
+
 	test('elements are sent across Astro Components', async () => {
 		const html = await loadPath('header-footer');
 
@@ -138,6 +144,26 @@ export const defineCommonTests = (loadPath: (path: string) => Promise<string>) =
       <p>two jumps</p>
     </footer>
   </body>
+</html>
+`);
+	});
+
+	test('portals work with block elements while inside inline elements', async () => {
+		const html = await loadPath('inside-inline-element');
+
+		expect(html).toEqualIgnoringWhitespace(`
+<!doctype html>
+<html>
+	<head>
+		<title>Index</title>
+	</head>
+	<body>
+		<p>Hello </p><p></p>
+		<main id="content">
+			<p>Original</p>
+			<div>WORLD</div>      
+		</main>
+	</body>
 </html>
 `);
 	});

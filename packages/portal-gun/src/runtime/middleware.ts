@@ -27,7 +27,7 @@ export const onRequest: MiddlewareHandler = async (_, next) => {
 	const tree = processor.parse(
 		body
 			.replaceAll(
-				`<${ENTRY_PORTAL_TAG}`,
+				new RegExp(`<${ENTRY_PORTAL_TAG}(?=\\s|>)`, 'g'),
 				`<${PLACEHOLDER_ELEMENT_TAG} data-inox-tools-portal-entry`
 			)
 			.replaceAll(`</${ENTRY_PORTAL_TAG}>`, `</${PLACEHOLDER_ELEMENT_TAG}>`)

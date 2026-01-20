@@ -11,7 +11,7 @@ type LazyMapping<T, O = void> = (name: string, value: T) => O;
  *
  * @template T - A tuple of Lazy instances
  */
-type UnwrapLazies<T extends Lazy<any>[]> = T extends [
+export type UnwrapLazies<T extends Lazy<any>[]> = T extends [
 	Lazy<infer First>,
 	...infer Rest extends Lazy<any>[],
 ]
@@ -45,7 +45,7 @@ export class Lazy<T> implements Promise<T> {
 
 	private attachments?: ((value: T) => void)[] = [];
 
-	private constructor(private factory: () => T) {}
+	private constructor(private factory: () => T) { }
 
 	/**
 	 * Creates a new Lazy instance from a factory function.
@@ -264,7 +264,7 @@ export class LazyKeyed<T> {
 	/** List of callbacks to invoke when any value is created */
 	private readonly attachments: LazyMapping<T>[] = [];
 
-	private constructor(private factory: (key: string) => T) {}
+	private constructor(private factory: (key: string) => T) { }
 
 	/**
 	 * Creates a new LazyKeyed instance from a factory function.

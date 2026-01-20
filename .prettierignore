@@ -12,6 +12,7 @@
 # Directories
 .github
 .changeset
+.wt
 
 *.hbs
 

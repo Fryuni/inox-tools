@@ -13,6 +13,10 @@ import {
 
 const processor = rehype();
 
+// Must be a standard block element to handle the problem with block-in-inline elements.
+// See https://github.com/Fryuni/inox-tools/issues/257
+const PLACEHOLDER_ELEMENT_TAG = 'div';
+
 export const onRequest: MiddlewareHandler = async (_, next) => {
 	const response = await next();
 	if (response.headers.get('content-type')?.includes('text/html') !== true) {
@@ -20,7 +24,14 @@ export const onRequest: MiddlewareHandler = async (_, next) => {
 	}
 
 	const body = await response.text();
-	const tree = processor.parse(body);
+	const tree = processor.parse(
+		body
+			.replaceAll(
+				new RegExp(`<${ENTRY_PORTAL_TAG}(?=\\s|>)`, 'g'),
+				`<${PLACEHOLDER_ELEMENT_TAG} data-inox-tools-portal-entry`
+			)
+			.replaceAll(`</${ENTRY_PORTAL_TAG}>`, `</${PLACEHOLDER_ELEMENT_TAG}>`)
+	);
 
 	const portalContents = new Map<string, hast.ElementContent[][]>();
 	const landingPortals: Array<{
@@ -83,11 +94,14 @@ export const onRequest: MiddlewareHandler = async (_, next) => {
 			switch (node.tagName) {
 				case EXIT_PORTAL_TAG:
 					return portalOut(node, parents);
-				case ENTRY_PORTAL_TAG:
-					return portalIn(node, parents);
 				case 'body':
 				case 'head':
 					break;
+				case PLACEHOLDER_ELEMENT_TAG:
+					if (node.properties.dataInoxToolsPortalEntry !== undefined) {
+						return portalIn(node, parents);
+					}
+				// fallthrough: treat non-portal divs as normal elements
 				default: {
 					const id = node.properties.id;
 					if (typeof id === 'string') {

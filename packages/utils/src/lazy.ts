@@ -41,15 +41,11 @@ const SPENT_FACTORY = (): never => {
  * @template T - The type of the lazily computed value
  */
 export class Lazy<T> implements Promise<T> {
-	private factory: () => T;
-
 	private value: T | typeof CREATING | typeof MISSING = MISSING;
 
 	private attachments?: ((value: T) => void)[] = [];
 
-	private constructor(factory: () => T) {
-		this.factory = factory;
-	}
+	private constructor(private factory: () => T) { }
 
 	/**
 	 * Creates a new Lazy instance from a factory function.
@@ -262,18 +258,13 @@ export class Lazy<T> implements Promise<T> {
  * @template T - The type of values stored
  */
 export class LazyKeyed<T> {
-	/** Factory function that creates values for each key */
-	private readonly factory: (key: string) => T;
-
 	/** Map of key to either a tuple containing the value or CREATING symbol */
 	private readonly instances = new Map<string, [T] | typeof CREATING>();
 
 	/** List of callbacks to invoke when any value is created */
 	private readonly attachments: LazyAttachment<T>[] = [];
 
-	private constructor(factory: (key: string) => T) {
-		this.factory = factory;
-	}
+	private constructor(private factory: (key: string) => T) { }
 
 	/**
 	 * Creates a new LazyKeyed instance from a factory function.

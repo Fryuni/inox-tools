@@ -4,7 +4,7 @@
  * @template T - The type of the lazy value
  * @template O - The return type of the attachment callback (defaults to void)
  */
-type LazyAttachment<T, O = void> = (name: string, value: T) => O;
+type LazyMapping<T, O = void> = (name: string, value: T) => O;
 
 /**
  * Utility type that extracts the inner types from an array of Lazy instances.
@@ -45,7 +45,7 @@ export class Lazy<T> implements Promise<T> {
 
 	private attachments?: ((value: T) => void)[] = [];
 
-	private constructor(private factory: () => T) { }
+	private constructor(private factory: () => T) {}
 
 	/**
 	 * Creates a new Lazy instance from a factory function.
@@ -154,11 +154,11 @@ export class Lazy<T> implements Promise<T> {
 	 * This way, if either Lazy is evaluated, both values are computed.
 	 *
 	 * @template O - The type of the transformed value
-	 * @param attach - Transformation function to apply to the value
+	 * @param mapper - Transformation function to apply to the value
 	 * @returns A new Lazy instance containing the transformed value
 	 */
-	public chain<O>(attach: (value: T) => O): Lazy<O> {
-		const other = Lazy.of(() => attach(this.get()));
+	public chain<O>(mapper: (value: T) => O): Lazy<O> {
+		const other = Lazy.of(() => mapper(this.get()));
 
 		this.attach(() => other.ensureInitialized());
 
@@ -173,7 +173,7 @@ export class Lazy<T> implements Promise<T> {
 	 * @param lazies - Record of named Lazy instances
 	 * @param attach - Callback to execute for each lazy value
 	 */
-	public static attachMulti<T>(lazies: Record<string, Lazy<T>>, attach: LazyAttachment<T>): void {
+	public static attachMulti<T>(lazies: Record<string, Lazy<T>>, attach: LazyMapping<T>): void {
 		for (const [name, lazy] of Object.entries(lazies)) {
 			lazy.attach((value) => attach(name, value));
 		}
@@ -187,16 +187,16 @@ export class Lazy<T> implements Promise<T> {
 	 * @template R - The record type containing the lazy instances
 	 * @template O - The type of the transformed values
 	 * @param lazies - Record of named Lazy instances
-	 * @param attach - Transformation function receiving name and value
+	 * @param mapper - Transformation function receiving name and value
 	 * @returns A new record of Lazy instances with the same keys
 	 */
 	public static chainMulti<T, const R extends Record<string, Lazy<T>>, O>(
 		lazies: R,
-		attach: LazyAttachment<T, O>
+		mapper: LazyMapping<T, O>
 	): Record<keyof R, Lazy<O>> {
 		const result: Record<string, Lazy<O>> = {};
 		for (const [name, lazy] of Object.entries(lazies)) {
-			result[name] = lazy.chain((value) => attach(name, value));
+			result[name] = lazy.chain((value) => mapper(name, value));
 		}
 
 		return result as Record<keyof R, Lazy<O>>;
@@ -235,14 +235,14 @@ export class Lazy<T> implements Promise<T> {
 	 * @template Ts - Tuple type of Lazy instances
 	 * @template O - The type of the combined result
 	 * @param lazies - Array of Lazy instances to combine
-	 * @param attach - Transformation function receiving all unwrapped values
+	 * @param mapper - Transformation function receiving all unwrapped values
 	 * @returns A new Lazy instance containing the combined result
 	 */
 	public static chainAll<const Ts extends Lazy<any>[], O>(
 		lazies: Ts,
-		attach: (...args: UnwrapLazies<Ts>) => O
+		mapper: (...args: UnwrapLazies<Ts>) => O
 	): Lazy<O> {
-		const lazy = Lazy.of(() => attach(...(lazies.map((l) => l.get()) as UnwrapLazies<Ts>)));
+		const lazy = Lazy.of(() => mapper(...(lazies.map((l) => l.get()) as UnwrapLazies<Ts>)));
 
 		this.attachAll(lazies, () => lazy.ensureInitialized());
 
@@ -262,9 +262,9 @@ export class LazyKeyed<T> {
 	private readonly instances = new Map<string, [T] | typeof CREATING>();
 
 	/** List of callbacks to invoke when any value is created */
-	private readonly attachments: LazyAttachment<T>[] = [];
+	private readonly attachments: LazyMapping<T>[] = [];
 
-	private constructor(private factory: (key: string) => T) { }
+	private constructor(private factory: (key: string) => T) {}
 
 	/**
 	 * Creates a new LazyKeyed instance from a factory function.
@@ -330,7 +330,7 @@ export class LazyKeyed<T> {
 	 * @param attach - Callback receiving the key and value
 	 * @returns This instance for chaining
 	 */
-	public attach(attach: LazyAttachment<T>): this {
+	public attach(attach: LazyMapping<T>): this {
 		for (const [name, instance] of this.instances.entries()) {
 			if (instance !== CREATING) {
 				attach(name, instance[0]);
@@ -359,11 +359,11 @@ export class LazyKeyed<T> {
 	 * Creates a new LazyKeyed that transforms values using the provided function.
 	 * Values in the new LazyKeyed are automatically created when source values are created.
 	 * @template O - The type of the transformed values
-	 * @param attach - Transformation function receiving key and value
+	 * @param mapper - Transformation function receiving key and value
 	 * @returns A new LazyKeyed instance with transformed values
 	 */
-	public chain<O>(attach: LazyAttachment<T, O>): LazyKeyed<O> {
-		const newKeyed = LazyKeyed.of((key) => attach(key, this.get(key)));
+	public chain<O>(mapper: LazyMapping<T, O>): LazyKeyed<O> {
+		const newKeyed = LazyKeyed.of((key) => mapper(key, this.get(key)));
 
 		this.attach((key) => {
 			newKeyed.reserve(key);
@@ -377,11 +377,11 @@ export class LazyKeyed<T> {
 	 * The Lazy is automatically evaluated when the source value is created.
 	 * @template O - The type of the transformed value
 	 * @param key - The key to transform
-	 * @param attach - Transformation function receiving the value
+	 * @param mapper - Transformation function receiving the value
 	 * @returns A Lazy instance containing the transformed value
 	 */
-	public chainOne<O>(key: string, attach: (value: T) => O): Lazy<O> {
-		const lazy = Lazy.of(() => attach(this.get(key)));
+	public chainOne<O>(key: string, mapper: (value: T) => O): Lazy<O> {
+		const lazy = Lazy.of(() => mapper(this.get(key)));
 		this.attachOne(key, () => lazy.ensureInitialized());
 		return lazy;
 	}

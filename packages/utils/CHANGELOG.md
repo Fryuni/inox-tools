@@ -1,5 +1,11 @@
 # @inox-tools/utils
 
+## 0.8.1
+
+### Patch Changes
+
+- e5bb120: Export utility type `UnwrapLazies` to turn an array of `Lazy` instances into an array of their lazy values.
+
 ## 0.8.0
 
 ### Minor Changes

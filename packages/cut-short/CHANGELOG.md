@@ -1,5 +1,16 @@
 # @inox-tools/cut-short
 
+## 1.6.0
+
+### Minor Changes
+
+- 771ef53: Updated dependencies
+
+### Patch Changes
+
+- Updated dependencies [771ef53]
+  - @inox-tools/utils@0.9.0
+
 ## 1.5.1
 
 ### Patch Changes

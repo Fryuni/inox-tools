@@ -1,5 +1,11 @@
 # @inox-tools/custom-routing
 
+## 1.4.0
+
+### Minor Changes
+
+- 771ef53: Updated dependencies
+
 ## 1.3.0
 
 ### Minor Changes

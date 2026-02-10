@@ -1,5 +1,16 @@
 # @inox-tools/astro-tests
 
+## 0.9.0
+
+### Minor Changes
+
+- 771ef53: Updated dependencies
+
+### Patch Changes
+
+- Updated dependencies [771ef53]
+  - @inox-tools/utils@0.9.0
+
 ## 0.8.1
 
 ### Patch Changes

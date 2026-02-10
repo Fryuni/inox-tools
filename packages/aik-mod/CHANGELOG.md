@@ -1,5 +1,16 @@
 # @inox-tools/aik-mod
 
+## 0.13.0
+
+### Minor Changes
+
+- 771ef53: Updated dependencies
+
+### Patch Changes
+
+- Updated dependencies [771ef53]
+  - @inox-tools/inline-mod@2.4.0
+
 ## 0.12.0
 
 ### Minor Changes

@@ -1,10 +1,12 @@
 import { spawnSync } from 'node:child_process';
 import { sep, resolve, relative } from 'node:path';
 import { hooks } from '@inox-tools/modular-station/hooks';
+import { Lazy } from '@inox-tools/utils/lazy';
 import { getDebug } from '../internal/debug.js';
-import type { GitTrackingInfo } from '@it-astro:content/git';
+import type { GitTrackingInfo, CommitInfo } from '@it-astro:content/git';
 
 let projectRoot: string = process.cwd();
+let collectCommitHistory: boolean = true;
 
 const debug = getDebug('git');
 
@@ -13,6 +15,13 @@ const debug = getDebug('git');
  */
 export function setProjectRoot(path: string) {
 	projectRoot = path;
+}
+
+/**
+ * @internal
+ */
+export function setCollectCommitHistory(value: boolean) {
+	collectCommitHistory = value;
 }
 
 function getRepoRoot(): string {
@@ -31,9 +40,34 @@ function getRepoRoot(): string {
 	return result.stdout.trim();
 }
 
+/**
+ * @internal
+ */
+export function getFileContentAtCommit(hash: string, repoPath: string): string {
+	const result = spawnSync('git', ['show', `${hash}:${repoPath}`], {
+		cwd: getRepoRoot(),
+		encoding: 'utf-8',
+	});
+
+	if (result.error || result.status !== 0) {
+		debug('Failed to retrieve file content at commit:', hash, repoPath, result.stderr);
+		return '';
+	}
+
+	return result.stdout;
+}
+
 export type GitAuthor = {
 	name: string;
 	email: string;
+};
+
+export type RawCommitInfo = {
+	hash: string;
+	date: number;
+	author: GitAuthor;
+	coAuthors: GitAuthor[];
+	repoPath: string;
 };
 
 type RawGitTrackingInfo = {
@@ -41,6 +75,7 @@ type RawGitTrackingInfo = {
 	latest: number;
 	authors: GitAuthor[];
 	coAuthors: GitAuthor[];
+	commits: RawCommitInfo[];
 };
 
 /**
@@ -51,7 +86,7 @@ export async function collectGitInfoForContentFiles(): Promise<[string, RawGitTr
 
 	const args = [
 		'log',
-		'--format=t:%ct %an <%ae>|%(trailers:key=co-authored-by,valueonly,separator=|)',
+		'--format=t:%H %ct %an <%ae>|%(trailers:key=co-authored-by,valueonly,separator=|)',
 		'--name-status',
 		'--',
 		projectRoot,
@@ -69,6 +104,7 @@ export async function collectGitInfoForContentFiles(): Promise<[string, RawGitTr
 	}
 
 	const parsingState = {
+		hash: '',
 		date: 0,
 		author: <GitAuthor>{ name: '', email: '' },
 		coAuthors: <GitAuthor[]>[],
@@ -78,12 +114,16 @@ export async function collectGitInfoForContentFiles(): Promise<[string, RawGitTr
 
 	for (const logLine of gitLog.stdout.split('\n')) {
 		if (logLine.startsWith('t:')) {
-			// t:<seconds since epoch> <author name> <author email>|<co-authors>
+			// t:<hash> <seconds since epoch> <author name> <author email>|<co-authors>
 			const firstSpace = logLine.indexOf(' ');
-			parsingState.date = Number.parseInt(logLine.slice(2, firstSpace)) * 1000;
+			parsingState.hash = logLine.slice(2, firstSpace);
 
-			const authors = logLine
-				.slice(firstSpace + 1)
+			const rest = logLine.slice(firstSpace + 1);
+			const secondSpace = rest.indexOf(' ');
+			parsingState.date = Number.parseInt(rest.slice(0, secondSpace)) * 1000;
+
+			const authors = rest
+				.slice(secondSpace + 1)
 				.replace(/\|$/, '')
 				.split('|')
 				.map((author) => {
@@ -115,17 +155,37 @@ export async function collectGitInfoForContentFiles(): Promise<[string, RawGitTr
 		const fileInfo = fileInfos.get(fileName);
 
 		if (fileInfo === undefined) {
-			fileInfos.set(fileName, {
+			const newInfo: RawGitTrackingInfo = {
 				earliest: parsingState.date,
 				latest: parsingState.date,
 				authors: [parsingState.author],
 				coAuthors: [...parsingState.coAuthors],
-			});
+				commits: [],
+			};
+			if (collectCommitHistory) {
+				newInfo.commits.push({
+					hash: parsingState.hash,
+					date: parsingState.date,
+					author: parsingState.author,
+					coAuthors: [...parsingState.coAuthors],
+					repoPath: logLine.slice(tabSplit + 1),
+				});
+			}
+			fileInfos.set(fileName, newInfo);
 			continue;
 		}
 
 		fileInfo.earliest = Math.min(fileInfo.earliest, parsingState.date);
 		fileInfo.latest = Math.max(fileInfo.latest, parsingState.date);
+		if (collectCommitHistory) {
+			fileInfo.commits.push({
+				hash: parsingState.hash,
+				date: parsingState.date,
+				author: parsingState.author,
+				coAuthors: [...parsingState.coAuthors],
+				repoPath: logLine.slice(tabSplit + 1),
+			});
+		}
 	}
 
 	debug('Invoking @it/content:git:listed hook', {
@@ -151,6 +211,19 @@ export async function collectGitInfoForContentFiles(): Promise<[string, RawGitTr
 			latest: new Date(rawFileInfo.latest),
 			authors: rawFileInfo.authors,
 			coAuthors: rawFileInfo.coAuthors,
+			commits: rawFileInfo.commits.map((c) => {
+				const ci: Record<string, unknown> = {
+					hash: c.hash,
+					date: new Date(c.date),
+					author: c.author,
+					coAuthors: c.coAuthors,
+				};
+				Object.defineProperty(ci, 'content', {
+					get: Lazy.wrap(() => getFileContentAtCommit(c.hash, c.repoPath)),
+					enumerable: true,
+				});
+				return ci as CommitInfo;
+			}),
 		};
 
 		let dropped = false;

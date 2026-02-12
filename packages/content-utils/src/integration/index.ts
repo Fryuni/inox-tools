@@ -32,13 +32,15 @@ export const integration = withApi(
 		optionsSchema: z
 			.object({
 				staticOnlyCollections: z.array(z.string()).optional().default([]),
+				collectCommitHistory: z.boolean().optional().default(true),
 			})
 			.optional()
 			.default({}),
-		setup: ({ options: { staticOnlyCollections } }) => {
+		setup: ({ options: { staticOnlyCollections, collectCommitHistory } }) => {
 			debug('Generating empty state');
 			const state = emptyState();
 			state.staticOnlyCollections.push(...staticOnlyCollections);
+			state.collectCommitHistory = collectCommitHistory;
 			const collectionSeedBuffer: SeedCollectionsOptions[] = [];
 
 			const api = {

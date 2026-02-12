@@ -1,0 +1,27 @@
+---
+import { getEntryGitInfo } from '@it-astro:content/git';
+import { getCollection } from 'astro:content';
+
+const entries = await getCollection('entries');
+
+const data = await Promise.all(
+	entries.map(async (entry) => {
+		const info = await getEntryGitInfo({ collection: 'entries', id: entry.id });
+		const commits = info?.commits ?? [];
+
+		return {
+			id: entry.id,
+			commitCount: commits.length,
+			commits: commits.map((commit) => ({
+				hash: commit.hash,
+				date: commit.date.toISOString(),
+				author: commit.author,
+				coAuthors: commit.coAuthors,
+				content: commit.content,
+			})),
+		};
+	})
+);
+---
+
+<pre id="data">{JSON.stringify(data, null, 2)}</pre>

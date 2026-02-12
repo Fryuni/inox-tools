@@ -836,6 +836,15 @@ importers:
         specifier: 'catalog:'
         version: 4.0.18(@types/node@25.2.2)(@vitest/ui@4.0.18)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2)
 
+  packages/content-utils/tests/fixture/git-tracking:
+    dependencies:
+      '@inox-tools/content-utils':
+        specifier: workspace:^
+        version: link:../../..
+      astro:
+        specifier: ^5.17.1
+        version: 5.17.1(patch_hash=bfb95bb9af2a55e7faa671097d4229f519ff87bf3af3ed70d2671158484ab0d1)(@types/node@25.2.2)(@vercel/functions@2.2.13)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(rollup@4.57.1)(terser@5.44.1)(typescript@5.9.3)(yaml@2.8.2)
+
   packages/content-utils/tests/fixture/static-collections:
     dependencies:
       '@inox-tools/content-utils':

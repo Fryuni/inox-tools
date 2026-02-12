@@ -111,6 +111,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          lfs: true
 
       - name: Cache turbo build setup
         uses: actions/cache@v4

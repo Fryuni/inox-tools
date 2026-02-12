@@ -20,17 +20,21 @@ const thisDir = dirname(thisFile);
 
 debug('Resolution base:', { thisFile, thisDir });
 
-export const gitDevPlugin = ({ contentPaths: { projectRoot } }: IntegrationState): Plugin => ({
-	name: '@inox-tools/content-utils/gitTimes',
-	resolveId(id) {
-		if (id === MODULE_ID) return RESOLVED_MODULE_ID;
-	},
-	load(id, { ssr } = {}) {
-		if (id !== RESOLVED_MODULE_ID || !ssr) return;
+export const gitDevPlugin = (state: IntegrationState): Plugin => {
+	const {
+		contentPaths: { projectRoot },
+	} = state;
+	return {
+		name: '@inox-tools/content-utils/gitTimes',
+		resolveId(id) {
+			if (id === MODULE_ID) return RESOLVED_MODULE_ID;
+		},
+		load(id, { ssr } = {}) {
+			if (id !== RESOLVED_MODULE_ID || !ssr) return;
 
-		debug(`Generated dev mode git time plugin for ${projectRoot}`);
-		return `
-import {setProjectRoot} from ${JSON.stringify(resolve(thisDir, 'runtime/git.js'))};
+			debug(`Generated dev mode git time plugin for ${projectRoot}`);
+			return `
+import {setProjectRoot, setCollectCommitHistory} from ${JSON.stringify(resolve(thisDir, 'runtime/git.js'))};
 export {
 	getLatestCommitDate,
 	getOldestCommitDate,
@@ -38,9 +42,11 @@ export {
 } from ${JSON.stringify(resolve(thisDir, 'runtime/liveGit.js'))};
 
 setProjectRoot(${JSON.stringify(projectRoot)});
+setCollectCommitHistory(${JSON.stringify(state.collectCommitHistory)});
 `;
-	},
-});
+		},
+	};
+};
 
 export const gitBuildPlugin = (state: IntegrationState): Plugin => {
 	const {
@@ -83,8 +89,17 @@ export const gitBuildPlugin = (state: IntegrationState): Plugin => {
 			if (id === RESOLVED_INNER_MODULE_ID) {
 				debug('Registering project root:', projectRoot);
 				liveGit.setProjectRoot(projectRoot);
+				liveGit.setCollectCommitHistory(state.collectCommitHistory);
 				const trackedFiles = await liveGit.collectGitInfoForContentFiles();
 				debug('Git tracked file dates:', trackedFiles);
+
+				// Pre-fetch commit content for build serialization
+				for (const [, fileInfo] of trackedFiles) {
+					for (const commit of fileInfo.commits) {
+						(commit as any).content = liveGit.getFileContentAtCommit(commit.hash, commit.repoPath);
+						delete (commit as any).repoPath;
+					}
+				}
 
 				return `const trackedFiles = ${devalue.stringify(new Map(trackedFiles))};
 export { trackedFiles as default };`;
@@ -138,8 +153,23 @@ async function cleanupState(contentData: string, gitState: string): Promise<void
 const buildFacade = `
 import {getEntry} from 'astro:content';
 import {unflatten} from ${JSON.stringify(import.meta.resolve('devalue'))};
+import {Lazy} from ${JSON.stringify(import.meta.resolve('@inox-tools/utils/lazy'))};
 
 const trackedFiles = unflatten((await import(${JSON.stringify(INNER_MODULE_ID)})).default);
+
+function buildCommitInfo(c) {
+	const ci = {
+		hash: c.hash,
+		date: new Date(c.date),
+		author: c.author,
+		coAuthors: Array.from(c.coAuthors),
+	};
+	Object.defineProperty(ci, 'content', {
+		get: Lazy.wrap(() => c.content),
+		enumerable: true,
+	});
+	return ci;
+}
 
 export async function getEntryGitInfo(...args) {
 	const params = args.length > 1 ? args : [args[0].collection, args[0].slug ?? args[0].id];
@@ -152,6 +182,7 @@ export async function getEntryGitInfo(...args) {
 		latest: new Date(rawInfo.latest),
 		authors: Array.from(rawInfo.authors),
 		coAuthors: Array.from(rawInfo.coAuthors),
+		commits: (rawInfo.commits || []).map(buildCommitInfo),
 	};
 }
 

@@ -1,5 +1,17 @@
 # @inox-tools/content-utils
 
+## 0.13.0
+
+### Minor Changes
+
+- 771ef53: Updated dependencies
+
+### Patch Changes
+
+- Updated dependencies [771ef53]
+  - @inox-tools/modular-station@0.8.0
+  - @inox-tools/utils@0.9.0
+
 ## 0.12.1
 
 ### Patch Changes

@@ -1,4 +1,4 @@
-import { computed, type ReadableAtom } from 'nanostores';
+import { batched, computed, type ReadableAtom } from 'nanostores';
 
 type ResolvedArray<T extends any[]> = T extends [infer H, ...infer R]
 	? [Resolved<H>, ...ResolvedArray<R>]
@@ -76,8 +76,8 @@ function findDependencies(value: unknown): ReadableAtom[] {
  * @param value - A value tree that may contain atoms at any depth.
  * @returns A readable atom whose value is the deeply-resolved snapshot of the input.
  */
-export function resolvedAtom<T>(value: T): ReadableAtom<Resolved<T>> {
+export function resolvedAtom<T>(value: T, batch = false): ReadableAtom<Resolved<T>> {
 	const dependencies = findDependencies(value);
 
-	return computed(dependencies, () => resolveNested(value));
+	return (batch ? batched : computed)(dependencies, () => resolveNested(value));
 }

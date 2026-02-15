@@ -42,5 +42,13 @@
     "unist-util-is": "catalog:",
     "vite": "catalog:",
     "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "nanostores": "catalog:"
+  },
+  "peerDependenciesMeta": {
+    "nanostores": {
+      "optional": true
+    }
   }
 }

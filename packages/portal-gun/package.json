@@ -1,6 +1,6 @@
 {
   "name": "@inox-tools/portal-gun",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Transport HTML elements through your page during rendering using Portals.",
   "keywords": [
     "astro-integration",
@@ -9,6 +9,9 @@
     "ui",
     "utils"
   ],
+  "repository": {
+    "url": "https://github.com/Fryuni/inox-tools"
+  },
   "license": "MIT",
   "author": "Luiz Ferraz <luiz@lferraz.com>",
   "type": "module",

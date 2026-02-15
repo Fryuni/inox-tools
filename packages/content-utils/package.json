@@ -1,6 +1,6 @@
 {
   "name": "@inox-tools/content-utils",
-  "version": "0.13.0",
+  "version": "0.13.1",
   "description": "Utilities to work with content collections on an Astro project from an integration or library.",
   "keywords": [
     "lifecycle",
@@ -10,6 +10,9 @@
     "content-collection",
     "utils"
   ],
+  "repository": {
+    "url": "https://github.com/Fryuni/inox-tools"
+  },
   "license": "MIT",
   "author": "Luiz Ferraz <luiz@lferraz.com>",
   "type": "module",

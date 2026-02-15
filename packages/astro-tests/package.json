@@ -1,12 +1,15 @@
 {
   "name": "@inox-tools/astro-tests",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "Utilities for testing your own Astro integrations and libraries based on Astro's own testing tools",
   "keywords": [
     "withastro",
     "utils",
     "tests"
   ],
+  "repository": {
+    "url": "https://github.com/Fryuni/inox-tools"
+  },
   "license": "MIT",
   "author": "Luiz Ferraz <luiz@lferraz.com>",
   "type": "module",

@@ -1,6 +1,6 @@
 {
   "name": "@inox-tools/request-state",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "Shared request state between server and client",
   "keywords": [
     "astro-integration",
@@ -8,6 +8,9 @@
     "astro",
     "utils"
   ],
+  "repository": {
+    "url": "https://github.com/Fryuni/inox-tools"
+  },
   "license": "MIT",
   "author": "Luiz Ferraz <luiz@lferraz.com>",
   "type": "module",

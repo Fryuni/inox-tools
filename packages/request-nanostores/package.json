@@ -1,6 +1,6 @@
 {
   "name": "@inox-tools/request-nanostores",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "Make your Nanostores concurrent safe and shared from server to client",
   "keywords": [
     "astro-integration",
@@ -8,6 +8,9 @@
     "astro",
     "utils"
   ],
+  "repository": {
+    "url": "https://github.com/Fryuni/inox-tools"
+  },
   "license": "MIT",
   "author": "Luiz Ferraz <luiz@lferraz.com>",
   "type": "module",

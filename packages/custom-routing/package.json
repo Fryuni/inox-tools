@@ -7,7 +7,9 @@
     "withastro",
     "utils"
   ],
-  "repository": "https://github.com/Fryuni/inox-tools.git",
+  "repository": {
+    "url": "https://github.com/Fryuni/inox-tools"
+  },
   "license": "MIT",
   "author": "Luiz Ferraz <luiz@lferraz.com>",
   "type": "module",

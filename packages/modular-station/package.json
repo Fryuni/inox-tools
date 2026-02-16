@@ -1,12 +1,15 @@
 {
   "name": "@inox-tools/modular-station",
-  "version": "0.7.1",
+  "version": "0.8.1",
   "description": "Simplifying Astro integrations with a flexible docking system.",
   "keywords": [
     "astro-integration",
     "astro",
     "utils"
   ],
+  "repository": {
+    "url": "https://github.com/Fryuni/inox-tools"
+  },
   "license": "MIT",
   "author": "Luiz Ferraz <luiz@lferraz.com>",
   "type": "module",

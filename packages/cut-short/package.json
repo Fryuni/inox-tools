@@ -1,6 +1,6 @@
 {
   "name": "@inox-tools/cut-short",
-  "version": "1.5.1",
+  "version": "1.6.1",
   "description": "Immediately halt request processing and return custom responses effortlessly.",
   "keywords": [
     "astro-integration",
@@ -8,6 +8,9 @@
     "astro",
     "utils"
   ],
+  "repository": {
+    "url": "https://github.com/Fryuni/inox-tools"
+  },
   "license": "MIT",
   "author": "Luiz Ferraz <luiz@lferraz.com>",
   "type": "module",

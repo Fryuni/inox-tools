@@ -1,6 +1,6 @@
 {
   "name": "@inox-tools/sitemap-ext",
-  "version": "0.7.1",
+  "version": "0.8.0",
   "description": "Higher level extension over Astro's official sitemap integration",
   "keywords": [
     "sitemap",
@@ -8,7 +8,9 @@
     "astro-integration",
     "astro"
   ],
-  "repository": "https://github.com/Fryuni/inox-tools.git",
+  "repository": {
+    "url": "https://github.com/Fryuni/inox-tools"
+  },
   "license": "MIT",
   "author": "Luiz Ferraz <luiz@lferraz.com>",
   "type": "module",

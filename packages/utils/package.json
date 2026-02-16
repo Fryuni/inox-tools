@@ -1,10 +1,13 @@
 {
   "name": "@inox-tools/utils",
-  "version": "0.8.1",
+  "version": "1.0.0",
   "description": "A collection of utilities used throughout Inox Tools",
   "keywords": [
     "utilities"
   ],
+  "repository": {
+    "url": "https://github.com/Fryuni/inox-tools"
+  },
   "license": "MIT",
   "author": "Luiz Ferraz <luiz@lferraz.com>",
   "type": "module",
@@ -42,5 +45,13 @@
     "unist-util-is": "catalog:",
     "vite": "catalog:",
     "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "nanostores": "catalog:"
+  },
+  "peerDependenciesMeta": {
+    "nanostores": {
+      "optional": true
+    }
   }
 }

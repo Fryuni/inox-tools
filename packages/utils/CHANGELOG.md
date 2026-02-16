@@ -1,5 +1,21 @@
 # @inox-tools/utils
 
+## 1.0.0
+
+### Major Changes
+
+- 541ae07: Stabilized API
+
+### Minor Changes
+
+- 81c15ad: Add `resolvedAtom` — a reactive computed atom that deeply resolves nested nanostores atoms in objects, arrays, and mixed structures.
+
+## 0.9.0
+
+### Minor Changes
+
+- 771ef53: Updated dependencies
+
 ## 0.8.1
 
 ### Patch Changes

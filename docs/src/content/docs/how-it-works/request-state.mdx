@@ -1,0 +1,486 @@
+---
+title: How Request State works?
+description: A deep dive into the implementation details and decisions of Request State.
+packageName: '@inox-tools/request-state'
+---
+
+import Mermaid from '@/components/Mermaid.astro';
+import { Steps } from '@astrojs/starlight/components';
+
+:::note
+This page is a deep dive into the implementation details and decisions of the Request State package. You should have read [what _is_ the package](/request-state) before reading this page as it assumes that you already know what the package is for and how it can be used from a consumers perspective.
+:::
+
+Request State provides a unified API for managing request-scoped state that works identically on both server and client. The same `getState` and `setState` calls work transparently whether you're rendering on the server during SSR or running in the browser after hydration.
+
+Here's the magic: when you call `getState('user')` in a React component, that same code runs on the server (during rendering) and on the client (during hydration), but the implementation underneath is completely different. On the server, state is isolated per-request using Node.js's AsyncLocalStorage. On the client, state lives in a window property. Yet the API is identical.
+
+Overall, there are a few challenges that need to be solved to create this package:
+
+- [Providing the same API with two completely different implementations](#same-api-two-implementations)
+- [Isolating state between concurrent requests on the server](#request-isolation-with-asynclocalstorage)
+- [Orchestrating the state collection and HTML injection](#the-middleware-lifecycle)
+- [Serializing and transporting state from server to client](#serialization-and-transport)
+- [Hydrating state on the client and integrating with View Transitions](#client-side-hydration-and-view-transitions)
+
+We'll go through each one of them in turn and the reasoning behind them.
+
+## Structure overview
+
+Request State is built from a few key pieces:
+
+- An Astro integration that registers middleware and a Vite plugin
+- A Vite plugin that conditionally loads different implementations based on SSR vs client context
+- A middleware that wraps the rendering process, collects state, and injects it into HTML
+- A server-side implementation using AsyncLocalStorage for request isolation
+- A client-side implementation that hydrates state from `<script>` tags and manages View Transitions
+
+The data flow looks like this:
+
+<Mermaid
+	code={`
+flowchart TD
+    I[Integration] -->|Registers| M[Middleware]
+    I -->|Adds| VP[Vite Plugin]
+    
+    VP -->|SSR build| SS[serverState.js]
+    VP -->|Client build| CS[clientState.js]
+    VP -->|Externalizes| ALS[node:async_hooks]
+    
+    M -->|Wraps next with| ALS_RUN[AsyncLocalStorage.run]
+    ALS_RUN -->|Creates scope for| STATE_MAP[Map of state]
+    ALS_RUN -->|Calls| RENDER[Rendering pipeline]
+    RENDER -->|Uses| SS
+    RENDER -->|Returns| RESPONSE[Response]
+    
+    M -->|Serializes| STATE_MAP
+    M -->|Injects into HTML| SCRIPT[<script class="it-astro-state">]
+    SCRIPT -->|In response body| CLIENT[Browser]
+    
+    CLIENT -->|On load| CS
+    CS -->|Finds & parses| SCRIPT
+    CS -->|Stores in| WINDOW["window['__@it-astro:request-state-data']"]
+    CS -->|Fires| EVENT[ServerStateLoaded event]
+    CS -->|Listens for| VT[View Transition events]
+`}
+/>
+
+## Same API, two implementations
+
+The core insight of Request State is that Vite's `load` hook receives an `options` parameter with an `ssr` flag. We use this to conditionally load completely different implementations of the same virtual module.
+
+The integration registers the Vite plugin during `astro:config:setup`:
+
+```ts title="src/index.ts" wrap {" 1. Resolve paths relative to package": 7} {" 2. Register middleware": 14-18} {" 3. Register Vite plugin": 20-24}
+import { defineIntegration, addVitePlugin, createResolver } from 'astro-integration-kit';
+import { plugin } from './plugin.js';
+
+export default defineIntegration({
+	name: '@inox-tools/request-state',
+	setup() {
+		const { resolve } = createResolver(import.meta.url);
+
+		return {
+			hooks: {
+				'astro:config:setup': (params) => {
+					const { addMiddleware } = params;
+
+					params.logger.debug('Adding request-state middleware');
+					addMiddleware({
+						order: 'pre',
+						entrypoint: resolve('runtime/middleware.js'),
+					});
+
+					params.logger.debug('Adding request-state virtual module');
+					addVitePlugin(params, {
+						warnDuplicated: true,
+						plugin: plugin(),
+					});
+				},
+			},
+		};
+	},
+});
+```
+
+The plugin itself is where the conditional loading magic happens:
+
+<Steps>
+
+1. Resolve the virtual module ID `@it-astro:state` to a special prefixed ID that Vite won't confuse with real files;
+2. Externalize `node:async_hooks` from SSR bundles so Vite doesn't try to bundle this Node.js built-in;
+3. Load completely different source files based on the `ssr` flag in the `load` hook options.
+
+</Steps>
+
+```ts title="src/plugin.ts" wrap {" 1. Resolve virtual module": 12-15} {" 2. Externalize node:async_hooks": 17-23} {" 3. Load implementation based on SSR context": 25-34}
+import { createResolver } from 'astro-integration-kit';
+import type { Plugin } from 'vite';
+
+const MODULE_ID = '@it-astro:state';
+const RESOLVED_MODULE_ID = `\x00${MODULE_ID}`;
+
+export const plugin = (): Plugin => {
+	const { resolve } = createResolver(import.meta.url);
+
+	return {
+		name: '@inox-tools/request-state/vite-plugin',
+		resolveId(id) {
+			if (id === MODULE_ID) {
+				return RESOLVED_MODULE_ID;
+			}
+		},
+		config(config) {
+			if (config.ssr?.external === true) return;
+
+			config.ssr = {
+				...config.ssr,
+				external: [...(config.ssr?.external ?? []), 'node:async_hooks'],
+			};
+		},
+		load(id, options) {
+			if (id !== RESOLVED_MODULE_ID) return;
+
+			const stateSource = options?.ssr ? 'serverState.js' : 'clientState.js';
+			const importPath = resolve('runtime', stateSource);
+
+			return `
+export {setState, getState, hasState} from '${importPath}';
+export {ServerStateLoaded} from '${resolve('events.js')}';
+`.trim();
+		},
+	};
+};
+```
+
+This pattern is beautiful in its simplicity. User code imports from `@it-astro:state`, and whether it's running on the server or client is determined at _build time_ by Vite, not at _runtime_ by the code. No `if (typeof window !== 'undefined')` checks, no runtime branching — just clean conditional bundling.
+
+Why externalize `node:async_hooks`? Because it's a Node.js built-in module that only exists on the server. If Vite tries to bundle it into the client code, the build fails. By marking it as external in SSR bundles, we tell Vite "don't try to bundle this, just leave the import statement as-is and Node.js will handle it."
+
+## Request isolation with AsyncLocalStorage
+
+On the server, multiple requests are handled concurrently by the same Node.js process. If we used a global `Map` to store state, different requests would interfere with each other — your state might end up in someone else's response. Disaster!
+
+Node.js provides [AsyncLocalStorage] for exactly this use case. It's like thread-local storage, but for async contexts instead of threads. When you call `store.run(value, callback)`, that `value` is available to `store.getStore()` anywhere inside `callback` — even across async boundaries, even in code called from code called from code inside `callback`.
+
+The server implementation exports the same API as the client, but uses AsyncLocalStorage under the hood:
+
+```ts title="src/runtime/serverState.ts" wrap {" 1. Create AsyncLocalStorage instance": 6} {" 2. getState reads from current store": 8-18} {" 3. setState writes to current store": 22-25}
+import { AsyncLocalStorage } from 'node:async_hooks';
+import { stringify } from 'devalue';
+
+type State = Map<string, unknown>;
+
+const store = new AsyncLocalStorage<State>();
+
+export const getState = (key: string, valueIfMissing?: unknown): unknown => {
+	const state = store.getStore();
+	if (state === undefined) return;
+
+	if (!state.has(key)) {
+		if (valueIfMissing !== undefined) {
+			state.set(key, valueIfMissing);
+		}
+	}
+	return state.get(key);
+};
+
+export const hasState = (key: string) => store.getStore()?.has(key) || false;
+
+export const setState = (key: string, value: unknown): void => {
+	const state = store.getStore();
+	state?.set(key, value);
+};
+```
+
+Notice the `store.getStore()` calls. If we're not inside a `store.run()` callback, this returns `undefined` and the functions become no-ops. This is important — it means calling `setState` outside of a request context doesn't crash, it just silently does nothing.
+
+But where does `store.run()` get called? That's the middleware's job, which we'll see next.
+
+The `collectState` function is the bridge between AsyncLocalStorage and the middleware:
+
+```ts title="src/runtime/serverState.ts" wrap {" 1. Create custom reducers for types devalue doesn't handle": 32-48} {" 2. Run callback with new Map in AsyncLocalStorage": 50-56}
+const wellKnownSymbols = new Map(
+	Object.entries(Symbol)
+		.filter(([key, value]) => typeof value === 'symbol' && typeof key === 'string')
+		.map(([key, value]) => [value, key])
+);
+
+const reducers: Record<string, (value: any) => any> = {
+	undefined: (value) => value === undefined,
+	URL: (value) => value instanceof URL && value.href,
+	Date: (value) => value instanceof Date && value.valueOf(),
+	GlobalSymbol: (value) =>
+		typeof value === 'symbol' &&
+		value.description !== undefined &&
+		value === Symbol.for(value.description) &&
+		value.description,
+	WellKnownSymbol: (value) => typeof value === 'symbol' && wellKnownSymbols.get(value),
+};
+
+export const collectState = async <R>(cb: () => Promise<R>): Promise<CollectedState<R>> => {
+	const state = new Map();
+	const result = await store.run(state, cb);
+	return {
+		result,
+		getState: () => state.size > 0 && stringify(state, reducers),
+	};
+};
+```
+
+The `reducers` object extends [devalue]'s built-in serialization with support for `undefined` (which JSON can't represent), `URL` objects, `Date` objects, global symbols (`Symbol.for`), and well-known symbols like `Symbol.iterator`.
+
+Why the inverted map for well-known symbols? Because `Symbol.iterator` is a symbol value, but we need to serialize it as the _string_ `"iterator"` so we can later reconstruct it with `Symbol["iterator"]` on the client. Baby steps.
+
+## The middleware lifecycle
+
+The middleware is the orchestrator. It creates the AsyncLocalStorage scope, allows rendering to happen (which populates the state), then serializes and injects that state into the HTML.
+
+```ts title="src/runtime/middleware.ts" wrap {" 1. Wrap next() in collectState": 5-6} {" 2. Only inject into HTML responses": 8-14} {" 3. Read response body": 16} {" 4. Serialize state": 18-21} {" 5. Inject before </head>": 22-32}
+import { defineMiddleware } from 'astro/middleware';
+import { collectState } from './serverState.js';
+import { parse } from 'content-type';
+
+export const onRequest = defineMiddleware(async (_, next) => {
+	const { getState, result } = await collectState(next);
+
+	const contentType = result.headers.get('Content-Type');
+
+	if (contentType === null) return result;
+
+	const { type: mediaType } = parse(contentType);
+
+	if (mediaType !== 'text/html' && !mediaType.startsWith('text/html+')) return result;
+
+	const originalBody = await result.text();
+
+	const state = getState();
+	const stateScript = state
+		? `<script class="it-astro-state" type="application/json+devalue">${state}</script>`
+		: null;
+	if (stateScript) {
+		const headCloseIndex = originalBody.indexOf('</head>');
+		if (headCloseIndex > -1) {
+			return new Response(
+				originalBody.slice(0, headCloseIndex) + stateScript + originalBody.slice(headCloseIndex),
+				result
+			);
+		} else {
+			return new Response(stateScript + originalBody, result);
+		}
+	}
+
+	return new Response(originalBody, result);
+});
+```
+
+Let's walk through what happens step by step:
+
+<Steps>
+
+1. `collectState(next)` creates a new `Map`, runs `next()` (the rest of the middleware chain plus rendering) inside `AsyncLocalStorage.run()`, then returns both the response and a `getState()` function that serializes the final state.
+
+2. Check if the response is HTML. We only inject state into HTML responses — JSON API routes, images, etc. are passed through unchanged.
+
+3. **Critical decision**: Call `await result.text()` to read the entire response body. This is why streaming is disabled — we need the complete HTML to find `</head>` and inject our script tag. State values can be set anywhere during rendering, so we can't serialize the state until rendering is _completely_ finished.
+
+4. Serialize the state map using `devalue` plus our custom reducers. If the state is empty, don't inject anything.
+
+5. Find `</head>` in the HTML and inject the `<script>` tag right before it. If there's no `</head>` (malformed HTML?), inject at the very beginning of the body. The script tag has a special class `it-astro-state` and a custom MIME type `application/json+devalue` so the client code can find it.
+
+</Steps>
+
+Why use `result.text()` instead of streaming the response and injecting as we go? Because state can be set _at any point_ during rendering. Imagine a component deep in the tree that sets `setState('user', currentUser)` — that happens in the middle of rendering, not at the start. We can't serialize the state until the entire render tree has executed.
+
+This is the fundamental tradeoff of Request State: you get isomorphic state management that works transparently across server and client, but you give up response streaming.
+
+## Serialization and transport
+
+The state is transported from server to client as a `<script>` tag in the HTML. But not just any script tag — it has special attributes and uses [devalue] for serialization.
+
+The script tag looks like this in the final HTML:
+
+```html
+<script class="it-astro-state" type="application/json+devalue">
+	[["key1","value1"],["key2",{"nested":"object"}]]
+</script>
+```
+
+Why `type="application/json+devalue"` instead of `type="text/javascript"`? Because this script tag isn't meant to execute as JavaScript. The `+devalue` suffix is a convention we invented to signal "this is devalue-serialized data, not executable code." Browsers ignore `<script>` tags with unknown MIME types, so the tag sits inert in the DOM until our client code finds it.
+
+The serialization happens in two phases:
+
+<Steps>
+
+1. **Server side**: Values are reduced using custom reducers before devalue serialization.
+
+   Each reducer is a function that takes a value and returns either a primitive representation (for serialization) or a falsy value (meaning "I don't handle this type"). For example, the `URL` reducer checks `value instanceof URL`, and if true, returns `value.href` (a string). Devalue then serializes that string.
+
+2. **Client side**: Values are revived using matching revivers after devalue parsing.
+
+   Each reviver is the inverse of its reducer. The `URL` reviver receives a string (the `href`) and returns `new URL(value)`.
+
+</Steps>
+
+Here's how the reducers and revivers mirror each other:
+
+| Type            | Reducer logic                    | Reduced form | Reviver logic        | Result          |
+| --------------- | -------------------------------- | ------------ | -------------------- | --------------- |
+| `undefined`     | `value === undefined`            | `true`       | `() => undefined`    | `undefined`     |
+| `URL`           | `value.href`                     | string       | `new URL(value)`     | `URL` object    |
+| `Date`          | `value.valueOf()`                | number       | `new Date(value)`    | `Date` object   |
+| `GlobalSymbol`  | `value.description`              | string       | `Symbol.for(value)`  | symbol          |
+| `WellKnownSymbol` | `wellKnownSymbols.get(value)` | string       | `Symbol[value]`      | symbol          |
+
+Why the special handling for `undefined`? Because JSON has no `undefined` value. In JSON, `undefined` becomes `null`, which is wrong. Devalue supports custom reducers, so we reduce `undefined` to `true` (a special sentinel), then revive `true` back to `undefined` on the client. Sounds hacky, right? It is! But it works because devalue's reducer system lets us intercept values _before_ they hit JSON.
+
+The reviver implementations live in the client state module:
+
+```ts title="src/runtime/clientState.ts" wrap {" 1. Define revivers that mirror the server reducers": 4-10}
+import { parse } from 'devalue';
+import { type State, ServerStateLoaded } from '../events.js';
+
+const revivers: Record<string, (value: any) => any> = {
+	undefined: () => undefined,
+	URL: (value) => new URL(value),
+	Date: (value) => new Date(value),
+	GlobalSymbol: (value) => Symbol.for(value),
+	WellKnownSymbol: (value) => Symbol[value as keyof typeof Symbol],
+};
+```
+
+This symmetry is critical. If the server reducer for `Date` returns `value.valueOf()` (a number), the client reviver _must_ expect a number and return `new Date(value)`. Any mismatch and you get garbage data on the client.
+
+## Client-side hydration and View Transitions
+
+Once the HTML with the embedded state reaches the browser, the client-side implementation springs to life. It needs to:
+
+1. Find the `<script class="it-astro-state">` tags in the DOM
+2. Parse them with devalue + revivers
+3. Store the result in a window property
+4. Fire an event to let user code intercept the state before it's applied
+5. Integrate with Astro's View Transitions to replace state on navigation
+
+Let's see how this works:
+
+```ts title="src/runtime/clientState.ts" wrap {" 1. Find and parse state scripts": 12-24} {" 2. Initialize window storage": 28-34} {" 3. Merge state without overwriting": 38-46}
+const loadState = (doc: Document): State[] => {
+	const elements = Array.from(doc.querySelectorAll('script.it-astro-state'));
+	const scripts = elements
+		.map((element) => {
+			if (element?.textContent) {
+				const state = parse(element.textContent, revivers);
+				element.remove();
+				return state;
+			}
+		})
+		.filter((state): state is State => !!state);
+	return scripts;
+};
+
+let nextStates = loadState(document);
+
+const initialiseState = (): State => {
+	const STATE_WINDOW_NAMESPACE = '__@it-astro:request-state-data' as const;
+	if (!(STATE_WINDOW_NAMESPACE in window)) {
+		window[STATE_WINDOW_NAMESPACE] = new Map();
+	}
+	return window[STATE_WINDOW_NAMESPACE] as State;
+};
+
+export const state = initialiseState();
+
+const mergeState = (oldState: State, newState: State) => {
+	for (const [newKey, newValue] of newState.entries()) {
+		const isHit = oldState.has(newKey);
+		if (isHit) {
+			continue;
+		}
+		oldState.set(newKey, newValue);
+	}
+	return oldState;
+};
+```
+
+Why does `loadState` return an _array_ of states when there's typically only one script tag? Future-proofing! If you're using multiple instances of Request State (maybe from different integrations?), each could inject its own script tag. The merge logic handles this by combining them all.
+
+Notice that `mergeState` uses a "no-overwrite" strategy: if the key already exists in `oldState`, the new value is _ignored_. This is important for the initial load case, where the client might have set some state via a `<script>` tag in the `<head>` before the server state loads. The server state shouldn't clobber that.
+
+But wait — what about View Transitions? When you navigate from `/page-a` to `/page-b` with View Transitions enabled, we want to _replace_ the old state entirely, not merge. That's where the `applyState` function's `isViewTransition` parameter comes in:
+
+```ts title="src/runtime/clientState.ts" wrap {" 1. View transitions get empty Map, initial load clones existing": 49-62} {" 2. Fire ServerStateLoaded event": 63-66} {" 3. Apply state only if not prevented": 68-72}
+const applyState =
+	(isViewTransition: boolean = false) =>
+	() => {
+		/*
+		If it's an uncancelled view transition, we want a completely new state 
+		(otherwise the new view will 'lose' to the old view in the case of a conflict). 
+		If it's not a view transition, we want to shallow clone the state object.
+		mergeState will update the top-level keys of the state passed to it, but if 
+		the user calls preventDefault on the serverStateLoaded we're supposed to abort 
+		the update. So it won't do to have already updated the underlying global state 
+		map. And on the other hand we do a shallow, not deep, clone because the user 
+		can mutate their own stored values any time they want.
+		*/
+		const startingState = isViewTransition ? new Map() : new Map(state);
+		nextStates?.reduce(mergeState, startingState);
+		const event = new ServerStateLoaded(new Map(state), startingState, {
+			cancelable: true,
+		});
+
+		if (document.dispatchEvent(event)) {
+			state.clear();
+			for (const [key, value] of event.serverState.entries()) {
+				state.set(key, value);
+			}
+		}
+	};
+```
+
+The comment in the code explains the subtlety beautifully. For View Transitions, `startingState` is a _new_ empty `Map`, so `mergeState` populates it with server state. For initial load, `startingState` is a _clone_ of the current state, so server state merges in without clobbering.
+
+But why the clone? Defensive programming! The `ServerStateLoaded` event is cancelable, and the event object exposes `event.serverState` (which is actually `startingState` after merging). If we passed the real `state` object, listeners could mutate it directly, bypassing the event cancellation. By cloning, we ensure that calling `event.preventDefault()` actually prevents state changes — the real `state` map only updates if the event wasn't cancelled.
+
+Finally, the View Transitions integration:
+
+```ts title="src/runtime/clientState.ts" wrap {" 1. Run on initial load": 76} {" 2. Listen for before-swap to load new state": 78-80} {" 3. Apply on after-swap": 81}
+applyState()();
+
+document.addEventListener('astro:before-swap', (event) => {
+	nextStates = loadState(event.newDocument);
+});
+document.addEventListener('astro:after-swap', applyState(true));
+```
+
+The lifecycle is:
+
+1. User navigates from `/page-a` to `/page-b`
+2. Astro fetches `/page-b` HTML
+3. `astro:before-swap` fires with `event.newDocument` (the new page's DOM)
+4. We call `loadState(event.newDocument)` to find and parse state scripts in the _new_ page
+5. `astro:after-swap` fires (Astro has swapped the DOM)
+6. We call `applyState(true)` to replace the current state with the new page's state
+
+Why load state in `before-swap` instead of `after-swap`? Performance! Parsing the devalue data can take time for large states. By doing it before the swap, we parallelize that work with Astro's DOM manipulation. When `after-swap` fires, the state is already parsed and ready to apply.
+
+This is WE'RE DOOMED territory — coordinating state updates with View Transitions, handling event cancellation, merging vs replacing state, managing script tag lifecycle. But it works, and the result is magical: navigation between pages preserves or replaces state exactly as you'd expect, with zero boilerplate in user code.
+
+## Conclusion
+
+We've journeyed through the implementation of Request State, from the conditional Vite plugin that loads different code for server vs client, to the AsyncLocalStorage magic that isolates requests, to the middleware that serializes state and injects it into HTML, to the client-side hydration and View Transitions integration.
+
+The key insights were:
+
+- **Same API, two implementations**: Vite's SSR flag lets us load completely different code for the same import, enabling transparent isomorphic APIs.
+- **AsyncLocalStorage for isolation**: Node.js's async context tracking ensures concurrent requests never interfere with each other's state.
+- **Middleware as orchestrator**: Wrapping `next()` creates the AsyncLocalStorage scope, then serializing and injecting state after rendering completes.
+- **Devalue + custom reducers**: Extending devalue's serialization with reducers/revivers for `undefined`, `URL`, `Date`, and symbols.
+- **Strategic state merging**: No-overwrite merge for initial load, complete replacement for View Transitions.
+
+The real implementation includes more error handling, debug logging, and edge case coverage than we've shown here, but the core architecture is exactly as described. You can explore the full source on [GitHub].
+
+Now go forth and build stateful Astro apps with confidence, cosmic adventurer!
+
+[AsyncLocalStorage]: https://nodejs.org/api/async_hooks.html#class-asynclocalstorage
+[devalue]: https://www.npmjs.com/package/devalue
+[GitHub]: https://github.com/Fryuni/inox-tools/tree/main/packages/request-state

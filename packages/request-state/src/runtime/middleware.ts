@@ -2,7 +2,7 @@ import { defineMiddleware } from 'astro/middleware';
 import { collectState } from './serverState.js';
 import { parse } from 'content-type';
 
-const _encoder = new TextEncoder();
+const encoder = new TextEncoder();
 
 export const onRequest = defineMiddleware(async (_, next) => {
 	const { getState, result } = await collectState(next);

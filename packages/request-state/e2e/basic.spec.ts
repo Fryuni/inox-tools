@@ -93,3 +93,15 @@ test('can set state to undefined', async ({ page }) => {
 	const regularResult = await page.locator('pre#regular-result').innerHTML();
 	expect(regularResult).toBe('hello');
 });
+
+test('has content-length header', async ({ request }) => {
+	server = await fixture.preview({});
+
+	const pageUrl = fixture.resolveUrl('/?name=John+Doe');
+	
+	const response = await request.get(pageUrl);
+	expect(response.status()).toBe(200);
+	const contentLength = response.headers()['content-length'];
+	expect(contentLength).toBeDefined();
+	expect(Number(contentLength)).toBeGreaterThan(0);
+});

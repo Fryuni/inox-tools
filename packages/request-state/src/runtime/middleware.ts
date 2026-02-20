@@ -15,28 +15,34 @@ export const onRequest = defineMiddleware(async (_, next) => {
 
 	const originalBody = await result.text();
 
-	let contentLength = Buffer.byteLength(originalBody, 'utf-8');
-	result.headers.set('Content-Length', contentLength.toString());
-
 	const state = getState();
 	const stateScript = state
 		? `<script class="it-astro-state" type="application/json+devalue">${state}</script>`
-		: null;
+		: '';
+
+	let finalBody = originalBody;
+
 	if (stateScript) {
 		const headCloseIndex = originalBody.indexOf('</head>');
 
-		contentLength += Buffer.byteLength(stateScript, 'utf-8');
-		result.headers.set('Content-Length', contentLength.toString());
-
 		if (headCloseIndex > -1) {
-			return new Response(
-				originalBody.slice(0, headCloseIndex) + stateScript + originalBody.slice(headCloseIndex),
-				result
-			);
+			finalBody =
+				originalBody.slice(0, headCloseIndex) +
+				stateScript +
+				originalBody.slice(headCloseIndex);
 		} else {
-			return new Response(stateScript + originalBody, result);
+			finalBody = stateScript + originalBody;
 		}
 	}
 
-	return new Response(originalBody, result);
+	const contentLength = Buffer.byteLength(finalBody, 'utf-8');
+
+	const headers = new Headers(result.headers);
+	headers.set('Content-Length', contentLength.toString());
+
+	return new Response(finalBody, {
+		status: result.status,
+		statusText: result.statusText,
+		headers,
+	});
 });

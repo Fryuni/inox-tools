@@ -34,8 +34,8 @@ export const onRequest = defineMiddleware(async (_, next) => {
 			finalBody = stateScript + originalBody;
 		}
 	}
-
-	const contentLength = Buffer.byteLength(finalBody, 'utf-8');
+	// TextEncoder is also supported in CloudFlare Workers, so this should work in all environments Astro supports.
+	const contentLength = new TextEncoder().encode(finalBody).byteLength;
 
 	const headers = new Headers(result.headers);
 	headers.set('Content-Length', contentLength.toString());

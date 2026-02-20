@@ -2,6 +2,8 @@ import { defineMiddleware } from 'astro/middleware';
 import { collectState } from './serverState.js';
 import { parse } from 'content-type';
 
+const _encoder = new TextEncoder();
+
 export const onRequest = defineMiddleware(async (_, next) => {
 	const { getState, result } = await collectState(next);
 
@@ -35,7 +37,7 @@ export const onRequest = defineMiddleware(async (_, next) => {
 		}
 	}
 	// TextEncoder is also supported in CloudFlare Workers, so this should work in all environments Astro supports.
-	const contentLength = new TextEncoder().encode(finalBody).byteLength;
+	const contentLength = _encoder.encode(finalBody).byteLength;
 
 	const headers = new Headers(result.headers);
 	headers.set('Content-Length', contentLength.toString());

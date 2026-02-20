@@ -20,7 +20,7 @@ export const onRequest = defineMiddleware(async (_, next) => {
 	const state = getState();
 	const stateScript = state
 		? `<script class="it-astro-state" type="application/json+devalue">${state}</script>`
-		: '';
+		: null;
 
 	let finalBody = originalBody;
 

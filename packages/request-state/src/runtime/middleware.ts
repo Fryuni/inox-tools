@@ -2,6 +2,8 @@ import { defineMiddleware } from 'astro/middleware';
 import { collectState } from './serverState.js';
 import { parse } from 'content-type';
 
+const encoder = new TextEncoder();
+
 export const onRequest = defineMiddleware(async (_, next) => {
 	const { getState, result } = await collectState(next);
 
@@ -19,17 +21,27 @@ export const onRequest = defineMiddleware(async (_, next) => {
 	const stateScript = state
 		? `<script class="it-astro-state" type="application/json+devalue">${state}</script>`
 		: null;
-	if (stateScript) {
-		const headCloseIndex = originalBody.indexOf('</head>');
-		if (headCloseIndex > -1) {
-			return new Response(
-				originalBody.slice(0, headCloseIndex) + stateScript + originalBody.slice(headCloseIndex),
-				result
-			);
-		} else {
-			return new Response(stateScript + originalBody, result);
-		}
+
+	if (!stateScript) {
+		return new Response(originalBody, result);
 	}
 
-	return new Response(originalBody, result);
+	const headCloseIndex = originalBody.indexOf('</head>');
+	const finalBody =
+		headCloseIndex > -1
+			? originalBody.slice(0, headCloseIndex) + stateScript + originalBody.slice(headCloseIndex)
+			: stateScript + originalBody;
+
+	// TextEncoder is also supported in CloudFlare Workers, so this should work in all environments Astro supports.
+	const encodedBody = encoder.encode(finalBody);
+	const contentLength = encodedBody.byteLength;
+
+	const headers = new Headers(result.headers);
+	headers.set('Content-Length', contentLength.toString());
+
+	return new Response(encodedBody, {
+		status: result.status,
+		statusText: result.statusText,
+		headers,
+	});
 });

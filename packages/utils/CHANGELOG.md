@@ -1,5 +1,11 @@
 # @inox-tools/utils
 
+## 1.1.0
+
+### Minor Changes
+
+- 77b0b6b: Allow `resolvedAtom` to batch updates from dependencies
+
 ## 1.0.0
 
 ### Major Changes

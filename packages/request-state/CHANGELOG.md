@@ -1,5 +1,15 @@
 # @inox-tools/request-state
 
+## 0.8.2
+
+### Patch Changes
+
+- d9be23f: Added calculation of the `Content-Length` header when opting out of streaming with an injected state.
+  This ensures responses with an injected state include the correct `Content-Length` header.
+  Unmodified responses (like `HEAD` or `304 Not Modified`) continue to work exactly as before, avoiding overwriting the existing `Content-Length` header with an empty size.
+- Updated dependencies [77b0b6b]
+  - @inox-tools/utils@1.1.0
+
 ## 0.8.1
 
 ### Patch Changes

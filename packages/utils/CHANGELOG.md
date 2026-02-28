@@ -1,5 +1,12 @@
 # @inox-tools/utils
 
+## 1.1.1
+
+### Patch Changes
+
+- a88b6c8: Add `LazyKeyed.wrap` to be simmetric to `Lazy.wrap`.
+- a88b6c8: Declare static constructors of `Lazy` and `LazyKeyed` to take `this: void` so typescript strictest modes allow passing those functions as values without rebinding.
+
 ## 1.1.0
 
 ### Minor Changes

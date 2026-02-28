@@ -53,7 +53,7 @@ export class Lazy<T> implements Promise<T> {
 	 * @param factory - A function that produces the value when first accessed
 	 * @returns A new Lazy instance wrapping the factory
 	 */
-	public static of<T>(factory: () => T): Lazy<T> {
+	public static of<T>(this: void, factory: () => T): Lazy<T> {
 		return new Lazy(factory);
 	}
 
@@ -62,7 +62,7 @@ export class Lazy<T> implements Promise<T> {
 	 *
 	 * The function will at most be called once, on the first use of the value.
 	 */
-	public static wrap<T>(factory: () => T): () => T {
+	public static wrap<T>(this: void, factory: () => T): (this: void) => T {
 		const lazy = Lazy.of(factory);
 		return lazy.get.bind(lazy);
 	}
@@ -271,8 +271,18 @@ export class LazyKeyed<T> {
 	 * @param factory - A function that produces a value for a given key
 	 * @returns A new LazyKeyed instance
 	 */
-	public static of<T>(factory: (key: string) => T): LazyKeyed<T> {
-		return new this(factory);
+	public static of<T>(this: void, factory: (key: string) => T): LazyKeyed<T> {
+		return new LazyKeyed(factory);
+	}
+
+	/**
+	 * Wrap the given factory into a lazily computed memoized value.
+	 *
+	 * The function will at most be called once per given key, on the first use of said key.
+	 */
+	public static wrap<T>(this: void, factory: (key: string) => T): (this: void, key: string) => T {
+		const keyed = LazyKeyed.of(factory);
+		return keyed.get.bind(keyed);
 	}
 
 	/**

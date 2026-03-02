@@ -19,6 +19,15 @@ export type InjectCollectionOptions = {
 	entrypoint: string;
 
 	/**
+	 * Name of the integration injecting this collection.
+	 * Used for improved error reporting on collection conflicts.
+	 *
+	 * When using the `injectCollections` utility, this is automatically populated
+	 * from the integration's logger label if not explicitly provided.
+	 */
+	integrationName?: string;
+
+	/**
 	 * Seed collections using this template if they are not present.
 	 *
 	 * @see {seedCollections}
@@ -51,7 +60,10 @@ export const integration = withApi(
 					['astro:config:setup', 'astro:config:done', 'astro:build:start', 'astro:server:setup'],
 					(options: InjectCollectionOptions) => {
 						debug('Injecting collection:', options);
-						state.injectedCollectionsEntrypoints.push(options.entrypoint);
+						state.injectedCollectionsEntrypoints.push({
+						entrypoint: options.entrypoint,
+						integrationName: options.integrationName,
+					});
 
 						if (options.seedTemplateDirectory) {
 							api.seedCollections({

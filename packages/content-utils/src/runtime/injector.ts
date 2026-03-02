@@ -1,6 +1,11 @@
-import { injectedCollections, type CollectionConfig } from '@it-astro:content/injector';
+import { injectedCollections, collectionSources, type CollectionConfig } from '@it-astro:content/injector';
 import { isFancyCollection, tryGetOriginalFancyCollection } from './fancyContent.js';
 import { AstroError } from 'astro/errors';
+
+function getOwnerLabel(key: string): string {
+	const owner = collectionSources[key];
+	return owner ? `the "${owner}" integration` : 'an integration';
+}
 
 /**
  * Extend the given collection map with collections defined by integrations.
@@ -18,18 +23,14 @@ export function injectCollections(
 
 		if (originFancyCollection === null) {
 			throw new AstroError(
-				// TODO: Report which integration added the collection.
-				`Content collection "${key}" overrides a collection injected by an integration.`,
+				`Content collection "${key}" overrides a collection injected by ${getOwnerLabel(key)}.`,
 				'Try to use a different collection name.'
 			);
 		}
 
-		// TODO: Detect when two different integrations collide
-
 		if (!Object.is(originFancyCollection, injectedCollection)) {
 			throw new AstroError(
-				// TODO: Report which integration added the collection.
-				`Content collection "${key}" extends from one an injected collection, but overrides a different collection.`,
+				`Content collection "${key}" extends from an injected collection, but overrides a different collection than the one injected by ${getOwnerLabel(key)}.`,
 				'When extending an injected collection you must not change the collection name.'
 			);
 		}

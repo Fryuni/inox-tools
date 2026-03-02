@@ -14,7 +14,10 @@ export const injectCollections = defineUtility('astro:config:setup')((
 ) => {
 	const api = integration.fromSetup(params);
 
-	return api.injectCollection(options);
+	return api.injectCollection({
+		...options,
+		integrationName: options.integrationName ?? params.logger.label,
+	});
 });
 
 export const seedCollections = defineUtility('astro:config:setup')((

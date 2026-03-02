@@ -1,9 +1,14 @@
 import type { AstroIntegrationLogger } from 'astro';
 import type { ResolvedContentPaths } from '../internal/resolver.js';
 
+export interface InjectedCollectionEntry {
+	entrypoint: string;
+	integrationName?: string;
+}
+
 export interface IntegrationState {
 	logger: AstroIntegrationLogger;
-	injectedCollectionsEntrypoints: string[];
+	injectedCollectionsEntrypoints: InjectedCollectionEntry[];
 	staticOnlyCollections: string[];
 	contentPaths: ResolvedContentPaths;
 	contentDataEntrypoint?: string;

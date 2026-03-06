@@ -1,6 +1,7 @@
 import { getEntry } from 'astro:content';
-import { collectGitInfoForContentFiles } from './git.js';
-import type { GitTrackingInfo } from '@it-astro:content/git';
+import { collectGitInfoForContentFiles, getFileContentAtCommit } from './git.js';
+import { Lazy } from '@inox-tools/utils/lazy';
+import type { GitTrackingInfo, CommitInfo } from '@it-astro:content/git';
 
 const trackedInfo = new Map(await collectGitInfoForContentFiles());
 
@@ -21,6 +22,19 @@ export async function getEntryGitInfoInner(
 			latest: new Date(info.latest),
 			authors: Array.from(info.authors),
 			coAuthors: Array.from(info.coAuthors),
+			commits: (info.commits || []).map((c) => {
+				const ci: Record<string, unknown> = {
+					hash: c.hash,
+					date: new Date(c.date),
+					author: c.author,
+					coAuthors: Array.from(c.coAuthors),
+				};
+				Object.defineProperty(ci, 'content', {
+					get: Lazy.wrap(() => getFileContentAtCommit(c.hash, c.repoPath)),
+					enumerable: true,
+				});
+				return ci as CommitInfo;
+			}),
 		},
 	];
 }

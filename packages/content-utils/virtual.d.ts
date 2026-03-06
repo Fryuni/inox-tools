@@ -26,11 +26,20 @@ declare module '@it-astro:content/git' {
 		| [{ collection: string; id: string }]
 		| [{ collection: string; slug: string }];
 
+	export type CommitInfo = {
+		hash: string;
+		date: Date;
+		content: string;
+		author: GitAuthor;
+		coAuthors: GitAuthor[];
+	};
+
 	export type GitTrackingInfo = {
 		earliest: Date;
 		latest: Date;
 		authors: GitAuthor[];
 		coAuthors: GitAuthor[];
+		commits?: CommitInfo[];
 	};
 
 	/**

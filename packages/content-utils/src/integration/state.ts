@@ -7,6 +7,7 @@ export interface IntegrationState {
 	staticOnlyCollections: string[];
 	contentPaths: ResolvedContentPaths;
 	contentDataEntrypoint?: string;
+	collectCommitHistory: boolean;
 	cleanups: (() => Promise<void>)[];
 }
 
@@ -14,6 +15,7 @@ export function emptyState(): IntegrationState {
 	return {
 		injectedCollectionsEntrypoints: [],
 		staticOnlyCollections: [],
+		collectCommitHistory: true,
 		cleanups: [],
 	} as Partial<IntegrationState> as IntegrationState;
 }

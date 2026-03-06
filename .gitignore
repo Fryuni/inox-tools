@@ -65,3 +65,6 @@ playwright-report/
 blob-report/
 playwright/.cache/
 patching
+
+# Nested git repos in test fixtures (unpacked from .git.tar.gz during tests)
+packages/*/tests/fixture/**/.git

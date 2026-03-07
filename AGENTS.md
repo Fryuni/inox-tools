@@ -140,3 +140,11 @@ turbo gen                       # Scaffold new package from templates
 - `inline-mod/src/closure/entry.test.ts` is colocated with source (only exception to test separation)
 - `star-warp/routes/*` exports point to source files directly (not dist)
 - Node 22+ recommended (CI matrix: 20, 22)
+
+## Brain — Agent Memory
+
+This project uses Brain for agent memory management.
+
+**Start here when orienting:** Read `.memory/main.md` for the project roadmap, key decisions, and open problems.
+Read `.memory/AGENTS.md` for the full Brain protocol reference.
+Tools: memory_commit, memory_branch (create/switch/merge)

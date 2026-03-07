@@ -65,3 +65,5 @@ playwright-report/
 blob-report/
 playwright/.cache/
 patching
+
+.memory/branches/*/log.md

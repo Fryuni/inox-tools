@@ -3,9 +3,11 @@ import { z } from 'astro/zod';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 const injectedCollections = vi.hoisted(() => ({} as Record<string, any>));
+const collectionSources = vi.hoisted(() => ({} as Record<string, string>));
 
 vi.mock('@it-astro:content/injector', () => ({
 	injectedCollections,
+	collectionSources,
 }));
 
 vi.mock('astro:content', async () => {
@@ -27,6 +29,9 @@ import { injectCollections } from '../src/runtime/injector.js';
 afterEach(() => {
 	for (const key of Object.keys(injectedCollections)) {
 		delete injectedCollections[key];
+	}
+	for (const key of Object.keys(collectionSources)) {
+		delete collectionSources[key];
 	}
 });
 
@@ -88,6 +93,35 @@ describe('injectCollections', () => {
 		).toThrow(AstroError);
 	});
 
+	it('reports integration name when a project overrides an injected collection', () => {
+		const fancy = makeFancy();
+		injectedCollections.blog = fancy;
+		collectionSources.blog = 'my-blog-plugin';
+
+		expect(() =>
+			injectCollections({
+				blog: {
+					type: 'content',
+					schema: z.object({}),
+				},
+			})
+		).toThrow(/my-blog-plugin/);
+	});
+
+	it('uses generic message when integration name is not provided', () => {
+		const fancy = makeFancy();
+		injectedCollections.blog = fancy;
+
+		expect(() =>
+			injectCollections({
+				blog: {
+					type: 'content',
+					schema: z.object({}),
+				},
+			})
+		).toThrow(/an integration/);
+	});
+
 	it('throws when extending the wrong injected collection', () => {
 		const injected = makeFancy();
 		const otherFancy = makeFancy();
@@ -98,5 +132,18 @@ describe('injectCollections', () => {
 				blog: otherFancy(),
 			})
 		).toThrow(AstroError);
+	});
+
+	it('reports integration name when extending the wrong injected collection', () => {
+		const injected = makeFancy();
+		const otherFancy = makeFancy();
+		injectedCollections.blog = injected;
+		collectionSources.blog = 'blog-integration';
+
+		expect(() =>
+			injectCollections({
+				blog: otherFancy(),
+			})
+		).toThrow(/blog-integration/);
 	});
 });

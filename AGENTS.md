@@ -124,7 +124,7 @@ turbo gen                       # Scaffold new package from templates
 - `inline-mod` closure engine derived from Pulumi (Apache 2.0) — respect attribution
 - Tests are sequential by design (shared fixtures) — do not add `--parallel`
 - `custom-routing`: Cannot use inline API routes until Astro core supports virtual modules for routes
-- `content-utils/injector.ts`: Missing collision detection between integrations (3 TODOs)
+- `content-utils/injector.ts`: Reports integration names in collision errors; inter-integration collisions detected at virtual module import time
 
 ## CI
 

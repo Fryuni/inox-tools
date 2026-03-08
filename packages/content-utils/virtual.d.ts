@@ -16,6 +16,7 @@ declare module '@it-astro:content/injector' {
 
 	export type CollectionConfig = ReturnType<typeof defineCollection>;
 	export const injectedCollections: Record<string, CollectionConfig | FancyCollection>;
+	export const collectionSources: Record<string, string>;
 }
 
 declare module '@it-astro:content/git' {

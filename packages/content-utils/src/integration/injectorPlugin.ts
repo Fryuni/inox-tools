@@ -40,17 +40,52 @@ export const injectorPlugin = (state: IntegrationState): Plugin => {
 		},
 		load(id) {
 			switch (id) {
-				case RESOLVED_INJECTOR_VIRTUAL_MODULE:
-					debug('Generating injected collection modole from:', entrypoints);
-					return [
-						...entrypoints.map(
-							(entrypoint, index) =>
-								`import {collections as __collections${index}} from '${entrypoint}';`
-						),
-						'export const injectedCollections = {',
-						...entrypoints.map((_, index) => `...__collections${index},`),
-						'};',
-					].join('\n');
+				case RESOLVED_INJECTOR_VIRTUAL_MODULE: {
+					debug('Generating injected collection module from:', entrypoints);
+
+					const lines: string[] = [];
+
+					// Import each entrypoint's collections
+					for (let i = 0; i < entrypoints.length; i++) {
+						lines.push(
+							`import {collections as __collections${i}} from '${entrypoints[i].entrypoint}';`
+						);
+					}
+
+					lines.push('');
+					lines.push('export const collectionSources = {};');
+					lines.push('export const injectedCollections = {};');
+
+					// Generate per-entrypoint merge with collision detection
+					for (let i = 0; i < entrypoints.length; i++) {
+						const nameExpr = entrypoints[i].integrationName
+							? JSON.stringify(entrypoints[i].integrationName)
+							: 'undefined';
+
+						lines.push('');
+						lines.push(
+							`for (const [__key, __value] of Object.entries(__collections${i})) {`
+						);
+						lines.push('  if (__key in injectedCollections) {');
+						lines.push('    const __prevOwner = collectionSources[__key];');
+						lines.push(`    const __curOwner = ${nameExpr};`);
+						lines.push(
+							'    if (__prevOwner !== undefined && __curOwner !== undefined && __prevOwner !== __curOwner) {'
+						);
+						lines.push(
+							'      throw new Error(`Content collection "${__key}" is injected by both "${__prevOwner}" and "${__curOwner}". Only one integration may inject a given collection key.`);'
+						);
+						lines.push('    }');
+						lines.push('  }');
+						lines.push('  injectedCollections[__key] = __value;');
+						lines.push(
+							`  if (${nameExpr} !== undefined) collectionSources[__key] = ${nameExpr};`
+						);
+						lines.push('}');
+					}
+
+					return lines.join('\n');
+				}
 				case RESOLVED_CONTENT_VIRTUAL_MODULE:
 					debug('Generating fancy content module');
 					return [

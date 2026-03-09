@@ -1,8 +1,8 @@
-diff --git a/dist/assets/utils/transformToPath.js b/dist/assets/utils/transformToPath.js
-index 22057cb412da95f5cb764d5e26e683b685f2b5f8..87adf548dc5714713b70cf7566741510b45b6897 100644
---- a/dist/assets/utils/transformToPath.js
-+++ b/dist/assets/utils/transformToPath.js
-@@ -7,7 +7,7 @@ const INVALID_CHAR_REGEX = /[\u0000-\u001F"#$%&*+,:;<=>?[\]^`{|}\u007F]/g;
+diff --git a/dist/assets/utils/hash.js b/dist/assets/utils/hash.js
+index 171f39d58241d3dad4f32ab630cd9c6d4855f3fc..59033e2532ea7d700e3d314e8e80b155a89449aa 100644
+--- a/dist/assets/utils/hash.js
++++ b/dist/assets/utils/hash.js
+@@ -29,7 +29,7 @@ function extname(filePath) {
  function propsToFilename(filePath, transform, hash) {
    let filename = decodeURIComponent(removeQueryString(filePath));
    const ext = extname(filename);

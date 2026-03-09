@@ -18,7 +18,7 @@
     "@astrojs/node": "catalog:",
     "astro": "catalog:",
     "typescript": "catalog:",
-    "vite": "catalog:"
+    "vite": "^7.3.1"
   },
   "devDependencies": {
     "@inox-tools/aik-mod": "workspace:^",

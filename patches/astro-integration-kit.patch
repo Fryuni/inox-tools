@@ -1,0 +1,13 @@
+diff --git a/package.json b/package.json
+index ab1b087a196005348a05a46b468da4e6f177567f..b53d0b683f224c69898cf282cba00cab172a4404 100644
+--- a/package.json
++++ b/package.json
+@@ -37,7 +37,7 @@
+   "homepage": "https://github.com/florian-lefebvre/astro-integration-kit#readme",
+   "license": "MIT",
+   "peerDependencies": {
+-    "astro": "^4.14.0 || ^5.0.0"
++    "astro": "^4.14.0 || ^5.0.0 || ^6.0.0-0"
+   },
+   "devDependencies": {
+     "@types/node": "^20.12.12",

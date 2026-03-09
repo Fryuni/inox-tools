@@ -8,18 +8,18 @@ packages:
   - packages/*/e2e/fixture/partials/*
 
 catalog:
-  '@astrojs/check': ^0.9.6
-  '@astrojs/compiler': ^2.13.1
-  '@astrojs/internal-helpers': ^0.7.5
-  '@astrojs/markdown-remark': ^6.3.10
-  '@astrojs/mdx': ^4.3.13
-  '@astrojs/node': ^9.5.4
-  '@astrojs/preact': ^4.1.3
-  '@astrojs/react': ^4.4.2
-  '@astrojs/rss': ^4.0.15
-  '@astrojs/sitemap': ^3.7.0
-  '@astrojs/starlight': ~0.37.6
-  '@astrojs/vercel': ^9.0.4
+  '@astrojs/check': ^0.9.7-beta.1
+  '@astrojs/compiler': ^3.0.0
+  '@astrojs/internal-helpers': ^0.8.0-beta.3
+  '@astrojs/markdown-remark': ^7.0.0-beta.11
+  '@astrojs/mdx': ^5.0.0-beta.12
+  '@astrojs/node': ^10.0.0-beta.9
+  '@astrojs/preact': ^5.0.0-beta.5
+  '@astrojs/react': ^5.0.0-beta.4
+  '@astrojs/rss': ^4.0.15-beta.4
+  '@astrojs/sitemap': ^3.6.1-beta.3
+  '@astrojs/starlight': ~0.37.7
+  '@astrojs/vercel': ^10.0.0-beta.8
   '@changesets/changelog-github': ^0.5.2
   '@changesets/cli': ^2.29.8
   '@croct/plug': ^0.23.0
@@ -45,7 +45,7 @@ catalog:
   '@vitest/coverage-v8': ^4.0.18
   '@vitest/ui': ^4.0.18
   ast-types: ^0.14.2
-  astro: ^5.18.0
+  astro: ^6.0.0-beta.20
   astro-integration-kit: ~0.19.1
   content-type: ^1.0.5
   debug: ^4.4.3
@@ -92,9 +92,9 @@ catalogMode: prefer
 catalogs:
   lax:
     '@astrojs/starlight': ^0.31.1
-    astro: ^5
+    astro: ^5 || ^6.0.0-0
   min:
-    astro: ^5
+    astro: ^5 || ^6.0.0-0
     astro-integration-kit: ^0.18 || ^0.19
     vite: ^5 || ^6 || ^7
 
@@ -112,3 +112,4 @@ overrides:
 
 patchedDependencies:
   astro: patches/astro.patch
+  astro-integration-kit: patches/astro-integration-kit.patch

@@ -19,6 +19,8 @@ const globalHandlers: Map<string, InnerHandler<any>> = ((globalThis as any)[
 	GLOBAL_HANDLERS_SYMBOL
 ] ??= new Map());
 
+// TODO: make this a distinct package as a helper function
+
 export default definePlugin({
 	name: 'defineRouteConfig',
 	setup: () => {

@@ -2,7 +2,7 @@ import { AstroError } from 'astro/errors';
 import { z } from 'astro/zod';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-const injectedCollections = vi.hoisted(() => ({} as Record<string, any>));
+const injectedCollections = vi.hoisted(() => ({}) as Record<string, any>);
 
 vi.mock('@it-astro:content/injector', () => ({
 	injectedCollections,

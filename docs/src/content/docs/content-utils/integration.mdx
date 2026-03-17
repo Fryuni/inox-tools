@@ -27,12 +27,12 @@ The entrypoint should be resolvable from the root of the Astro project, so if th
 :::
 
 ```ts title="integration.ts"
-import { defineIntegration } from 'astro-integration-kit';
+import type { AstroIntegration } from 'astro';
 import { injectCollections } from '@inox-tools/content-utils';
 
-export default defineIntegration({
-	name: 'my-integration',
-	setup: () => ({
+export default function yourIntegration(): AstroIntegration {
+	return {
+		name: 'your-integration',
 		hooks: {
 			'astro:config:setup': (params) => {
 				injectCollections(params, {
@@ -40,33 +40,29 @@ export default defineIntegration({
 				});
 			},
 		},
-	}),
-});
+	}
+}
 ```
 
 Additionally, you can provide a `seedTemplateDirectory` along with your entrypoint. If you do, a call to [`seedCollections`](#seedcollections) is implied using that path the template.
 
 ```ts title="integration.ts"
-import { defineIntegration } from 'astro-integration-kit';
+import type { AstroIntegration } from 'astro';
 import { injectCollections } from '@inox-tools/content-utils';
 
-export default defineIntegration({
-	name: 'my-integration',
-	setup: () => {
-		const { resolve } = createResolver(import.meta.url);
-
-    return  {
-		  hooks: {
-			  'astro:config:setup': (params) => {
-				  injectCollections(params, {
-					  entrypoint: '@my/package/collections',
-					  seedTemplateDirectory: resolve('./collectionTemplates'),
-				  });
-			  },
-		  },
-	  }
-  }),
-});
+export default function yourIntegration(): AstroIntegration {
+	return {
+		name: 'your-integration',
+		hooks: {
+			'astro:config:setup': (params) => {
+				injectCollections(params, {
+					entrypoint: '@my/package/collections',
+					seedTemplateDirectory: new URL('./collectionTemplates', import.meta.url).toString(),
+				});
+			},
+		},
+	}
+}
 ```
 
 ### `@it-astro:content` virtual module
@@ -132,23 +128,20 @@ import { FileTree } from '@astrojs/starlight/components';
 You can declare the seed like so:
 
 ```ts title="integration.ts"
-import { defineIntegration, createResolver } from 'astro-integration-kit';
+import type { AstroIntegration } from 'astro';
 import { seedCollections } from '@inox-tools/content-utils';
 
-export default defineIntegration({
-	name: 'my-integration',
-	setup: () => {
-		const { resolve } = createResolver(import.meta.url);
-
-		return {
-			hooks: {
-				'astro:config:setup': (params) => {
-					seedCollections(params, {
-						templateDirectory: resolve('./collectionTemplates'),
-					});
-				},
+export default function yourIntegration(): AstroIntegration {
+	return {
+		name: 'your-integration',
+		hooks: {
+			'astro:config:setup': (params) => {
+				seedCollections(params, {
+					entrypoint: '@my/package/collections',
+					templateDirectory: new URL('./collectionTemplates', import.meta.url).toString(),
+				});
 			},
-		};
-	},
-});
+		},
+	}
+}
 ```

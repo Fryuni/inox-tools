@@ -2,13 +2,11 @@ import { withApi, onHook, registerGlobalHooks } from '@inox-tools/modular-statio
 import { emptyState, type IntegrationState } from './state.js';
 import { resolveContentPaths } from '../internal/resolver.js';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { addVitePlugin, defineIntegration } from 'astro-integration-kit';
 import { injectorPlugin } from './injectorPlugin.js';
 import { seedCollections, type SeedCollectionsOptions } from './seedCollections.js';
 import { gitBuildPlugin, gitDevPlugin } from './gitPlugin.js';
 import { debug } from '../internal/debug.js';
 import * as devalue from 'devalue';
-import { z } from 'astro/zod';
 
 export type InjectCollectionOptions = {
 	/**
@@ -27,98 +25,92 @@ export type InjectCollectionOptions = {
 };
 
 export const integration = withApi(
-	defineIntegration({
-		name: '@inox-tools/content-utils',
-		optionsSchema: z
-			.object({
-				staticOnlyCollections: z.array(z.string()).optional().default([]),
-			})
-			.optional()
-			.default({}),
-		setup: ({ options: { staticOnlyCollections } }) => {
-			debug('Generating empty state');
-			const state = emptyState();
-			state.staticOnlyCollections.push(...staticOnlyCollections);
-			const collectionSeedBuffer: SeedCollectionsOptions[] = [];
+	({ staticOnlyCollections = [] }: { staticOnlyCollections?: Array<string> } = {}) => {
+		debug('Generating empty state');
+		const state = emptyState();
+		state.staticOnlyCollections.push(...staticOnlyCollections);
+		const collectionSeedBuffer: SeedCollectionsOptions[] = [];
 
-			const api = {
-				/**
-				 * Inject a content collection definition alongside the project.
-				 *
-				 * Collections defined here can be overriden by the project.
-				 */
-				injectCollection: onHook(
-					['astro:config:setup', 'astro:config:done', 'astro:build:start', 'astro:server:setup'],
-					(options: InjectCollectionOptions) => {
-						debug('Injecting collection:', options);
-						state.injectedCollectionsEntrypoints.push(options.entrypoint);
+		const api = {
+			/**
+			 * Inject a content collection definition alongside the project.
+			 *
+			 * Collections defined here can be overriden by the project.
+			 */
+			injectCollection: onHook(
+				['astro:config:setup', 'astro:config:done', 'astro:build:start', 'astro:server:setup'],
+				(options: InjectCollectionOptions) => {
+					debug('Injecting collection:', options);
+					state.injectedCollectionsEntrypoints.push(options.entrypoint);
 
-						if (options.seedTemplateDirectory) {
-							api.seedCollections({
-								templateDirectory: options.seedTemplateDirectory,
-							});
-						}
-					}
-				),
-				seedCollections: onHook(
-					['astro:config:setup', 'astro:config:done', 'astro:build:start', 'astro:server:setup'],
-					(options: SeedCollectionsOptions) => {
-						debug('Requesting collection seeding:', options);
-						if (state.contentPaths === undefined) {
-							collectionSeedBuffer.push(options);
-						} else {
-							seedCollections(state, options);
-						}
-					}
-				),
-			};
-
-			return {
-				hooks: {
-					'astro:config:setup': (params) => {
-						state.logger = params.logger;
-						registerGlobalHooks(params);
-
-						state.contentPaths = resolveContentPaths(params.config);
-						debug('Resolved content paths:', state.contentPaths);
-
-						if (!state.contentPaths.configExists) {
-							// Create the `<srcDir>/content/config.ts` file if it doesn't exist,
-							// otherwise there is no module to modify in the Vite lifecycle.
-
-							debug('Creating minimal content config file:', state.contentPaths.configPath);
-							mkdirSync(state.contentPaths.contentPath, { recursive: true });
-							writeFileSync(state.contentPaths.configPath, 'export const collections = {};');
-						}
-
-						debug('Adding content collection injector Vite plugin');
-						addVitePlugin(params, {
-							plugin: injectorPlugin(state),
-							warnDuplicated: true,
+					if (options.seedTemplateDirectory) {
+						api.seedCollections({
+							templateDirectory: options.seedTemplateDirectory,
 						});
+					}
+				}
+			),
+			seedCollections: onHook(
+				['astro:config:setup', 'astro:config:done', 'astro:build:start', 'astro:server:setup'],
+				(options: SeedCollectionsOptions) => {
+					debug('Requesting collection seeding:', options);
+					if (state.contentPaths === undefined) {
+						collectionSeedBuffer.push(options);
+					} else {
+						seedCollections(state, options);
+					}
+				}
+			),
+		};
 
-						debug('Adding Git time Vite plugin');
-						addVitePlugin(params, {
-							plugin: params.command === 'dev' ? gitDevPlugin(state) : gitBuildPlugin(state),
-							warnDuplicated: true,
-						});
+		return {
+			name: '@inox-tools/content-utils',
+			hooks: {
+				'astro:config:setup': (params) => {
+					state.logger = params.logger;
+					registerGlobalHooks(params);
 
-						debug('Seeding collections from buffer');
-						for (const seedOptions of collectionSeedBuffer) {
-							seedCollections(state, seedOptions);
-						}
-					},
-					'astro:build:done': async () => {
-						await clearStaticCollections(state);
-						for (const cleanup of state.cleanups) {
-							await cleanup();
-						}
-					},
+					state.contentPaths = resolveContentPaths(params.config);
+					debug('Resolved content paths:', state.contentPaths);
+
+					if (!state.contentPaths.configExists) {
+						// Create the `<srcDir>/content/config.ts` file if it doesn't exist,
+						// otherwise there is no module to modify in the Vite lifecycle.
+
+						debug('Creating minimal content config file:', state.contentPaths.configPath);
+						mkdirSync(state.contentPaths.contentPath, { recursive: true });
+						writeFileSync(state.contentPaths.configPath, 'export const collections = {};');
+					}
+
+					debug('Adding content collection injector Vite plugin');
+					params.updateConfig({
+						vite: {
+							plugins: [injectorPlugin(state)],
+						},
+					});
+
+					debug('Adding Git time Vite plugin');
+					params.updateConfig({
+						vite: {
+							plugins: [params.command === 'dev' ? gitDevPlugin(state) : gitBuildPlugin(state)],
+						},
+					});
+
+					debug('Seeding collections from buffer');
+					for (const seedOptions of collectionSeedBuffer) {
+						seedCollections(state, seedOptions);
+					}
 				},
-				...api,
-			};
-		},
-	})
+				'astro:build:done': async () => {
+					await clearStaticCollections(state);
+					for (const cleanup of state.cleanups) {
+						await cleanup();
+					}
+				},
+			},
+			...api,
+		};
+	}
 );
 
 async function clearStaticCollections(state: IntegrationState) {

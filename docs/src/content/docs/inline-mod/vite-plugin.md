@@ -156,3 +156,40 @@ Can be imported as:
 ```js
 import { getValue } from 'virtual:your-plugin/config';
 ```
+
+## Examples
+
+### Inline middleware
+
+```ts
+// my-integration.ts
+import type { AstroIntegration } from 'astro';
+import { defineMiddleware } from 'astro/middleware';
+import inlineMod, { inlineModule } from '@inox-tools/inline-mod/vite';
+
+export default function myIntegration() {
+  return {
+    name: 'my-integration',
+    hooks: {
+      'astro:config:setup': (params) => {
+        params.updateConfig({
+          vite: {
+            plugins: [inlineMod()],
+          },
+        });
+        params.addMiddleware({
+          order: 'pre',
+          entrypoint: inlineModule({
+            constExports: {
+              onRequest: defineMiddleware((context, next) => {
+                // This runs in the Astro middleware
+                return next();
+              }),
+            },
+          }),
+        });
+      },
+    },
+  };
+}
+```

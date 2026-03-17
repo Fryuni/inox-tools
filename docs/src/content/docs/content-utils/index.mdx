@@ -139,23 +139,21 @@ Integrations can hook into the lifecycle of the content collections git times, t
 
 This hook is called on `astro build` once the collection entries tracked by Git are listed.
 
-```ts ins={3,10-12}
+```ts ins={3,9-11}
 // your-integration/index.ts
-import { defineIntegration } from 'astro-integration-kit';
+import type { AstroIntegration } from 'astro';
 import '@inox-tools/content-utils';
 
-export default defineIntegration({
-	name: 'your-integration',
-	setup() {
-		return {
-			hooks: {
-				'@it/content:git:listed': ({ trackedFiles, ignoreFiles, logger }) => {
-					// your code
-				},
+export default function yourIntegration(): AstroIntegration {
+	return {
+		name: 'your-integration',
+		hooks: {
+			'@it/content:git:listed': ({ trackedFiles, ignoreFiles, logger }) => {
+				// your code
 			},
-		};
-	},
-});
+		}
+	}
+};
 ```
 
 ##### `trackedFiles`
@@ -180,23 +178,21 @@ A callback to exclude files from tracking. Values that is not on [`trackedFiles`
 
 This hook is called twice for each tracked content collection entry, once for each git time that is resolved (oldest and latest).
 
-```ts ins={3,10-12}
+```ts ins={3,9-11}
 // your-integration/index.ts
-import { defineIntegration } from 'astro-integration-kit';
+import type { AstroIntegration } from 'astro';
 import '@inox-tools/content-utils';
 
-export default defineIntegration({
-	name: 'your-integration',
-	setup() {
-		return {
-			hooks: {
-				'@it/content:git:resolved': ({ age, file, resolvedDate, overrideDate, logger }) => {
-					// your code
-				},
+export default function yourIntegration(): AstroIntegration {
+	return {
+		name: 'your-integration',
+		hooks: {
+			'@it/content:git:resolved': ({ age, file, resolvedDate, overrideDate, logger }) => {
+				// your code
 			},
-		};
-	},
-});
+		}
+	}
+};
 ```
 
 ##### `age`

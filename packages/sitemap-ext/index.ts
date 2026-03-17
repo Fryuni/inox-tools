@@ -4,6 +4,7 @@ import {
 	hasIntegration,
 	withPlugins,
 } from 'astro-integration-kit';
+// TODO: remove
 import routeConfigPlugin from '@inox-tools/aik-route-config';
 import { AstroError } from 'astro/errors';
 import { type AstroIntegrationLogger, type RouteData } from 'astro';

@@ -23,10 +23,10 @@ export type ResolvedContentPaths = {
 };
 
 export function resolveContentPaths(config: AstroConfig): ResolvedContentPaths {
-	const contentPath = fileURLToPath(new URL('content', config.srcDir));
+	const contentPath = fileURLToPath(new URL('./content/', config.srcDir));
 
 	const validConfigPaths = possibleConfigs.map((configPath) =>
-		fileURLToPath(new URL(configPath, config.srcDir))
+		fileURLToPath(new URL(`./${configPath}`, config.srcDir))
 	);
 
 	const existingConfig = validConfigPaths.find((configPath) => existsSync(configPath));

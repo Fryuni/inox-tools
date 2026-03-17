@@ -34,7 +34,6 @@
     "test:dev": "vitest"
   },
   "dependencies": {
-    "astro-integration-kit": "catalog:",
     "debug": "catalog:"
   },
   "devDependencies": {

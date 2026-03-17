@@ -20,11 +20,13 @@ The project is mature and in active maintenance. Most packages are stable with e
 ## Milestones
 
 ### Completed
+
 - Full dependency upgrade (#263)
 - Utils API stabilization with auto-dependent computed atoms (#266)
 - Batching support for `resolvedAtom` (77b0b6b, pending release)
 
 ### Planned
+
 - Release pending changeset for utils batching feature
 - Ongoing: content-utils collision detection (3 TODOs in injector.ts)
 

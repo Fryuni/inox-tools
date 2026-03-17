@@ -1,5 +1,4 @@
-import { defineIntegration, addVitePlugin } from 'astro-integration-kit';
-import { z } from 'astro/zod';
+import type { AstroIntegration } from 'astro';
 import debugC from 'debug';
 
 const debug = debugC('inox-tools:astro-when');
@@ -10,60 +9,61 @@ const RESOLVED_MODULE_ID = `\x00${VIRTUAL_MODULE_ID}`;
 // Globally indicate to the virtual module that it is in the same context as the build system.
 const key = Symbol.for('astro:when/buildContext');
 
-export default defineIntegration({
-	name: '@inox-tools/astro-when',
-	optionsSchema: z.never().optional(),
-	setup: () => ({
+export default function astroWhen(): AstroIntegration {
+	return {
+		name: '@inox-tools/astro-when',
 		hooks: {
 			'astro:config:setup': (params) => {
-				const command = params.command;
-
-				(globalThis as any)[key] = command === 'build';
+				(globalThis as any)[key] = params.command === 'build';
 
 				debug('Adding Vite plugin');
-				addVitePlugin(params, {
-					plugin: {
-						name: '@inox-tools/astro-when',
-						resolveId(id) {
-							if (id === VIRTUAL_MODULE_ID) {
-								debug('Resolving virtual module ID');
-								return RESOLVED_MODULE_ID;
-							}
-						},
-						load(id, options) {
-							if (id !== RESOLVED_MODULE_ID) return;
+				params.updateConfig({
+					vite: {
+						plugins: [
+							{
+								name: '@inox-tools/astro-when',
+								resolveId(id) {
+									if (id === VIRTUAL_MODULE_ID) {
+										debug('Resolving virtual module ID');
+										return RESOLVED_MODULE_ID;
+									}
+								},
+								load(id, options) {
+									if (id !== RESOLVED_MODULE_ID) return;
 
-							const preamble = `
-              	export const When = {
-                	Client: 'client',
-                	Server: 'server',
-                	Prerender: 'prerender',
-                	StaticBuild: 'staticBuild',
-                	DevServer: 'devServer',
-              	};
-            	`;
+									const preamble = `
+										export const When = {
+											Client: 'client',
+											Server: 'server',
+											Prerender: 'prerender',
+											StaticBuild: 'staticBuild',
+											DevServer: 'devServer',
+										};
+									`;
 
-							if (options?.ssr !== true) {
-								debug('Generating module for client');
-								return `${preamble} export const whenAmI = When.Client;`;
-							}
+									if (options?.ssr !== true) {
+										debug('Generating module for client');
+										return `${preamble} export const whenAmI = When.Client;`;
+									}
 
-							if (command === 'dev') {
-								debug('Generating module for dev server');
-								return `${preamble} export const whenAmI = When.DevServer;`;
-							}
+									if (params.command === 'dev') {
+										debug('Generating module for dev server');
+										return `${preamble} export const whenAmI = When.DevServer;`;
+									}
 
-							if (!params.config.adapter) {
-								debug('Generating module for static build');
-								return `${preamble} export const whenAmI = When.StaticBuild;`;
-							}
+									if (!params.config.adapter) {
+										debug('Generating module for static build');
+										return `${preamble} export const whenAmI = When.StaticBuild;`;
+									}
 
-							debug('Generating module for live server');
-							return `${preamble}
-              const isBuildContext = Symbol.for('astro:when/buildContext');
-              export const whenAmI = globalThis[isBuildContext] ? When.Prerender : When.Server;
-            `;
-						},
+									debug('Generating module for live server');
+									return `${preamble}
+										const isBuildContext = Symbol.for('astro:when/buildContext');
+										export const whenAmI = globalThis[isBuildContext] ? When.Prerender : When.Server;
+									`;
+								},
+							},
+						],
 					},
 				});
 			},
@@ -81,5 +81,5 @@ export default defineIntegration({
 				delete (globalThis as any)[key];
 			},
 		},
-	}),
-});
+	};
+}

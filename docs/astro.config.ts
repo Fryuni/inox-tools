@@ -117,8 +117,8 @@ export default defineConfig({
 					collapsed: false,
 					items: [
 						{
-							label: 'Astro Integration Kit',
-							link: 'https://astro-integration-kit.netlify.app',
+							label: 'Astro Integration Template',
+							link: 'https://astro-integration-template.netlify.app',
 						},
 						{
 							label: 'Astro Tests',

@@ -83,7 +83,6 @@ T5 Wrappers:    aik-mod → inline-mod, sitemap-ext → aik-route-config
 
 ### Integration Pattern (ALL Astro integrations follow this)
 
-- Use `defineIntegration()` from `astro-integration-kit`
 - Virtual modules via `@it-astro:*` namespace with `virtual.d.ts` for types
 - Middleware via `src/runtime/middleware.ts` for request-scoped logic
 - Multi-plugin Vite chains for orthogonal concerns

@@ -8,9 +8,8 @@ import { getDebug } from './internal/log.js';
 
 const debug = getDebug('testAdapter');
 
-type EntryPoints = HookParameters<'astro:build:ssr'>['entryPoints'];
 type MiddlewareEntryPoint = HookParameters<'astro:build:ssr'>['middlewareEntryPoint'];
-type Routes = HookParameters<'astro:build:done'>['routes'];
+type Routes = HookParameters<'astro:routes:resolved'>['routes'];
 
 export type Options = {
 	/**
@@ -24,14 +23,6 @@ export type Options = {
 	 */
 	provideAddress?: boolean;
 
-	/**
-	 * Callback to collect the build entrypoints.
-	 *
-	 * The collected value is a map from `RouteData` describing a route
-	 * to the URL pointing to the file on disk that can be imported to
-	 * render that route.
-	 */
-	setEntryPoints?: (entryPoints: EntryPoints) => void;
 	/**
 	 * Callback to collect the middleware entrypoint.
 	 *
@@ -51,7 +42,6 @@ export default function (options: Options = {}): AstroIntegration {
 	const {
 		env,
 		provideAddress = true,
-		setEntryPoints,
 		setMiddlewareEntryPoint,
 		setRoutes,
 	} = options;
@@ -136,17 +126,13 @@ export default function (options: Options = {}): AstroIntegration {
 					},
 				});
 			},
-			'astro:build:ssr': ({ entryPoints, middlewareEntryPoint }) => {
-				if (setEntryPoints) {
-					debug('Collecting entry points');
-					setEntryPoints(entryPoints);
-				}
+			'astro:build:ssr': ({ middlewareEntryPoint }) => {
 				if (setMiddlewareEntryPoint) {
 					debug('Collecting middleware entry point');
 					setMiddlewareEntryPoint(middlewareEntryPoint);
 				}
 			},
-			'astro:build:done': ({ routes }) => {
+			'astro:routes:resolved': ({ routes }) => {
 				if (setRoutes) {
 					debug('Collecting routes');
 					setRoutes(routes);

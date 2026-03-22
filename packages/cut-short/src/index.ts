@@ -21,7 +21,7 @@ export default defineIntegration({
 		.object({
 			disableStreaming: z.boolean().default(false),
 		})
-		.default({}),
+		.prefault({}),
 	setup({ options }) {
 		const { prerenderStopMark } = ((globalThis as any)[Symbol.for('@it/cut-short')] = {
 			prerenderStopMark: randomUUID(),

@@ -6,6 +6,7 @@ import {
 	type BaseSchema,
 	type SchemaContext,
 } from 'astro:content';
+import type { ZodIntersection } from 'astro/zod';
 
 export type { BaseSchema };
 
@@ -18,7 +19,7 @@ export type ExtendedSchema<S extends BaseSchema, T extends BaseSchema | never = 
 ] extends [never]
 	? S
 	: T extends BaseSchema
-		? z.ZodIntersection<S, T>
+		? ZodIntersection<S, T>
 		: S;
 
 type CollectionConfig<S extends BaseSchema> = ReturnType<typeof defineNative<S>>;
@@ -70,7 +71,7 @@ export function defineCollection<S extends BaseSchema>(
 						? definedConfig.schema(context)
 						: definedConfig.schema;
 
-				return baseSchema === undefined ? userSchema : baseSchema.and(userSchema);
+				return baseSchema === undefined ? userSchema : z.intersection(baseSchema, userSchema);
 			},
 		} as ExtendedCollection<S, E>;
 

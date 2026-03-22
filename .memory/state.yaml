@@ -12,3 +12,9 @@ sessions:
   - file: "/home/fedora/.pi/agent/sessions/--data-dev-inox-tools--/2026-03-08T18-35-11-391Z_7240fccc-7b59-408b-84a2-dab8242ff9fd.jsonl"
     branch: main
     started: "2026-03-08T18:35:11.590Z"
+  - file: "/home/fedora/.pi/agent/sessions/--data-dev-inox-tools--/2026-03-22T23-12-02-127Z_3f2bc9e5-9eb1-4b50-8e4a-3b7ab171e641.jsonl"
+    branch: main
+    started: "2026-03-22T23:12:02.260Z"
+  - file: "/home/fedora/.pi/agent/sessions/--data-dev-inox-tools--/2026-03-22T23-12-13-509Z_c9502e3e-d2d0-497d-8a6e-dbd11ad36421.jsonl"
+    branch: main
+    started: "2026-03-22T23:12:13.531Z"

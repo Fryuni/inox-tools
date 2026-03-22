@@ -21,10 +21,7 @@ test('identify when the component is being used directly on a page', async ({ pa
 	const pageUrl = fixture.resolveUrl('/inline-component');
 	await page.goto(pageUrl);
 
-	// Astro.url in preview mode may not include the port
-	const astroUrl = new URL(pageUrl);
-	astroUrl.port = '';
-	const expectedAstroUrl = astroUrl.toString();
+	const expectedAstroUrl = pageUrl;
 
 	await expect(page.locator('css=#is-island')).toHaveText('false');
 	await expect(page.locator('css=#island-context-url')).toHaveText('');

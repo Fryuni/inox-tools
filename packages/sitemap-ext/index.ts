@@ -9,7 +9,7 @@ import { AstroError } from 'astro/errors';
 import { type AstroIntegrationLogger, type RouteData } from 'astro';
 import { z } from 'astro/zod';
 import * as path from 'node:path';
-import sitemap, { type SitemapOptions as _SitemapOptions } from '@astrojs/sitemap';
+import sitemap from '@astrojs/sitemap';
 import './virtual.d.ts';
 import { inspect } from 'node:util';
 
@@ -20,17 +20,7 @@ const baseSchema = z.object({
 	customPages: z.array(z.string()).optional(),
 });
 
-type SitemapOptions = Omit<NonNullable<_SitemapOptions>, keyof typeof baseSchema.shape | 'filter'>;
-
-const optionsSchema = baseSchema.passthrough().default({}) as unknown as z.ZodDefault<
-	z.ZodObject<
-		typeof baseSchema.shape,
-		'strip',
-		z.ZodTypeAny,
-		typeof baseSchema._output & SitemapOptions,
-		typeof baseSchema._input & SitemapOptions
-	>
->;
+const optionsSchema = baseSchema.passthrough().prefault({});
 
 export default defineIntegration({
 	name: '@inox-tools/sitemap-ext',
@@ -41,6 +31,18 @@ export default defineIntegration({
 			| { type: 'static'; path: string; comparePath: string; decision: boolean; static: boolean };
 
 		const inclusions: InclusionRule[] = [];
+
+		function generateRoutePath(
+			route: RouteData,
+			params: Record<string, string | undefined>
+		): string {
+			let path = route.route;
+			for (const [key, value] of Object.entries(params)) {
+				path = path.replace(`[...${key}]`, value ?? '').replace(`[${key}]`, value ?? '');
+			}
+			return path;
+		}
+
 		function makeDecision(
 			decision: boolean,
 			route: RouteData,
@@ -51,7 +53,7 @@ export default defineIntegration({
 					inclusions.push({ type: 'regex', regex: route.pattern, decision });
 				} else {
 					for (const routeParam of routeParams) {
-						const pathName = route.generate(routeParam);
+						const pathName = generateRoutePath(route, routeParam);
 
 						inclusions.push({
 							type: 'static',

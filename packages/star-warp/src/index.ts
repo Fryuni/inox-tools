@@ -18,7 +18,7 @@ const integration = defineIntegration({
 				})
 				.default({}),
 		})
-		.default({}),
+		.prefault({}),
 	setup({ name, options }) {
 		const config = {
 			env: 'dev',

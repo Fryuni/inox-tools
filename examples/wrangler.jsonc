@@ -1,0 +1,8 @@
+{
+  "main": "@astrojs/cloudflare/entrypoints/server",
+  "compatibility_flags": ["nodejs_compat"],
+  "compatibility_date": "2025-05-21",
+  "assets": {
+    "directory": "./dist/client"
+  }
+}

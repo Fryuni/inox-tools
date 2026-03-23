@@ -78,16 +78,8 @@ jobs:
       - name: Discard all git changes
         run: git restore .
 
-      - name: Create Cloudflare Pages Project
-        run: |-
-          pnpm dlx wrangler pages project create 'inox-tools-ex-${{ matrix.example }}' --production-branch main || true
-        working-directory: examples/${{ matrix.example }}
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-
-      - name: Publish to Cloudflare Pages
-        run: pnpm dlx wrangler pages deploy dist --project-name 'inox-tools-ex-${{ matrix.example }}' --branch '${{ github.head_ref }}'
+      - name: Deploy to Cloudflare Workers
+        run: pnpm dlx wrangler deploy
         working-directory: examples/${{ matrix.example }}
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-###########################################
-# Build an Astro Site to Cloudflare Pages #
-###########################################
+############################################
+# Build an Astro Site to Cloudflare Workers #
+############################################
 
 set -exo pipefail
 
@@ -17,10 +17,10 @@ if [ ! -d "$SCRIPT_DIR/$PROJECT_NAME" ]; then
 	exit 1
 fi
 
-cp "$SCRIPT_DIR/wrangler.toml" "$SCRIPT_DIR/$PROJECT_NAME/wrangler.toml"
-echo "name = \"inox-tools-ex-$PROJECT_NAME\"" >>"$SCRIPT_DIR/$PROJECT_NAME/wrangler.toml"
-
+cp "$SCRIPT_DIR/wrangler.jsonc" "$SCRIPT_DIR/$PROJECT_NAME/wrangler.jsonc"
+# Inject the project name into the wrangler config
 cd "$SCRIPT_DIR/$PROJECT_NAME"
+jq --arg name "inox-tools-ex-$PROJECT_NAME" '. + {name: $name}' wrangler.jsonc > wrangler.jsonc.tmp && mv wrangler.jsonc.tmp wrangler.jsonc
 
 # Check that the project is an Astro project
 if ! jq -e '.dependencies | has("astro")' package.json >/dev/null; then
@@ -28,7 +28,7 @@ if ! jq -e '.dependencies | has("astro")' package.json >/dev/null; then
 	exit 1
 fi
 
-# Configure the Astro project to deploy to Cloudflare Pages
+# Configure the Astro project to deploy to Cloudflare Workers
 pnpm astro add cloudflare --yes
 pnpm add @astrojs/cloudflare@latest
 

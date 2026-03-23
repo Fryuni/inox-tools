@@ -23,7 +23,7 @@ export type ResolvedContentPaths = {
 };
 
 export function resolveContentPaths(config: AstroConfig): ResolvedContentPaths {
-	const contentPath = fileURLToPath(new URL('./content/', config.srcDir));
+	const contentPath = new URL('./content/', config.srcDir);
 
 	const validConfigPaths = possibleConfigs.map((configPath) =>
 		fileURLToPath(new URL(`./${configPath}`, config.srcDir))
@@ -35,7 +35,7 @@ export function resolveContentPaths(config: AstroConfig): ResolvedContentPaths {
 
 	return {
 		projectRoot: fileURLToPath(config.root),
-		contentPath,
+		contentPath: fileURLToPath(contentPath),
 		configPath: configFile,
 		configExists: existingConfig !== undefined,
 		resolve: (path) => fileURLToPath(new URL(path, contentPath)),

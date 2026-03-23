@@ -10,7 +10,6 @@ The project is mature and in active maintenance. Most packages are stable with e
 
 ## Key Decisions Made
 
-- Astro Integration Kit (`defineIntegration()`) is the standard pattern for all integrations
 - Virtual modules use `@it-astro:*` namespace
 - Changesets for versioning; `pkg-pr-new` for preview releases
 - Sequential test execution (shared fixtures)

@@ -59,7 +59,7 @@ export default withApi((options: Options) => {
 
 ### `onHook`
 
-By default, accessing your API from any hook besides `astro:config:setup` using the AIK plugin will throw an error. This is because that is the only hook where nearly everything can be done in Astro's lifecycle.
+By default, accessing your API from any hook besides `astro:config:setup` will throw an error. This is because that is the only hook where nearly everything can be done in Astro's lifecycle.
 
 If you have an API that also works when called from other hooks, you can wrap them with `onHook` to declare which hooks are supported. For example, if you expose a method to register information that is only used on `astro:build:start` you can allow it to be used on any hook before that:
 

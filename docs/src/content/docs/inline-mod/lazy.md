@@ -14,7 +14,7 @@ In most cases, [`asyncFactory`](/inline-mod/factory-wrappers#asyncfactory) is a 
 Make sure your use case complies with all the [requirements](#requirements) laid out on this page.
 :::
 
-Sometimes you can only get a value after the module where it should be serialized to is created. When using the [AIK Plugin](/inline-mod/aik-plugin), for example, you can only define an inline module during the `astro:config:setup` hook, but you might want to serialize a value from other hooks.
+Sometimes you can only get a value after the module where it should be serialized to is created. When making an integration, for example, you can only define an inline module during the `astro:config:setup` hook, but you might want to serialize a value from other hooks.
 
 For such use cases, you can use the `lazyValue` utility to create a placeholder value that you can set later:
 

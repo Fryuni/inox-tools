@@ -36,7 +36,7 @@ const infos = await Promise.all(
 			{
 				infos.map(([entry, fileInfo]) => (
 					<li>
-						Entry "{entry.slug}" of collection "{entry.collection}":
+						Entry "{entry.id}" of collection "{entry.collection}":
 						<pre set:html={JSON.stringify(fileInfo, null, 2)} />
 					</li>
 				))

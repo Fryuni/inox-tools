@@ -1,10 +1,8 @@
 {
-  "name": "@inox-tools/sitemap-ext",
-  "version": "0.8.0",
-  "description": "Higher level extension over Astro's official sitemap integration",
+  "name": "@inox-tools/route-config",
+  "version": "0.0.0",
+  "description": "",
   "keywords": [
-    "sitemap",
-    "seo",
     "astro-integration",
     "astro"
   ],
@@ -21,28 +19,31 @@
     }
   },
   "files": [
-    "README.md",
     "dist",
-    "index.ts",
-    "virtual.d.ts"
+    "src"
   ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
     "prepublish": "pnpm run build",
-    "test": "echo 'No tests'"
+    "test": "vitest run --coverage",
+    "test:dev": "vitest --coverage.enabled=true",
+    "validate": "tsc"
   },
   "dependencies": {
-    "@astrojs/sitemap": "catalog:",
-    "@inox-tools/route-config": "workspace:^",
-    "sitemap": "catalog:"
+    "@inox-tools/utils": "workspace:^",
+    "debug": "catalog:",
+    "recast": "catalog:",
+    "vite": "catalog:min"
   },
   "devDependencies": {
-    "@types/node": "catalog:",
-    "astro": "catalog:",
+    "@astrojs/compiler": "catalog:",
+    "@types/debug": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "ast-types": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:",
-    "vite": "catalog:"
+    "vitest": "catalog:"
   },
   "peerDependencies": {
     "astro": "catalog:lax"

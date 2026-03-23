@@ -12,13 +12,7 @@ export default defineConfig({
 	clean: true,
 	splitting: true,
 	minify: false,
-	external: [
-		'astro',
-		'@inox-tools/route-config',
-		'@astrojs/sitemap',
-		'./virtual.d.ts',
-		'vite',
-	],
+	external: ['astro', '@inox-tools/route-config', '@astrojs/sitemap', './virtual.d.ts', 'vite'],
 	treeshake: 'smallest',
 	tsconfig: 'tsconfig.json',
 });

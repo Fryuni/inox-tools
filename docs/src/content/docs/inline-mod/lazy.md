@@ -109,7 +109,7 @@ export default function myIntegration(): AstroIntegration {
         pagesDataLate.set(pages);
       },
     },
-  }
+  };
 }
 ```
 

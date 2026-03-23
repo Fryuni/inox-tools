@@ -12,12 +12,7 @@ export const plugin = (): Plugin => {
 		load(id, options = {}) {
 			if (id !== RESOLVED_MODULE_ID) return;
 
-			const source = options.ssr ? 'server.js' : 'client.js';
-			const importUrl = new URL(`./runtime/${source}`, import.meta.url);
-
-			return `
-export { shared } from ${JSON.stringify(importUrl)};
-        `.trim();
+			return `export { shared } from ${JSON.stringify(new URL(`./runtime/${options.ssr ? 'server' : 'client'}.js`, import.meta.url))};`;
 		},
 	};
 };

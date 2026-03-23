@@ -64,8 +64,9 @@ type MarkedIntegration = AstroIntegration & {
 	[versionMarker]: true;
 };
 
-// TODO: smaller type
-export const registerGlobalHooks = (params: HookParameters<'astro:config:setup'>) => {
+export const registerGlobalHooks = (
+	params: Pick<HookParameters<'astro:config:setup'>, 'logger' | 'config'>
+) => {
 	// Register immediately so hooks can be triggered from calls within the current hook
 	setGlobal(params.logger, params.config.integrations);
 

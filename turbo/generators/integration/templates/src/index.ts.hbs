@@ -1,11 +1,11 @@
-import { defineIntegration } from 'astro-integration-kit';
-import { z } from 'astro/zod';
+import type { AstroIntegration } from 'astro';
 import { debug } from './internal/debug.js';
 
-export default defineIntegration({
-  name: '@inox-tools/{{ dashCase name }}',
-  optionsSchema: z.never().optional(),
-  setup() {
-    // TODO: Implement this
-  },
-});
+export default function {{ name }}(): AstroIntegration {
+  return {
+    name: '@inox-tools/{{ dashCase name }}',
+    hooks: {
+      // TODO: Implement this
+    },
+  }
+}

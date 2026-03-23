@@ -36,8 +36,7 @@
     "test:dev": "vitest --coverage.enabled=true"
   },
   "dependencies": {
-    "@inox-tools/utils": "workspace:^",
-    "astro-integration-kit": "catalog:"
+    "@inox-tools/utils": "workspace:^"
   },
   "devDependencies": {
     "@types/node": "catalog:",

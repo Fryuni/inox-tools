@@ -1,6 +1,6 @@
 import { withApi, type IntegrationFromSetup } from '@inox-tools/modular-station';
 import type { AstroIntegration, AstroIntegrationLogger } from 'astro';
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from 'node:url';
 import { buildLoggerPlugin } from './buildLoggerPlugin.js';
 import { devLoggerPlugin } from './devLoggerPlugin.js';
 import { loggerInternalsPlugin } from './internalPlugin.js';

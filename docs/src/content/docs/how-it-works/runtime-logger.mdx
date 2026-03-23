@@ -7,8 +7,6 @@ packageName: '@inox-tools/runtime-logger'
 import Mermaid from '@/components/Mermaid.astro';
 import { Steps } from '@astrojs/starlight/components';
 
-TODO: update
-
 :::note
 This page is a deep dive into the implementation details and decisions of the Runtime Logger package. You should have read [what _is_ the package](/runtime-logger) before reading this page as it assumes that you already know what the package is for and how it can be used from a consumers perspective.
 :::
@@ -35,7 +33,7 @@ We'll go through each one of them in turn and the reasoning behind them.
 To achieve this, this package has:
 - An internal integration that is not exposed and defines an API using [Modular Station]
 - A public integration that is exposed for projects
-- An [AIK Utility] for integrations to use loggers on their own modules
+- A utility for integrations to use loggers on their own modules
 - A Vite plugin for the project integration
 - 2 Vite plugins for the internal integration during build
 - A Vite plugin for the internal integration during development
@@ -45,7 +43,7 @@ The structure of this package is as follows:
 <Mermaid
 	code={`
 flowchart TD
-    U[AIK Utility for integrations] -->|Uses| IIA
+    U[Utility for integrations] -->|Uses| IIA
     PI[Project Integration] -->|Uses| IIA(Internal Integration API)
     PI -->|Adds| PP(Project plugin)
 
@@ -226,7 +224,7 @@ export const buildLoggerPlugin = (loggers: Map<string, AstroIntegrationLogger>):
 
 Now that we have a way to both reconstruct and transfer loggers into runtime, we need a way to populate that `loggers` mapping that is stored in the global scope.
 
-To do this we wrap those plugins and the conditions for when to use which in an internal integration. This integration is not exported for consumers of the package. This integration exposes an inter-integration APIs using [Modular Station] which is then wrapped on an [AIK Utility] that is exported. The inter-integration API can't be used directly since the integration is not exported.
+To do this we wrap those plugins and the conditions for when to use which in an internal integration. This integration is not exported for consumers of the package. This integration exposes an inter-integration APIs using [Modular Station] which is then wrapped on a utility that is exported. The inter-integration API can't be used directly since the integration is not exported.
 
 <Steps>
 
@@ -237,9 +235,8 @@ To do this we wrap those plugins and the conditions for when to use which in an 
 
 </Steps>
 
-```ts title="src/index.ts" wrap {"1":8} {"2":9} {"3":15-31} {"4":35-37}
+```ts title="src/index.ts" wrap {"1":7} {"2":8} {"3":14-29} {"4":32-34}
 import { withApi } from '@inox-tools/modular-station';
-import { addVitePlugin, defineIntegration } from 'astro-integration-kit';
 import { buildLoggerPlugin } from './buildLoggerPlugin.js';
 import { loggerInternalsPlugin } from './internalPlugin.js';
 import { devLoggerPlugin } from './devLoggerPlugin.js';
@@ -254,19 +251,17 @@ import type { AstroIntegrationLogger } from 'astro';
 			'astro:config:setup': (params) => {
 				switch (params.command) {
 					case 'build': {
-						addVitePlugin(params, {
-							plugin: loggerInternalsPlugin,
-							warnDuplicated: true,
-						});
-						addVitePlugin(params, {
-							plugin: buildLoggerPlugin(loggers),
-							warnDuplicated: true,
+						params.updateConfig({
+							vite: {
+								plugins: [loggerInternalsPlugin, buildLoggerPlugin(loggers)],
+							},
 						});
 					}
 					case 'dev': {
-						addVitePlugin(params, {
-							plugin: devLoggerPlugin(loggers),
-							warnDuplicated: true,
+						params.updateConfig({
+							vite: {
+								plugins: [devLoggerPlugin(loggers)],
+							},
 						});
 					}
 				}
@@ -281,7 +276,7 @@ import type { AstroIntegrationLogger } from 'astro';
 
 <Steps>
 
-5. Define an AIK Utility for the `astro:config:setup` hook that receives a name;
+5. Define a utility for the `astro:config:setup` hook that receives a name;
 
     This `name` parameter is what will be used to import the logger, as seen on the [previous section](#transfering-logger-instances-during-build-and-dev).
 
@@ -293,25 +288,18 @@ import type { AstroIntegrationLogger } from 'astro';
 
 </Steps>
 
-```ts title="src/index.ts" wrap {"5":5-14} {"6":15} {"7":17}
-import { defineUtility } from 'astro-integration-kit';
-import { z } from 'astro/zod';
-import type { HookParameters } from 'astro';
+```ts title="src/index.ts" wrap {"5":4-7} {"6":8} {"7":10}
+import type { IntegrationFromSetup } from '@inox-tools/modular-station';
+import type { AstroIntegrationLogger } from 'astro';
 
- const schema = z
-	.object({
-		name: z.string(),
-	})
-	.strict();
-
-export const runtimeLogger = defineUtility('astro:config:setup')((
-	params: HookParameters<'astro:config:setup'>,
-	options: z.infer<typeof schema>
-) => {
+ export function runtimeLogger(
+	params: IntegrationFromSetup & { logger: AstroIntegrationLogger },
+	options: { name: string }
+) {
 	const api = internalIntegration.fromSetup(params);
 
 	api.addLogger(options.name, params.logger);
-});
+}
 ```
 
 With everything up to here, we have implemented the behavior available for integration authors described in the ["For integrations" section](/runtime-logger#for-integrations) of this package main page.
@@ -390,28 +378,31 @@ The last piece needed is the public integration that users can use on their proj
 
 </Steps>
 
-```ts title="src/index.ts" wrap {"1":5} {"2":10} {"3":13-15}
-import { addVitePlugin, defineIntegration } from 'astro-integration-kit';
+```ts title="src/index.ts" wrap {"1":5} {"2":10} {"3":15-17}
+import type { AstroIntegration } from 'astro';
 import { projectLoggerPlugin } from './projectLoggerPlugin.js';
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from 'node:url';
 
-export default defineIntegration({
-	name: '@inox-tools/runtime-logger',
-	setup: () => ({
+ export default function integration(): AstroIntegration {
+	return {
+		name: '@inox-tools/runtime-logger',
 		hooks: {
 			'astro:config:setup': async (params) => {
 				runtimeLogger(params, { name: '__project' });
 
-				addVitePlugin(params, {
-					plugin: projectLoggerPlugin(
-						fileURLToPath(params.config.srcDir)
-					),
-					warnDuplicated: true,
+				params.updateConfig({
+					vite: {
+						plugins: [
+							(await import('./projectLoggerPlugin.js')).projectLoggerPlugin(
+								fileURLToPath(params.config.srcDir)
+							),
+						],
+					},
 				});
 			},
 		},
-	}),
-});
+	};
+}
 ```
 
 That's it! We have implemented the behavior described in the ["For projects" section](/runtime-logger#for-projects) of this package main page.
@@ -421,7 +412,6 @@ This is the entire implementation of the Runtime Logger package. The source code
 
 [`AstroIntegrationLogger`]: https://docs.astro.build/en/reference/integrations-reference/#astrointegrationlogger
 [Modular Station]: /modular-station/api
-[AIK Utility]: https://astro-integration-kit.netlify.app/core/define-utility/
 [internal logger plugin]: https://github.com/Fryuni/inox-tools/blob/main/packages/runtime-logger/src/internalPlugin.ts
 [logger stub]: https://github.com/Fryuni/inox-tools/blob/main/packages/runtime-logger/template/loggerStub.mjs
 [dev logger plugin]: https://github.com/Fryuni/inox-tools/blob/main/packages/runtime-logger/src/devLoggerPlugin.ts

@@ -34,8 +34,7 @@
   },
   "dependencies": {
     "@astrojs/sitemap": "catalog:",
-    "@inox-tools/aik-route-config": "workspace:^",
-    "astro-integration-kit": "catalog:",
+    "@inox-tools/route-config": "workspace:^",
     "sitemap": "catalog:"
   },
   "devDependencies": {

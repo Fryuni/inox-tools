@@ -21,3 +21,5 @@ pnpm-lock.yaml
 flake.lock
 
 **/*.mdx
+
+.memory

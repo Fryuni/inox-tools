@@ -1,0 +1,51 @@
+{
+  "name": "@inox-tools/route-config",
+  "version": "0.0.0",
+  "description": "",
+  "keywords": [
+    "astro-integration",
+    "astro"
+  ],
+  "repository": {
+    "url": "https://github.com/Fryuni/inox-tools"
+  },
+  "license": "MIT",
+  "author": "Luiz Ferraz <luiz@lferraz.com>",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "prepublish": "pnpm run build",
+    "test": "vitest run --coverage",
+    "test:dev": "vitest --coverage.enabled=true",
+    "validate": "tsc"
+  },
+  "dependencies": {
+    "@inox-tools/utils": "workspace:^",
+    "debug": "catalog:",
+    "recast": "catalog:",
+    "vite": "catalog:min"
+  },
+  "devDependencies": {
+    "@astrojs/compiler": "catalog:",
+    "@types/debug": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "ast-types": "catalog:",
+    "tsup": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "astro": "catalog:lax"
+  }
+}

@@ -1,122 +1,117 @@
-import { defineIntegration, addVitePlugin, createResolver } from 'astro-integration-kit';
 import type { AstNode, TransformPluginContext } from 'rollup';
 import { walk, type Node as ETreeNode } from 'estree-walker';
 import MagicString, { type SourceMap } from 'magic-string';
-import { z } from 'astro/zod';
 import { debug } from './internal/debug.js';
 import { AstroError } from 'astro/errors';
 import { randomUUID } from 'node:crypto';
 import * as fs from 'node:fs/promises';
-import * as assert from 'node:assert';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import type { AstroIntegration } from 'astro';
 
 type ParseNode = ETreeNode & AstNode;
 
-const { resolve } = createResolver(import.meta.url);
+export default function cutShort({
+	disableStreaming = false,
+}: { disableStreaming?: boolean } = {}): AstroIntegration {
+	const { prerenderStopMark } = ((globalThis as any)[Symbol.for('@it/cut-short')] = {
+		prerenderStopMark: randomUUID(),
+	});
 
-export default defineIntegration({
-	name: '@inox-tools/cut-short',
-	optionsSchema: z
-		.object({
-			disableStreaming: z.boolean().default(false),
-		})
-		.default({}),
-	setup({ options }) {
-		const { prerenderStopMark } = ((globalThis as any)[Symbol.for('@it/cut-short')] = {
-			prerenderStopMark: randomUUID(),
-		});
+	return {
+		name: '@inox-tools/cut-short',
+		hooks: {
+			'astro:config:setup': (params) => {
+				params.addMiddleware({
+					entrypoint: new URL(
+						disableStreaming ? './runtime/holdMiddleware.js' : './runtime/middleware.js',
+						import.meta.url
+					),
+					order: 'post',
+				});
 
-		return {
-			hooks: {
-				'astro:config:setup': (params) => {
-					params.addMiddleware({
-						entrypoint: options.disableStreaming
-							? resolve('./runtime/holdMiddleware.js')
-							: resolve('./runtime/middleware.js'),
-						order: 'post',
-					});
-
-					addVitePlugin(params, {
-						warnDuplicated: true,
-						plugin: {
-							name: '@inox-tools/cut-short',
-							enforce: 'pre',
-							resolveId(source) {
-								if (source === '@it-astro:cut-short') {
-									return resolve('./runtime/entrypoint.js');
-								}
-							},
-							async transform(code, id, { ssr } = {}) {
-								if (!ssr) return;
-
-								const transformers: (Transformer | false)[] = [
-									options.disableStreaming && createComponentTransformer,
-								];
-
-								for (const transformer of transformers) {
-									if (!transformer) continue;
-									const result = transformer(this, code, id);
-									if (result) return result;
-								}
-
-								return;
-							},
-						},
-					});
-				},
-				'astro:config:done': (params) => {
-					// Check if the version of Astro being used has the `injectTypes` utility.
-					if (typeof params.injectTypes === 'function') {
-						debug('Injecting types in .astro structure');
-						params.injectTypes({
-							filename: 'types.d.ts',
-							content: "import '@inox-tools/cut-short';",
-						});
-					}
-				},
-				'astro:build:done': async ({ assets, logger }) => {
-					const pairs = Array.from(assets.entries());
-
-					const foldersToClean = new Set<string>();
-
-					await Promise.all(
-						pairs.map(async ([key, urls]) => {
-							for (const url of urls) {
-								try {
-									const fileContent = await fs.readFile(url, 'utf-8');
-									if (fileContent.trim() === prerenderStopMark) {
-										await fs.unlink(url);
-										assets.delete(key);
-										foldersToClean.add(path.dirname(fileURLToPath(url)));
+				params.updateConfig({
+					vite: {
+						plugins: [
+							{
+								name: '@inox-tools/cut-short',
+								enforce: 'pre',
+								resolveId(source) {
+									if (source === '@it-astro:cut-short') {
+										return fileURLToPath(new URL('./runtime/entrypoint.js', import.meta.url));
 									}
-								} catch (error) {
-									console.error(`Failed to process asset at ${url}:`, error);
-								}
-							}
-						})
-					);
+								},
+								async transform(code, id, { ssr } = {}) {
+									if (!ssr) return;
 
-					while (true) {
-						const { value: folder } = foldersToClean.values().next();
-						if (folder === undefined) break;
-						foldersToClean.delete(folder);
+									const transformers: (Transformer | false)[] = [
+										disableStreaming && createComponentTransformer,
+									];
 
-						try {
-							const children = await fs.readdir(folder, { encoding: null });
-							if (children.length === 0) {
-								await fs.rmdir(folder);
-								foldersToClean.add(path.dirname(folder));
-							}
-						} catch (error) {
-							logger.error(`Failed to clear empty directory ${folder}: ${error}`);
-						}
-					}
-				},
+									for (const transformer of transformers) {
+										if (!transformer) continue;
+										const result = transformer(this, code, id);
+										if (result) return result;
+									}
+
+									return;
+								},
+							},
+						],
+					},
+				});
 			},
-		};
-	},
-});
+			'astro:config:done': (params) => {
+				// Check if the version of Astro being used has the `injectTypes` utility.
+				if (typeof params.injectTypes === 'function') {
+					debug('Injecting types in .astro structure');
+					params.injectTypes({
+						filename: 'types.d.ts',
+						content: "import '@inox-tools/cut-short';",
+					});
+				}
+			},
+			'astro:build:done': async ({ assets, logger }) => {
+				const pairs = Array.from(assets.entries());
+
+				const foldersToClean = new Set<string>();
+
+				await Promise.all(
+					pairs.map(async ([key, urls]) => {
+						for (const url of urls) {
+							try {
+								const fileContent = await fs.readFile(url, 'utf-8');
+								if (fileContent.trim() === prerenderStopMark) {
+									await fs.unlink(url);
+									assets.delete(key);
+									foldersToClean.add(path.dirname(fileURLToPath(url)));
+								}
+							} catch (error) {
+								console.error(`Failed to process asset at ${url}:`, error);
+							}
+						}
+					})
+				);
+
+				while (true) {
+					const { value: folder } = foldersToClean.values().next();
+					if (folder === undefined) break;
+					foldersToClean.delete(folder);
+
+					try {
+						const children = await fs.readdir(folder, { encoding: null });
+						if (children.length === 0) {
+							await fs.rmdir(folder);
+							foldersToClean.add(path.dirname(folder));
+						}
+					} catch (error) {
+						logger.error(`Failed to clear empty directory ${folder}: ${error}`);
+					}
+				}
+			},
+		},
+	};
+}
 
 type Transformer = (
 	ctx: TransformPluginContext,
@@ -155,7 +150,7 @@ const createComponentTransformer: Transformer = (ctx, code, id) => {
 			ms.prependLeft(
 				node.start,
 				[
-					`import {wrapCreateComponent as $$createComponent} from ${JSON.stringify(resolve('./runtime/nestedComponentWrapper.js'))};`,
+					`import {wrapCreateComponent as $$createComponent} from ${JSON.stringify(fileURLToPath(new URL('./runtime/nestedComponentWrapper.js', import.meta.url)))};`,
 					'const createComponent = $$createComponent(',
 				].join('\n')
 			);

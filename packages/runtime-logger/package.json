@@ -34,8 +34,7 @@
   },
   "dependencies": {
     "@inox-tools/modular-station": "workspace:^",
-    "@inox-tools/utils": "workspace:^",
-    "astro-integration-kit": "catalog:"
+    "@inox-tools/utils": "workspace:^"
   },
   "devDependencies": {
     "@types/node": "catalog:",

@@ -1,205 +1,181 @@
-import {
-	defineIntegration,
-	addIntegration,
-	hasIntegration,
-	withPlugins,
-} from 'astro-integration-kit';
-import routeConfigPlugin from '@inox-tools/aik-route-config';
+import { defineRouteConfig } from '@inox-tools/route-config';
 import { AstroError } from 'astro/errors';
-import { type AstroIntegrationLogger, type RouteData } from 'astro';
-import { z } from 'astro/zod';
+import { type AstroIntegration, type AstroIntegrationLogger, type RouteData } from 'astro';
 import * as path from 'node:path';
-import sitemap, { type SitemapOptions as _SitemapOptions } from '@astrojs/sitemap';
+import sitemap, { type SitemapOptions } from '@astrojs/sitemap';
 import './virtual.d.ts';
 import { inspect } from 'node:util';
 
 process.setSourceMapsEnabled(true);
 
-const baseSchema = z.object({
-	includeByDefault: z.boolean().default(false),
-	customPages: z.array(z.string()).optional(),
-});
+interface Options extends Omit<NonNullable<SitemapOptions>, 'filter'> {
+	includeByDefault?: boolean;
+}
 
-type SitemapOptions = Omit<NonNullable<_SitemapOptions>, keyof typeof baseSchema.shape | 'filter'>;
+export default function sitemapExt({
+	includeByDefault = false,
+	customPages: _externalPages,
+	...options
+}: Options = {}): AstroIntegration {
+	type InclusionRule =
+		| { type: 'regex'; regex: RegExp; decision: boolean }
+		| { type: 'static'; path: string; comparePath: string; decision: boolean; static: boolean };
 
-const optionsSchema = baseSchema.passthrough().default({}) as unknown as z.ZodDefault<
-	z.ZodObject<
-		typeof baseSchema.shape,
-		'strip',
-		z.ZodTypeAny,
-		typeof baseSchema._output & SitemapOptions,
-		typeof baseSchema._input & SitemapOptions
-	>
->;
-
-export default defineIntegration({
-	name: '@inox-tools/sitemap-ext',
-	optionsSchema,
-	setup: ({ name, options: { includeByDefault, customPages: _externalPages, ...options } }) => {
-		type InclusionRule =
-			| { type: 'regex'; regex: RegExp; decision: boolean }
-			| { type: 'static'; path: string; comparePath: string; decision: boolean; static: boolean };
-
-		const inclusions: InclusionRule[] = [];
-		function makeDecision(
-			decision: boolean,
-			route: RouteData,
-			routeParams: Record<string, string | undefined>[] = []
-		) {
-			if (route.pathname === undefined) {
-				if (routeParams.length === 0) {
-					inclusions.push({ type: 'regex', regex: route.pattern, decision });
-				} else {
-					for (const routeParam of routeParams) {
-						const pathName = route.generate(routeParam);
-
-						inclusions.push({
-							type: 'static',
-							path: pathName,
-							comparePath: onlyLeadingSlash(pathName),
-							decision,
-							static: false,
-						});
-					}
-				}
+	const inclusions: InclusionRule[] = [];
+	function makeDecision(
+		decision: boolean,
+		route: RouteData,
+		routeParams: Record<string, string | undefined>[] = []
+	) {
+		if (route.pathname === undefined) {
+			if (routeParams.length === 0) {
+				inclusions.push({ type: 'regex', regex: route.pattern, decision });
 			} else {
-				inclusions.push({
-					type: 'static',
-					path: route.pathname,
-					comparePath: onlyLeadingSlash(route.pathname),
-					decision,
-					static: true,
-				});
+				for (const routeParam of routeParams) {
+					const pathName = route.generate(routeParam);
+
+					inclusions.push({
+						type: 'static',
+						path: pathName,
+						comparePath: onlyLeadingSlash(pathName),
+						decision,
+						static: false,
+					});
+				}
 			}
+		} else {
+			inclusions.push({
+				type: 'static',
+				path: route.pathname,
+				comparePath: onlyLeadingSlash(route.pathname),
+				decision,
+				static: true,
+			});
 		}
+	}
 
-		const extraPages: string[] = [...(_externalPages ?? [])];
+	const extraPages: string[] = [...(_externalPages ?? [])];
 
-		let trailingSlash = false;
-		let baseUrl!: URL;
-		let basePath!: string;
-		let logger!: AstroIntegrationLogger;
+	let trailingSlash = false;
+	let baseUrl!: URL;
+	let basePath!: string;
+	let logger!: AstroIntegrationLogger;
 
-		const innerIntegration = sitemap({
-			...options,
-			// This relies on an internal detail of the sitemap integration that the reference
-			// to the array is passed around without being copied.
-			customPages: extraPages,
-			filter: (page) => {
-				const url = new URL(page);
-				const route = onlyLeadingSlash(path.relative(basePath, url.pathname));
+	const innerIntegration = sitemap({
+		...options,
+		// This relies on an internal detail of the sitemap integration that the reference
+		// to the array is passed around without being copied.
+		customPages: extraPages,
+		filter: (page) => {
+			const url = new URL(page);
+			const route = onlyLeadingSlash(path.relative(basePath, url.pathname));
 
-				const ruling = inclusions.find(
-					(r) =>
-						(r.type === 'static' && r.comparePath === route) ||
-						(r.type === 'regex' && r.regex.test(route))
+			const ruling = inclusions.find(
+				(r) =>
+					(r.type === 'static' && r.comparePath === route) ||
+					(r.type === 'regex' && r.regex.test(route))
+			);
+
+			logger.debug(`Ruling for ${route}: ${inspect(ruling ?? includeByDefault)}`);
+
+			return ruling?.decision ?? includeByDefault;
+		},
+	});
+
+	return {
+		name: '@inox-tools/sitemap-ext',
+		hooks: {
+			...innerIntegration.hooks,
+			'astro:config:setup': async (params) => {
+				const { config } = params;
+				trailingSlash = config.trailingSlash !== 'never';
+				basePath = config.base ?? '';
+				basePath = new URL(config.base ?? '', config.site).pathname;
+				logger = params.logger;
+				baseUrl = new URL(config.base ?? '', config.site);
+
+				if (config.integrations.some((e) => e.name === '@astrojs/sitemap')) {
+					throw new AstroError(
+						'Cannot use both `@inox-tools/sitemap-ext` and `@astrojs/sitemap` integrations at the same time.',
+						'Remove the `@astrojs/sitemap` integration from your project to use `@inox-tools/sitemap-ext`.'
+					);
+				}
+
+				type ConfigCallback = (hooks: {
+					addToSitemap: (routeParams?: Record<string, string | undefined>[]) => void;
+					removeFromSitemap: (routeParams?: Record<string, string | undefined>[]) => void;
+					setSitemap: (
+						routeParams: Array<{ sitemap?: boolean; params: Record<string, string | undefined> }>
+					) => void;
+				}) => Promise<void> | void;
+
+				defineRouteConfig(params, {
+					importName: 'sitemap-ext:config',
+					callbackHandler: async (context, configCb: ConfigCallback | boolean) => {
+						const hooks: Parameters<ConfigCallback>[0] = {
+							removeFromSitemap(routeParams) {
+								for (const route of context.routeData) {
+									makeDecision(false, route, routeParams);
+								}
+							},
+							addToSitemap(routeParams) {
+								for (const route of context.routeData) {
+									makeDecision(true, route, routeParams);
+								}
+							},
+							setSitemap(routeOptions) {
+								for (const route of context.routeData) {
+									for (const { sitemap: decision, params: routeParams } of routeOptions) {
+										makeDecision(decision ?? includeByDefault, route, [routeParams]);
+									}
+								}
+							},
+						};
+
+						logger.debug('Running sitemap config callback:' + inspect({ context, configCb }));
+						if (typeof configCb === 'boolean') {
+							if (configCb) {
+								hooks.addToSitemap();
+							} else {
+								hooks.removeFromSitemap();
+							}
+						} else {
+							await configCb(hooks);
+						}
+					},
+				});
+
+				// Add dummy integration so other integrations can detect that sitemap is present.
+				params.updateConfig({
+					integrations: [{ name: innerIntegration.name, hooks: {} }],
+				});
+
+				await innerIntegration.hooks['astro:config:setup']?.(params);
+			},
+			'astro:build:done': async (params) => {
+				const extraPagesSet = new Set<string>(
+					inclusions
+						.filter(
+							(i): i is InclusionRule & { type: 'static' } =>
+								i.type === 'static' && i.decision && !i.static
+						)
+						.map((i) => trimSlashes(i.path))
 				);
 
-				logger.debug(`Ruling for ${route}: ${inspect(ruling ?? includeByDefault)}`);
+				for (const page of params.pages) {
+					extraPagesSet.delete(trimSlashes(page.pathname));
+				}
 
-				return ruling?.decision ?? includeByDefault;
+				for (const page of extraPagesSet) {
+					const url = trimSlashes(new URL(page, baseUrl).toString());
+					extraPages.push(trailingSlash ? url + '/' : url);
+				}
+
+				await innerIntegration.hooks['astro:build:done']?.(params);
 			},
-		});
-
-		return withPlugins({
-			name,
-			plugins: [routeConfigPlugin],
-			hooks: {
-				...innerIntegration.hooks,
-				'astro:config:setup': async (params) => {
-					const { defineRouteConfig, config } = params;
-					trailingSlash = config.trailingSlash !== 'never';
-					basePath = config.base ?? '';
-					basePath = new URL(config.base ?? '', config.site).pathname;
-					logger = params.logger;
-					baseUrl = new URL(config.base ?? '', config.site);
-
-					if (hasIntegration(params, { name: '@astrojs/sitemap' })) {
-						throw new AstroError(
-							'Cannot use both `@inox-tools/sitemap-ext` and `@astrojs/sitemap` integrations at the same time.',
-							'Remove the `@astrojs/sitemap` integration from your project to use `@inox-tools/sitemap-ext`.'
-						);
-					}
-
-					type ConfigCallback = (hooks: {
-						addToSitemap: (routeParams?: Record<string, string | undefined>[]) => void;
-						removeFromSitemap: (routeParams?: Record<string, string | undefined>[]) => void;
-						setSitemap: (
-							routeParams: Array<{ sitemap?: boolean; params: Record<string, string | undefined> }>
-						) => void;
-					}) => Promise<void> | void;
-
-					defineRouteConfig({
-						importName: 'sitemap-ext:config',
-						callbackHandler: async (context, configCb: ConfigCallback | boolean) => {
-							const hooks: Parameters<ConfigCallback>[0] = {
-								removeFromSitemap(routeParams) {
-									for (const route of context.routeData) {
-										makeDecision(false, route, routeParams);
-									}
-								},
-								addToSitemap(routeParams) {
-									for (const route of context.routeData) {
-										makeDecision(true, route, routeParams);
-									}
-								},
-								setSitemap(routeOptions) {
-									for (const route of context.routeData) {
-										for (const { sitemap: decision, params: routeParams } of routeOptions) {
-											makeDecision(decision ?? includeByDefault, route, [routeParams]);
-										}
-									}
-								},
-							};
-
-							logger.debug('Running sitemap config callback:' + inspect({ context, configCb }));
-							if (typeof configCb === 'boolean') {
-								if (configCb) {
-									hooks.addToSitemap();
-								} else {
-									hooks.removeFromSitemap();
-								}
-							} else {
-								await configCb(hooks);
-							}
-						},
-					});
-
-					// Add dummy integration so other integrations can detect that sitemap is present.
-					addIntegration(params, {
-						integration: {
-							name: innerIntegration.name,
-							hooks: {},
-						},
-					});
-
-					await innerIntegration.hooks['astro:config:setup']?.(params);
-				},
-				'astro:build:done': async (params) => {
-					const extraPagesSet = new Set<string>(
-						inclusions
-							.filter(
-								(i): i is InclusionRule & { type: 'static' } =>
-									i.type === 'static' && i.decision && !i.static
-							)
-							.map((i) => trimSlashes(i.path))
-					);
-
-					for (const page of params.pages) {
-						extraPagesSet.delete(trimSlashes(page.pathname));
-					}
-
-					for (const page of extraPagesSet) {
-						const url = trimSlashes(new URL(page, baseUrl).toString());
-						extraPages.push(trailingSlash ? url + '/' : url);
-					}
-
-					await innerIntegration.hooks['astro:build:done']?.(params);
-				},
-			},
-		});
-	},
-});
+		},
+	};
+}
 
 function trimSlashes(input: string): string {
 	return input.replace(/^\/+|\/+$/g, '');

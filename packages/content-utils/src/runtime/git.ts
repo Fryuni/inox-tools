@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { sep, resolve, relative } from 'node:path';
+import { resolve, relative } from 'node:path';
 import { hooks } from '@inox-tools/modular-station/hooks';
 import { getDebug } from '../internal/debug.js';
 import type { GitTrackingInfo } from '@it-astro:content/git';

@@ -1,5 +1,4 @@
 import type { AstroConfig } from 'astro';
-import { createResolver } from 'astro-integration-kit';
 import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
@@ -20,17 +19,14 @@ export type ResolvedContentPaths = {
 	contentPath: string;
 	configPath: string;
 	configExists: boolean;
-	resolve: ReturnType<typeof createResolver>['resolve'];
+	resolve: (path: string) => string;
 };
 
 export function resolveContentPaths(config: AstroConfig): ResolvedContentPaths {
-	const baseResolver = createResolver(fileURLToPath(config.srcDir));
-
-	const contentPath = baseResolver.resolve('content');
-	const resolver = createResolver(contentPath);
+	const contentPath = new URL('./content/', config.srcDir);
 
 	const validConfigPaths = possibleConfigs.map((configPath) =>
-		baseResolver.resolve(`${configPath}`)
+		fileURLToPath(new URL(`./${configPath}`, config.srcDir))
 	);
 
 	const existingConfig = validConfigPaths.find((configPath) => existsSync(configPath));
@@ -39,9 +35,9 @@ export function resolveContentPaths(config: AstroConfig): ResolvedContentPaths {
 
 	return {
 		projectRoot: fileURLToPath(config.root),
-		contentPath,
+		contentPath: fileURLToPath(contentPath),
 		configPath: configFile,
 		configExists: existingConfig !== undefined,
-		resolve: resolver.resolve,
+		resolve: (path) => fileURLToPath(new URL(path, contentPath)),
 	};
 }

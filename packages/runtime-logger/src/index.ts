@@ -19,6 +19,7 @@ const internalIntegration = withApi(() => {
 								plugins: [loggerInternalsPlugin, buildLoggerPlugin(loggers)],
 							},
 						});
+						break;
 					}
 					case 'dev': {
 						params.updateConfig({
@@ -26,6 +27,7 @@ const internalIntegration = withApi(() => {
 								plugins: [devLoggerPlugin(loggers)],
 							},
 						});
+						break;
 					}
 				}
 			},

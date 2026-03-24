@@ -1,4 +1,4 @@
-import { definePlugin, addVitePlugin } from 'astro-integration-kit';
+import { definePlugin } from 'astro-integration-kit';
 import { hoistGlobalPlugin } from './hoistGlobalPlugin.js';
 import { integrate, convertContext } from './contextResolution.js';
 import type { ConfigContext, InnerContext } from './contextResolution.js';
@@ -47,12 +47,15 @@ export default definePlugin({
 
 					globalHandlers.set(options.importName, innerHandler);
 
-					addVitePlugin(params, {
-						plugin: hoistGlobalPlugin({
-							configImport: options.importName,
-							logger,
-						}),
-						warnDuplicated: true,
+					params.updateConfig({
+						vite: {
+							plugins: [
+								hoistGlobalPlugin({
+									configImport: options.importName,
+									logger,
+								}),
+							],
+						},
 					});
 				},
 			}),

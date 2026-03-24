@@ -235,7 +235,7 @@ To do this we wrap those plugins and the conditions for when to use which in an 
 
 </Steps>
 
-```ts title="src/index.ts" wrap {"1":7} {"2":8} {"3":14-29} {"4":32-34}
+```ts title="src/index.ts" wrap {"1":7} {"2":8} {"3":14-31} {"4":34-36}
 import { withApi } from '@inox-tools/modular-station';
 import { buildLoggerPlugin } from './buildLoggerPlugin.js';
 import { loggerInternalsPlugin } from './internalPlugin.js';
@@ -256,6 +256,7 @@ import type { AstroIntegrationLogger } from 'astro';
 								plugins: [loggerInternalsPlugin, buildLoggerPlugin(loggers)],
 							},
 						});
+						break;
 					}
 					case 'dev': {
 						params.updateConfig({
@@ -263,6 +264,7 @@ import type { AstroIntegrationLogger } from 'astro';
 								plugins: [devLoggerPlugin(loggers)],
 							},
 						});
+						break;
 					}
 				}
 			},

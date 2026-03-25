@@ -105,7 +105,9 @@ const integration = defineIntegration({
 					for (let i = 0; i < results.length; i++) {
 						const result = results[i]!;
 						if (result.status === 'rejected') {
-							debug(`Failed to import SSR component: ${ssrComponents[i]!} ${inspect(result.reason)}`);
+							debug(
+								`Failed to import SSR component: ${ssrComponents[i]!} ${inspect(result.reason)}`
+							);
 						}
 					}
 				},

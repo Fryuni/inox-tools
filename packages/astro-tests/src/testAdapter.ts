@@ -39,12 +39,7 @@ export type Options = {
 export default function (options: Options = {}): AstroIntegration {
 	debug('New test adapter created', options);
 
-	const {
-		env,
-		provideAddress = true,
-		setMiddlewareEntryPoint,
-		setRoutes,
-	} = options;
+	const { env, provideAddress = true, setMiddlewareEntryPoint, setRoutes } = options;
 
 	return {
 		name: debug.name,

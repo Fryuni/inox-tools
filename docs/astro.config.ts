@@ -174,5 +174,4 @@ export default defineConfig({
 		'/content-utils/git-time': '/content-utils',
 		'/modular-station': '/modular-station/api',
 	},
-
 });

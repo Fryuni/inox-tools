@@ -1257,9 +1257,6 @@ importers:
       astro-integration-kit:
         specifier: ~0.20.0
         version: 0.20.0(astro@6.0.8(patch_hash=34ac88963a271f59948954a697fdf4850409d163faae6f020d77c206005cacc4)(@types/node@25.3.3)(@vercel/functions@3.4.3)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(rollup@4.59.0)(terser@5.44.1)(typescript@5.9.3)(yaml@2.8.2))
-      content-type:
-        specifier: 'catalog:'
-        version: 1.0.5
       devalue:
         specifier: 'catalog:'
         version: 5.6.4
@@ -1279,6 +1276,9 @@ importers:
       astro:
         specifier: ^6.0.8
         version: 6.0.8(patch_hash=34ac88963a271f59948954a697fdf4850409d163faae6f020d77c206005cacc4)(@types/node@25.3.3)(@vercel/functions@3.4.3)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(rollup@4.59.0)(terser@5.44.1)(typescript@5.9.3)(yaml@2.8.2)
+      content-type:
+        specifier: 'catalog:'
+        version: 1.0.5
       jest-extended:
         specifier: 'catalog:'
         version: 7.0.0(typescript@5.9.3)

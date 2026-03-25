@@ -21,7 +21,7 @@ export default defineConfig({
 	clean: true,
 	splitting: false,
 	minify: true,
-	external: [...dependencies, './virtual.d.ts'],
+	external: [...dependencies, './virtual.d.ts', /^@it-astro:/],
 	noExternal: devDependencies,
 	treeshake: 'smallest',
 	tsconfig: 'tsconfig.json',

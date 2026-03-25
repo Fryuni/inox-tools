@@ -20,7 +20,7 @@ export default defineConfig({
 	clean: true,
 	splitting: false,
 	minify: false,
-	external: [...dependencies, 'vite', './virtual.d.ts'],
+	external: [...dependencies, 'vite', './virtual.d.ts', /^@it-astro:/],
 	noExternal: devDependencies,
 	treeshake: 'smallest',
 	tsconfig: 'tsconfig.json',

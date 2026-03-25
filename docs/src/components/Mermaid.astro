@@ -1,35 +1,77 @@
 ---
-import { deflate } from 'pako';
-import { fromUint8Array } from 'js-base64';
-import { Image } from 'astro:assets';
-
 export interface Props {
 	code: string;
 	alt?: string;
 }
 
-function imgUrlFor(config: any): string {
-	const encodedState = new TextEncoder().encode(
-		JSON.stringify({
-			mermaid: JSON.stringify(config),
-			code: Astro.props.code,
-		})
-	);
-	const compressed = deflate(encodedState, { level: 9 });
-	const encoded = fromUint8Array(compressed, true);
-	return `https://mermaid.ink/img/pako:${encoded}?type=webp`;
-}
+const { code, alt = 'Mermaid Diagram' } = Astro.props;
+const id = `mermaid-${Math.random().toString(36).slice(2, 10)}`;
 ---
 
-<Image
-	class:list={['light:sl-hidden']}
-	alt={Astro.props.alt || 'Mermaid Diagram'}
-	src={imgUrlFor({ theme: 'dark' })}
-	inferSize
-/>
-<Image
-	class:list={['dark:sl-hidden']}
-	alt={Astro.props.alt || 'Mermaid Diagram'}
-	src={imgUrlFor({ theme: 'default' })}
-	inferSize
-/>
+<div class="mermaid-container" data-mermaid-id={id}>
+	<pre class="mermaid" id={id} aria-label={alt}>{code}</pre>
+</div>
+
+<script>
+	import mermaid from 'mermaid';
+
+	function getTheme(): 'dark' | 'default' {
+		return document.documentElement.dataset.theme === 'dark' ? 'dark' : 'default';
+	}
+
+	async function renderAll() {
+		mermaid.initialize({
+			startOnLoad: false,
+			theme: getTheme(),
+		});
+
+		const containers = document.querySelectorAll<HTMLDivElement>('.mermaid-container');
+		for (const container of containers) {
+			const pre = container.querySelector<HTMLPreElement>('pre.mermaid');
+			if (!pre) continue;
+
+			const id = pre.id;
+			const code = pre.textContent ?? '';
+
+			// Clear previous render
+			pre.removeAttribute('data-processed');
+			pre.textContent = code;
+
+			try {
+				const { svg } = await mermaid.render(`${id}-svg`, code);
+				pre.innerHTML = svg;
+			} catch {
+				// Leave the raw code visible on error
+			}
+		}
+	}
+
+	// Initial render
+	renderAll();
+
+	// Re-render on theme change (Starlight toggles data-theme on <html>)
+	const observer = new MutationObserver((mutations) => {
+		for (const m of mutations) {
+			if (m.attributeName === 'data-theme') {
+				renderAll();
+				break;
+			}
+		}
+	});
+	observer.observe(document.documentElement, { attributes: true });
+</script>
+
+<style>
+	.mermaid-container {
+		display: flex;
+		justify-content: center;
+		margin: 1rem 0;
+	}
+
+	.mermaid-container pre.mermaid {
+		background: transparent;
+		border: none;
+		padding: 0;
+		text-align: center;
+	}
+</style>

@@ -27,9 +27,7 @@
   },
   "devDependencies": {
     "@astrojs/check": "catalog:",
-    "@types/pako": "catalog:",
-    "js-base64": "catalog:",
-    "pako": "catalog:",
+    "mermaid": "catalog:",
     "typescript": "catalog:"
   }
 }

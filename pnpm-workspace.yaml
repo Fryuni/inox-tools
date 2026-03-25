@@ -36,7 +36,7 @@ catalog:
   '@types/lodash': ^4.17.24
   '@types/mdast': ^4.0.4
   '@types/node': ^25.3.3
-  '@types/pako': ^2.0.4
+
   '@types/react': ^19.2.14
   '@types/react-dom': ^19.2.3
   '@types/unist': ^3.0.3
@@ -54,13 +54,13 @@ catalog:
   fast-glob: ^3.3.3
   husky: ^9.1.7
   jest-extended: ^7.0.0
-  js-base64: ^3.7.8
+
   lint-staged: ^16.3.1
   lodash: ^4.17.23
   magic-string: ^0.30.21
   mdast-util-from-markdown: ^2.0.3
   nanostores: ^1.1.1
-  pako: ^2.1.0
+  mermaid: ^11.13.0
   postcss: ^8.5.6
   preact: ^10.28.4
   prettier: ^3.8.1

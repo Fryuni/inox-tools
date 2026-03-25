@@ -36,7 +36,6 @@ catalog:
   '@types/lodash': ^4.17.24
   '@types/mdast': ^4.0.4
   '@types/node': ^25.3.3
-
   '@types/react': ^19.2.14
   '@types/react-dom': ^19.2.3
   '@types/unist': ^3.0.3
@@ -91,12 +90,12 @@ catalogMode: prefer
 
 catalogs:
   lax:
-    '@astrojs/starlight': ^0.31.1
-    astro: ^5 || ^6.0.0-0
+    '@astrojs/starlight': ^0.38.0
+    astro: ^6
   min:
-    astro: ^5 || ^6.0.0-0
-    astro-integration-kit: ^0.18 || ^0.19
-    vite: ^5 || ^6 || ^7
+    astro: ^6
+    astro-integration-kit: ^0.20
+    vite: ^7
 
 onlyBuiltDependencies:
   - core-js-pure

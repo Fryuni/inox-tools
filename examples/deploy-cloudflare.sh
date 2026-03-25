@@ -17,10 +17,10 @@ if [ ! -d "$SCRIPT_DIR/$PROJECT_NAME" ]; then
 	exit 1
 fi
 
-cp "$SCRIPT_DIR/wrangler.jsonc" "$SCRIPT_DIR/$PROJECT_NAME/wrangler.jsonc"
+cp "$SCRIPT_DIR/wrangler.json" "$SCRIPT_DIR/$PROJECT_NAME/wrangler.jsonc"
 # Inject the project name into the wrangler config
 cd "$SCRIPT_DIR/$PROJECT_NAME"
-jq --arg name "inox-tools-ex-$PROJECT_NAME" '. + {name: $name}' wrangler.jsonc > wrangler.jsonc.tmp && mv wrangler.jsonc.tmp wrangler.jsonc
+jq --arg name "inox-tools-ex-$PROJECT_NAME" '. + {name: $name}' wrangler.jsonc >wrangler.jsonc.tmp && mv wrangler.jsonc.tmp wrangler.jsonc
 
 # Check that the project is an Astro project
 if ! jq -e '.dependencies | has("astro")' package.json >/dev/null; then

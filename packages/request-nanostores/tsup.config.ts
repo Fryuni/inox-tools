@@ -12,7 +12,7 @@ export default defineConfig({
 	entry: ['src/**/*.ts'],
 	format: ['esm'],
 	target: 'node18',
-	bundle: false,
+	bundle: true,
 	dts: {
 		entry: ['src/index.ts'],
 		banner: '/// <reference path="../virtual.d.ts" />\n',

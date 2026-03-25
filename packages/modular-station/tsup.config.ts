@@ -14,7 +14,7 @@ export default defineConfig({
 	entry: ['src/**/*.ts'],
 	format: ['esm'],
 	target: 'node18',
-	bundle: false,
+	bundle: true,
 	dts: true,
 	sourcemap: true,
 	clean: true,

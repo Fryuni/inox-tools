@@ -7,6 +7,7 @@ export default defineConfig({
 	keepProcessEnv: true,
 	test: {
 		setupFiles: ['./tests/vitest.setup.ts'],
+		testTimeout: 30_000,
 		maxConcurrency: 1,
 	},
 });

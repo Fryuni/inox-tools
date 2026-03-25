@@ -8,6 +8,7 @@ const fixture = await loadFixture({
 let server: PreviewServer;
 
 test.beforeAll(async () => {
+	await fixture.clean();
 	await fixture.build({});
 	server = await fixture.preview({});
 });

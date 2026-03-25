@@ -66,6 +66,7 @@ blob-report/
 playwright/.cache/
 patching
 
+/.memory/state.yaml
 .memory/branches/*/log.md
 /.playwright-cli
 /.screenshots

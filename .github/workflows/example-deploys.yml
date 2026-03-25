@@ -33,7 +33,7 @@ jobs:
   cloudflare:
     name: 'Deploy "${{ matrix.example }}" to Cloudflare'
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 10
     strategy:
       matrix:
         example:
@@ -61,22 +61,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - uses: schnerring/cloudflare-pages-branch-alias-action@v1
-        id: pages-branch-alias
-        with:
-          # git-branch input
-          git-branch: ${{ github.head_ref }}
-
       - name: Build Packages
         run: pnpm -w build
 
-      - name: Build to Cloudflare
+      - name: Build for Cloudflare
         run: ./examples/deploy-cloudflare.sh ${{ matrix.example }}
         env:
-          DEPLOY_SITE: 'https://${{ steps.pages-branch-alias.outputs.branch-alias }}.inox-tools-ex-${{ matrix.example }}.pages.dev'
-
-      - name: Discard all git changes
-        run: git restore .
+          DEPLOY_SITE: 'https://inox-tools-ex-${{ matrix.example }}.workers.dev'
 
       - name: Deploy to Cloudflare Workers
         run: pnpm dlx wrangler deploy

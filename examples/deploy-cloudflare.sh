@@ -7,6 +7,7 @@
 set -exo pipefail
 
 PROJECT_NAME=$1
+WORKER_NAME="inox-tools-ex-$PROJECT_NAME"
 
 # Get the script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
@@ -17,10 +18,7 @@ if [ ! -d "$SCRIPT_DIR/$PROJECT_NAME" ]; then
 	exit 1
 fi
 
-cp "$SCRIPT_DIR/wrangler.json" "$SCRIPT_DIR/$PROJECT_NAME/wrangler.jsonc"
-# Inject the project name into the wrangler config
 cd "$SCRIPT_DIR/$PROJECT_NAME"
-jq --arg name "inox-tools-ex-$PROJECT_NAME" '. + {name: $name}' wrangler.jsonc >wrangler.jsonc.tmp && mv wrangler.jsonc.tmp wrangler.jsonc
 
 # Check that the project is an Astro project
 if ! jq -e '.dependencies | has("astro")' package.json >/dev/null; then
@@ -28,12 +26,17 @@ if ! jq -e '.dependencies | has("astro")' package.json >/dev/null; then
 	exit 1
 fi
 
+# Set a valid worker name in package.json before astro add (the Cloudflare
+# Vite plugin and astro add both read the name from package.json)
+jq --arg name "$WORKER_NAME" '.name = $name' package.json >package.json.tmp && mv package.json.tmp package.json
+
 # Configure the Astro project to deploy to Cloudflare Workers
 pnpm astro add cloudflare --yes
 pnpm add @astrojs/cloudflare@latest
 
+# Overwrite the generated wrangler config with our template
+cp "$SCRIPT_DIR/wrangler.json" wrangler.jsonc
+jq --arg name "$WORKER_NAME" '. + {name: $name}' wrangler.jsonc >wrangler.jsonc.tmp && mv wrangler.jsonc.tmp wrangler.jsonc
+
 # Build the project
 pnpm astro build
-
-# Restore the Astro project to its original state
-git restore package.json astro.config.*

@@ -70,3 +70,4 @@ patching
 .memory/branches/*/log.md
 /.playwright-cli
 /.screenshots
+.wrangler

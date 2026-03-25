@@ -67,3 +67,5 @@ playwright/.cache/
 patching
 
 .memory/branches/*/log.md
+/.playwright-cli
+/.screenshots

@@ -5,11 +5,10 @@ export interface Props {
 }
 
 const { code, alt = 'Mermaid Diagram' } = Astro.props;
-const id = `mermaid-${Math.random().toString(36).slice(2, 10)}`;
 ---
 
-<div class="mermaid-container" data-mermaid-id={id}>
-	<pre class="mermaid" id={id} aria-label={alt}>{code}</pre>
+<div class="mermaid-container">
+	<pre class="mermaid" data-mermaid-code aria-label={alt}>{code}</pre>
 </div>
 
 <script>
@@ -19,46 +18,63 @@ const id = `mermaid-${Math.random().toString(36).slice(2, 10)}`;
 		return document.documentElement.dataset.theme === 'dark' ? 'dark' : 'default';
 	}
 
+	let renderCounter = 0;
+
 	async function renderAll() {
 		mermaid.initialize({
 			startOnLoad: false,
 			theme: getTheme(),
 		});
 
-		const containers = document.querySelectorAll<HTMLDivElement>('.mermaid-container');
-		for (const container of containers) {
-			const pre = container.querySelector<HTMLPreElement>('pre.mermaid');
-			if (!pre) continue;
+		const pres = document.querySelectorAll<HTMLPreElement>('pre[data-mermaid-code]');
 
-			const id = pre.id;
-			const code = pre.textContent ?? '';
+		for (const pre of pres) {
+			// Store original code on first render
+			pre.dataset.mermaidSource ??= pre.textContent ?? '';
+			const code = pre.dataset.mermaidSource;
+			if (!code) continue;
 
-			// Clear previous render
-			pre.removeAttribute('data-processed');
-			pre.textContent = code;
+			const svgId = `mermaid-svg-${renderCounter++}`;
 
 			try {
-				const { svg } = await mermaid.render(`${id}-svg`, code);
+				// mermaid.render() inserts a temp SVG into the DOM; grab a reference before replacing innerHTML
+				const { svg } = await mermaid.render(svgId, code);
+				const tempSvg = document.getElementById(svgId);
+
 				pre.innerHTML = svg;
-			} catch {
-				// Leave the raw code visible on error
+				pre.classList.add('rendered');
+
+				// Remove the temp SVG that mermaid left in the DOM (not the one we just placed in pre).
+				// After innerHTML assignment, the SVG inside pre gets a new DOM node, so tempSvg
+				// still points to mermaid's original element if it was appended elsewhere (e.g. body).
+				if (tempSvg?.parentElement && tempSvg.parentElement !== pre) {
+					tempSvg.remove();
+				}
+			} catch (e) {
+				console.error('Mermaid render failed:', e);
 			}
 		}
 	}
 
-	// Initial render
-	renderAll();
+	function init() {
+		renderAll();
 
-	// Re-render on theme change (Starlight toggles data-theme on <html>)
-	const observer = new MutationObserver((mutations) => {
-		for (const m of mutations) {
-			if (m.attributeName === 'data-theme') {
-				renderAll();
-				break;
+		// Re-render on theme change (Starlight toggles data-theme on <html>)
+		new MutationObserver((mutations) => {
+			for (const m of mutations) {
+				if (m.attributeName === 'data-theme') {
+					renderAll();
+					return;
+				}
 			}
-		}
-	});
-	observer.observe(document.documentElement, { attributes: true });
+		}).observe(document.documentElement, { attributes: true });
+	}
+
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', init);
+	} else {
+		init();
+	}
 </script>
 
 <style>
@@ -68,7 +84,14 @@ const id = `mermaid-${Math.random().toString(36).slice(2, 10)}`;
 		margin: 1rem 0;
 	}
 
-	.mermaid-container pre.mermaid {
+	/* Hide raw code until mermaid renders */
+	pre[data-mermaid-code]:not(.rendered) {
+		visibility: hidden;
+		height: 0;
+		overflow: hidden;
+	}
+
+	pre[data-mermaid-code].rendered {
 		background: transparent;
 		border: none;
 		padding: 0;

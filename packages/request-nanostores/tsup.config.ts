@@ -19,7 +19,7 @@ export default defineConfig({
 	},
 	sourcemap: true,
 	clean: true,
-	splitting: false,
+	splitting: true,
 	minify: true,
 	external: [...dependencies, './virtual.d.ts', /^@it-astro:/],
 	noExternal: devDependencies,

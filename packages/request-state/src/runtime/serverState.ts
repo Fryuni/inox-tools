@@ -3,11 +3,7 @@ import { stringify } from 'devalue';
 
 type State = Map<string, unknown>;
 
-// Use a global symbol to ensure the AsyncLocalStorage instance is shared
-// across chunks when the module gets duplicated by the bundler.
-const STORE_KEY = Symbol.for('@inox-tools/request-state:store');
-const store: AsyncLocalStorage<State> =
-	(globalThis as any)[STORE_KEY] ?? ((globalThis as any)[STORE_KEY] = new AsyncLocalStorage());
+const store = new AsyncLocalStorage<State>();
 
 export const getState = (key: string, valueIfMissing?: unknown): unknown => {
 	const state = store.getStore();

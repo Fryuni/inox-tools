@@ -19,11 +19,14 @@ const { code, alt = 'Mermaid Diagram' } = Astro.props;
 	}
 
 	let renderCounter = 0;
+	let currentTheme: 'dark' | 'default' | undefined;
+	let isRendering = false;
+	let rerenderRequested = false;
 
-	async function renderAll() {
+	async function renderAll(theme: 'dark' | 'default') {
 		mermaid.initialize({
 			startOnLoad: false,
-			theme: getTheme(),
+			theme,
 		});
 
 		const pres = document.querySelectorAll<HTMLPreElement>('pre[data-mermaid-code]');
@@ -56,22 +59,49 @@ const { code, alt = 'Mermaid Diagram' } = Astro.props;
 		}
 	}
 
+	async function requestRender(theme = getTheme()) {
+		if (isRendering) {
+			rerenderRequested = true;
+			currentTheme = theme;
+			return;
+		}
+
+		isRendering = true;
+		currentTheme = theme;
+
+		try {
+			await renderAll(theme);
+		} finally {
+			isRendering = false;
+			if (rerenderRequested) {
+				rerenderRequested = false;
+				const nextTheme = getTheme();
+				if (nextTheme !== theme) {
+					await requestRender(nextTheme);
+				}
+			}
+		}
+	}
+
 	function init() {
-		renderAll();
+		void requestRender();
 
 		// Re-render on theme change (Starlight toggles data-theme on <html>)
 		new MutationObserver((mutations) => {
 			for (const m of mutations) {
-				if (m.attributeName === 'data-theme') {
-					renderAll();
-					return;
-				}
+				if (m.attributeName !== 'data-theme') continue;
+
+				const theme = getTheme();
+				if (theme === currentTheme) return;
+
+				void requestRender(theme);
+				return;
 			}
 		}).observe(document.documentElement, { attributes: true });
 	}
 
 	if (document.readyState === 'loading') {
-		document.addEventListener('DOMContentLoaded', init);
+		document.addEventListener('DOMContentLoaded', init, { once: true });
 	} else {
 		init();
 	}

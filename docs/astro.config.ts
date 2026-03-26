@@ -167,6 +167,12 @@ export default defineConfig({
 				access: 'public',
 				optional: false,
 			}),
+			KROKI_URL: envField.string({
+				context: 'server',
+				access: 'public',
+				optional: true,
+				default: 'https://kroki.io',
+			}),
 		},
 	},
 	redirects: {

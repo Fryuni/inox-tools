@@ -28,9 +28,6 @@
   },
   "devDependencies": {
     "@astrojs/check": "catalog:",
-    "@mermaid-js/mermaid-cli": "catalog:",
-    "@sparticuz/chromium": "catalog:",
-    "puppeteer-core": "catalog:",
     "typescript": "catalog:"
   }
 }

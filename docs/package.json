@@ -5,8 +5,7 @@
   "type": "module",
   "scripts": {
     "astro": "astro",
-    "build": "rm -rf .astro node_modules/.astro && pnpm install:browser && astro build",
-    "install:browser": "puppeteer browsers install chrome-headless-shell",
+    "build": "rm -rf .astro node_modules/.astro && astro build",
     "dev": "astro dev",
     "preview": "astro preview",
     "start": "astro dev",

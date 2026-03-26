@@ -171,7 +171,7 @@ export default defineConfig({
 				context: 'server',
 				access: 'public',
 				optional: true,
-				default: 'https://kroki.io',
+				default: 'https://kroki.vps1.fryuni.dev',
 			}),
 		},
 	},

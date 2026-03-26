@@ -1,111 +1,30 @@
 ---
+import { renderMermaidToSvg } from '../utils/mermaid';
+
 export interface Props {
 	code: string;
 	alt?: string;
 }
 
 const { code, alt = 'Mermaid Diagram' } = Astro.props;
+
+let lightSvg = '';
+let darkSvg = '';
+
+try {
+	[lightSvg, darkSvg] = await Promise.all([
+		renderMermaidToSvg(code, 'default'),
+		renderMermaidToSvg(code, 'dark'),
+	]);
+} catch (e) {
+	console.error('[Mermaid] Build-time render failed:', e);
+}
 ---
 
-<div class="mermaid-container">
-	<pre class="mermaid" data-mermaid-code aria-label={alt}>{code}</pre>
+<div class="mermaid-container" role="img" aria-label={alt}>
+	<div class="mermaid-light" set:html={lightSvg} />
+	<div class="mermaid-dark" set:html={darkSvg} />
 </div>
-
-<script>
-	import mermaid from 'mermaid';
-
-	function getTheme(): 'dark' | 'default' {
-		return document.documentElement.dataset.theme === 'dark' ? 'dark' : 'default';
-	}
-
-	let renderCounter = 0;
-	let currentTheme: 'dark' | 'default' | undefined;
-	let isRendering = false;
-	let rerenderRequested = false;
-
-	async function renderAll(theme: 'dark' | 'default') {
-		mermaid.initialize({
-			startOnLoad: false,
-			theme,
-		});
-
-		const pres = document.querySelectorAll<HTMLPreElement>('pre[data-mermaid-code]');
-
-		for (const pre of pres) {
-			// Store original code on first render
-			pre.dataset.mermaidSource ??= pre.textContent ?? '';
-			const code = pre.dataset.mermaidSource;
-			if (!code) continue;
-
-			const svgId = `mermaid-svg-${renderCounter++}`;
-
-			try {
-				// mermaid.render() inserts a temp SVG into the DOM; grab a reference before replacing innerHTML
-				const { svg } = await mermaid.render(svgId, code);
-				const tempSvg = document.getElementById(svgId);
-
-				pre.innerHTML = svg;
-				pre.classList.add('rendered');
-
-				// Remove the temp SVG that mermaid left in the DOM (not the one we just placed in pre).
-				// After innerHTML assignment, the SVG inside pre gets a new DOM node, so tempSvg
-				// still points to mermaid's original element if it was appended elsewhere (e.g. body).
-				if (tempSvg?.parentElement && tempSvg.parentElement !== pre) {
-					tempSvg.remove();
-				}
-			} catch (e) {
-				console.error('Mermaid render failed:', e);
-			}
-		}
-	}
-
-	async function requestRender(theme = getTheme()) {
-		if (isRendering) {
-			rerenderRequested = true;
-			currentTheme = theme;
-			return;
-		}
-
-		isRendering = true;
-		currentTheme = theme;
-
-		try {
-			await renderAll(theme);
-		} finally {
-			isRendering = false;
-			if (rerenderRequested) {
-				rerenderRequested = false;
-				const nextTheme = getTheme();
-				if (nextTheme !== theme) {
-					await requestRender(nextTheme);
-				}
-			}
-		}
-	}
-
-	function init() {
-		void requestRender();
-
-		// Re-render on theme change (Starlight toggles data-theme on <html>)
-		new MutationObserver((mutations) => {
-			for (const m of mutations) {
-				if (m.attributeName !== 'data-theme') continue;
-
-				const theme = getTheme();
-				if (theme === currentTheme) return;
-
-				void requestRender(theme);
-				return;
-			}
-		}).observe(document.documentElement, { attributes: true });
-	}
-
-	if (document.readyState === 'loading') {
-		document.addEventListener('DOMContentLoaded', init, { once: true });
-	} else {
-		init();
-	}
-</script>
 
 <style>
 	.mermaid-container {
@@ -114,17 +33,15 @@ const { code, alt = 'Mermaid Diagram' } = Astro.props;
 		margin: 1rem 0;
 	}
 
-	/* Hide raw code until mermaid renders */
-	pre[data-mermaid-code]:not(.rendered) {
-		visibility: hidden;
-		height: 0;
-		overflow: hidden;
+	.mermaid-dark {
+		display: none;
 	}
 
-	pre[data-mermaid-code].rendered {
-		background: transparent;
-		border: none;
-		padding: 0;
-		text-align: center;
+	:root[data-theme='dark'] .mermaid-light {
+		display: none;
+	}
+
+	:root[data-theme='dark'] .mermaid-dark {
+		display: block;
 	}
 </style>

@@ -35,7 +35,7 @@ pnpm astro add cloudflare --yes
 pnpm add @astrojs/cloudflare@latest
 
 # Overwrite the generated wrangler config with our template
-cp "$SCRIPT_DIR/wrangler.json" wrangler.jsonc
+cp "$SCRIPT_DIR/wrangler-template.json" wrangler.jsonc
 jq --arg name "$WORKER_NAME" '. + {name: $name}' wrangler.jsonc >wrangler.jsonc.tmp && mv wrangler.jsonc.tmp wrangler.jsonc
 
 # Build the project

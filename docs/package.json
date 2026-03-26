@@ -30,7 +30,8 @@
   "devDependencies": {
     "@astrojs/check": "catalog:",
     "@mermaid-js/mermaid-cli": "catalog:",
-    "puppeteer": "catalog:",
+    "@sparticuz/chromium": "catalog:",
+    "puppeteer-core": "catalog:",
     "typescript": "catalog:"
   }
 }

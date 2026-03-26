@@ -31,6 +31,7 @@ catalog:
   '@nanostores/preact': ^1.0.0
   '@orama/wc-components': ^0.8.1
   '@playwright/test': ^1.58.2
+  '@sparticuz/chromium': ^143.0.4
   '@turbo/gen': ^2.8.12
   '@types/content-type': ^1.1.9
   '@types/debug': ^4.1.12
@@ -66,6 +67,7 @@ catalog:
   prettier: ^3.8.1
   prettier-plugin-astro: ^0.14.1
   puppeteer: ^24.40.0
+  puppeteer-core: ^24.40.0
   react: ^19.2.4
   react-dom: ^19.2.4
   recast: ^0.23.11
@@ -109,9 +111,9 @@ onlyBuiltDependencies:
 overrides:
   '@orama/core': 0.1.11
   astro: 'catalog:'
-  puppeteer: 'catalog:'
   astro-integration-kit: 'catalog:'
   picomatch: 3.0.1
+  puppeteer: 'catalog:'
   vite: 'catalog:'
 
 patchedDependencies:

@@ -1,13 +1,15 @@
-import type { Browser } from 'puppeteer';
+import type { Browser } from 'puppeteer-core';
 
 let browserInstance: Browser | null = null;
 
 async function getBrowser(): Promise<Browser> {
 	if (!browserInstance || !browserInstance.connected) {
-		const puppeteer = await import('puppeteer');
-		browserInstance = await puppeteer.default.launch({
-			headless: 'shell',
-			args: ['--no-sandbox', '--disable-setuid-sandbox'],
+		const { default: chromium } = await import('@sparticuz/chromium');
+		const { default: puppeteer } = await import('puppeteer-core');
+		browserInstance = await puppeteer.launch({
+			executablePath: await chromium.executablePath(),
+			headless: true,
+			args: [...chromium.args, '--no-sandbox', '--disable-setuid-sandbox'],
 		});
 
 		// Close browser when the Node process exits

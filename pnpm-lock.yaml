@@ -72,6 +72,9 @@ catalogs:
     '@playwright/test':
       specifier: ^1.58.2
       version: 1.58.2
+    '@sparticuz/chromium':
+      specifier: ^143.0.4
+      version: 143.0.4
     '@turbo/gen':
       specifier: ^2.8.12
       version: 2.8.12
@@ -165,6 +168,9 @@ catalogs:
     prettier-plugin-astro:
       specifier: ^0.14.1
       version: 0.14.1
+    puppeteer-core:
+      specifier: ^24.40.0
+      version: 24.40.0
     react:
       specifier: ^19.2.4
       version: 19.2.4
@@ -326,9 +332,12 @@ importers:
       '@mermaid-js/mermaid-cli':
         specifier: 'catalog:'
         version: 11.12.0(@babel/core@7.29.0)(@babel/template@7.28.6)(@types/react@19.2.14)(puppeteer@24.40.0(typescript@5.9.3))(yaml@2.8.2)
-      puppeteer:
-        specifier: ^24.40.0
-        version: 24.40.0(typescript@5.9.3)
+      '@sparticuz/chromium':
+        specifier: 'catalog:'
+        version: 143.0.4
+      puppeteer-core:
+        specifier: 'catalog:'
+        version: 24.40.0
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
@@ -2973,6 +2982,10 @@ packages:
   '@sinclair/typebox@0.34.48':
     resolution: {integrity: sha512-kKJTNuK3AQOrgjjotVxMrCn1sUJwM76wMszfq1kdU4uYVJjvEWuFQ6HgvLt4Xz3fSmZlTOxJ/Ie13KnIcWQXFA==}
 
+  '@sparticuz/chromium@143.0.4':
+    resolution: {integrity: sha512-/6I7uQTRhRDD2/gGPQ1Gkf+Dqk0RYDACPJDZfSzz0OWk4JmUTonNHPXbrn6UIklOHlnDLf8xAAzkOZKB/cJpLA==}
+    engines: {node: '>=20.11.0'}
+
   '@standard-schema/spec@1.1.0':
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
 
@@ -4474,6 +4487,15 @@ packages:
   flattie@1.1.1:
     resolution: {integrity: sha512-9UbaD6XdAL97+k/n+N7JwX46K/M6Zc6KcFYskrYL8wbBV/Uyk0CTAMY0VT+qiK5PM7AIc9aTWYtq65U7T+aCNQ==}
     engines: {node: '>=8'}
+
+  follow-redirects@1.15.11:
+    resolution: {integrity: sha512-deG2P0JfjrTxl50XGCDyfI97ZGVCxIpfKYmfyrQ54n5FO/0gfIES8C/Psl6kWVDolizcaaxZJnTS0QSMxvnsBQ==}
+    engines: {node: '>=4.0'}
+    peerDependencies:
+      debug: '*'
+    peerDependenciesMeta:
+      debug:
+        optional: true
 
   fontace@0.4.1:
     resolution: {integrity: sha512-lDMvbAzSnHmbYMTEld5qdtvNH2/pWpICOqpean9IgC7vUbUJc3k+k5Dokp85CegamqQpFbXf0rAVkbzpyTA8aw==}
@@ -8658,6 +8680,16 @@ snapshots:
 
   '@sinclair/typebox@0.34.48': {}
 
+  '@sparticuz/chromium@143.0.4':
+    dependencies:
+      follow-redirects: 1.15.11
+      tar-fs: 3.1.2
+    transitivePeerDependencies:
+      - bare-abort-controller
+      - bare-buffer
+      - debug
+      - react-native-b4a
+
   '@standard-schema/spec@1.1.0': {}
 
   '@stencil/core@4.30.0':
@@ -10431,6 +10463,8 @@ snapshots:
   flatted@3.3.3: {}
 
   flattie@1.1.1: {}
+
+  follow-redirects@1.15.11: {}
 
   fontace@0.4.1:
     dependencies:

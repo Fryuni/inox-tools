@@ -6,6 +6,11 @@ async function getBrowser(): Promise<Browser> {
 	if (!browserInstance || !browserInstance.connected) {
 		const { default: chromium } = await import('@sparticuz/chromium');
 		const { default: puppeteer } = await import('puppeteer-core');
+
+		// Disable GPU libraries (libEGL.so, libGLESv2.so, etc.) — not needed for SVG rendering
+		// and avoids EACCES errors on serverless environments like Vercel.
+		chromium.setGraphicsMode = false;
+
 		browserInstance = await puppeteer.launch({
 			executablePath: await chromium.executablePath(),
 			headless: true,

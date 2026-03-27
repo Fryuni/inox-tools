@@ -1,5 +1,16 @@
 # @inox-tools/request-nanostores
 
+## 1.0.0
+
+### Major Changes
+
+- 8e64582: Bump Astro support to v6
+
+### Patch Changes
+
+- Updated dependencies [8e64582]
+  - @inox-tools/request-state@1.0.0
+
 ## 0.7.1
 
 ### Patch Changes

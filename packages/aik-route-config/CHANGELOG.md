@@ -1,5 +1,11 @@
 # @inox-tools/aik-route-config
 
+## 1.0.0
+
+### Major Changes
+
+- 8e64582: Bump Astro support to v6
+
 ## 0.12.1
 
 ### Patch Changes

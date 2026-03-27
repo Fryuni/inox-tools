@@ -1,5 +1,16 @@
 # @inox-tools/sitemap-ext
 
+## 0.9.0
+
+### Minor Changes
+
+- 8e64582: Bump Astro support to v6
+
+### Patch Changes
+
+- Updated dependencies [8e64582]
+  - @inox-tools/aik-route-config@1.0.0
+
 ## 0.8.0
 
 ### Minor Changes

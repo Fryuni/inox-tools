@@ -1,5 +1,11 @@
 # @inox-tools/modular-station
 
+## 0.9.0
+
+### Minor Changes
+
+- 8e64582: Bump Astro support to v6
+
 ## 0.8.1
 
 ### Patch Changes

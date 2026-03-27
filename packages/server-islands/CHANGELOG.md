@@ -1,5 +1,11 @@
 # @inox-tools/server-islands
 
+## 0.6.0
+
+### Minor Changes
+
+- 8e64582: Bump Astro support to v6
+
 ## 0.5.1
 
 ### Patch Changes

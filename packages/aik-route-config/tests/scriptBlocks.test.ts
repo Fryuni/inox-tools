@@ -67,7 +67,7 @@ test('ignore script blocks', async () => {
 		        \${$$maybeRenderHead($$result)}<h1>\${title}</h1>
 		        <p>\${t('home:description', { value: '9' })}</p>
 		        <span id="span"></span>
-		        
+		        \${$$renderScript($$result,"<stdin>?astro&type=script&index=0&lang.ts")}
 		    \`,})}\`;
 		}, '<stdin>', undefined);
 		export default $$stdin;

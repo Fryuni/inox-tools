@@ -1,35 +1,47 @@
 ---
-import { deflate } from 'pako';
-import { fromUint8Array } from 'js-base64';
-import { Image } from 'astro:assets';
+import { renderMermaidToSvg } from '../utils/mermaid';
 
 export interface Props {
 	code: string;
 	alt?: string;
 }
 
-function imgUrlFor(config: any): string {
-	const encodedState = new TextEncoder().encode(
-		JSON.stringify({
-			mermaid: JSON.stringify(config),
-			code: Astro.props.code,
-		})
-	);
-	const compressed = deflate(encodedState, { level: 9 });
-	const encoded = fromUint8Array(compressed, true);
-	return `https://mermaid.ink/img/pako:${encoded}?type=webp`;
+const { code, alt = 'Mermaid Diagram' } = Astro.props;
+
+let lightSvg = '';
+let darkSvg = '';
+
+try {
+	[lightSvg, darkSvg] = await Promise.all([
+		renderMermaidToSvg(code, 'default'),
+		renderMermaidToSvg(code, 'dark'),
+	]);
+} catch (e) {
+	console.error('[Mermaid] Build-time render failed:', e);
 }
 ---
 
-<Image
-	class:list={['light:sl-hidden']}
-	alt={Astro.props.alt || 'Mermaid Diagram'}
-	src={imgUrlFor({ theme: 'dark' })}
-	inferSize
-/>
-<Image
-	class:list={['dark:sl-hidden']}
-	alt={Astro.props.alt || 'Mermaid Diagram'}
-	src={imgUrlFor({ theme: 'default' })}
-	inferSize
-/>
+<div class="mermaid-container" role="img" aria-label={alt}>
+	<div class="mermaid-light" set:html={lightSvg} />
+	<div class="mermaid-dark" set:html={darkSvg} />
+</div>
+
+<style>
+	.mermaid-container {
+		display: flex;
+		justify-content: center;
+		margin: 1rem 0;
+	}
+
+	.mermaid-dark {
+		display: none;
+	}
+
+	:root[data-theme='dark'] .mermaid-light {
+		display: none;
+	}
+
+	:root[data-theme='dark'] .mermaid-dark {
+		display: block;
+	}
+</style>

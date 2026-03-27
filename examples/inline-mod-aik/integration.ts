@@ -9,7 +9,7 @@ export default defineIntegration({
 	name: 'custom-integration',
 	optionsSchema: z.object({
 		config: z.any().optional(),
-		locals: z.record(z.any()).optional(),
+		locals: z.record(z.string(), z.any()).optional(),
 		inlineMiddleware: z.custom<MiddlewareHandler>((val) => val instanceof Function).optional(),
 		inlineRoute: z.custom<APIRoute>((val) => val instanceof Function).optional(),
 	}),

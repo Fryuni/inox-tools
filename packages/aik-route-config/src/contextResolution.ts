@@ -85,11 +85,30 @@ const integration = defineIntegration({
 						.map((c) => componentToChunkMapping.get(c))
 						.filter((m) => !!m);
 
-					// Import SSR components so the hoisted logic gets executed
-					for (const module of ssrComponents) {
-						await import(/* @vite-ignore */ module!).catch((error) => {
-							logger.error(`Failed to import SSR component: ${module!} ${inspect(error)}`);
-						});
+					// Import SSR components so the hoisted logic gets executed.
+					// Temporarily suppress uncaught exceptions from SSR chunks that try
+					// to deserialize the manifest placeholder at module scope (Astro v6+).
+					const suppressedErrors: Error[] = [];
+					const suppressHandler = (err: Error) => {
+						suppressedErrors.push(err);
+					};
+					process.on('uncaughtException', suppressHandler);
+
+					const results = await Promise.allSettled(
+						ssrComponents.map((module) => import(/* @vite-ignore */ module!))
+					);
+
+					// Allow any pending microtasks to settle before removing handler
+					await new Promise((resolve) => setTimeout(resolve, 0));
+					process.removeListener('uncaughtException', suppressHandler);
+
+					for (let i = 0; i < results.length; i++) {
+						const result = results[i]!;
+						if (result.status === 'rejected') {
+							debug(
+								`Failed to import SSR component: ${ssrComponents[i]!} ${inspect(result.reason)}`
+							);
+						}
 					}
 				},
 			},

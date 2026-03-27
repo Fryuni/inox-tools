@@ -8,6 +8,7 @@ const fixture = await loadFixture({
 let server: PreviewServer;
 
 test.beforeAll(async () => {
+	await fixture.clean();
 	await fixture.build({});
 	server = await fixture.preview({});
 });
@@ -21,15 +22,11 @@ test('identify when the component is being used directly on a page', async ({ pa
 	const pageUrl = fixture.resolveUrl('/inline-component');
 	await page.goto(pageUrl);
 
-	// Astro.url in preview mode may not include the port
-	const astroUrl = new URL(pageUrl);
-	astroUrl.port = '';
-	const expectedAstroUrl = astroUrl.toString();
-
 	await expect(page.locator('css=#is-island')).toHaveText('false');
 	await expect(page.locator('css=#island-context-url')).toHaveText('');
-	await expect(page.locator('css=#astro-url')).toHaveText(expectedAstroUrl);
-	await expect(page.locator('css=#page-url')).toHaveText(expectedAstroUrl);
+	// Astro.url may use a different port than the preview proxy, so only check the pathname
+	await expect(page.locator('css=#astro-url')).toHaveText(/\/inline-component$/);
+	await expect(page.locator('css=#page-url')).toHaveText(/\/inline-component$/);
 });
 
 test('identify when the component is being used on a server island', async ({ page }) => {

@@ -34,7 +34,7 @@ export const integration = withApi(
 				staticOnlyCollections: z.array(z.string()).optional().default([]),
 			})
 			.optional()
-			.default({}),
+			.prefault({}),
 		setup: ({ options: { staticOnlyCollections } }) => {
 			debug('Generating empty state');
 			const state = emptyState();

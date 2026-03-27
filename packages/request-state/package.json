@@ -36,7 +36,6 @@
   "dependencies": {
     "@inox-tools/utils": "workspace:^",
     "astro-integration-kit": "catalog:",
-    "content-type": "catalog:",
     "devalue": "catalog:"
   },
   "devDependencies": {
@@ -45,6 +44,7 @@
     "@types/content-type": "catalog:",
     "@types/node": "catalog:",
     "astro": "catalog:",
+    "content-type": "catalog:",
     "jest-extended": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:",

@@ -1,5 +1,11 @@
 # @inox-tools/request-state
 
+## 1.0.0
+
+### Major Changes
+
+- 8e64582: Bump Astro support to v6
+
 ## 0.8.2
 
 ### Patch Changes

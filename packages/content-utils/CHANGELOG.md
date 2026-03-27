@@ -1,5 +1,16 @@
 # @inox-tools/content-utils
 
+## 0.14.0
+
+### Minor Changes
+
+- 8e64582: Bump Astro support to v6
+
+### Patch Changes
+
+- Updated dependencies [8e64582]
+  - @inox-tools/modular-station@0.9.0
+
 ## 0.13.1
 
 ### Patch Changes

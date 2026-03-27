@@ -1,5 +1,11 @@
 # @inox-tools/astro-when
 
+## 2.0.0
+
+### Major Changes
+
+- 8e64582: Bump Astro support to v6
+
 ## 1.4.0
 
 ### Minor Changes

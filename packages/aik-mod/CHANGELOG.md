@@ -1,5 +1,16 @@
 # @inox-tools/aik-mod
 
+## 0.14.0
+
+### Minor Changes
+
+- 8e64582: Bump Astro support to v6
+
+### Patch Changes
+
+- Updated dependencies [8e64582]
+  - @inox-tools/inline-mod@3.0.0
+
 ## 0.13.0
 
 ### Minor Changes

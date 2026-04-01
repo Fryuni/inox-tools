@@ -380,9 +380,8 @@ The last piece needed is the public integration that users can use on their proj
 
 </Steps>
 
-```ts title="src/index.ts" wrap {"1":5} {"2":10} {"3":15-17}
+```ts title="src/index.ts" wrap {"1":5} {"2":9} {"3":14-16}
 import type { AstroIntegration } from 'astro';
-import { projectLoggerPlugin } from './projectLoggerPlugin.js';
 import { fileURLToPath } from 'node:url';
 
  export default function integration(): AstroIntegration {

@@ -22,6 +22,15 @@ export default function sitemapExt({
 		| { type: 'static'; path: string; comparePath: string; decision: boolean; static: boolean };
 
 	const inclusions: InclusionRule[] = [];
+
+	function generateRoutePath(route: RouteData, params: Record<string, string | undefined>): string {
+		let path = route.route;
+		for (const [key, value] of Object.entries(params)) {
+			path = path.replace(`[...${key}]`, value ?? '').replace(`[${key}]`, value ?? '');
+		}
+		return path;
+	}
+
 	function makeDecision(
 		decision: boolean,
 		route: RouteData,
@@ -32,7 +41,7 @@ export default function sitemapExt({
 				inclusions.push({ type: 'regex', regex: route.pattern, decision });
 			} else {
 				for (const routeParam of routeParams) {
-					const pathName = route.generate(routeParam);
+					const pathName = generateRoutePath(route, routeParam);
 
 					inclusions.push({
 						type: 'static',

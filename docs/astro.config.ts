@@ -167,14 +167,17 @@ export default defineConfig({
 				access: 'public',
 				optional: false,
 			}),
+			KROKI_URL: envField.string({
+				context: 'server',
+				access: 'public',
+				optional: true,
+				default: 'https://kroki.vps1.fryuni.dev',
+			}),
 		},
 	},
 	redirects: {
 		'/content-utils/git': '/content-utils',
 		'/content-utils/git-time': '/content-utils',
 		'/modular-station': '/modular-station/api',
-	},
-	image: {
-		domains: ['mermaid.ink'],
 	},
 });

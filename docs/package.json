@@ -15,8 +15,9 @@
     "@astrojs/starlight": "catalog:",
     "@astrojs/vercel": "catalog:",
     "@croct/plug": "catalog:",
-    "@inox-tools/star-warp": "workspace:^",
-    "@inox-tools/utils": "workspace:^",
+    "@inox-tools/astro-when": "workspace:",
+    "@inox-tools/star-warp": "workspace:",
+    "@inox-tools/utils": "workspace:",
     "@orama/wc-components": "catalog:",
     "@vercel/analytics": "catalog:",
     "astro": "catalog:",
@@ -27,9 +28,6 @@
   },
   "devDependencies": {
     "@astrojs/check": "catalog:",
-    "@types/pako": "catalog:",
-    "js-base64": "catalog:",
-    "pako": "catalog:",
     "typescript": "catalog:"
   }
 }

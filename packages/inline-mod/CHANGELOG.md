@@ -1,5 +1,11 @@
 # @inox-tools/inline-mod
 
+## 3.0.0
+
+### Major Changes
+
+- 8e64582: Bump Astro support to v6
+
 ## 2.4.1
 
 ### Patch Changes

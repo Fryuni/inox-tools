@@ -20,6 +20,7 @@ injectedState.circular = injectedState;
 
 test.beforeAll(async () => {
 	delete process.env.INJECTED_STATE;
+	await fixture.clean();
 	await fixture.build({});
 });
 

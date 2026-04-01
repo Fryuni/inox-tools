@@ -1,5 +1,11 @@
 # @inox-tools/astro-tests
 
+## 1.0.0
+
+### Major Changes
+
+- 8e64582: Bump Astro support to v6
+
 ## 0.9.1
 
 ### Patch Changes

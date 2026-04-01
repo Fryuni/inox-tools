@@ -10,6 +10,7 @@
 **/.vercel
 
 # Directories
+.memory
 .github
 .changeset
 .wt

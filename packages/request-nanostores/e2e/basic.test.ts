@@ -9,6 +9,7 @@ let server: PreviewServer;
 
 test.beforeAll(async () => {
 	delete process.env.INJECTED_STATE;
+	await fixture.clean();
 	await fixture.build({});
 	process.env.INJECTED_STATE = JSON.stringify({
 		foo: 'bar',

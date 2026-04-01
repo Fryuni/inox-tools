@@ -1,6 +1,6 @@
 {
   "name": "@inox-tools/request-state",
-  "version": "0.8.2",
+  "version": "1.0.0",
   "description": "Shared request state between server and client",
   "keywords": [
     "astro-integration",
@@ -44,6 +44,7 @@
     "@types/content-type": "catalog:",
     "@types/node": "catalog:",
     "astro": "catalog:",
+    "content-type": "catalog:",
     "jest-extended": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:",

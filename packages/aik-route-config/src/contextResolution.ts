@@ -78,7 +78,7 @@ function integration(): AstroIntegration {
 					}
 				}
 			},
-			'astro:build:ssr': async ({ logger, manifest: { routes } }) => {
+			'astro:build:ssr': async ({ manifest: { routes } }) => {
 				const ssrComponents = routes
 					.map((r) => r.routeData)
 					.filter((r) => r.type === 'page')

@@ -1,111 +1,104 @@
-import {
-	defineIntegration,
-	addIntegration,
-	hasIntegration,
-	withPlugins,
-} from 'astro-integration-kit';
+import { addIntegration, hasIntegration, withPlugins } from 'astro-integration-kit';
 import routeConfigPlugin from '@inox-tools/aik-route-config';
 import { AstroError } from 'astro/errors';
-import { type AstroIntegrationLogger, type RouteData } from 'astro';
-import { z } from 'astro/zod';
+import { type AstroIntegration, type AstroIntegrationLogger, type RouteData } from 'astro';
 import * as path from 'node:path';
-import sitemap from '@astrojs/sitemap';
+import sitemap, { type SitemapOptions } from '@astrojs/sitemap';
 import './virtual.d.ts';
 import { inspect } from 'node:util';
 
 process.setSourceMapsEnabled(true);
 
-const baseSchema = z.object({
-	includeByDefault: z.boolean().default(false),
-	customPages: z.array(z.string()).optional(),
-});
+interface Options extends Omit<NonNullable<SitemapOptions>, 'filter'> {
+	includeByDefault?: boolean;
+}
 
-const optionsSchema = baseSchema.passthrough().prefault({});
+const name = '@inox-tools/sitemap-ext';
 
-export default defineIntegration({
-	name: '@inox-tools/sitemap-ext',
-	optionsSchema,
-	setup: ({ name, options: { includeByDefault, customPages: _externalPages, ...options } }) => {
-		type InclusionRule =
-			| { type: 'regex'; regex: RegExp; decision: boolean }
-			| { type: 'static'; path: string; comparePath: string; decision: boolean; static: boolean };
+export default function sitemapExt({
+	includeByDefault = false,
+	customPages: _externalPages,
+	...options
+}: Options = {}): AstroIntegration {
+	type InclusionRule =
+		| { type: 'regex'; regex: RegExp; decision: boolean }
+		| { type: 'static'; path: string; comparePath: string; decision: boolean; static: boolean };
 
-		const inclusions: InclusionRule[] = [];
+	const inclusions: InclusionRule[] = [];
 
-		function generateRoutePath(
-			route: RouteData,
-			params: Record<string, string | undefined>
-		): string {
-			let path = route.route;
-			for (const [key, value] of Object.entries(params)) {
-				path = path.replace(`[...${key}]`, value ?? '').replace(`[${key}]`, value ?? '');
-			}
-			return path;
+	function generateRoutePath(route: RouteData, params: Record<string, string | undefined>): string {
+		let path = route.route;
+		for (const [key, value] of Object.entries(params)) {
+			path = path.replace(`[...${key}]`, value ?? '').replace(`[${key}]`, value ?? '');
 		}
+		return path;
+	}
 
-		function makeDecision(
-			decision: boolean,
-			route: RouteData,
-			routeParams: Record<string, string | undefined>[] = []
-		) {
-			if (route.pathname === undefined) {
-				if (routeParams.length === 0) {
-					inclusions.push({ type: 'regex', regex: route.pattern, decision });
-				} else {
-					for (const routeParam of routeParams) {
-						const pathName = generateRoutePath(route, routeParam);
-
-						inclusions.push({
-							type: 'static',
-							path: pathName,
-							comparePath: onlyLeadingSlash(pathName),
-							decision,
-							static: false,
-						});
-					}
-				}
+	function makeDecision(
+		decision: boolean,
+		route: RouteData,
+		routeParams: Record<string, string | undefined>[] = []
+	) {
+		if (route.pathname === undefined) {
+			if (routeParams.length === 0) {
+				inclusions.push({ type: 'regex', regex: route.pattern, decision });
 			} else {
-				inclusions.push({
-					type: 'static',
-					path: route.pathname,
-					comparePath: onlyLeadingSlash(route.pathname),
-					decision,
-					static: true,
-				});
+				for (const routeParam of routeParams) {
+					const pathName = generateRoutePath(route, routeParam);
+
+					inclusions.push({
+						type: 'static',
+						path: pathName,
+						comparePath: onlyLeadingSlash(pathName),
+						decision,
+						static: false,
+					});
+				}
 			}
+		} else {
+			inclusions.push({
+				type: 'static',
+				path: route.pathname,
+				comparePath: onlyLeadingSlash(route.pathname),
+				decision,
+				static: true,
+			});
 		}
+	}
 
-		const extraPages: string[] = [...(_externalPages ?? [])];
+	const extraPages: string[] = [...(_externalPages ?? [])];
 
-		let trailingSlash = false;
-		let baseUrl!: URL;
-		let basePath!: string;
-		let logger!: AstroIntegrationLogger;
+	let trailingSlash = false;
+	let baseUrl!: URL;
+	let basePath!: string;
+	let logger!: AstroIntegrationLogger;
 
-		const innerIntegration = sitemap({
-			...options,
-			// This relies on an internal detail of the sitemap integration that the reference
-			// to the array is passed around without being copied.
-			customPages: extraPages,
-			filter: (page) => {
-				const url = new URL(page);
-				const route = onlyLeadingSlash(path.relative(basePath, url.pathname));
+	const innerIntegration = sitemap({
+		...options,
+		// This relies on an internal detail of the sitemap integration that the reference
+		// to the array is passed around without being copied.
+		customPages: extraPages,
+		filter: (page) => {
+			const url = new URL(page);
+			const route = onlyLeadingSlash(path.relative(basePath, url.pathname));
 
-				const ruling = inclusions.find(
-					(r) =>
-						(r.type === 'static' && r.comparePath === route) ||
-						(r.type === 'regex' && r.regex.test(route))
-				);
+			const ruling = inclusions.find(
+				(r) =>
+					(r.type === 'static' && r.comparePath === route) ||
+					(r.type === 'regex' && r.regex.test(route))
+			);
 
-				logger.debug(`Ruling for ${route}: ${inspect(ruling ?? includeByDefault)}`);
+			logger.debug(`Ruling for ${route}: ${inspect(ruling ?? includeByDefault)}`);
 
-				return ruling?.decision ?? includeByDefault;
-			},
-		});
+			return ruling?.decision ?? includeByDefault;
+		},
+	});
 
-		return withPlugins({
-			name,
+	return {
+		name,
+		...withPlugins({
 			plugins: [routeConfigPlugin],
+			name,
 			hooks: {
 				...innerIntegration.hooks,
 				'astro:config:setup': async (params) => {
@@ -199,9 +192,9 @@ export default defineIntegration({
 					await innerIntegration.hooks['astro:build:done']?.(params);
 				},
 			},
-		});
-	},
-});
+		}),
+	};
+}
 
 function trimSlashes(input: string): string {
 	return input.replace(/^\/+|\/+$/g, '');

@@ -1,5 +1,11 @@
 # @inox-tools/sitemap-ext
 
+## 0.9.1
+
+### Patch Changes
+
+- 4e209b6: Fixes the options type to correctly allow passing some `@astrojs/sitemap` options
+
 ## 0.9.0
 
 ### Minor Changes

@@ -87,7 +87,7 @@ catalog:
   wrangler: ^4.77.0
   zod: ^4.3.6
 
-catalogMode: prefer
+catalogMode: manual
 
 catalogs:
   lax:

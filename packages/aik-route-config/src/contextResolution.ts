@@ -29,7 +29,7 @@ const integration = defineIntegration({
 	name: '@inox-tools/aik-route-config/context-resolution',
 	setup: () => {
 		let root!: URL;
-		let ssrComponents!: string[];
+		let ssrComponents: string[];
 
 		return {
 			hooks: {
@@ -87,6 +87,10 @@ const integration = defineIntegration({
 						.filter((m) => m !== undefined);
 				},
 				'astro:build:generated': async ({ logger }) => {
+					if (!ssrComponents) {
+						return;
+					}
+
 					// Import SSR components so the hoisted logic gets executed
 					for (const module of ssrComponents) {
 						await import(/* @vite-ignore */ module!).catch((error) => {

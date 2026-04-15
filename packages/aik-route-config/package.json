@@ -28,8 +28,6 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "prepublish": "pnpm run build",
-    "test": "vitest run --coverage",
-    "test:dev": "vitest --coverage.enabled=true",
     "validate": "tsc"
   },
   "dependencies": {

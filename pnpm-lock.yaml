@@ -575,46 +575,22 @@ importers:
 
   packages/aik-route-config:
     dependencies:
-      '@inox-tools/utils':
+      '@inox-tools/route-config':
         specifier: workspace:^
-        version: link:../utils
+        version: link:../route-config
       astro:
         specifier: ^6.1.2
         version: 6.1.2(patch_hash=34ac88963a271f59948954a697fdf4850409d163faae6f020d77c206005cacc4)(@types/node@25.3.3)(@vercel/functions@3.4.3)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(rollup@4.59.0)(terser@5.44.1)(typescript@5.9.3)(yaml@2.8.3)
       astro-integration-kit:
         specifier: ~0.20.0
         version: 0.20.0(astro@6.1.2(patch_hash=34ac88963a271f59948954a697fdf4850409d163faae6f020d77c206005cacc4)(@types/node@25.3.3)(@vercel/functions@3.4.3)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(rollup@4.59.0)(terser@5.44.1)(typescript@5.9.3)(yaml@2.8.3))
-      debug:
-        specifier: 'catalog:'
-        version: 4.4.3
-      recast:
-        specifier: 'catalog:'
-        version: 0.23.11
-      vite:
-        specifier: ^7.3.1
-        version: 7.3.1(@types/node@25.3.3)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.3)
     devDependencies:
-      '@astrojs/compiler':
-        specifier: 'catalog:'
-        version: 3.0.1
-      '@types/debug':
-        specifier: 'catalog:'
-        version: 4.1.12
-      '@vitest/coverage-v8':
-        specifier: 'catalog:'
-        version: 4.0.18(vitest@4.0.18)
-      ast-types:
-        specifier: 'catalog:'
-        version: 0.14.2
       tsup:
         specifier: 'catalog:'
         version: 8.5.1(jiti@2.6.1)(postcss@8.5.8)(typescript@5.9.3)(yaml@2.8.3)
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
-      vitest:
-        specifier: 'catalog:'
-        version: 4.0.18(@types/node@25.3.3)(@vitest/ui@4.0.18)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.3)
 
   packages/astro-tests:
     dependencies:

@@ -8,7 +8,7 @@ type ConfigHandler<T> = (context: ConfigContext, value: T) => Promise<void> | vo
 
 type InnerHandler<T> = (context: InnerContext, value: T) => Promise<void>;
 
-type PerRouteConfigOptions<T> = {
+export type PerRouteConfigOptions<T> = {
 	importName: string;
 	callbackHandler: ConfigHandler<T>;
 };

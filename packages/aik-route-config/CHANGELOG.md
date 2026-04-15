@@ -1,5 +1,11 @@
 # @inox-tools/aik-route-config
 
+## 1.0.1
+
+### Patch Changes
+
+- fc6fc2c: Fixes a case where SSR components could not be imported, failing the build
+
 ## 1.0.0
 
 ### Major Changes

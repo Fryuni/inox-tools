@@ -31,9 +31,12 @@ export type { Props } from '@astrojs/starlight/props';
 			Object.assign(el, {
 				oramaCoreClientInstance: legacyCompatClient,
 				linksTarget: '_top',
-				// Chat on Orama Cloud uses a separate API surface in @orama/core v1 that the
-				// Stencil web components have not yet been updated for, so search-only for now.
-				disableChat: true,
+				// Leave `disableChat` unset: wc-components' OramaSearch render returns null
+				// unless both searchService AND chatService are initialized. Disabling chat
+				// prevents chatService from spinning up, which collapses the modal to a blank
+				// shell. Keep the chat surface online (users can still hit Ask AI) even though
+				// its answer-session backend in @orama/core v1 hasn't been wired to the
+				// Stencil components yet.
 				resultMap: {
 					title: 'title',
 					description: 'content',

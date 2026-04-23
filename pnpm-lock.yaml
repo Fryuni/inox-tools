@@ -63,6 +63,9 @@ catalogs:
     '@nanostores/preact':
       specifier: ^1.0.0
       version: 1.0.0
+    '@orama/core':
+      specifier: ^1.2.19
+      version: 1.2.19
     '@orama/wc-components':
       specifier: ^0.8.1
       version: 0.8.1
@@ -150,6 +153,9 @@ catalogs:
     nanostores:
       specifier: ^1.1.1
       version: 1.1.1
+    node-html-parser:
+      specifier: ^7.0.1
+      version: 7.1.0
     postcss:
       specifier: ^8.5.6
       version: 8.5.8
@@ -228,7 +234,6 @@ catalogs:
       version: 0.38.2
 
 overrides:
-  '@orama/core': 0.1.11
   astro: ^6.0.8
   astro-integration-kit: ~0.20.0
   picomatch: 3.0.1
@@ -294,6 +299,9 @@ importers:
       '@inox-tools/utils':
         specifier: 'workspace:'
         version: link:../packages/utils
+      '@orama/core':
+        specifier: 'catalog:'
+        version: 1.2.19
       '@orama/wc-components':
         specifier: 'catalog:'
         version: 0.8.1
@@ -319,6 +327,9 @@ importers:
       '@astrojs/check':
         specifier: 'catalog:'
         version: 0.9.7-beta.1(prettier-plugin-astro@0.14.1)(prettier@3.8.1)(typescript@5.9.3)
+      node-html-parser:
+        specifier: 'catalog:'
+        version: 7.1.0
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
@@ -2466,6 +2477,9 @@ packages:
   '@orama/core@0.1.11':
     resolution: {integrity: sha512-cxs2ZrPlL0qCO91ba1FkFg/CX569v6Pqbo0e7EEvRVObBSOI1N1PIYAQ7lTXBUN7mDjpqHvPgOJ0mUuvotSl+Q==}
 
+  '@orama/core@1.2.19':
+    resolution: {integrity: sha512-AVEI0eG/a1RUQK+tBloRMppQf46Ky4kIYKEVjo0V0VfIGZHdLOE2PJR4v949kFwiTnfSJCUaxgwM74FCA1uHUA==}
+
   '@orama/cuid2@2.2.3':
     resolution: {integrity: sha512-Lcak3chblMejdlSHgYU2lS2cdOhDpU6vkfIJH4m+YKvqQyLqs1bB8+w6NT1MG5bO12NUK2GFc34Mn2xshMIQ1g==}
 
@@ -2476,10 +2490,13 @@ packages:
     resolution: {integrity: sha512-a61ljmRVVyG5MC/698C8/FfFDw5a8LOIvyOLW5fztgUXqUpc1jOfQzOitSCbge657OgXXThmY3Tk8fpiDb4UcA==}
     engines: {node: '>= 20.0.0'}
 
+  '@orama/oramacore-events-parser@0.0.5':
+    resolution: {integrity: sha512-yAuSwog+HQBAXgZ60TNKEwu04y81/09mpbYBCmz1RCxnr4ObNY2JnPZI7HmALbjAhLJ8t5p+wc2JHRK93ubO4w==}
+
   '@orama/switch@3.1.18':
     resolution: {integrity: sha512-KjAHr/7qiteLWLE284EEA2ZPX9dI3kWi01Ws1paB/oYP1hGijDizqxLuXEC1TwTYvVE07eCMeqho1Ql/rFCasQ==}
     peerDependencies:
-      '@orama/core': 0.1.11
+      '@orama/core': ^0.0.10
       '@orama/orama': 3.1.18
       '@oramacloud/client': ^2.1.1
 
@@ -4654,6 +4671,9 @@ packages:
 
   node-html-parser@6.1.13:
     resolution: {integrity: sha512-qIsTMOY4C/dAa5Q5vsobRpOOvPfC4pB61UVW2uSwZNUp0QU/jCekTal1vMmbO0DgdHeLUJpv/ARmDqErVxA3Sg==}
+
+  node-html-parser@7.1.0:
+    resolution: {integrity: sha512-iJo8b2uYGT40Y8BTyy5ufL6IVbN8rbm/1QK2xffXU/1a/v3AAa0d1YAoqBNYqaS4R/HajkWIpIfdE6KcyFh1AQ==}
 
   node-mock-http@1.0.4:
     resolution: {integrity: sha512-8DY+kFsDkNXy1sJglUfuODx1/opAGJGyrTuFqEoN90oRc2Vk0ZbD4K2qmKXBBEhZQzdKHIVfEJpDU8Ak2NJEvQ==}
@@ -7118,6 +7138,11 @@ snapshots:
     transitivePeerDependencies:
       - babel-plugin-macros
 
+  '@orama/core@1.2.19':
+    dependencies:
+      '@orama/cuid2': 2.2.3
+      '@orama/oramacore-events-parser': 0.0.5
+
   '@orama/cuid2@2.2.3':
     dependencies:
       '@noble/hashes': 1.8.0
@@ -7125,6 +7150,8 @@ snapshots:
   '@orama/highlight@0.1.9': {}
 
   '@orama/orama@3.1.18': {}
+
+  '@orama/oramacore-events-parser@0.0.5': {}
 
   '@orama/switch@3.1.18(@orama/core@0.1.11)(@orama/orama@3.1.18)(@oramacloud/client@2.1.4)':
     dependencies:
@@ -9778,6 +9805,11 @@ snapshots:
   node-gyp-build@4.8.4: {}
 
   node-html-parser@6.1.13:
+    dependencies:
+      css-select: 5.2.2
+      he: 1.2.0
+
+  node-html-parser@7.1.0:
     dependencies:
       css-select: 5.2.2
       he: 1.2.0

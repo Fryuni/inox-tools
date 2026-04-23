@@ -11,29 +11,35 @@ export type { Props } from '@astrojs/starlight/props';
 
 <script>
 	import { defineCustomElements } from '@orama/wc-components/loader';
-	import { ORAMA_CLOUD_API_KEY, ORAMA_CLOUD_ENDPOINT } from 'astro:env/client';
+	import { CollectionManager } from '@orama/core';
+	import { ORAMA_CLOUD_API_KEY, ORAMA_CLOUD_PROJECT_ID } from 'astro:env/client';
+
+	const oramaCore = new CollectionManager({
+		collectionID: ORAMA_CLOUD_PROJECT_ID,
+		apiKey: ORAMA_CLOUD_API_KEY,
+	});
+
+	// `@orama/wc-components@0.8.1` ships types for `@orama/core@0.1.x`, but its
+	// runtime only duck-type checks (`constructor.name === 'CollectionManager'`)
+	// and delegates searches to `.search(query)`. Both are compatible with the
+	// 1.2.x client we use, so cast through `unknown` to silence the version skew.
+	const legacyCompatClient = oramaCore as unknown as NonNullable<HTMLOramaSearchBoxElement['oramaCoreClientInstance']>;
 
 	document
 		.querySelectorAll<HTMLOramaSearchBoxElement>('.orama-search-bar orama-search-box')
 		.forEach((el) => {
 			Object.assign(el, {
-				index: {
-					endpoint: ORAMA_CLOUD_ENDPOINT,
-					api_key: ORAMA_CLOUD_API_KEY,
-				},
+				oramaCoreClientInstance: legacyCompatClient,
 				linksTarget: '_top',
-				disableChat: false,
-				sourcesMap: {
-					title: 'title',
-					description: 'content',
-				},
+				// Chat on Orama Cloud uses a separate API surface in @orama/core v1 that the
+				// Stencil web components have not yet been updated for, so search-only for now.
+				disableChat: true,
 				resultMap: {
 					title: 'title',
 					description: 'content',
 					section: 'category',
 				},
 				searchPlaceholder: 'Search something...',
-				chatPlaceholder: 'What do you dream of doing with Inox Tools?',
 				suggestions: [
 					'What is Inox Tools?',
 					'How to use Nanostores on the server?',

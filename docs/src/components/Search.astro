@@ -52,16 +52,10 @@ export type { Props } from '@astrojs/starlight/props';
 				// Leave `disableChat` at its default: chat is wired via the
 				// `createAnswerSession` shim above, and `<orama-search>` returns `null`
 				// from its render unless both searchService and chatService are initialized.
-				resultMap: {
-					title: 'title',
-					description: 'content',
-					section: 'category',
-					// Each indexed document stores its route under `url`
-					// (see `docs/scripts/index-orama.mjs`). wc-components builds the
-					// anchor href from `result.path`, so map `path` onto `url` —
-					// otherwise every result renders as `<a href="#">`.
-					path: 'url',
-				},
+				// `resultMap` is intentionally *not* set here: the Stencil constructor on
+				// `<orama-search-box>` unconditionally runs `this.resultMap = {}` and would
+				// clobber any pre-hydration value. The real assignment happens below after
+				// `componentOnReady()`.
 				searchPlaceholder: 'Search something...',
 				suggestions: [
 					'What is Inox Tools?',
@@ -117,6 +111,34 @@ export type { Props } from '@astrojs/starlight/props';
 			.querySelectorAll<HTMLOramaSearchBoxElement>('.orama-search-bar orama-search-box')
 			.forEach(async (box) => {
 				await box.componentOnReady?.();
+
+				// wc-components' `SearchBox` constructor sets `this.resultMap = {}`
+				// unconditionally, wiping anything assigned before hydration. There is no
+				// `@Watch` on `resultMap` either, so `bootstrap()` only copies whatever is
+				// on the element at `componentWillLoad` into `searchStore.state.resultMap`.
+				// Assign both the element property and the live store after hydration so
+				// the next `parserResults()` call sees the mapping.
+				//
+				// Fields: wc-components expects the parsed result to carry `title`,
+				// `description`, `section`, and `path`; the indexer (see
+				// `docs/scripts/index-orama.mjs`) stores those under `title`, `content`,
+				// `category`, and `url` respectively. Without the `path ← url` mapping the
+				// anchor href falls back to `buildUrl('')` which returns `'#'`, so clicking
+				// a result did nothing.
+				const resultMap = {
+					title: 'title',
+					description: 'content',
+					section: 'category',
+					path: 'url',
+				};
+				box.resultMap = resultMap;
+				// `searchStore` is the Stencil store instance on the element; not part
+				// of the public typings, so reach through an `unknown` cast.
+				const boxInternals = box as unknown as {
+					searchStore?: { state: { resultMap: typeof resultMap } };
+				};
+				if (boxInternals.searchStore) boxInternals.searchStore.state.resultMap = resultMap;
+
 				if (!box.shadowRoot) return;
 				rewriteBrokenLogos(box.shadowRoot);
 				new MutationObserver(() => {

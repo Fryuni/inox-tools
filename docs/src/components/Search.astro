@@ -56,6 +56,11 @@ export type { Props } from '@astrojs/starlight/props';
 					title: 'title',
 					description: 'content',
 					section: 'category',
+					// Each indexed document stores its route under `url`
+					// (see `docs/scripts/index-orama.mjs`). wc-components builds the
+					// anchor href from `result.path`, so map `path` onto `url` —
+					// otherwise every result renders as `<a href="#">`.
+					path: 'url',
 				},
 				searchPlaceholder: 'Search something...',
 				suggestions: [

@@ -10,7 +10,8 @@ export type { Props } from '@astrojs/starlight/props';
 </div>
 
 <script>
-	import { defineCustomElements } from '@orama/wc-components/loader';
+	import { defineCustomElement as defineOramaSearchBox } from '@orama/wc-components/dist/components/orama-search-box.js';
+	import { defineCustomElement as defineOramaSearchButton } from '@orama/wc-components/dist/components/orama-search-button.js';
 	import { CollectionManager } from '@orama/core';
 	import { ORAMA_CLOUD_API_KEY, ORAMA_CLOUD_PROJECT_ID } from 'astro:env/client';
 
@@ -66,7 +67,17 @@ export type { Props } from '@astrojs/starlight/props';
 	const observer = new MutationObserver(updateSearchTheme);
 	observer.observe(document.documentElement, { attributes: true, subtree: false });
 
-	defineCustomElements();
+	// Using the `dist-custom-elements` output targets (one tag per module, each
+	// synchronously registering its dependencies) instead of `@orama/wc-components/loader`.
+	// The lazy loader bundles a Stencil runtime that uses a module-local `Host = {}`
+	// sentinel as the vnode tag marker. When Vite/Rollup re-bundles the lazily-loaded
+	// `*.entry.js` chunks, the sentinel's identity no longer matches the runtime's
+	// `isHost` check, so `createElementNS(ns, '[object Object]')` fires and every
+	// component ends up with an empty shadow DOM. Registering via the per-component
+	// `defineCustomElement` wires everything into a single module graph that Vite
+	// can bundle without breaking identity equality.
+	defineOramaSearchBox();
+	defineOramaSearchButton();
 
 	document.querySelectorAll('.orama-search-bar orama-search-button').forEach((el) => {
 		el.appendChild(document.createTextNode('Search'));

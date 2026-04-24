@@ -49,6 +49,22 @@ export type { Props } from '@astrojs/starlight/props';
 			Object.assign(el, {
 				oramaCoreClientInstance: legacyCompatClient,
 				linksTarget: '_top',
+				// Used by the chat to render the "Sources" panel under each AI answer.
+				// `chatStore.state.sourcesMap` defaults to `{title:'title',
+				// description:'description', path:'path'}`, but our indexed documents
+				// (see `docs/scripts/index-orama.mjs`) carry `{title, content, category,
+				// url}`. Without remapping `description ← content` and `path ← url`,
+				// `ChatService.getResultMapValue()` returns undefined for both fields, and
+				// `<orama-sources>` gates each card on `(title && path) || (description &&
+				// path)` — so every source is silently dropped from the chat UI. Unlike
+				// `resultMap`, the search-box constructor does *not* wipe `sourcesMap`,
+				// so the pre-hydration assignment survives; the prop propagates down to
+				// `<orama-chat>` and lands in the chat store via its `setSources()`.
+				sourcesMap: {
+					title: 'title',
+					description: 'content',
+					path: 'url',
+				},
 				// Leave `disableChat` at its default: chat is wired via the
 				// `createAnswerSession` shim above, and `<orama-search>` returns `null`
 				// from its render unless both searchService and chatService are initialized.
@@ -138,6 +154,17 @@ export type { Props } from '@astrojs/starlight/props';
 					searchStore?: { state: { resultMap: typeof resultMap } };
 				};
 				if (boxInternals.searchStore) boxInternals.searchStore.state.resultMap = resultMap;
+
+				// Mirror `sourcesMap` into `chatStore.state.sourcesMap` directly so the
+				// mapping is in place even if `<orama-chat>`'s `componentDidLoad()` (which
+				// normally copies the prop into the store) runs before the prop has
+				// reached the child element. Same shape as `box.sourcesMap` above.
+				const chatInternals = box as unknown as {
+					chatStore?: { state: { sourcesMap: NonNullable<HTMLOramaSearchBoxElement['sourcesMap']> } };
+				};
+				if (chatInternals.chatStore && box.sourcesMap) {
+					chatInternals.chatStore.state.sourcesMap = box.sourcesMap;
+				}
 
 				if (!box.shadowRoot) return;
 				rewriteBrokenLogos(box.shadowRoot);

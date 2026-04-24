@@ -20,11 +20,28 @@ export type { Props } from '@astrojs/starlight/props';
 		apiKey: ORAMA_CLOUD_API_KEY,
 	});
 
-	// `@orama/wc-components@0.8.1` ships types for `@orama/core@0.1.x`, but its
-	// runtime only duck-type checks (`constructor.name === 'CollectionManager'`)
-	// and delegates searches to `.search(query)`. Both are compatible with the
-	// 1.2.x client we use, so cast through `unknown` to silence the version skew.
-	const legacyCompatClient = oramaCore as unknown as NonNullable<HTMLOramaSearchBoxElement['oramaCoreClientInstance']>;
+	// `@orama/wc-components@0.8.1` was built against `@orama/core@0.1.x`. Two
+	// version-skew patches are required for it to drive the 1.2.x client:
+	//
+	// 1. Search: wc-components duck-type checks the client via
+	//    `constructor.name === 'CollectionManager'` and then calls `.search(...)`.
+	//    Both still hold on 1.2 (see `vite.esbuild.keepNames` in astro.config.ts
+	//    to keep the class name through minification).
+	//
+	// 2. Chat: ChatService calls `client.createAnswerSession(config)`, which was
+	//    renamed to `client.ai.createAISession(config)` in `@orama/core@1.x`.
+	//    The returned `OramaCoreStream` is structurally identical to the old
+	//    AnswerSession that ChatService expects — `answer` / `answerStream` /
+	//    `abort` / `clearSession` / `regenerateLast` all line up, and the
+	//    `events.onStateChange(state)` `Interaction[]` shape matches field-for-field.
+	//    Bridging the rename is enough to make the existing chat UI work.
+	Object.assign(oramaCore, {
+		createAnswerSession: (config: Parameters<typeof oramaCore.ai.createAISession>[0]) =>
+			oramaCore.ai.createAISession(config),
+	});
+	const legacyCompatClient = oramaCore as unknown as NonNullable<
+		HTMLOramaSearchBoxElement['oramaCoreClientInstance']
+	>;
 
 	document
 		.querySelectorAll<HTMLOramaSearchBoxElement>('.orama-search-bar orama-search-box')
@@ -32,12 +49,9 @@ export type { Props } from '@astrojs/starlight/props';
 			Object.assign(el, {
 				oramaCoreClientInstance: legacyCompatClient,
 				linksTarget: '_top',
-				// Leave `disableChat` unset: wc-components' OramaSearch render returns null
-				// unless both searchService AND chatService are initialized. Disabling chat
-				// prevents chatService from spinning up, which collapses the modal to a blank
-				// shell. Keep the chat surface online (users can still hit Ask AI) even though
-				// its answer-session backend in @orama/core v1 hasn't been wired to the
-				// Stencil components yet.
+				// Leave `disableChat` at its default: chat is wired via the
+				// `createAnswerSession` shim above, and `<orama-search>` returns `null`
+				// from its render unless both searchService and chatService are initialized.
 				resultMap: {
 					title: 'title',
 					description: 'content',
@@ -78,6 +92,33 @@ export type { Props } from '@astrojs/starlight/props';
 	// can bundle without breaking identity equality.
 	defineOramaSearchBox();
 	defineOramaSearchButton();
+
+	// `@orama/wc-components@0.8.1` hardcodes the "Powered by Orama" footer image
+	// at `https://website-assets.oramasearch.com/orama-when-{light,dark}.svg`. The
+	// `oramasearch.com` domain is dead (Orama rebranded to `orama.com`), so the
+	// `<img>` 404s every time the modal renders. The URL is inlined into the JSX,
+	// so `setAssetPath` cannot redirect it. Locally vendor the SVGs (see
+	// `docs/public/vendor/orama/`) and rewrite the broken `src` on initial render
+	// and on every modal re-render.
+	const ORAMA_LOGO_PATH = '/vendor/orama';
+	const rewriteBrokenLogos = (root: ParentNode) => {
+		for (const img of root.querySelectorAll<HTMLImageElement>('img[src*="oramasearch.com"]')) {
+			const filename = img.src.split('/').pop();
+			if (filename) img.src = `${ORAMA_LOGO_PATH}/${filename}`;
+		}
+	};
+	customElements.whenDefined('orama-search-box').then(() => {
+		document
+			.querySelectorAll<HTMLOramaSearchBoxElement>('.orama-search-bar orama-search-box')
+			.forEach(async (box) => {
+				await box.componentOnReady?.();
+				if (!box.shadowRoot) return;
+				rewriteBrokenLogos(box.shadowRoot);
+				new MutationObserver(() => {
+					if (box.shadowRoot) rewriteBrokenLogos(box.shadowRoot);
+				}).observe(box.shadowRoot, { childList: true, subtree: true });
+			});
+	});
 
 	document.querySelectorAll('.orama-search-bar orama-search-button').forEach((el) => {
 		el.appendChild(document.createTextNode('Search'));

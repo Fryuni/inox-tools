@@ -125,7 +125,7 @@ catalogs:
       version: 4.4.3
     devalue:
       specifier: ^5.6.3
-      version: 5.6.4
+      version: 5.8.1
     estree-walker:
       specifier: ^3.0.3
       version: 3.0.3
@@ -732,7 +732,7 @@ importers:
         version: 4.4.3
       devalue:
         specifier: 'catalog:'
-        version: 5.6.4
+        version: 5.8.1
       estree-walker:
         specifier: 'catalog:'
         version: 3.0.3
@@ -1197,7 +1197,7 @@ importers:
         version: 1.0.5
       devalue:
         specifier: 'catalog:'
-        version: 5.6.4
+        version: 5.8.1
     devDependencies:
       '@inox-tools/astro-tests':
         specifier: workspace:^
@@ -1240,7 +1240,7 @@ importers:
         version: 6.4.4(patch_hash=34ac88963a271f59948954a697fdf4850409d163faae6f020d77c206005cacc4)(@types/node@25.3.3)(@vercel/functions@3.4.3)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(rollup@4.59.0)(terser@5.44.1)(yaml@2.9.0)
       devalue:
         specifier: 'catalog:'
-        version: 5.6.4
+        version: 5.8.1
 
   packages/request-state/e2e/fixture/dev:
     dependencies:
@@ -1264,7 +1264,7 @@ importers:
         version: 6.4.4(patch_hash=34ac88963a271f59948954a697fdf4850409d163faae6f020d77c206005cacc4)(@types/node@25.3.3)(@vercel/functions@3.4.3)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(rollup@4.59.0)(terser@5.44.1)(yaml@2.9.0)
       devalue:
         specifier: 'catalog:'
-        version: 5.6.4
+        version: 5.8.1
 
   packages/request-state/e2e/fixture/view-transitions:
     dependencies:
@@ -1399,7 +1399,7 @@ importers:
         version: 6.4.4(patch_hash=34ac88963a271f59948954a697fdf4850409d163faae6f020d77c206005cacc4)(@types/node@25.3.3)(@vercel/functions@3.4.3)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(rollup@4.59.0)(terser@5.44.1)(yaml@2.9.0)
       devalue:
         specifier: 'catalog:'
-        version: 5.6.4
+        version: 5.8.1
 
   packages/sitemap-ext:
     dependencies:
@@ -1586,20 +1586,11 @@ packages:
       prettier-plugin-astro:
         optional: true
 
-  '@astrojs/markdown-remark@7.0.1':
-    resolution: {integrity: sha512-zAfLJmn07u9SlDNNHTpjv0RT4F8D4k54NR7ReRas8CO4OeGoqSvOuKwqCFg2/cqN3wHwdWlK/7Yv/lMXlhVIaw==}
-
   '@astrojs/markdown-remark@7.1.2':
     resolution: {integrity: sha512-caXZ4Dc2St2dW8luEg22GlP0gupLdztCTQE4EzZOxW1pqWXz9mbeJEuHUkgDYcKWW8tjIHkydYDhWLVoxJ327Q==}
 
   '@astrojs/markdown-remark@7.2.0':
     resolution: {integrity: sha512-+YxmVQu1Bd+MFfSzjq1rOJvD9+nIOJzz5YIIhdIH01RrxRkKbyKoEgyIqP3yv51MhzMDgd79QaPv+kCVPT8vHw==}
-
-  '@astrojs/mdx@5.0.2':
-    resolution: {integrity: sha512-0as6odPH9ZQhS3pdH9dWmVOwgXuDtytJiE4VvYgR0lSFBvF4PSTyE0HdODHm/d7dBghvWTPc2bQaBm4y4nTBNw==}
-    engines: {node: '>=22.12.0'}
-    peerDependencies:
-      astro: ^6.1.2
 
   '@astrojs/mdx@5.0.6':
     resolution: {integrity: sha512-4dKe0ZMmqujofPNDHahzClkwinn9f8jHPcaXcgdGvPAlboD2mjzkUCofli2cBnxYAkdfhC6d50gBJ8i/cH8gHw==}
@@ -1618,10 +1609,6 @@ packages:
     peerDependencies:
       preact: ^10.6.5
 
-  '@astrojs/prism@4.0.1':
-    resolution: {integrity: sha512-nksZQVjlferuWzhPsBpQ1JE5XuKAf1id1/9Hj4a9KG4+ofrlzxUUwX4YGQF/SuDiuiGKEnzopGOt38F3AnVWsQ==}
-    engines: {node: '>=22.12.0'}
-
   '@astrojs/prism@4.0.2':
     resolution: {integrity: sha512-KTivpmnz6lDsC6o9H4+DNm2SrE/GHzw8cNAvEJwAvUT+eoaEnn/4NtbDNfRRaxaJHdp15gf+tfHAWiXR4wB3BA==}
     engines: {node: '>=22.12.0'}
@@ -1637,9 +1624,6 @@ packages:
 
   '@astrojs/rss@4.0.18':
     resolution: {integrity: sha512-wc5DwKlbTEdgVAWnHy8krFTeQ42t1v/DJqeq5HtulYK3FYHE4krtRGjoyhS3eXXgfdV6Raoz2RU3wrMTFAitRg==}
-
-  '@astrojs/sitemap@3.7.1':
-    resolution: {integrity: sha512-IzQqdTeskaMX+QDZCzMuJIp8A8C1vgzMBp/NmHNnadepHYNHcxQdGLQZYfkbd2EbRXUfOS+UDIKx8sKg0oWVdw==}
 
   '@astrojs/sitemap@3.7.3':
     resolution: {integrity: sha512-f8euLVsyeAmAkSm/1M2Kb8sL8byQmfgbvBNaHFItCheTj/IpiJYSEWVcqDHZ/yEHxiS7+w87mQkzwZaPHmk5GA==}
@@ -2982,6 +2966,7 @@ packages:
 
   '@ungap/structured-clone@1.3.0':
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
+    deprecated: Potential CWE-502 - Update to 1.3.1 or higher
 
   '@vercel/analytics@1.6.1':
     resolution: {integrity: sha512-oH9He/bEM+6oKlv3chWuOOcp8Y6fo6/PSro8hEkgCW3pu9/OiCXiUpRUogDh3Fs3LH2sosDrx8CxeOLBEE+afg==}
@@ -3263,6 +3248,7 @@ packages:
 
   astro-integration-kit@0.20.0:
     resolution: {integrity: sha512-VQQs7hS9M3XrJtxSLHVDhvHzgqwZuhot3sMoYImBJSvL7fMnleSVgkZhoEeRJd1+Qh96eb469nRnn5mdjIJJMQ==}
+    deprecated: 'Check the migration guide: https://astro-integration-kit.netlify.app/migration-guide/'
     peerDependencies:
       astro: ^6.1.2
 
@@ -3617,9 +3603,6 @@ packages:
   detect-libc@2.1.2:
     resolution: {integrity: sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ==}
     engines: {node: '>=8'}
-
-  devalue@5.6.4:
-    resolution: {integrity: sha512-Gp6rDldRsFh/7XuouDbxMH3Mx8GMCcgzIb1pDTvNyn8pZGQ22u+Wa+lGV9dQCltFQ7uVw0MhRyb8XDskNFOReA==}
 
   devalue@5.8.1:
     resolution: {integrity: sha512-4CXDYRBGqN+57wVJkuXBYmpAVUSg3L6JAQa/DFqm238G73E1wuyc/JhGQJzN7vUf/CMphYau2zXbfWzDR5aTEw==}
@@ -5435,10 +5418,6 @@ packages:
     resolution: {integrity: sha512-u9r3uZC0bdpGOXtlxUIdwf9pkmvhqJdrVCH9fapQtgy/OeTTMZ1nqH7agtvEfmGui6e1XxjcdrlxvxJvc3sMqw==}
     engines: {node: '>=18'}
 
-  tinyglobby@0.2.15:
-    resolution: {integrity: sha512-j2Zq4NyQYG5XMST4cbs02Ak8iJUdxRM0XI5QyxXuZOzKOINmWurp3smXu3y5wDcJrptwpSjgXHzIQxR0omXljQ==}
-    engines: {node: '>=12.0.0'}
-
   tinyglobby@0.2.17:
     resolution: {integrity: sha512-wXR/dYpcqKmfWpEdZjiKJOwCNFndD0DMnrW/cYjVGttEkBfVgcLFHoNrlj47mjOVic9yyNu65alsgF4NQyTa2g==}
     engines: {node: '>=12.0.0'}
@@ -5979,11 +5958,6 @@ packages:
     engines: {node: '>= 14'}
     hasBin: true
 
-  yaml@2.8.2:
-    resolution: {integrity: sha512-mplynKqc1C2hTVYxd0PU2xQAc22TI1vShAYGksCCfxbn/dFwnHTNi1bvYsBTkhdUNtGIf5xNOg938rrSSYvS9A==}
-    engines: {node: '>= 14.6'}
-    hasBin: true
-
   yaml@2.9.0:
     resolution: {integrity: sha512-2AvhNX3mb8zd6Zy7INTtSpl1F15HW6Wnqj0srWlkKLcpYl/gMIMJiyuGq2KeI2YFxUPjdlB+3Lc10seMLtL4cA==}
     engines: {node: '>= 14.6'}
@@ -6093,31 +6067,6 @@ snapshots:
     transitivePeerDependencies:
       - typescript
 
-  '@astrojs/markdown-remark@7.0.1':
-    dependencies:
-      '@astrojs/internal-helpers': 0.8.0
-      '@astrojs/prism': 4.0.1
-      github-slugger: 2.0.0
-      hast-util-from-html: 2.0.3
-      hast-util-to-text: 4.0.2
-      js-yaml: 4.1.1
-      mdast-util-definitions: 6.0.0
-      rehype-raw: 7.0.0
-      rehype-stringify: 10.0.1
-      remark-gfm: 4.0.1
-      remark-parse: 11.0.0
-      remark-rehype: 11.1.2
-      remark-smartypants: 3.0.2
-      shiki: 4.0.2
-      smol-toml: 1.6.0
-      unified: 11.0.5
-      unist-util-remove-position: 5.0.0
-      unist-util-visit: 5.1.0
-      unist-util-visit-parents: 6.0.2
-      vfile: 6.0.3
-    transitivePeerDependencies:
-      - supports-color
-
   '@astrojs/markdown-remark@7.1.2':
     dependencies:
       '@astrojs/internal-helpers': 0.9.1
@@ -6162,25 +6111,6 @@ snapshots:
       unist-util-remove-position: 5.0.0
       unist-util-visit: 5.1.0
       unist-util-visit-parents: 6.0.2
-      vfile: 6.0.3
-    transitivePeerDependencies:
-      - supports-color
-
-  '@astrojs/mdx@5.0.2(astro@6.4.4(patch_hash=34ac88963a271f59948954a697fdf4850409d163faae6f020d77c206005cacc4)(@types/node@25.3.3)(@vercel/functions@3.4.3)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(rollup@4.59.0)(terser@5.44.1)(yaml@2.9.0))':
-    dependencies:
-      '@astrojs/markdown-remark': 7.0.1
-      '@mdx-js/mdx': 3.1.1
-      acorn: 8.16.0
-      astro: 6.4.4(patch_hash=34ac88963a271f59948954a697fdf4850409d163faae6f020d77c206005cacc4)(@types/node@25.3.3)(@vercel/functions@3.4.3)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(rollup@4.59.0)(terser@5.44.1)(yaml@2.9.0)
-      es-module-lexer: 2.0.0
-      estree-util-visit: 2.0.0
-      hast-util-to-html: 9.0.5
-      piccolore: 0.1.3
-      rehype-raw: 7.0.0
-      remark-gfm: 4.0.1
-      remark-smartypants: 3.0.2
-      source-map: 0.7.6
-      unist-util-visit: 5.1.0
       vfile: 6.0.3
     transitivePeerDependencies:
       - supports-color
@@ -6238,10 +6168,6 @@ snapshots:
       - tsx
       - yaml
 
-  '@astrojs/prism@4.0.1':
-    dependencies:
-      prismjs: 1.30.0
-
   '@astrojs/prism@4.0.2':
     dependencies:
       prismjs: 1.30.0
@@ -6277,12 +6203,6 @@ snapshots:
       piccolore: 0.1.3
       zod: 4.3.6
 
-  '@astrojs/sitemap@3.7.1':
-    dependencies:
-      sitemap: 9.0.1
-      stream-replace-string: 2.0.0
-      zod: 4.3.6
-
   '@astrojs/sitemap@3.7.3':
     dependencies:
       sitemap: 9.0.1
@@ -6291,9 +6211,9 @@ snapshots:
 
   '@astrojs/starlight@0.38.2(astro@6.4.4(patch_hash=34ac88963a271f59948954a697fdf4850409d163faae6f020d77c206005cacc4)(@types/node@25.3.3)(@vercel/functions@3.4.3)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(rollup@4.59.0)(terser@5.44.1)(yaml@2.9.0))':
     dependencies:
-      '@astrojs/markdown-remark': 7.0.1
-      '@astrojs/mdx': 5.0.2(astro@6.4.4(patch_hash=34ac88963a271f59948954a697fdf4850409d163faae6f020d77c206005cacc4)(@types/node@25.3.3)(@vercel/functions@3.4.3)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(rollup@4.59.0)(terser@5.44.1)(yaml@2.9.0))
-      '@astrojs/sitemap': 3.7.1
+      '@astrojs/markdown-remark': 7.2.0
+      '@astrojs/mdx': 5.0.6(astro@6.4.4(patch_hash=34ac88963a271f59948954a697fdf4850409d163faae6f020d77c206005cacc4)(@types/node@25.3.3)(@vercel/functions@3.4.3)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(rollup@4.59.0)(terser@5.44.1)(yaml@2.9.0))
+      '@astrojs/sitemap': 3.7.3
       '@pagefind/default-ui': 1.4.0
       '@types/hast': 3.0.4
       '@types/js-yaml': 4.0.9
@@ -6340,7 +6260,7 @@ snapshots:
       '@vercel/routing-utils': 5.3.3
       astro: 6.4.4(patch_hash=34ac88963a271f59948954a697fdf4850409d163faae6f020d77c206005cacc4)(@types/node@25.3.3)(@vercel/functions@3.4.3)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(rollup@4.59.0)(terser@5.44.1)(yaml@2.9.0)
       esbuild: 0.27.4
-      tinyglobby: 0.2.15
+      tinyglobby: 0.2.17
     transitivePeerDependencies:
       - '@aws-sdk/credential-provider-web-identity'
       - '@remix-run/react'
@@ -7842,7 +7762,7 @@ snapshots:
       flatted: 3.3.3
       pathe: 2.0.3
       sirv: 3.0.2
-      tinyglobby: 0.2.15
+      tinyglobby: 0.2.17
       tinyrainbow: 3.0.3
       vitest: 4.0.18(@types/node@25.3.3)(@vitest/ui@4.0.18)(jiti@2.6.1)(terser@5.44.1)(yaml@2.9.0)
 
@@ -8122,7 +8042,7 @@ snapshots:
       svgo: 4.0.1
       tinyclip: 0.1.12
       tinyexec: 1.0.4
-      tinyglobby: 0.2.15
+      tinyglobby: 0.2.17
       ultrahtml: 1.6.0
       unifont: 0.7.4
       unist-util-visit: 5.1.0
@@ -8453,8 +8373,6 @@ snapshots:
   detect-indent@6.1.0: {}
 
   detect-libc@2.1.2: {}
-
-  devalue@5.6.4: {}
 
   devalue@5.8.1: {}
 
@@ -9259,7 +9177,7 @@ snapshots:
       micromatch: 4.0.8
       string-argv: 0.3.2
       tinyexec: 1.0.4
-      yaml: 2.8.2
+      yaml: 2.9.0
 
   listr2@9.0.5:
     dependencies:
@@ -10750,7 +10668,7 @@ snapshots:
       lines-and-columns: 1.2.4
       mz: 2.7.0
       pirates: 4.0.7
-      tinyglobby: 0.2.15
+      tinyglobby: 0.2.17
       ts-interface-checker: 0.1.13
 
   suf-log@2.5.3:
@@ -10830,11 +10748,6 @@ snapshots:
 
   tinyexec@1.0.4: {}
 
-  tinyglobby@0.2.15:
-    dependencies:
-      fdir: 6.5.0(picomatch@3.0.1)
-      picomatch: 3.0.1
-
   tinyglobby@0.2.17:
     dependencies:
       fdir: 6.5.0(picomatch@3.0.1)
@@ -10890,7 +10803,7 @@ snapshots:
       source-map: 0.7.6
       sucrase: 3.35.1
       tinyexec: 0.3.2
-      tinyglobby: 0.2.15
+      tinyglobby: 0.2.17
       tree-kill: 1.2.2
     optionalDependencies:
       postcss: 8.5.8
@@ -11089,7 +11002,7 @@ snapshots:
       picomatch: 3.0.1
       postcss: 8.5.8
       rollup: 4.59.0
-      tinyglobby: 0.2.15
+      tinyglobby: 0.2.17
     optionalDependencies:
       '@types/node': 25.3.3
       fsevents: 2.3.3
@@ -11119,7 +11032,7 @@ snapshots:
       std-env: 3.10.0
       tinybench: 2.9.0
       tinyexec: 1.0.4
-      tinyglobby: 0.2.15
+      tinyglobby: 0.2.17
       tinyrainbow: 3.0.3
       vite: 7.3.1(@types/node@25.3.3)(jiti@2.6.1)(terser@5.44.1)(yaml@2.9.0)
       why-is-node-running: 2.3.0
@@ -11320,8 +11233,6 @@ snapshots:
       yaml: 2.7.1
 
   yaml@2.7.1: {}
-
-  yaml@2.8.2: {}
 
   yaml@2.9.0: {}
 

@@ -10,30 +10,69 @@ export type { Props } from '@astrojs/starlight/props';
 </div>
 
 <script>
-	import { defineCustomElements } from '@orama/wc-components/loader';
-	import { ORAMA_CLOUD_API_KEY, ORAMA_CLOUD_ENDPOINT } from 'astro:env/client';
+	import { defineCustomElement as defineOramaSearchBox } from '@orama/wc-components/dist/components/orama-search-box.js';
+	import { defineCustomElement as defineOramaSearchButton } from '@orama/wc-components/dist/components/orama-search-button.js';
+	import { CollectionManager } from '@orama/core';
+	import { ORAMA_CLOUD_API_KEY, ORAMA_CLOUD_PROJECT_ID } from 'astro:env/client';
+
+	const oramaCore = new CollectionManager({
+		collectionID: ORAMA_CLOUD_PROJECT_ID,
+		apiKey: ORAMA_CLOUD_API_KEY,
+	});
+
+	// `@orama/wc-components@0.8.1` was built against `@orama/core@0.1.x`. Two
+	// version-skew patches are required for it to drive the 1.2.x client:
+	//
+	// 1. Search: wc-components duck-type checks the client via
+	//    `constructor.name === 'CollectionManager'` and then calls `.search(...)`.
+	//    Both still hold on 1.2 (see `vite.esbuild.keepNames` in astro.config.ts
+	//    to keep the class name through minification).
+	//
+	// 2. Chat: ChatService calls `client.createAnswerSession(config)`, which was
+	//    renamed to `client.ai.createAISession(config)` in `@orama/core@1.x`.
+	//    The returned `OramaCoreStream` is structurally identical to the old
+	//    AnswerSession that ChatService expects — `answer` / `answerStream` /
+	//    `abort` / `clearSession` / `regenerateLast` all line up, and the
+	//    `events.onStateChange(state)` `Interaction[]` shape matches field-for-field.
+	//    Bridging the rename is enough to make the existing chat UI work.
+	Object.assign(oramaCore, {
+		createAnswerSession: (config: Parameters<typeof oramaCore.ai.createAISession>[0]) =>
+			oramaCore.ai.createAISession(config),
+	});
+	const legacyCompatClient = oramaCore as unknown as NonNullable<
+		HTMLOramaSearchBoxElement['oramaCoreClientInstance']
+	>;
 
 	document
 		.querySelectorAll<HTMLOramaSearchBoxElement>('.orama-search-bar orama-search-box')
 		.forEach((el) => {
 			Object.assign(el, {
-				index: {
-					endpoint: ORAMA_CLOUD_ENDPOINT,
-					api_key: ORAMA_CLOUD_API_KEY,
-				},
+				oramaCoreClientInstance: legacyCompatClient,
 				linksTarget: '_top',
-				disableChat: false,
+				// Used by the chat to render the "Sources" panel under each AI answer.
+				// `chatStore.state.sourcesMap` defaults to `{title:'title',
+				// description:'description', path:'path'}`, but our indexed documents
+				// (see `docs/scripts/index-orama.mjs`) carry `{title, content, category,
+				// url}`. Without remapping `description ← content` and `path ← url`,
+				// `ChatService.getResultMapValue()` returns undefined for both fields, and
+				// `<orama-sources>` gates each card on `(title && path) || (description &&
+				// path)` — so every source is silently dropped from the chat UI. Unlike
+				// `resultMap`, the search-box constructor does *not* wipe `sourcesMap`,
+				// so the pre-hydration assignment survives; the prop propagates down to
+				// `<orama-chat>` and lands in the chat store via its `setSources()`.
 				sourcesMap: {
 					title: 'title',
 					description: 'content',
+					path: 'url',
 				},
-				resultMap: {
-					title: 'title',
-					description: 'content',
-					section: 'category',
-				},
+				// Leave `disableChat` at its default: chat is wired via the
+				// `createAnswerSession` shim above, and `<orama-search>` returns `null`
+				// from its render unless both searchService and chatService are initialized.
+				// `resultMap` is intentionally *not* set here: the Stencil constructor on
+				// `<orama-search-box>` unconditionally runs `this.resultMap = {}` and would
+				// clobber any pre-hydration value. The real assignment happens below after
+				// `componentOnReady()`.
 				searchPlaceholder: 'Search something...',
-				chatPlaceholder: 'What do you dream of doing with Inox Tools?',
 				suggestions: [
 					'What is Inox Tools?',
 					'How to use Nanostores on the server?',
@@ -57,7 +96,83 @@ export type { Props } from '@astrojs/starlight/props';
 	const observer = new MutationObserver(updateSearchTheme);
 	observer.observe(document.documentElement, { attributes: true, subtree: false });
 
-	defineCustomElements();
+	// Using the `dist-custom-elements` output targets (one tag per module, each
+	// synchronously registering its dependencies) instead of `@orama/wc-components/loader`.
+	// The lazy loader bundles a Stencil runtime that uses a module-local `Host = {}`
+	// sentinel as the vnode tag marker. When Vite/Rollup re-bundles the lazily-loaded
+	// `*.entry.js` chunks, the sentinel's identity no longer matches the runtime's
+	// `isHost` check, so `createElementNS(ns, '[object Object]')` fires and every
+	// component ends up with an empty shadow DOM. Registering via the per-component
+	// `defineCustomElement` wires everything into a single module graph that Vite
+	// can bundle without breaking identity equality.
+	defineOramaSearchBox();
+	defineOramaSearchButton();
+
+	// `@orama/wc-components@0.8.1` hardcodes the "Powered by Orama" footer image
+	// at `https://website-assets.oramasearch.com/orama-when-{light,dark}.svg`. The
+	// `oramasearch.com` domain is dead (Orama rebranded to `orama.com`), so the
+	// `<img>` 404s every time the modal renders. The URL is inlined into the JSX,
+	// so `setAssetPath` cannot redirect it. Locally vendor the SVGs (see
+	// `docs/public/vendor/orama/`) and rewrite the broken `src` on initial render
+	// and on every modal re-render.
+	const ORAMA_LOGO_PATH = '/vendor/orama';
+	const rewriteBrokenLogos = (root: ParentNode) => {
+		for (const img of root.querySelectorAll<HTMLImageElement>('img[src*="oramasearch.com"]')) {
+			const filename = img.src.split('/').pop();
+			if (filename) img.src = `${ORAMA_LOGO_PATH}/${filename}`;
+		}
+	};
+	customElements.whenDefined('orama-search-box').then(() => {
+		document
+			.querySelectorAll<HTMLOramaSearchBoxElement>('.orama-search-bar orama-search-box')
+			.forEach(async (box) => {
+				await box.componentOnReady?.();
+
+				// wc-components' `SearchBox` constructor sets `this.resultMap = {}`
+				// unconditionally, wiping anything assigned before hydration. There is no
+				// `@Watch` on `resultMap` either, so `bootstrap()` only copies whatever is
+				// on the element at `componentWillLoad` into `searchStore.state.resultMap`.
+				// Assign both the element property and the live store after hydration so
+				// the next `parserResults()` call sees the mapping.
+				//
+				// Fields: wc-components expects the parsed result to carry `title`,
+				// `description`, `section`, and `path`; the indexer (see
+				// `docs/scripts/index-orama.mjs`) stores those under `title`, `content`,
+				// `category`, and `url` respectively. Without the `path ← url` mapping the
+				// anchor href falls back to `buildUrl('')` which returns `'#'`, so clicking
+				// a result did nothing.
+				const resultMap = {
+					title: 'title',
+					description: 'content',
+					section: 'category',
+					path: 'url',
+				};
+				box.resultMap = resultMap;
+				// `searchStore` is the Stencil store instance on the element; not part
+				// of the public typings, so reach through an `unknown` cast.
+				const boxInternals = box as unknown as {
+					searchStore?: { state: { resultMap: typeof resultMap } };
+				};
+				if (boxInternals.searchStore) boxInternals.searchStore.state.resultMap = resultMap;
+
+				// Mirror `sourcesMap` into `chatStore.state.sourcesMap` directly so the
+				// mapping is in place even if `<orama-chat>`'s `componentDidLoad()` (which
+				// normally copies the prop into the store) runs before the prop has
+				// reached the child element. Same shape as `box.sourcesMap` above.
+				const chatInternals = box as unknown as {
+					chatStore?: { state: { sourcesMap: NonNullable<HTMLOramaSearchBoxElement['sourcesMap']> } };
+				};
+				if (chatInternals.chatStore && box.sourcesMap) {
+					chatInternals.chatStore.state.sourcesMap = box.sourcesMap;
+				}
+
+				if (!box.shadowRoot) return;
+				rewriteBrokenLogos(box.shadowRoot);
+				new MutationObserver(() => {
+					if (box.shadowRoot) rewriteBrokenLogos(box.shadowRoot);
+				}).observe(box.shadowRoot, { childList: true, subtree: true });
+			});
+	});
 
 	document.querySelectorAll('.orama-search-bar orama-search-button').forEach((el) => {
 		el.appendChild(document.createTextNode('Search'));

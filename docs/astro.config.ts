@@ -157,7 +157,7 @@ export default defineConfig({
 	env: {
 		validateSecrets: true,
 		schema: {
-			ORAMA_CLOUD_ENDPOINT: envField.string({
+			ORAMA_CLOUD_PROJECT_ID: envField.string({
 				context: 'client',
 				access: 'public',
 				optional: false,
@@ -179,5 +179,13 @@ export default defineConfig({
 		'/content-utils/git': '/content-utils',
 		'/content-utils/git-time': '/content-utils',
 		'/modular-station': '/modular-station/api',
+	},
+	vite: {
+		// `@orama/wc-components` duck-type checks the Orama client via
+		// `constructor.name === 'CollectionManager'`. esbuild's default minifier
+		// renames classes, which would break that check.
+		esbuild: {
+			keepNames: true,
+		},
 	},
 });

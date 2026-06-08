@@ -6,11 +6,12 @@
       "inputs": ["*", "src/**", "public/**", "../packages/*/package.json"],
       "outputs": [".vercel", ".astro"],
       "passThroughEnv": [
-        "ORAMA_CLOUD_ENDPOINT",
+        "ORAMA_CLOUD_PROJECT_ID",
         "ORAMA_CLOUD_API_KEY",
+        "ORAMA_CLOUD_PRIVATE_API_KEY",
+        "ORAMA_CLOUD_DATASOURCE_ID",
         "PUBLIC_CROCT_APP_ID",
-        "CROCT_API_KEY",
-        "ORAMA_CLOUD_PROXY_KEY"
+        "CROCT_API_KEY"
       ]
     }
   }

@@ -28,6 +28,7 @@ catalog:
   '@fortawesome/fontawesome-free': ^7.2.0
   '@lunariajs/core': ^0.1.1
   '@nanostores/preact': ^1.0.0
+  '@orama/core': ^1.2.19
   '@orama/wc-components': ^0.8.1
   '@playwright/test': ^1.58.2
   '@turbo/gen': ^2.8.12
@@ -60,6 +61,7 @@ catalog:
   mdast-util-from-markdown: ^2.0.3
   mermaid: ^11.13.0
   nanostores: ^1.1.1
+  node-html-parser: ^7.0.1
   postcss: ^8.5.6
   preact: ^10.28.4
   prettier: ^3.8.1
@@ -104,7 +106,6 @@ onlyBuiltDependencies:
   - sharp
 
 overrides:
-  '@orama/core': 0.1.11
   astro: 'catalog:'
   astro-integration-kit: 'catalog:'
   picomatch: 3.0.1

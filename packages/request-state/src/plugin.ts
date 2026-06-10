@@ -1,12 +1,9 @@
-import { createResolver } from 'astro-integration-kit';
 import type { Plugin } from 'vite';
 
 const MODULE_ID = '@it-astro:state';
 const RESOLVED_MODULE_ID = `\x00${MODULE_ID}`;
 
 export const plugin = (): Plugin => {
-	const { resolve } = createResolver(import.meta.url);
-
 	return {
 		name: '@inox-tools/request-state/vite-plugin',
 		resolveId(id) {
@@ -25,12 +22,9 @@ export const plugin = (): Plugin => {
 		load(id, options) {
 			if (id !== RESOLVED_MODULE_ID) return;
 
-			const stateSource = options?.ssr ? 'serverState.js' : 'clientState.js';
-			const importPath = resolve('runtime', stateSource);
-
 			return `
-export {setState, getState, hasState} from '${importPath}';
-export {ServerStateLoaded} from '${resolve('events.js')}';
+export {setState, getState, hasState} from ${JSON.stringify(new URL(`./runtime/${options?.ssr ? 'server' : 'client'}State.js`, import.meta.url))};
+export {ServerStateLoaded} from ${JSON.stringify(new URL('./events.js', import.meta.url))};
 `.trim();
 		},
 	};

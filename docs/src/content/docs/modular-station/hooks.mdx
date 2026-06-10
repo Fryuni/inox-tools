@@ -23,37 +23,7 @@ import InstallCmd from '@/components/InstallCmd.astro';
 
 ### Type safety
 
-:::note[Official support]
-Custom hooks between integrations are not officially supported yet. You can follow the ongoing effort to support it on [this implementation PR](https://github.com/withastro/astro/pull/11304) and [this docs PR](https://github.com/withastro/docs/pull/8701).
-
-Until then, custom hooks uses [Astro Integration Kit](https://astro-integration-kit.netlify.app/) to provide proper type-safety.
-:::
-
-Source integrations can declare the types for their hooks by augmenting the interface `ExtraHooks` on namespace `AstroIntegrationKit` on an ambient declaration file (`.d.ts`):
-
-```ts title="types.d.ts"
-declare namespace AstroIntegrationKit {
-	export interface ExtraHooks {
-		'source:integration:hook'?: (
-			hook: string,
-			params: Record<string, any>,
-			logger: AstroIntegrationLogger
-		) => Promise<void> | void;
-	}
-}
-```
-
-That augmentation can also be done inline on any TypeScript file by surrounding it with `declare global`:
-
-```ts title="source-integration/index.ts"
-declare global {
-	namespace AstroIntegrationKit {
-		export interface ExtraHooks {
-			// ...
-		}
-	}
-}
-```
+Refer to the [Astro Integration Reference docs](https://docs.astro.build/en/reference/integrations-reference/#custom-hooks) to see how to extend hooks types.
 
 ### Registering and triggering hooks
 
@@ -90,59 +60,9 @@ The global hooks API can be called from anywhere, including integration code, vi
 
 Calling the hooks API from the server runtime or from client-side code is a no-op. The observed behavior is the same as if the hook wasn't implemented by any integration, but no error will be thrown. If you want to detect when and where you code is running, you can use the [Astro When](/astro-when) Inox Tool.
 
-### Hook provider plugin
-
-:::caution[For advanced authors]
-Using the hooks provider instead of the global hooks trigger provides advanced control without any inherit global state, but requires you to manage the transferring of function references between integration code running at config time and module code running at build/render time inside of bundled code.
-
-If you are not familiar with the shared module graph between the Astro builder, integration code, virtual modules and Astro project files, you should use the [global hooks triggering](#registering-and-triggering-hooks).
-:::
-
-Source integrations can trigger hooks using the Hook Provider Plugin, which does the heavy lifting of:
-
-- Properly collecting the target integrations in use on the Astro project, including integrations added dynamically;
-- Instantiating the logger to be passed to each target integration such that it matches the logger passed in the official hooks;
-- Calling the appropriate hook for each integration in the same order as Astro's official hooks.
-
-The Hook Provider Plugin is a special kind of [Astro Integration Kit plugin](https://astro-integration-kit.netlify.app/core/with-plugins/) that provides the most effective implementation of the hook triggering mechanism for _all_ your hooks, even other custom hooks in case your source integration is a target of some other integration.
-
-The `hooks` property injected by this plugin has the same API as the [global hooks API](#registering-and-triggering-hooks).
-
-```ts title="source-integration/index.ts" ins={2,9,12-18}
-import { defineIntegration, withPlugins } from 'astro-integration-kit';
-import { hookProviderPlugin } from '@inox-tools/modular-station';
-
-export default defineIntegration({
-	name: 'source-integration',
-	setup({ name }) {
-		return withPlugins({
-			name,
-			plugins: [hookProviderPlugin],
-			hooks: {
-				'astro:server:setup': ({ hooks }) => {
-					hooks.run(
-						// Hook name
-						'source:integration:hook',
-						// Callback to make the arguments for each target integration
-						// Receives the logger for the target integration
-						(logger) => ['param', { from: 'source' }, logger]
-					);
-				},
-			},
-		});
-	},
-});
-```
-
 ## As a target integration
 
 ### Type safety
-
-:::note[Official support]
-Custom hooks between integrations are not officially supported yet. You can follow the ongoing effort to support it on [this implementation PR](https://github.com/withastro/astro/pull/11304) and [this docs PR](https://github.com/withastro/docs/pull/8701).
-
-Until then, using custom hooks requires the target integrations to use [Astro Integration Kit's `defineIntegration`](https://astro-integration-kit.netlify.app/core/define-integration/) for proper type-safety.
-:::
 
 When an integration provide it's own hooks using Modular Station, it has to provide the appropriate types for those hooks. To use them in your integration you have to load those types into typescript.
 
@@ -154,24 +74,23 @@ If the target uses the source integration at runtime, be it for installing it in
 
 If you use the integration as part of your integration, you probably already have the types loaded. Importing the library should automatically load the proper types.
 
-```ts title="target-integration/index.ts" {"Importing the integration loads the types":2-3} {11-13}
-import { defineIntegration } from 'astro-integration-kit';
+
+```ts title="target-integration/index.ts" {"Importing the integration loads the types":2-3} {10-12}
+import type { AstroIntegration } from 'astro';
 
 import source from 'source-integration';
 
-export default defineIntegration({
-	name: 'target-integration',
-	setup() {
-		return {
-			hooks: {
-				// other hooks using the integration
-				'source:integration:hook': (hook, params) => {
-					// hook params are property typed
-				},
+export default function targetIntegration(): AstroIntegration {
+	return {
+		name: 'target-integration',
+		hooks: {
+			// other hooks using the integration
+			'source:integration:hook': (hook, params) => {
+				// hook params are property typed
 			},
-		};
-	},
-});
+		},
+	}
+}
 ```
 
 #### Without runtime dependency

@@ -1,5 +1,4 @@
-import { addIntegration, hasIntegration, withPlugins } from 'astro-integration-kit';
-import routeConfigPlugin from '@inox-tools/aik-route-config';
+import { defineRouteConfig } from '@inox-tools/route-config';
 import { AstroError } from 'astro/errors';
 import { type AstroIntegration, type AstroIntegrationLogger, type RouteData } from 'astro';
 import * as path from 'node:path';
@@ -12,8 +11,6 @@ process.setSourceMapsEnabled(true);
 interface Options extends Omit<NonNullable<SitemapOptions>, 'filter'> {
 	includeByDefault?: boolean;
 }
-
-const name = '@inox-tools/sitemap-ext';
 
 export default function sitemapExt({
 	includeByDefault = false,
@@ -95,104 +92,97 @@ export default function sitemapExt({
 	});
 
 	return {
-		name,
-		...withPlugins({
-			plugins: [routeConfigPlugin],
-			name,
-			hooks: {
-				...innerIntegration.hooks,
-				'astro:config:setup': async (params) => {
-					const { defineRouteConfig, config } = params;
-					trailingSlash = config.trailingSlash !== 'never';
-					basePath = config.base ?? '';
-					basePath = new URL(config.base ?? '', config.site).pathname;
-					logger = params.logger;
-					baseUrl = new URL(config.base ?? '', config.site);
+		name: '@inox-tools/sitemap-ext',
+		hooks: {
+			...innerIntegration.hooks,
+			'astro:config:setup': async (params) => {
+				const { config } = params;
+				trailingSlash = config.trailingSlash !== 'never';
+				basePath = config.base ?? '';
+				basePath = new URL(config.base ?? '', config.site).pathname;
+				logger = params.logger;
+				baseUrl = new URL(config.base ?? '', config.site);
 
-					if (hasIntegration(params, { name: '@astrojs/sitemap' })) {
-						throw new AstroError(
-							'Cannot use both `@inox-tools/sitemap-ext` and `@astrojs/sitemap` integrations at the same time.',
-							'Remove the `@astrojs/sitemap` integration from your project to use `@inox-tools/sitemap-ext`.'
-						);
-					}
-
-					type ConfigCallback = (hooks: {
-						addToSitemap: (routeParams?: Record<string, string | undefined>[]) => void;
-						removeFromSitemap: (routeParams?: Record<string, string | undefined>[]) => void;
-						setSitemap: (
-							routeParams: Array<{ sitemap?: boolean; params: Record<string, string | undefined> }>
-						) => void;
-					}) => Promise<void> | void;
-
-					defineRouteConfig({
-						importName: 'sitemap-ext:config',
-						callbackHandler: async (context, configCb: ConfigCallback | boolean) => {
-							const hooks: Parameters<ConfigCallback>[0] = {
-								removeFromSitemap(routeParams) {
-									for (const route of context.routeData) {
-										makeDecision(false, route, routeParams);
-									}
-								},
-								addToSitemap(routeParams) {
-									for (const route of context.routeData) {
-										makeDecision(true, route, routeParams);
-									}
-								},
-								setSitemap(routeOptions) {
-									for (const route of context.routeData) {
-										for (const { sitemap: decision, params: routeParams } of routeOptions) {
-											makeDecision(decision ?? includeByDefault, route, [routeParams]);
-										}
-									}
-								},
-							};
-
-							logger.debug('Running sitemap config callback:' + inspect({ context, configCb }));
-							if (typeof configCb === 'boolean') {
-								if (configCb) {
-									hooks.addToSitemap();
-								} else {
-									hooks.removeFromSitemap();
-								}
-							} else {
-								await configCb(hooks);
-							}
-						},
-					});
-
-					// Add dummy integration so other integrations can detect that sitemap is present.
-					addIntegration(params, {
-						integration: {
-							name: innerIntegration.name,
-							hooks: {},
-						},
-					});
-
-					await innerIntegration.hooks['astro:config:setup']?.(params);
-				},
-				'astro:build:done': async (params) => {
-					const extraPagesSet = new Set<string>(
-						inclusions
-							.filter(
-								(i): i is InclusionRule & { type: 'static' } =>
-									i.type === 'static' && i.decision && !i.static
-							)
-							.map((i) => trimSlashes(i.path))
+				if (config.integrations.some((e) => e.name === '@astrojs/sitemap')) {
+					throw new AstroError(
+						'Cannot use both `@inox-tools/sitemap-ext` and `@astrojs/sitemap` integrations at the same time.',
+						'Remove the `@astrojs/sitemap` integration from your project to use `@inox-tools/sitemap-ext`.'
 					);
+				}
 
-					for (const page of params.pages) {
-						extraPagesSet.delete(trimSlashes(page.pathname));
-					}
+				type ConfigCallback = (hooks: {
+					addToSitemap: (routeParams?: Record<string, string | undefined>[]) => void;
+					removeFromSitemap: (routeParams?: Record<string, string | undefined>[]) => void;
+					setSitemap: (
+						routeParams: Array<{ sitemap?: boolean; params: Record<string, string | undefined> }>
+					) => void;
+				}) => Promise<void> | void;
 
-					for (const page of extraPagesSet) {
-						const url = trimSlashes(new URL(page, baseUrl).toString());
-						extraPages.push(trailingSlash ? url + '/' : url);
-					}
+				defineRouteConfig(params, {
+					importName: 'sitemap-ext:config',
+					callbackHandler: async (context, configCb: ConfigCallback | boolean) => {
+						const hooks: Parameters<ConfigCallback>[0] = {
+							removeFromSitemap(routeParams) {
+								for (const route of context.routeData) {
+									makeDecision(false, route, routeParams);
+								}
+							},
+							addToSitemap(routeParams) {
+								for (const route of context.routeData) {
+									makeDecision(true, route, routeParams);
+								}
+							},
+							setSitemap(routeOptions) {
+								for (const route of context.routeData) {
+									for (const { sitemap: decision, params: routeParams } of routeOptions) {
+										makeDecision(decision ?? includeByDefault, route, [routeParams]);
+									}
+								}
+							},
+						};
 
-					await innerIntegration.hooks['astro:build:done']?.(params);
-				},
+						logger.debug('Running sitemap config callback:' + inspect({ context, configCb }));
+						if (typeof configCb === 'boolean') {
+							if (configCb) {
+								hooks.addToSitemap();
+							} else {
+								hooks.removeFromSitemap();
+							}
+						} else {
+							await configCb(hooks);
+						}
+					},
+				});
+
+				// Add dummy integration so other integrations can detect that sitemap is present.
+				params.updateConfig({
+					integrations: [{ name: innerIntegration.name, hooks: {} }],
+				});
+
+				await innerIntegration.hooks['astro:config:setup']?.(params);
 			},
-		}),
+			'astro:build:done': async (params) => {
+				const extraPagesSet = new Set<string>(
+					inclusions
+						.filter(
+							(i): i is InclusionRule & { type: 'static' } =>
+								i.type === 'static' && i.decision && !i.static
+						)
+						.map((i) => trimSlashes(i.path))
+				);
+
+				for (const page of params.pages) {
+					extraPagesSet.delete(trimSlashes(page.pathname));
+				}
+
+				for (const page of extraPagesSet) {
+					const url = trimSlashes(new URL(page, baseUrl).toString());
+					extraPages.push(trailingSlash ? url + '/' : url);
+				}
+
+				await innerIntegration.hooks['astro:build:done']?.(params);
+			},
+		},
 	};
 }
 

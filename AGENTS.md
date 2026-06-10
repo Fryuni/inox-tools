@@ -17,6 +17,7 @@ inox-tools/
 │   ├── runtime-logger/ # Build→runtime logger bridging
 │   ├── astro-tests/    # Test harness (loadFixture, testAdapter)
 │   ├── request-state/  # AsyncLocalStorage request-scoped state
+│   ├── route-config/   # Per-route configuration
 │   ├── request-nanostores/ # Nanostores + request-state (auto-injects dep)
 │   ├── content-utils/  # Content collections + git tracking
 │   ├── portal-gun/     # HTML element transport via portals
@@ -56,7 +57,7 @@ T1 Foundation:  utils (0 deps, 16 consumers), inline-mod
 T2 Infra:       modular-station → utils, runtime-logger → modular-station
 T3 Features:    request-state, portal-gun, cut-short, server-islands → utils
 T4 Composed:    request-nanostores → request-state, content-utils → modular-station
-T5 Wrappers:    aik-mod → inline-mod, sitemap-ext → aik-route-config
+T5 Wrappers:    aik-mod → inline-mod, sitemap-ext → route-config
 ```
 
 ## CONVENTIONS
@@ -83,7 +84,6 @@ T5 Wrappers:    aik-mod → inline-mod, sitemap-ext → aik-route-config
 
 ### Integration Pattern (ALL Astro integrations follow this)
 
-- Use `defineIntegration()` from `astro-integration-kit`
 - Virtual modules via `@it-astro:*` namespace with `virtual.d.ts` for types
 - Middleware via `src/runtime/middleware.ts` for request-scoped logic
 - Multi-plugin Vite chains for orthogonal concerns

@@ -28,24 +28,14 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "prepublish": "pnpm run build",
-    "test": "vitest run --coverage",
-    "test:dev": "vitest --coverage.enabled=true",
     "validate": "tsc"
   },
   "dependencies": {
-    "@inox-tools/utils": "workspace:^",
-    "debug": "catalog:",
-    "recast": "catalog:",
-    "vite": "catalog:min"
+    "@inox-tools/route-config": "workspace:^"
   },
   "devDependencies": {
-    "@astrojs/compiler": "catalog:",
-    "@types/debug": "catalog:",
-    "@vitest/coverage-v8": "catalog:",
-    "ast-types": "catalog:",
     "tsup": "catalog:",
-    "typescript": "catalog:",
-    "vitest": "catalog:"
+    "typescript": "catalog:"
   },
   "peerDependencies": {
     "astro": "catalog:lax",

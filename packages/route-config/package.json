@@ -1,12 +1,10 @@
 {
-  "name": "@inox-tools/request-state",
-  "version": "1.0.0",
-  "description": "Shared request state between server and client",
+  "name": "@inox-tools/route-config",
+  "version": "0.0.0",
+  "description": "",
   "keywords": [
     "astro-integration",
-    "withastro",
-    "astro",
-    "utils"
+    "astro"
   ],
   "repository": {
     "url": "https://github.com/Fryuni/inox-tools"
@@ -22,33 +20,30 @@
   },
   "files": [
     "dist",
-    "src",
-    "virtual.d.ts"
+    "src"
   ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
     "prepublish": "pnpm run build",
-    "test": "echo 'Run test:e2e'",
-    "test:e2e": "playwright test",
-    "test:e2e:report": "playwright show-report"
+    "test": "vitest run --coverage",
+    "test:dev": "vitest --coverage.enabled=true",
+    "validate": "tsc"
   },
   "dependencies": {
     "@inox-tools/utils": "workspace:^",
-    "content-type": "catalog:",
-    "devalue": "catalog:"
+    "debug": "catalog:",
+    "recast": "catalog:",
+    "vite": "catalog:min"
   },
   "devDependencies": {
-    "@inox-tools/astro-tests": "workspace:^",
-    "@playwright/test": "catalog:",
-    "@types/content-type": "catalog:",
-    "@types/node": "catalog:",
-    "astro": "catalog:",
-    "content-type": "catalog:",
-    "jest-extended": "catalog:",
+    "@astrojs/compiler": "catalog:",
+    "@types/debug": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "ast-types": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:",
-    "vite": "catalog:"
+    "vitest": "catalog:"
   },
   "peerDependencies": {
     "astro": "catalog:lax"

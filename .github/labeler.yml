@@ -46,6 +46,9 @@ pkg/sitemap-ext:
 pkg/request-state:
 - 'packages/request-state/**'
 
+pkg/route-config:
+- 'packages/route-config/**'
+
 pkg/content-utils:
 - 'packages/content-utils/**'
 

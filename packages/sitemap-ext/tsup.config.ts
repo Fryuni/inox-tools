@@ -12,17 +12,7 @@ export default defineConfig({
 	clean: true,
 	splitting: true,
 	minify: false,
-	external: [
-		'astro',
-		'astro-integration-kit',
-		'@inox-tools/aik-route-config',
-		'@astrojs/sitemap',
-		'./virtual.d.ts',
-		'vite',
-	],
-	noExternal: [
-		// '@inox-tools/aik-route-config',
-	],
+	external: ['astro', '@inox-tools/route-config', '@astrojs/sitemap', './virtual.d.ts', 'vite'],
 	treeshake: 'smallest',
 	tsconfig: 'tsconfig.json',
 });

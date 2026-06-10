@@ -10,7 +10,7 @@ export default defineConfig({
 	sourcemap: true,
 	clean: true,
 	minify: false,
-	external: ['astro', 'astro-integration-kit', 'vite', 'recast'],
+	external: ['astro', 'astro-integration-kit'],
 	treeshake: 'smallest',
 	tsconfig: 'tsconfig.json',
 });

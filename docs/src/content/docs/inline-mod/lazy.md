@@ -14,7 +14,7 @@ In most cases, [`asyncFactory`](/inline-mod/factory-wrappers#asyncfactory) is a 
 Make sure your use case complies with all the [requirements](#requirements) laid out on this page.
 :::
 
-Sometimes you can only get a value after the module where it should be serialized to is created. When using the [AIK Plugin](/inline-mod/aik-plugin), for example, you can only define an inline module during the `astro:config:setup` hook, but you might want to serialize a value from other hooks.
+Sometimes you can only get a value after the module where it should be serialized to is created. When making an integration, for example, you can only define an inline module during the `astro:config:setup` hook, but you might want to serialize a value from other hooks.
 
 For such use cases, you can use the `lazyValue` utility to create a placeholder value that you can set later:
 
@@ -89,31 +89,28 @@ In the following code, `pagesData` is set on an Astro hook that runs before Vite
 
 On the other hand, `pagesDataLate` is being set on an Astro hook that runs _after_ Vite's bundling, this is not allowed. Using the `pagesDataLate` value will lead to problems.
 
-```ts ins={"This runs before Vite's bundling, correct": 16-17} del={"This runs after Vite's bundling, incorrect": 20-21}
-import { defineIntegration, withPlugins } from 'astro-integration-kit';
+```ts ins={"This runs before Vite's bundling, correct": 12-13} del={"This runs after Vite's bundling, incorrect": 16-17}
+import type { AstroIntegration } from 'astro';
 import { lazyValue } from '@inox-tools/inline-mod';
-import aikMod from '@inox-tools/aik-mod';
 
-export default defineIntegration({
-  name: 'my-integration',
-  setup: ({ name }) => {
-    const pagesData = lazyValue();
-    const pagesDataLate = lazyValue();
+export default function myIntegration(): AstroIntegration {
+  const pagesData = lazyValue();
+  const pagesDataLate = lazyValue();
 
-    return withPlugins({
-      name,
-      plugins: [aikMod],
-      hooks: {
-        'astro:build:setup': ({ pages }) => {
-          pagesData.set(pages);
-        },
-        'astro:build:done': ({ pages }) => {
-          pagesDataLate.set(pages);
-        },
+  return {
+    name: 'my-integration',
+    hooks: {
+      'astro:build:setup': ({ pages }) => {
+
+        pagesData.set(pages);
       },
-    });
-  },
-});
+      'astro:build:done': ({ pages }) => {
+
+        pagesDataLate.set(pages);
+      },
+    },
+  };
+}
 ```
 
 ### No self dependency

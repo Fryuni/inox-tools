@@ -12,7 +12,7 @@ export default defineConfig({
 	clean: true,
 	splitting: true,
 	minify: false,
-	external: ['astro', 'astro-integration-kit', './virtual.d.ts', 'vite', '@inox-tools/utils'],
+	external: ['astro', './virtual.d.ts', 'vite', '@inox-tools/utils'],
 	noExternal: [],
 	treeshake: 'smallest',
 	tsconfig: 'tsconfig.json',

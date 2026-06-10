@@ -1,7 +1,7 @@
-import type { Hooks } from 'astro-integration-kit';
 import type { AstroIntegration, AstroIntegrationLogger, HookParameters } from 'astro';
-import { DEFAULT_HOOK_FACTORY, allHooksPlugin } from './allHooksPlugin.js';
 import { setGlobal } from './globalHooks.js';
+
+type Hooks = Astro.IntegrationHooks;
 
 type ToHookFunction<F> = F extends (...params: infer P) => any
 	? (...params: P) => Promise<void> | void
@@ -57,37 +57,6 @@ export type HookTrigger<K extends keyof ExtendedHooks> = (
 	paramsFactory: (logger: AstroIntegrationLogger) => Parameters<ExtendedHooks[K]>
 ) => Promise<void>;
 
-export const hookProviderPlugin = allHooksPlugin({
-	name: 'hook-provider',
-	setup() {
-		let logger: AstroIntegrationLogger;
-		let integrations: AstroIntegration[];
-
-		const pluginApi: PluginApi = {
-			hooks: {
-				run: (hook, params) => runHook(integrations, logger, hook, params),
-				getTrigger: (hook) => (params) => runHook(integrations, logger, hook, params),
-			},
-		};
-
-		return {
-			'astro:config:setup': ({ config, logger: hookLogger }) => {
-				integrations = config.integrations;
-				logger = hookLogger;
-
-				return pluginApi;
-			},
-			'astro:config:done': ({ config, logger: hookLogger }) => {
-				integrations = config.integrations;
-				logger = hookLogger;
-
-				return pluginApi;
-			},
-			[DEFAULT_HOOK_FACTORY]: () => () => pluginApi,
-		};
-	},
-});
-
 const globalHookIntegrationName = '@inox-tools/modular-station/global-hooks';
 const versionMarker = Symbol(globalHookIntegrationName);
 
@@ -95,7 +64,9 @@ type MarkedIntegration = AstroIntegration & {
 	[versionMarker]: true;
 };
 
-export const registerGlobalHooks = (params: HookParameters<'astro:config:setup'>) => {
+export const registerGlobalHooks = (
+	params: Pick<HookParameters<'astro:config:setup'>, 'logger' | 'config'>
+) => {
 	// Register immediately so hooks can be triggered from calls within the current hook
 	setGlobal(params.logger, params.config.integrations);
 

@@ -36,8 +36,7 @@
   },
   "dependencies": {
     "@inox-tools/request-state": "workspace:^",
-    "@inox-tools/utils": "workspace:^",
-    "astro-integration-kit": "catalog:"
+    "@inox-tools/utils": "workspace:^"
   },
   "devDependencies": {
     "@inox-tools/astro-tests": "workspace:^",

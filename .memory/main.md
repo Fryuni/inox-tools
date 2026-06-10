@@ -10,7 +10,6 @@ The project is mature and in active maintenance. Most packages are stable with e
 
 ## Key Decisions Made
 
-- Astro Integration Kit (`defineIntegration()`) is the standard pattern for all integrations
 - Virtual modules use `@it-astro:*` namespace
 - Changesets for versioning; `pkg-pr-new` for preview releases
 - Sequential test execution (shared fixtures)
@@ -20,11 +19,13 @@ The project is mature and in active maintenance. Most packages are stable with e
 ## Milestones
 
 ### Completed
+
 - Full dependency upgrade (#263)
 - Utils API stabilization with auto-dependent computed atoms (#266)
 - Batching support for `resolvedAtom` (77b0b6b, pending release)
 
 ### Planned
+
 - Release pending changeset for utils batching feature
 - Ongoing: content-utils collision detection (3 TODOs in injector.ts)
 

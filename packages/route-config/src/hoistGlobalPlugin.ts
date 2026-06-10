@@ -17,7 +17,7 @@ export function hoistGlobalPlugin(options: HoistGlobalOptions): Plugin {
 	const resolvedId = '\x00' + options.configImport;
 
 	return {
-		name: `@inox-tools/aik-route-config/${options.configImport}`,
+		name: `@inox-tools/route-config/${options.configImport}`,
 		resolveId(id) {
 			if (id === options.configImport) {
 				return resolvedId;
@@ -27,7 +27,7 @@ export function hoistGlobalPlugin(options: HoistGlobalOptions): Plugin {
 			if (id === resolvedId) {
 				return `
         export default function(context, cb) {
-          globalThis[Symbol.for('@inox-tools/aik-route-config')]?.get('${options.configImport}')?.(context, cb);
+          globalThis[Symbol.for('@inox-tools/route-config')]?.get('${options.configImport}')?.(context, cb);
         }`;
 			}
 		},

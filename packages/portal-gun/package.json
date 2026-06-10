@@ -40,7 +40,6 @@
   "dependencies": {
     "@inox-tools/runtime-logger": "workspace:^",
     "@inox-tools/utils": "workspace:^",
-    "astro-integration-kit": "catalog:",
     "debug": "catalog:",
     "rehype": "catalog:"
   },

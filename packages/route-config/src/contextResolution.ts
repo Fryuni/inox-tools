@@ -1,7 +1,6 @@
-import type { AstroIntegration, HookParameters, RouteData } from 'astro';
+import type { AstroIntegration, AstroIntegrationLogger, HookParameters, RouteData } from 'astro';
 import * as path from 'node:path';
-import { Once } from '@inox-tools/utils/once';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { normalizePath } from 'vite';
 import { inspect } from 'node:util';
 import { debug } from './debug.js';
@@ -23,10 +22,25 @@ export function convertContext(context: InnerContext): ConfigContext | null {
 
 const componentToChunkMapping = new Map<string, string>();
 const componentToContextMapping = new Map<string, ConfigContext>();
+let ssrComponents: string[] = [];
+let ssrImportPromise: Promise<void> | undefined;
+
+export async function loadRouteConfigCallbacks(logger: AstroIntegrationLogger): Promise<void> {
+	if (ssrComponents.length === 0) return;
+
+	ssrImportPromise ??= (async () => {
+		for (const modulePath of ssrComponents) {
+			await import(/* @vite-ignore */ pathToFileURL(modulePath).href).catch((error) => {
+				logger.error(`Failed to import SSR component: ${modulePath} ${inspect(error)}`);
+			});
+		}
+	})();
+
+	await ssrImportPromise;
+}
 
 function integration(): AstroIntegration {
 	let root!: URL;
-	let ssrComponents: string[];
 
 	return {
 		name: '@inox-tools/route-config/context-resolution',
@@ -60,6 +74,9 @@ function integration(): AstroIntegration {
 				});
 			},
 			'astro:build:setup': ({ pages, target }) => {
+				ssrComponents = [];
+				ssrImportPromise = undefined;
+
 				if (target !== 'server') return;
 
 				for (const { route } of pages.values()) {
@@ -83,35 +100,30 @@ function integration(): AstroIntegration {
 					.map((r) => r.routeData)
 					.filter((r) => r.type === 'page')
 					.map((r) => r.component)
-					.map((c) => fileURLToPath(new URL(c, root)))
+					.map((c) => normalizePath(fileURLToPath(new URL(c, root))))
 					.map((c) => componentToChunkMapping.get(c))
-					.filter((m) => m !== undefined);
+					.filter((m): m is string => m !== undefined);
 			},
 			'astro:build:generated': async ({ logger }) => {
-				if (!ssrComponents) {
-					return;
-				}
-
-				// Import SSR components so the hoisted logic gets executed
-				for (const module of ssrComponents) {
-					await import(/* @vite-ignore */ module!).catch((error) => {
-						logger.error(`Failed to import SSR component: ${module!} ${inspect(error)}`);
-					});
-				}
+				await loadRouteConfigCallbacks(logger);
+			},
+			'astro:build:done': async ({ logger }) => {
+				await loadRouteConfigCallbacks(logger);
 			},
 		},
 	};
 }
 
-const integrateOnce = new Once();
+const integratedConfigs = new WeakSet<HookParameters<'astro:config:setup'>['updateConfig']>();
 
 export function integrate({
 	updateConfig,
 }: Pick<HookParameters<'astro:config:setup'>, 'updateConfig'>) {
-	integrateOnce.do(() => {
-		debug('Injecting route-config integration');
-		updateConfig({
-			integrations: [integration()],
-		});
+	if (integratedConfigs.has(updateConfig)) return;
+	integratedConfigs.add(updateConfig);
+
+	debug('Injecting route-config integration');
+	updateConfig({
+		integrations: [integration()],
 	});
 }

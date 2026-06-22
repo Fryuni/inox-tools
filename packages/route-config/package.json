@@ -31,7 +31,6 @@
     "validate": "tsc"
   },
   "dependencies": {
-    "@inox-tools/utils": "workspace:^",
     "debug": "catalog:",
     "recast": "catalog:",
     "vite": "catalog:min"

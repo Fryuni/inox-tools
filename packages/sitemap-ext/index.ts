@@ -1,4 +1,4 @@
-import { defineRouteConfig } from '@inox-tools/route-config';
+import { defineRouteConfig, loadRouteConfigCallbacks } from '@inox-tools/route-config';
 import { AstroError } from 'astro/errors';
 import { type AstroIntegration, type AstroIntegrationLogger, type RouteData } from 'astro';
 import * as path from 'node:path';
@@ -162,6 +162,8 @@ export default function sitemapExt({
 				await innerIntegration.hooks['astro:config:setup']?.(params);
 			},
 			'astro:build:done': async (params) => {
+				await loadRouteConfigCallbacks(params.logger);
+
 				const extraPagesSet = new Set<string>(
 					inclusions
 						.filter(

@@ -27,7 +27,7 @@ export function hoistGlobalPlugin(options: HoistGlobalOptions): Plugin {
 			if (id === resolvedId) {
 				return `
         export default function(context, cb) {
-          globalThis[Symbol.for('@inox-tools/route-config')]?.get('${options.configImport}')?.(context, cb);
+          return globalThis[Symbol.for('@inox-tools/route-config')]?.get('${options.configImport}')?.(context, cb);
         }`;
 			}
 		},

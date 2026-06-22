@@ -7,7 +7,7 @@ declare module 'sitemap-ext:config' {
 		) => void;
 	}) => Promise<void> | void;
 
-	declare const sitemap: (option: ConfigCallback | boolean) => void;
+	declare const sitemap: (option: ConfigCallback | boolean) => Promise<void> | void;
 
 	export default sitemap;
 }

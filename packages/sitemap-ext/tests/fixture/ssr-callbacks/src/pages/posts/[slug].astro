@@ -2,6 +2,7 @@
 import sitemap from 'sitemap-ext:config';
 
 sitemap(async ({ addToSitemap }) => {
+	await Promise.resolve();
 	addToSitemap([{ slug: 'post-1' }, { slug: 'post-2' }, { slug: 'post-3' }]);
 });
 

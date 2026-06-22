@@ -3,6 +3,7 @@ import { integrate, convertContext } from './contextResolution.js';
 import type { ConfigContext, InnerContext } from './contextResolution.js';
 import { debug } from './debug.js';
 import type { HookParameters } from 'astro';
+export { loadRouteConfigCallbacks } from './contextResolution.js';
 
 type ConfigHandler<T> = (context: ConfigContext, value: T) => Promise<void> | void;
 

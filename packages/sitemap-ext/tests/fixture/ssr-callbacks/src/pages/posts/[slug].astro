@@ -1,0 +1,13 @@
+---
+import sitemap from 'sitemap-ext:config';
+
+sitemap(async ({ addToSitemap }) => {
+	addToSitemap([{ slug: 'post-1' }, { slug: 'post-2' }, { slug: 'post-3' }]);
+});
+
+export const prerender = false;
+---
+
+<html>
+	<body>SSR post</body>
+</html>

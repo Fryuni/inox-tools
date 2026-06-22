@@ -30,7 +30,8 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "prepublish": "pnpm run build",
-    "test": "echo 'No tests'"
+    "test": "vitest run",
+    "test:dev": "vitest"
   },
   "dependencies": {
     "@astrojs/sitemap": "catalog:",
@@ -38,11 +39,13 @@
     "sitemap": "catalog:"
   },
   "devDependencies": {
+    "@inox-tools/astro-tests": "workspace:^",
     "@types/node": "catalog:",
     "astro": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:",
-    "vite": "catalog:"
+    "vite": "catalog:",
+    "vitest": "catalog:"
   },
   "peerDependencies": {
     "astro": "catalog:lax"

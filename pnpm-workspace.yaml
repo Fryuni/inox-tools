@@ -7,6 +7,11 @@ packages:
   - packages/*/e2e/fixture/*
   - packages/*/e2e/fixture/partials/*
 
+allowBuilds:
+  core-js-pure: false
+  esbuild: false
+  sharp: false
+
 catalog:
   '@astrojs/check': ^0.9.8
   '@astrojs/cloudflare': ^13.1.4

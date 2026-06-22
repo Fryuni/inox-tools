@@ -81,7 +81,7 @@ export default function (options: Options = {}): AstroIntegration {
 												async render(request, { routeData, clientAddress, locals, addCookieHeader } = {}) {
 													const url = new URL(request.url);
 													if(this.#manifest.assets.has(url.pathname)) {
-														const filePath = new URL('../../client/' + this.removeBase(url.pathname), import.meta.url);
+														const filePath = new URL('../client/' + this.removeBase(url.pathname), import.meta.url);
 														const data = await fs.promises.readFile(filePath);
 														return new Response(data);
 													}

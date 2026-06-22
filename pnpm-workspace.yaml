@@ -8,9 +8,9 @@ packages:
   - packages/*/e2e/fixture/partials/*
 
 allowBuilds:
-  core-js-pure: false
-  esbuild: false
-  sharp: false
+  core-js-pure: true
+  esbuild: true
+  sharp: true
 
 catalog:
   '@astrojs/check': ^0.9.9
@@ -104,11 +104,6 @@ catalogs:
     astro: ^6
     astro-integration-kit: ^0.20
     vite: ^7
-
-onlyBuiltDependencies:
-  - core-js-pure
-  - esbuild
-  - sharp
 
 overrides:
   astro: 'catalog:'

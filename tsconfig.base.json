@@ -2,6 +2,7 @@
   "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
     "declaration": true,
+    "ignoreDeprecations": "6.0",
     "strict": true,
     "moduleResolution": "Node16",
     "target": "ES2022",
@@ -12,6 +13,7 @@
     "allowImportingTsExtensions": false,
     "verbatimModuleSyntax": true,
     "stripInternal": true,
+    "types": ["node"],
     "lib": ["ESNext"]
   }
 }

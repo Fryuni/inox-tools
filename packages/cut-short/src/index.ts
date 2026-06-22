@@ -1,4 +1,4 @@
-import type { AstNode, TransformPluginContext } from 'rollup';
+import type { AstNode } from 'rollup';
 import { walk, type Node as ETreeNode } from 'estree-walker';
 import MagicString, { type SourceMap } from 'magic-string';
 import { debug } from './internal/debug.js';
@@ -41,8 +41,8 @@ export default function cutShort({
 										return fileURLToPath(new URL('./runtime/entrypoint.js', import.meta.url));
 									}
 								},
-								async transform(code, id, { ssr } = {}) {
-									if (!ssr) return;
+								async transform(code, id, options) {
+									if (!options?.ssr) return;
 
 									const transformers: (Transformer | false)[] = [
 										disableStreaming && createComponentTransformer,
@@ -113,11 +113,11 @@ export default function cutShort({
 	};
 }
 
-type Transformer = (
-	ctx: TransformPluginContext,
-	code: string,
-	id: string
-) => TransformResult | null;
+type ParseContext = {
+	parse(code: string): unknown;
+};
+
+type Transformer = (ctx: ParseContext, code: string, id: string) => TransformResult | null;
 
 type TransformResult = {
 	code: string;
@@ -133,7 +133,7 @@ const createComponentTransformer: Transformer = (ctx, code, id) => {
 	}
 
 	const ms = new MagicString(code);
-	const ast = ctx.parse(code);
+	const ast = ctx.parse(code) as ParseNode;
 
 	walk(ast, {
 		leave(estreeNode, parent) {

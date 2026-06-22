@@ -11,6 +11,7 @@ allowBuilds:
   core-js-pure: true
   esbuild: true
   sharp: true
+  workerd: true
 
 catalog:
   '@astrojs/check': ^0.9.9

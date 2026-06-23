@@ -14,14 +14,14 @@
       system: let
         throwSystem = throw "Unsupported system: ${system}";
         pkgs = nixpkgs.legacyPackages.${system};
-        node = pkgs.nodejs_22;
+        node = pkgs.nodejs_26;
 
         browsersInfo = builtins.fromJSON (builtins.readFile "${pkgs.playwright-driver}/browsers.json");
       in {
         devShells.default = pkgs.mkShell {
           packages = [
             node
-            pkgs.corepack_22
+            pkgs.corepack_26
             pkgs.git
           ];
 

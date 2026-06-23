@@ -128,7 +128,7 @@ turbo gen                       # Scaffold new package from templates
 
 ## CI
 
-- GitHub Actions: build (Node 20+22) → lint → test → e2e → dedupe check
+- GitHub Actions: build (Node 24+26) → lint → test → e2e → dedupe check
 - Build timeout: 3min, test timeout: 25min
 - `pkg-pr-new` publishes preview releases on every commit
 - Changesets auto-creates release PRs on main
@@ -139,7 +139,7 @@ turbo gen                       # Scaffold new package from templates
 - Nix flake available for dev environment (`flake.nix`)
 - `inline-mod/src/closure/entry.test.ts` is colocated with source (only exception to test separation)
 - `star-warp/routes/*` exports point to source files directly (not dist)
-- Node 22+ recommended (CI matrix: 20, 22)
+- Node 24+ recommended (CI matrix: 24, 26)
 
 ## Brain — Agent Memory
 

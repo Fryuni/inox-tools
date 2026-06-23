@@ -8,9 +8,10 @@ packages:
   - packages/*/e2e/fixture/partials/*
 
 allowBuilds:
-  core-js-pure: false
-  esbuild: false
-  sharp: false
+  core-js-pure: true
+  esbuild: true
+  sharp: true
+  workerd: true
 
 catalog:
   '@astrojs/check': ^0.9.8

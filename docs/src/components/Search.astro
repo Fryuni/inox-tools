@@ -160,7 +160,9 @@ export type { Props } from '@astrojs/starlight/props';
 				// normally copies the prop into the store) runs before the prop has
 				// reached the child element. Same shape as `box.sourcesMap` above.
 				const chatInternals = box as unknown as {
-					chatStore?: { state: { sourcesMap: NonNullable<HTMLOramaSearchBoxElement['sourcesMap']> } };
+					chatStore?: {
+						state: { sourcesMap: NonNullable<HTMLOramaSearchBoxElement['sourcesMap']> };
+					};
 				};
 				if (chatInternals.chatStore && box.sourcesMap) {
 					chatInternals.chatStore.state.sourcesMap = box.sourcesMap;

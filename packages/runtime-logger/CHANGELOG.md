@@ -1,5 +1,16 @@
 # @inox-tools/runtime-logger
 
+## 1.1.0
+
+### Minor Changes
+
+- 74ad4e5: Simplifies internals
+
+### Patch Changes
+
+- Updated dependencies [74ad4e5]
+  - @inox-tools/modular-station@0.10.0
+
 ## 1.0.0
 
 ### Major Changes

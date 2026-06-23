@@ -1,5 +1,16 @@
 # @inox-tools/request-nanostores
 
+## 1.1.0
+
+### Minor Changes
+
+- 74ad4e5: Simplifies internals
+
+### Patch Changes
+
+- Updated dependencies [74ad4e5]
+  - @inox-tools/request-state@1.1.0
+
 ## 1.0.0
 
 ### Major Changes

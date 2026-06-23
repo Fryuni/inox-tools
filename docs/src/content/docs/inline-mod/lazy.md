@@ -101,11 +101,9 @@ export default function myIntegration(): AstroIntegration {
     name: 'my-integration',
     hooks: {
       'astro:build:setup': ({ pages }) => {
-
         pagesData.set(pages);
       },
       'astro:build:done': ({ pages }) => {
-
         pagesDataLate.set(pages);
       },
     },

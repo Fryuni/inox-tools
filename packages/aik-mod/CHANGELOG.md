@@ -1,5 +1,13 @@
 # @inox-tools/aik-mod
 
+## 0.15.0
+
+### Minor Changes
+
+- 74ad4e5: Deprecates the package
+
+  Astro Integration Kit is deprecated, and so is this package. Use `@inox-tools/inline-mod` directly instead.
+
 ## 0.14.0
 
 ### Minor Changes

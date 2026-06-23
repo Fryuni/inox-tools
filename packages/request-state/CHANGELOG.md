@@ -1,5 +1,11 @@
 # @inox-tools/request-state
 
+## 1.1.0
+
+### Minor Changes
+
+- 74ad4e5: Simplifies internals
+
 ## 1.0.0
 
 ### Major Changes

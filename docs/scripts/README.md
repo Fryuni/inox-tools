@@ -8,11 +8,11 @@ project. It runs automatically at the tail end of `pnpm --filter docs build`
 
 ### Env vars
 
-| Variable                       | Where                             | What                                                                            |
-| ------------------------------ | --------------------------------- | ------------------------------------------------------------------------------- |
-| `ORAMA_CLOUD_PROJECT_ID`       | `.env.production` (public)        | Same project id used by the search UI.                                           |
-| `ORAMA_CLOUD_DATASOURCE_ID`    | `.env.production` (public)        | REST API data source id of the collection to reindex.                            |
-| `ORAMA_CLOUD_PRIVATE_API_KEY`  | **Vercel secret (never commit)**  | Write-scoped Orama Cloud key. Required for a real ingestion run.                 |
+| Variable                      | Where                            | What                                                             |
+| ----------------------------- | -------------------------------- | ---------------------------------------------------------------- |
+| `ORAMA_CLOUD_PROJECT_ID`      | `.env.production` (public)       | Same project id used by the search UI.                           |
+| `ORAMA_CLOUD_DATASOURCE_ID`   | `.env.production` (public)       | REST API data source id of the collection to reindex.            |
+| `ORAMA_CLOUD_PRIVATE_API_KEY` | **Vercel secret (never commit)** | Write-scoped Orama Cloud key. Required for a real ingestion run. |
 
 If `ORAMA_CLOUD_PRIVATE_API_KEY` is absent the script logs a warning and exits
 zero — so branch / preview deployments without the secret do not fail the build.

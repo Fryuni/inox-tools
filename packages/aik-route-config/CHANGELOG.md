@@ -1,5 +1,19 @@
 # @inox-tools/aik-route-config
 
+## 1.1.0
+
+### Minor Changes
+
+- 74ad4e5: Deprecates the package
+
+  Astro Integration Kit is deprecated, and so is this package. Use `@inox-tools/route-config` instead.
+
+### Patch Changes
+
+- Updated dependencies [74ad4e5]
+- Updated dependencies [025bb4d]
+  - @inox-tools/route-config@0.0.1
+
 ## 1.0.1
 
 ### Patch Changes

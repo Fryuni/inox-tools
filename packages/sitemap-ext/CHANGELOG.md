@@ -1,5 +1,18 @@
 # @inox-tools/sitemap-ext
 
+## 0.10.0
+
+### Minor Changes
+
+- 74ad4e5: Simplifies internals
+
+### Patch Changes
+
+- 025bb4d: Fix SSR route-config callback loading during pure server builds so sitemap-ext can include URLs when Astro skips the static generation hook.
+- Updated dependencies [74ad4e5]
+- Updated dependencies [025bb4d]
+  - @inox-tools/route-config@0.0.1
+
 ## 0.9.1
 
 ### Patch Changes

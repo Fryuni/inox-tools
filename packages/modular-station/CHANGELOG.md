@@ -1,5 +1,13 @@
 # @inox-tools/modular-station
 
+## 0.10.0
+
+### Minor Changes
+
+- 74ad4e5: Removes `asPlugin()`, `asOptionalPlugin()` and `hookProviderPlugin`
+
+  Astro Integration Kit is deprecated so support for it is removed.
+
 ## 0.9.0
 
 ### Minor Changes

@@ -119,8 +119,7 @@ function extractDocument(html, url) {
 		for (const el of main.querySelectorAll(sel)) el.remove();
 	}
 
-	const titleEl =
-		main.querySelector('h1') ?? root.querySelector('head > title');
+	const titleEl = main.querySelector('h1') ?? root.querySelector('head > title');
 	const title = (titleEl?.text ?? '').trim();
 	if (!title) return null;
 
@@ -143,9 +142,7 @@ function extractDocument(html, url) {
 
 async function collectDocuments() {
 	if (!existsSync(STATIC_ROOT)) {
-		die(
-			`Static build output not found at ${STATIC_ROOT}. Run \`astro build\` before indexing.`
-		);
+		die(`Static build output not found at ${STATIC_ROOT}. Run \`astro build\` before indexing.`);
 	}
 
 	const docs = [];
@@ -191,7 +188,9 @@ async function main() {
 	if (DRY_RUN) {
 		log('Dry run — skipping Orama Cloud API calls.');
 		const sample = documents[0];
-		log(`First document: ${JSON.stringify({ ...sample, content: sample.content.slice(0, 120) + '…' }, null, 2)}`);
+		log(
+			`First document: ${JSON.stringify({ ...sample, content: sample.content.slice(0, 120) + '…' }, null, 2)}`
+		);
 		return;
 	}
 
@@ -199,7 +198,9 @@ async function main() {
 		['ORAMA_CLOUD_PROJECT_ID', PROJECT_ID],
 		['ORAMA_CLOUD_DATASOURCE_ID', DATASOURCE_ID],
 		['ORAMA_CLOUD_PRIVATE_API_KEY', PRIVATE_API_KEY],
-	].filter(([, v]) => !v).map(([k]) => k);
+	]
+		.filter(([, v]) => !v)
+		.map(([k]) => k);
 
 	if (missing.length > 0) {
 		// On preview / PR deployments the private key is often not available.

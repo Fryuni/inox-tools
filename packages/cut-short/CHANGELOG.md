@@ -1,5 +1,11 @@
 # @inox-tools/cut-short
 
+## 2.1.0
+
+### Minor Changes
+
+- 74ad4e5: Simplifies internals
+
 ## 2.0.0
 
 ### Major Changes

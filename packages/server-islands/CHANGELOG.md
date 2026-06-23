@@ -1,5 +1,11 @@
 # @inox-tools/server-islands
 
+## 0.7.0
+
+### Minor Changes
+
+- 74ad4e5: Simplifies internals
+
 ## 0.6.0
 
 ### Minor Changes

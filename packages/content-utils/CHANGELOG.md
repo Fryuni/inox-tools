@@ -1,5 +1,16 @@
 # @inox-tools/content-utils
 
+## 0.15.0
+
+### Minor Changes
+
+- 74ad4e5: Simplifies internals
+
+### Patch Changes
+
+- Updated dependencies [74ad4e5]
+  - @inox-tools/modular-station@0.10.0
+
 ## 0.14.0
 
 ### Minor Changes

@@ -17,7 +17,7 @@ describe('Astro when on a static output project with an adapter (old hybrid mode
 		});
 
 		afterAll(async () => {
-			devServer?.stop();
+			await devServer?.stop();
 		});
 
 		test('identifies the dev server for prerender routes', async () => {

@@ -5,6 +5,8 @@ const fixture = await loadFixture({
 	root: './fixture/basic',
 });
 
+test.describe.configure({ mode: 'serial' });
+
 let server: PreviewServer;
 
 test.beforeAll(async () => {

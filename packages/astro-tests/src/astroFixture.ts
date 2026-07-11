@@ -273,13 +273,23 @@ export async function loadFixture({ root, ...remaining }: InlineConfig): Promise
 		config,
 		startDevServer: async (extraInlineConfig = {}) => {
 			process.env.NODE_ENV = 'development';
+			const vitestEnv = process.env.VITEST;
+			delete process.env.VITEST;
 			debug(`Starting dev server for fixture ${root}`);
-			devServer = await dev(
-				mergeConfig(inlineConfig, {
-					...extraInlineConfig,
-					force: true,
-				})
-			);
+			try {
+				devServer = await dev(
+					mergeConfig(inlineConfig, {
+						...extraInlineConfig,
+						force: true,
+					})
+				);
+			} finally {
+				if (vitestEnv === undefined) {
+					delete process.env.VITEST;
+				} else {
+					process.env.VITEST = vitestEnv;
+				}
+			}
 			viteServerOptions.host = parseAddressToHost(devServer.address.address)!;
 			viteServerOptions.port = devServer.address.port;
 			debug(`Dev server for ${root} running at ${resolveUrl('/')}`);

@@ -1,5 +1,4 @@
-import type { AstNode, TransformPluginContext } from 'rollup';
-import { walk, type Node as ETreeNode } from 'estree-walker';
+import type { Plugin } from 'vite';
 import MagicString, { type SourceMap } from 'magic-string';
 import { debug } from './internal/debug.js';
 import { AstroError } from 'astro/errors';
@@ -9,7 +8,12 @@ import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { AstroIntegration } from 'astro';
 
-type ParseNode = ETreeNode & AstNode;
+type ParsedAstNode = {
+	type: string;
+	start: number;
+	end: number;
+	[key: string]: unknown;
+};
 
 export default function cutShort({
 	disableStreaming = false,
@@ -41,8 +45,8 @@ export default function cutShort({
 										return fileURLToPath(new URL('./runtime/entrypoint.js', import.meta.url));
 									}
 								},
-								async transform(code, id, { ssr } = {}) {
-									if (!ssr) return;
+								async transform(code, id, options) {
+									if (!options?.ssr) return;
 
 									const transformers: (Transformer | false)[] = [
 										disableStreaming && createComponentTransformer,
@@ -113,6 +117,10 @@ export default function cutShort({
 	};
 }
 
+type TransformPluginContext = ThisParameterType<
+	Extract<NonNullable<Plugin['transform']>, (...args: never[]) => unknown>
+>;
+
 type Transformer = (
 	ctx: TransformPluginContext,
 	code: string,
@@ -135,27 +143,23 @@ const createComponentTransformer: Transformer = (ctx, code, id) => {
 	const ms = new MagicString(code);
 	const ast = ctx.parse(code);
 
-	walk(ast, {
-		leave(estreeNode, parent) {
-			const node = estreeNode as ParseNode;
-			if (node.type !== 'FunctionDeclaration') return;
-			if (node.id.name !== 'createComponent') return;
-			if (parent?.type !== 'Program') {
-				throw new AstroError(
-					'"@inox-tools/cut-short" cannot handle responses from nested components with the installed Astro version.',
-					'Please open an issue on https://github.com/Fryuni/inox-tools/issues/new'
-				);
-			}
-
-			ms.prependLeft(
-				node.start,
-				[
-					`import {wrapCreateComponent as $$createComponent} from ${JSON.stringify(fileURLToPath(new URL('./runtime/nestedComponentWrapper.js', import.meta.url)))};`,
-					'const createComponent = $$createComponent(',
-				].join('\n')
+	visitAst(ast, null, (node, parent) => {
+		if (!isCreateComponentDeclaration(node)) return;
+		if (parent?.type !== 'Program') {
+			throw new AstroError(
+				'"@inox-tools/cut-short" cannot handle responses from nested components with the installed Astro version.',
+				'Please open an issue on https://github.com/Fryuni/inox-tools/issues/new'
 			);
-			ms.appendRight(node.end, ');');
-		},
+		}
+
+		ms.prependLeft(
+			node.start,
+			[
+				`import {wrapCreateComponent as $$createComponent} from ${JSON.stringify(fileURLToPath(new URL('./runtime/nestedComponentWrapper.js', import.meta.url)))};`,
+				'const createComponent = $$createComponent(',
+			].join('\n')
+		);
+		ms.appendRight(node.end, ');');
 	});
 
 	return {
@@ -163,3 +167,50 @@ const createComponentTransformer: Transformer = (ctx, code, id) => {
 		map: ms.generateMap(),
 	};
 };
+
+function visitAst(
+	value: unknown,
+	parent: ParsedAstNode | null,
+	visitor: (node: ParsedAstNode, parent: ParsedAstNode | null) => void
+): void {
+	if (!isParsedAstNode(value)) return;
+
+	for (const key in value) {
+		if (key === 'parent') continue;
+
+		const child = value[key];
+		if (Array.isArray(child)) {
+			for (const item of child) visitAst(item, value, visitor);
+		} else {
+			visitAst(child, value, visitor);
+		}
+	}
+
+	visitor(value, parent);
+}
+
+function isParsedAstNode(value: unknown): value is ParsedAstNode {
+	return (
+		typeof value === 'object' &&
+		value !== null &&
+		'type' in value &&
+		typeof value.type === 'string' &&
+		'start' in value &&
+		typeof value.start === 'number' &&
+		'end' in value &&
+		typeof value.end === 'number'
+	);
+}
+
+function isCreateComponentDeclaration(
+	node: ParsedAstNode
+): node is ParsedAstNode & { type: 'FunctionDeclaration'; id: { name: string } } {
+	return (
+		node.type === 'FunctionDeclaration' &&
+		typeof node.id === 'object' &&
+		node.id !== null &&
+		'name' in node.id &&
+		typeof node.id.name === 'string' &&
+		node.id.name === 'createComponent'
+	);
+}

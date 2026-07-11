@@ -106,9 +106,13 @@ export default defineConfig({
 						{
 							label: 'Content Utilities',
 							collapsed: false,
-							autogenerate: {
-								directory: 'content-utils',
-							},
+							items: [
+								{
+									autogenerate: {
+										directory: 'content-utils',
+									},
+								},
+							],
 						},
 					],
 				},
@@ -127,14 +131,18 @@ export default defineConfig({
 						{
 							label: 'Modular Station',
 							collapsed: false,
-							autogenerate: {
-								directory: 'modular-station',
-							},
+							items: [
+								{
+									autogenerate: {
+										directory: 'modular-station',
+									},
+								},
+							],
 						},
 						{
 							label: 'Inline Module',
 							collapsed: true,
-							autogenerate: { directory: 'inline-mod' },
+							items: [{ autogenerate: { directory: 'inline-mod' } }],
 						},
 					],
 				},

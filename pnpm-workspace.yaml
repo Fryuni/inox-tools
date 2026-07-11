@@ -14,19 +14,19 @@ allowBuilds:
   workerd: true
 
 catalog:
-  '@astrojs/check': ^0.9.8
-  '@astrojs/cloudflare': ^13.1.4
-  '@astrojs/compiler': ^3.0.1
-  '@astrojs/internal-helpers': ^0.8.0
-  '@astrojs/markdown-remark': ^7.1.0
-  '@astrojs/mdx': ^5.0.3
-  '@astrojs/node': ^10.0.4
-  '@astrojs/preact': ^5.1.0
-  '@astrojs/react': ^5.0.2
-  '@astrojs/rss': ^4.0.18
-  '@astrojs/sitemap': ^3.7.2
-  '@astrojs/starlight': ~0.38.2
-  '@astrojs/vercel': ^10.0.2
+  '@astrojs/check': ^0.9.9
+  '@astrojs/cloudflare': ^14.1.2
+  '@astrojs/compiler': ^4.0.0
+  '@astrojs/internal-helpers': ^0.10.1
+  '@astrojs/markdown-remark': ^7.2.1
+  '@astrojs/mdx': ^7.0.2
+  '@astrojs/node': ^11.0.2
+  '@astrojs/preact': ^6.0.1
+  '@astrojs/react': ^6.0.1
+  '@astrojs/rss': ^4.0.19
+  '@astrojs/sitemap': ^3.7.3
+  '@astrojs/starlight': ~0.41.3
+  '@astrojs/vercel': ^11.0.2
   '@changesets/changelog-github': ^0.6.0
   '@changesets/cli': ^2.29.8
   '@croct/plug': ^0.23.0
@@ -52,7 +52,7 @@ catalog:
   '@vitest/coverage-v8': ^4.0.18
   '@vitest/ui': ^4.0.18
   ast-types: ^0.14.2
-  astro: ^6.1.2
+  astro: ^7.0.7
   astro-integration-kit: ~0.20.0
   content-type: ^1.0.5
   debug: ^4.4.3
@@ -81,7 +81,7 @@ catalog:
   shiki: ^4.0.0
   sitemap: ^9.0.1
   starlight-cooler-credit: ^0.6.0
-  starlight-links-validator: ^0.21.0
+  starlight-links-validator: ^0.25.2
   starlight-package-managers: ^0.12.0
   strip-ansi: ^7.2.0
   tsup: 8.5.1
@@ -90,7 +90,7 @@ catalog:
   undici: ^7.22.0
   unist-util-is: ^6.0.1
   upath: ^2.0.1
-  vite: ^7.3.1
+  vite: ^8.1.4
   vitest: ^4.0.18
   wrangler: ^4.77.0
   zod: ^4.3.6
@@ -99,12 +99,12 @@ catalogMode: manual
 
 catalogs:
   lax:
-    '@astrojs/starlight': ^0.38.0
-    astro: ^6
+    '@astrojs/starlight': ^0.38.0 || ^0.39.0 || ^0.40.0 || ^0.41.0
+    astro: ^6 || ^7
   min:
-    astro: ^6
+    astro: ^6 || ^7
     astro-integration-kit: ^0.20
-    vite: ^7
+    vite: ^7 || ^8
 
 onlyBuiltDependencies:
   - core-js-pure

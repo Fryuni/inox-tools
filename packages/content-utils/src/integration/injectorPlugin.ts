@@ -55,7 +55,8 @@ export const injectorPlugin = (state: IntegrationState): Plugin => {
 					debug('Generating fancy content module');
 					return [
 						`export {defineCollection} from ${JSON.stringify(resolve(thisDir, 'runtime/fancyContent.js'))};`,
-						'export {z, reference} from "astro:content";',
+						'export {z} from "astro/zod";',
+						'export {reference} from "astro:content";',
 					].join('\n');
 			}
 		},

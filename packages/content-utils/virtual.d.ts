@@ -1,5 +1,6 @@
 declare module '@it-astro:content' {
-	export { z, reference } from 'astro:content';
+	export { z } from 'astro/zod';
+	export { reference } from 'astro:content';
 	export type {
 		SchemaContext,
 		CollectionEntry,

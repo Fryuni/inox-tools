@@ -1,21 +1,9 @@
 import { defineConfig, envField } from 'astro/config';
 import starlight from '@astrojs/starlight';
-import type { StarlightConfig } from '@astrojs/starlight/types';
 import vercel from '@astrojs/vercel';
 import starWarp from '@inox-tools/star-warp';
 import starlightLinksValidator from 'starlight-links-validator';
 import starlightCoolerCredit from 'starlight-cooler-credit';
-
-const badge = {
-	new: {
-		text: 'NEW',
-		variant: 'success',
-	},
-	updated: {
-		text: 'UPDATED',
-		variant: 'default',
-	},
-} satisfies Record<string, NonNullable<NonNullable<StarlightConfig['sidebar']>[number]['badge']>>;
 
 process.env.ASTRO_PROJECT_ROOT = new URL('../', import.meta.url).toString();
 

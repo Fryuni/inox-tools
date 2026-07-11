@@ -538,6 +538,9 @@ importers:
       '@astrojs/rss':
         specifier: 'catalog:'
         version: 4.0.19
+      '@inox-tools/cut-short':
+        specifier: workspace:^
+        version: link:../../packages/cut-short
       '@inox-tools/sitemap-ext':
         specifier: workspace:^
         version: link:../../packages/sitemap-ext
@@ -808,6 +811,9 @@ importers:
       '@inox-tools/astro-tests':
         specifier: workspace:^
         version: link:../astro-tests
+      '@types/debug':
+        specifier: 'catalog:'
+        version: 4.1.13
       '@types/node':
         specifier: 'catalog:'
         version: 25.9.4

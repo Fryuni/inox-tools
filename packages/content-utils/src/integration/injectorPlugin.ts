@@ -91,7 +91,7 @@ export const injectorPlugin = (state: IntegrationState): Plugin => {
 				`import {injectCollections as $$inox_tools__injectCollection} from ${JSON.stringify(resolve(thisDir, 'runtime/injector.js'))};`
 			);
 
-			walk(ast, {
+			walk(ast as unknown as Node, {
 				enter(node, parent) {
 					if (parent?.type !== 'ExportNamedDeclaration' || node.type !== 'VariableDeclaration')
 						return;

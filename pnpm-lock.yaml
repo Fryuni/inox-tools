@@ -232,7 +232,6 @@ catalogs:
 
 overrides:
   astro: ^7.0.7
-  astro-integration-kit: ~0.20.0
   picomatch: 3.0.1
   vite: ^8.1.4
 
@@ -547,56 +546,6 @@ importers:
       astro:
         specifier: ^7.0.7
         version: 7.0.7(patch_hash=34ac88963a271f59948954a697fdf4850409d163faae6f020d77c206005cacc4)(@astrojs/markdown-remark@7.2.1)(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@types/node@25.9.4)(@vercel/functions@3.7.2)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(rollup@4.62.2)(terser@5.44.1)(yaml@2.9.0)
-      typescript:
-        specifier: 'catalog:'
-        version: 5.9.3
-
-  packages/aik-mod:
-    dependencies:
-      '@inox-tools/inline-mod':
-        specifier: workspace:^
-        version: link:../inline-mod
-      astro-integration-kit:
-        specifier: ~0.20.0
-        version: 0.20.0(astro@7.0.7(patch_hash=34ac88963a271f59948954a697fdf4850409d163faae6f020d77c206005cacc4)(@astrojs/markdown-remark@7.2.1)(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@types/node@25.9.4)(@vercel/functions@3.7.2)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(rollup@4.62.2)(terser@5.44.1)(yaml@2.9.0))
-      debug:
-        specifier: 'catalog:'
-        version: 4.4.3
-    devDependencies:
-      '@types/debug':
-        specifier: 'catalog:'
-        version: 4.1.13
-      '@types/node':
-        specifier: 'catalog:'
-        version: 25.9.4
-      astro:
-        specifier: ^7.0.7
-        version: 7.0.7(patch_hash=34ac88963a271f59948954a697fdf4850409d163faae6f020d77c206005cacc4)(@astrojs/markdown-remark@7.2.1)(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@types/node@25.9.4)(@vercel/functions@3.7.2)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(rollup@4.62.2)(terser@5.44.1)(yaml@2.9.0)
-      tsup:
-        specifier: 'catalog:'
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.16)(typescript@5.9.3)(yaml@2.9.0)
-      typescript:
-        specifier: 'catalog:'
-        version: 5.9.3
-      vite:
-        specifier: ^8.1.4
-        version: 8.1.4(@types/node@25.9.4)(esbuild@0.27.7)(jiti@2.6.1)(terser@5.44.1)(yaml@2.9.0)
-
-  packages/aik-route-config:
-    dependencies:
-      '@inox-tools/route-config':
-        specifier: workspace:^
-        version: link:../route-config
-      astro:
-        specifier: ^7.0.7
-        version: 7.0.7(patch_hash=34ac88963a271f59948954a697fdf4850409d163faae6f020d77c206005cacc4)(@astrojs/markdown-remark@7.2.1)(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@types/node@25.9.4)(@vercel/functions@3.7.2)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(rollup@4.62.2)(terser@5.44.1)(yaml@2.9.0)
-      astro-integration-kit:
-        specifier: ~0.20.0
-        version: 0.20.0(astro@7.0.7(patch_hash=34ac88963a271f59948954a697fdf4850409d163faae6f020d77c206005cacc4)(@astrojs/markdown-remark@7.2.1)(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@types/node@25.9.4)(@vercel/functions@3.7.2)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(rollup@4.62.2)(terser@5.44.1)(yaml@2.9.0))
-    devDependencies:
-      tsup:
-        specifier: 'catalog:'
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.16)(typescript@5.9.3)(yaml@2.9.0)
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
@@ -3782,12 +3731,6 @@ packages:
 
   astro-expressive-code@0.44.0:
     resolution: {integrity: sha512-b1wN/ZvbJprzxlGKIpIes2kQrCY5KRLwys2tWbZAZyjGZcW5ZtgneZnBwzNRiBna9/48d4mQl19KLjcRuhO1hw==}
-    peerDependencies:
-      astro: ^7.0.7
-
-  astro-integration-kit@0.20.0:
-    resolution: {integrity: sha512-VQQs7hS9M3XrJtxSLHVDhvHzgqwZuhot3sMoYImBJSvL7fMnleSVgkZhoEeRJd1+Qh96eb469nRnn5mdjIJJMQ==}
-    deprecated: 'Check the migration guide: https://astro-integration-kit.netlify.app/migration-guide/'
     peerDependencies:
       astro: ^7.0.7
 
@@ -8681,11 +8624,6 @@ snapshots:
       rehype-expressive-code: 0.44.0
       url-extras: 0.1.0
 
-  astro-integration-kit@0.20.0(astro@7.0.7(patch_hash=34ac88963a271f59948954a697fdf4850409d163faae6f020d77c206005cacc4)(@astrojs/markdown-remark@7.2.1)(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@types/node@25.9.4)(@vercel/functions@3.7.2)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(rollup@4.62.2)(terser@5.44.1)(yaml@2.9.0)):
-    dependencies:
-      astro: 7.0.7(patch_hash=34ac88963a271f59948954a697fdf4850409d163faae6f020d77c206005cacc4)(@astrojs/markdown-remark@7.2.1)(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@types/node@25.9.4)(@vercel/functions@3.7.2)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(rollup@4.62.2)(terser@5.44.1)(yaml@2.9.0)
-      pathe: 2.0.3
-
   astro@7.0.7(patch_hash=34ac88963a271f59948954a697fdf4850409d163faae6f020d77c206005cacc4)(@astrojs/markdown-remark@7.2.1)(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@types/node@25.9.4)(@vercel/functions@3.7.2)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(rollup@4.62.2)(terser@5.44.1)(yaml@2.9.0):
     dependencies:
       '@astrojs/compiler-rs': 0.3.0(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)
@@ -11549,21 +11487,6 @@ snapshots:
       source-map: 0.7.6
       stack-trace: 1.0.0
       vite: 8.1.4(@types/node@25.9.4)(esbuild@0.28.1)(jiti@2.6.1)(terser@5.44.1)(yaml@2.9.0)
-
-  vite@8.1.4(@types/node@25.9.4)(esbuild@0.27.7)(jiti@2.6.1)(terser@5.44.1)(yaml@2.9.0):
-    dependencies:
-      lightningcss: 1.32.0
-      picomatch: 3.0.1
-      postcss: 8.5.16
-      rolldown: 1.1.5
-      tinyglobby: 0.2.17
-    optionalDependencies:
-      '@types/node': 25.9.4
-      esbuild: 0.27.7
-      fsevents: 2.3.3
-      jiti: 2.6.1
-      terser: 5.44.1
-      yaml: 2.9.0
 
   vite@8.1.4(@types/node@25.9.4)(esbuild@0.28.1)(jiti@2.6.1)(terser@5.44.1)(yaml@2.9.0):
     dependencies:

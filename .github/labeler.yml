@@ -22,12 +22,6 @@ pkg/cut-short:
 pkg/request-nanostores:
 - 'packages/request-nanostores/**'
 
-pkg/aik-mod:
-- 'packages/aik-mod/**'
-
-pkg/aik-route-config:
-- 'packages/aik-route-config/**'
-
 pkg/custom-routing:
 - 'packages/custom-routing/**'
 

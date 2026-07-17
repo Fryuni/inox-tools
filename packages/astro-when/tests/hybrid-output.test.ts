@@ -6,6 +6,9 @@ const fixture = await loadFixture({
 	root: './fixture/hybrid-output',
 	output: 'static',
 	adapter: testAdapter(),
+	build: {
+		format: 'directory',
+	},
 });
 
 describe('Astro when on a static output project with an adapter (old hybrid mode)', () => {
@@ -55,6 +58,17 @@ describe('Astro when on a static output project with an adapter (old hybrid mode
 			const content = await res.text();
 
 			expect(content).toEqual('prerender');
+		});
+
+		test('skips a directory candidate for a prerendered page', async () => {
+			expect(fixture.pathExists('/client/directory')).toBe(true);
+			expect(fixture.pathExists('/client/directory/index.html')).toBe(true);
+			app.toInternalApp().manifest.assets.add('/directory');
+
+			const res = await app.render(new Request('http://example.com/directory'));
+			const content = await res.text();
+
+			expect(content).toContain('prerender');
 		});
 
 		test('identifies the server stage', async () => {

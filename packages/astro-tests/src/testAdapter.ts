@@ -87,7 +87,9 @@ export default function (options: Options = {}): AstroIntegration {
 											new URL('../client/' + assetPath + '.html', import.meta.url),
 											new URL('../client/' + assetPath + '/index.html', import.meta.url),
 										];
-										const filePath = filePaths.find((filePath) => fs.existsSync(filePath));
+										const filePath = filePaths.find(
+											(filePath) => fs.existsSync(filePath) && fs.statSync(filePath).isFile()
+										);
 										if (!filePath) throw new Error('Unable to find prerendered asset for ' + url.pathname);
 										const data = await fs.promises.readFile(filePath);
 										return new Response(data);

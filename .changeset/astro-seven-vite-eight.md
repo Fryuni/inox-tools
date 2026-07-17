@@ -1,6 +1,4 @@
 ---
-"@inox-tools/aik-mod": patch
-"@inox-tools/aik-route-config": patch
 "@inox-tools/astro-tests": patch
 "@inox-tools/astro-when": patch
 "@inox-tools/content-utils": patch

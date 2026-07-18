@@ -1,5 +1,15 @@
 # @inox-tools/star-warp
 
+## 2.0.0
+
+### Major Changes
+
+- 410697a: Require Astro 7 and Vite 8, dropping support for Astro 6 and Vite 7.
+
+  All Inox Tools integrations now require Astro `^7` in their peer dependencies. Integrations that peer-depend on Vite now require Vite `^8`, matching the Vite version bundled by Astro 7. Additionally, `@inox-tools/star-warp` now requires Starlight `^0.41`.
+
+  To migrate, upgrade your project to Astro 7 (see the [Astro 7 upgrade guide](https://docs.astro.build/en/guides/upgrade-to/v7/)), which brings Vite 8 along. Starlight users must upgrade to `@astrojs/starlight` `^0.41`. No API changes were made to the integrations themselves; projects already on Astro 7 and Vite 8 can upgrade without code changes.
+
 ## 1.1.1
 
 ### Patch Changes

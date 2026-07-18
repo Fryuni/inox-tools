@@ -1,5 +1,11 @@
 # @inox-tools/request-state
 
+## 1.1.1
+
+### Patch Changes
+
+- 6674224: Adds support for Astro 7 and Vite 8 while retaining support for previously compatible versions. `@inox-tools/star-warp` also adds support for Starlight 0.41.
+
 ## 1.1.0
 
 ### Minor Changes

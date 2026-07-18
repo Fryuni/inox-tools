@@ -11,8 +11,22 @@ const supportedExtensions: Record<string, true> = {
 	'.mdx': true,
 };
 
+/**
+ * A path whose Git rename history generates Astro redirects.
+ */
 export interface GitRedirectSource {
+	/**
+	 * An existing file or directory, resolved relative to the Astro project root (unless absolute).
+	 *
+	 * A file generates redirects for that page; a directory generates redirects for supported pages within it.
+	 */
 	path: string;
+	/**
+	 * The URL prefix for generated routes.
+	 *
+	 * It is normalized to a leading slash, with trailing slashes removed except for the root,
+	 * before being joined to page routes.
+	 */
 	prefix: string;
 }
 
@@ -33,6 +47,14 @@ type HistoryCommit = {
 	entries: HistoryEntry[];
 };
 
+/**
+ * Creates an Astro integration that generates redirects from Git rename history.
+ *
+ * Sources may be files or directories and are processed in order; for a generated-route collision, the
+ * earlier source wins. Existing routes and explicitly configured redirects always take precedence.
+ *
+ * Each source's containing repository must have complete, non-shallow history available at build time.
+ */
 export default function gitRedirect(sources: GitRedirectSource[]): AstroIntegration {
 	return {
 		name: '@inox-tools/git-redirect',

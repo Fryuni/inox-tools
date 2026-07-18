@@ -4,7 +4,7 @@ description: Generate Astro redirects from Git rename history.
 packageName: '@inox-tools/git-redirect'
 ---
 
-`@inox-tools/git-redirect` creates redirects for routes whose `.astro`, `.md`, or `.mdx` files were renamed in Git. It follows chained renames so an older URL redirects to the page's current route.
+`@inox-tools/git-redirect` creates redirects for routes whose `.astro`, `.md`, `.mdx`, `.html`, `.markdown`, `.mdown`, `.mkdn`, `.mkd`, `.mdwn`, `.js`, or `.ts` files were renamed in Git. Ordinary rename chains collapse to the page's current route, while separate lifetimes of a reused path remain isolated rather than being joined into one chain.
 
 ## Installation
 
@@ -36,7 +36,7 @@ export default defineConfig({
 
 Each source has these fields:
 
-- `path`: an existing page file or directory. Relative paths resolve from the Astro project root; absolute paths are also supported. A file generates redirects only for that page, while a directory is searched recursively for supported page files.
+- `path`: an existing page file or directory. Relative paths resolve from the Astro project root; absolute paths are also supported. A file generates redirects only for that page, while a directory is searched recursively for supported page files. For sources in Astro's pages directory, path components beginning with `_` or `.` are excluded, except for `.well-known`.
 - `prefix`: the URL prefix for the source's routes. It is normalized to have a leading slash and no trailing slash, except for `/`.
 
 For example, a source at `src/pages/guides` with a `/docs` prefix maps `src/pages/guides/getting-started.mdx` to `/docs/getting-started`.

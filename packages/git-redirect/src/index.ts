@@ -26,7 +26,10 @@ export interface GitRedirectSource {
 	/**
 	 * An existing file or directory, resolved relative to the Astro project root (unless absolute).
 	 *
-	 * A file generates redirects for that page; a directory generates redirects for supported pages within it.
+	 * A file generates redirects for that page; a directory generates redirects for supported pages within it. A
+	 * supported page file has a `.astro`, `.html`, `.md`, `.mdx`, `.markdown`, `.mdown`, `.mkdn`, `.mkd`, `.mdwn`,
+	 * `.js`, or `.ts` extension. Within Astro's pages directory, its path cannot contain a component beginning with
+	 * `_` or `.`, except for `.well-known`.
 	 */
 	path: string;
 	/**

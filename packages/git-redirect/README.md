@@ -36,11 +36,11 @@ export default defineConfig({
 - `path` must be an existing file or directory. Relative paths resolve from the Astro project root; absolute paths are also supported. The path must be inside a Git repository.
 - `prefix` is the URL base for the source. It is normalized to a leading slash with trailing slashes removed, except for `/`.
 
-A directory source recursively considers supported pages within that directory. A file source only considers that current file and its rename history; its routes are relative to the file's parent directory. Redirects are generated only for `.astro`, `.md`, and `.mdx` files whose current target still exists.
+A directory source recursively considers supported pages within that directory. A file source only considers that current file and its rename history; its routes are relative to the file's parent directory. Supported page files have one of these extensions: `.astro`, `.md`, `.mdx`, `.html`, `.markdown`, `.mdown`, `.mkdn`, `.mkd`, `.mdwn`, `.js`, or `.ts`. Within Astro's pages directory, path components that begin with `_` or `.` are excluded, except for `.well-known`. Redirects are generated only when the current target still exists.
 
 For both old and current paths, the extension is removed and a terminal `index` segment is collapsed. For example, with `{ path: 'content/guides', prefix: '/guides' }`, renaming `content/guides/old/index.md` to `content/guides/getting-started.mdx` creates `/guides/old` → `/guides/getting-started`.
 
-All names in a rename chain redirect to the current page.
+All names in an ordinary rename chain redirect to the current page. If a path is reused later, its separate lifetimes are kept isolated rather than connected into one chain.
 
 ## Redirect precedence
 

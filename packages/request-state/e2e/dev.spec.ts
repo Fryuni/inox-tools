@@ -22,10 +22,9 @@ test('apply new as edited during development', async ({ page }) => {
 	await page.goto(pageUrl);
 	await expect
 		.poll(async () => {
-			const state = JSON.parse(await page.locator('pre#state').innerHTML());
+			const content = await page.locator('pre#state').textContent();
 
-			console.log(state);
-			return state;
+			return content ? JSON.parse(content) : null;
 		})
 		.toStrictEqual({
 			source: 'Original',
@@ -34,7 +33,11 @@ test('apply new as edited during development', async ({ page }) => {
 	await fixture.editFile('./src/state.ts', (code) => (code ?? '').replace('Original', 'Updated'));
 
 	await expect
-		.poll(async () => JSON.parse(await page.locator('pre#state').innerHTML()))
+		.poll(async () => {
+			const content = await page.locator('pre#state').textContent();
+
+			return content ? JSON.parse(content) : null;
+		})
 		.toStrictEqual({
 			source: 'Updated',
 		});

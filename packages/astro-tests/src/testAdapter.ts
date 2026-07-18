@@ -78,13 +78,22 @@ export default function (options: Options = {}): AstroIntegration {
 													this.#manifest = manifest;
 												}
 
-												async render(request, { routeData, clientAddress, locals, addCookieHeader } = {}) {
-													const url = new URL(request.url);
-													if(this.#manifest.assets.has(url.pathname)) {
-														const filePath = new URL('../../client/' + this.removeBase(url.pathname), import.meta.url);
-														const data = await fs.promises.readFile(filePath);
-														return new Response(data);
-													}
+								async render(request, { routeData, clientAddress, locals, addCookieHeader } = {}) {
+									const url = new URL(request.url);
+									if(this.#manifest.assets.has(url.pathname)) {
+										const assetPath = this.removeBase(url.pathname);
+										const clientRoots = ['../client/', '../../client/'];
+										const assetPaths = [assetPath, assetPath + '.html', assetPath + '/index.html'];
+										const filePaths = clientRoots.flatMap((clientRoot) =>
+											assetPaths.map((assetPath) => new URL(clientRoot + assetPath, import.meta.url))
+										);
+										const filePath = filePaths.find(
+											(filePath) => fs.existsSync(filePath) && fs.statSync(filePath).isFile()
+										);
+										if (!filePath) throw new Error('Unable to find prerendered asset for ' + url.pathname);
+										const data = await fs.promises.readFile(filePath);
+										return new Response(data);
+									}
 
 													${provideAddress ? `request[Symbol.for('astro.clientAddress')] = clientAddress ?? '0.0.0.0';` : ''}
 													return super.render(request, { routeData, locals, addCookieHeader });

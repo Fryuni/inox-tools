@@ -163,6 +163,26 @@ export type Fixture = {
 // Select a random default port
 let nextDefaultPort = 10000 + Math.floor(Math.random() * 40000);
 
+let vitestSuppressionDepth = 0;
+let vitestEnvBeforeSuppression: string | undefined;
+
+function suppressVitestEnv() {
+	if (vitestSuppressionDepth++ === 0) {
+		vitestEnvBeforeSuppression = process.env.VITEST;
+		delete process.env.VITEST;
+	}
+}
+
+function restoreVitestEnv() {
+	if (--vitestSuppressionDepth === 0) {
+		if (vitestEnvBeforeSuppression === undefined) {
+			delete process.env.VITEST;
+		} else {
+			process.env.VITEST = vitestEnvBeforeSuppression;
+		}
+	}
+}
+
 /**
  * Loads an Astro fixture project.
  *
@@ -273,13 +293,18 @@ export async function loadFixture({ root, ...remaining }: InlineConfig): Promise
 		config,
 		startDevServer: async (extraInlineConfig = {}) => {
 			process.env.NODE_ENV = 'development';
+			suppressVitestEnv();
 			debug(`Starting dev server for fixture ${root}`);
-			devServer = await dev(
-				mergeConfig(inlineConfig, {
-					...extraInlineConfig,
-					force: true,
-				})
-			);
+			try {
+				devServer = await dev(
+					mergeConfig(inlineConfig, {
+						...extraInlineConfig,
+						force: true,
+					})
+				);
+			} finally {
+				restoreVitestEnv();
+			}
 			viteServerOptions.host = parseAddressToHost(devServer.address.address)!;
 			viteServerOptions.port = devServer.address.port;
 			debug(`Dev server for ${root} running at ${resolveUrl('/')}`);

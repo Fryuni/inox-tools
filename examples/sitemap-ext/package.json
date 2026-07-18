@@ -15,6 +15,7 @@
     "@astrojs/mdx": "catalog:",
     "@astrojs/node": "catalog:",
     "@astrojs/rss": "catalog:",
+    "@inox-tools/cut-short": "workspace:^",
     "@inox-tools/sitemap-ext": "workspace:^",
     "astro": "catalog:",
     "typescript": "catalog:"

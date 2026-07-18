@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "astro": "astro",
-    "build": "rm -rf .astro node_modules/.astro && astro build",
+    "build": "rm -rf .astro node_modules/.astro && node --env-file-if-exists=.env.development ./node_modules/astro/bin/astro.mjs build",
     "index": "node --env-file-if-exists=.env.production ./scripts/index-orama.mjs",
     "build-index": "pnpm build && pnpm index",
     "dev": "astro dev",

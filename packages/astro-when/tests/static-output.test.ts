@@ -14,7 +14,7 @@ describe('Astro when on a static output project', () => {
 		});
 
 		afterAll(async () => {
-			devServer?.stop();
+			await devServer?.stop();
 		});
 
 		test('identifies the dev server', async () => {

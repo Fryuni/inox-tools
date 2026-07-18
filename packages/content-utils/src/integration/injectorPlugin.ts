@@ -55,7 +55,8 @@ export const injectorPlugin = (state: IntegrationState): Plugin => {
 					debug('Generating fancy content module');
 					return [
 						`export {defineCollection} from ${JSON.stringify(resolve(thisDir, 'runtime/fancyContent.js'))};`,
-						'export {z, reference} from "astro:content";',
+						'export {z} from "astro/zod";',
+						'export {reference} from "astro:content";',
 					].join('\n');
 			}
 		},
@@ -90,7 +91,7 @@ export const injectorPlugin = (state: IntegrationState): Plugin => {
 				`import {injectCollections as $$inox_tools__injectCollection} from ${JSON.stringify(resolve(thisDir, 'runtime/injector.js'))};`
 			);
 
-			walk(ast, {
+			walk(ast as unknown as Node, {
 				enter(node, parent) {
 					if (parent?.type !== 'ExportNamedDeclaration' || node.type !== 'VariableDeclaration')
 						return;

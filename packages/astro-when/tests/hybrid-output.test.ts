@@ -1,3 +1,4 @@
+import { rename } from 'node:fs/promises';
 import { loadFixture, type DevServer, type TestApp } from '@inox-tools/astro-tests/astroFixture';
 import testAdapter from '@inox-tools/astro-tests/testAdapter';
 import { describe, test, expect, beforeAll, afterAll } from 'vitest';
@@ -6,6 +7,9 @@ const fixture = await loadFixture({
 	root: './fixture/hybrid-output',
 	output: 'static',
 	adapter: testAdapter(),
+	build: {
+		format: 'directory',
+	},
 });
 
 describe('Astro when on a static output project with an adapter (old hybrid mode)', () => {
@@ -17,7 +21,7 @@ describe('Astro when on a static output project with an adapter (old hybrid mode
 		});
 
 		afterAll(async () => {
-			devServer?.stop();
+			await devServer?.stop();
 		});
 
 		test('identifies the dev server for prerender routes', async () => {
@@ -57,6 +61,17 @@ describe('Astro when on a static output project with an adapter (old hybrid mode
 			expect(content).toEqual('prerender');
 		});
 
+		test('skips a directory candidate for a prerendered page', async () => {
+			expect(fixture.pathExists('/client/directory')).toBe(true);
+			expect(fixture.pathExists('/client/directory/index.html')).toBe(true);
+			app.toInternalApp().manifest.assets.add('/directory');
+
+			const res = await app.render(new Request('http://example.com/directory'));
+			const content = await res.text();
+
+			expect(content).toContain('prerender');
+		});
+
 		test('identifies the server stage', async () => {
 			const res = await app.render(new Request('http://example.com/on-demand'));
 			const content = await res.text();
@@ -69,6 +84,21 @@ describe('Astro when on a static output project with an adapter (old hybrid mode
 			const content = await res.text();
 
 			expect(content).toEqual('prerender');
+		});
+
+		test('finds directory-index prerendered pages from the Astro 6 client root', async () => {
+			const clientRoot = new URL('./client/', fixture.config.outDir);
+			const legacyClientRoot = new URL('../client/', fixture.config.outDir);
+			await rename(clientRoot, legacyClientRoot);
+
+			try {
+				app.toInternalApp().manifest.assets.add('/directory');
+				const res = await app.render(new Request('http://example.com/directory'));
+
+				expect(await res.text()).toContain('prerender');
+			} finally {
+				await rename(legacyClientRoot, clientRoot);
+			}
 		});
 	});
 });

@@ -1,7 +1,7 @@
 {
   description = "A collection of oxygen-free tools for astronauts.";
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/release-25.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/release-26.05";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
@@ -21,7 +21,7 @@
         devShells.default = pkgs.mkShell {
           packages = [
             node
-            pkgs.corepack_26
+            pkgs.corepack_24
             pkgs.git
           ];
 

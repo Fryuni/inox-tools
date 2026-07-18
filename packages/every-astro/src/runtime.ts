@@ -411,11 +411,7 @@ export function packageLinkCommands(
 			return [
 				{
 					command: yarnBerry
-						? [
-								'yarn',
-								'add',
-								...links.map(({ name, path }) => `${name}@portal:${path}`),
-							]
+						? ['yarn', 'add', ...links.map(({ name, path }) => `${name}@portal:${path}`)]
 						: [
 								'yarn',
 								'add',

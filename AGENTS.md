@@ -1,16 +1,16 @@
 # INOX-TOOLS
 
-**Generated:** 2026-02-09 | **Commit:** 771ef53 | **Branch:** main
+**Generated:** 2026-07-18 | **Commit:** 4790d7e | **Branch:** every-astro
 
 ## OVERVIEW
 
-pnpm monorepo of 17 `@inox-tools/*` packages — Astro integrations, Vite plugins, and utilities. Built with Turbo, tsup, TypeScript strict mode. Author: Luiz Ferraz (Fryuni).
+pnpm monorepo of 18 `@inox-tools/*` packages — Astro integrations, Vite plugins, CLIs, and utilities. Built with Turbo, tsup, TypeScript strict mode. Author: Luiz Ferraz (Fryuni).
 
 ## STRUCTURE
 
 ```
 inox-tools/
-├── packages/           # 17 @inox-tools/* packages (the product)
+├── packages/           # 18 @inox-tools/* packages (the product)
 │   ├── utils/          # Foundational: Lazy, Once, unist visitor (16+ consumers)
 │   ├── inline-mod/     # Most complex: closure serialization via V8 introspection
 │   ├── modular-station/# Integration hook system (withApi, onHook)
@@ -28,7 +28,8 @@ inox-tools/
 │   ├── star-warp/      # Pagefind search integration
 │   ├── sitemap-ext/    # Sitemap extension (entry at root index.ts, not src/)
 │   ├── velox-luna/     # CLI tool for Lunaria i18n
-│   └── dev-timings/    # Dev timing instrumentation
+│   ├── dev-timings/    # Dev timing instrumentation
+│   └── every-astro/    # Interactive Astro regression bisect CLI
 ├── examples/           # 11 demo Astro projects
 ├── docs/               # Starlight documentation site
 ├── turbo/              # Turbo generators for scaffolding new packages
@@ -44,6 +45,7 @@ inox-tools/
 | Add new Vite plugin  | `turbo gen` → `turbo/generators/vite-plugin/` | Separate template set                                               |
 | Shared utilities     | `packages/utils/src/`                         | Import as `@inox-tools/utils/lazy`, `@inox-tools/utils/values` etc. |
 | Test utilities       | `packages/astro-tests/`                       | `loadFixture()`, `testAdapter()`                                    |
+| Bisect Astro bugs    | `packages/every-astro/`                       | Builds and links Astro revisions into a local project               |
 | Virtual module types | `packages/*/virtual.d.ts`                     | All use `@it-astro:*` namespace                                     |
 | Package deps catalog | `pnpm-workspace.yaml` `catalog:` section      | Single source of truth for versions                                 |
 | Astro patch          | `patches/astro.patch`                         | Applied automatically at install                                    |
@@ -56,6 +58,7 @@ T2 Infra:       modular-station → utils, runtime-logger → modular-station
 T3 Features:    request-state, portal-gun, cut-short, server-islands → utils
 T4 Composed:    request-nanostores → request-state, content-utils → modular-station
 T5 Wrappers:    sitemap-ext → route-config
+Standalone:     every-astro (external dependencies only)
 ```
 
 ## CONVENTIONS
@@ -77,8 +80,8 @@ T5 Wrappers:    sitemap-ext → route-config
 
 - Entry: `src/index.ts` (exception: `sitemap-ext` uses root `index.ts`)
 - Build: `tsup` → `dist/` for every package
-- Exports: Conditional `types` + `default` in package.json `exports` field
-- Files shipped: `dist`, `src`, `virtual.d.ts`
+- Exports: Libraries use conditional `types` + `default`; `every-astro` exposes CLI bins
+- Files shipped: Package-specific `files` entries generally include `dist` and `src`
 
 ### Integration Pattern (ALL Astro integrations follow this)
 
@@ -137,7 +140,7 @@ turbo gen                       # Scaffold new package from templates
 - Nix flake available for dev environment (`flake.nix`)
 - `inline-mod/src/closure/entry.test.ts` is colocated with source (only exception to test separation)
 - `star-warp/routes/*` exports point to source files directly (not dist)
-- Node 22+ recommended (CI matrix: 20, 22)
+- Node 22+ recommended (CI matrix: 20, 22); `every-astro` requires Node 22.12+
 
 ## Brain — Agent Memory
 

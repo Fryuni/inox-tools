@@ -1,5 +1,11 @@
 # @inox-tools/inline-mod
 
+## 3.0.1
+
+### Patch Changes
+
+- 6674224: Adds support for Astro 7 and Vite 8 while retaining support for previously compatible versions. `@inox-tools/star-warp` also adds support for Starlight 0.41.
+
 ## 3.0.0
 
 ### Major Changes

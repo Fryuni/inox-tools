@@ -1,5 +1,5 @@
 ---
-import { Display } from '../components/Display.tsx';
+import { Display as ClientDisplay, Display as ServerDisplay } from '../components/Display.tsx';
 import { state } from '../state.js';
 
 state.set({
@@ -17,7 +17,7 @@ state.set({
 		<title>Islands example</title>
 	</head>
 	<body>
-		<Display id="server" />
-		<Display id="client" client:only="preact" />
+		<ServerDisplay id="server" />
+		<ClientDisplay id="client" client:only="preact" />
 	</body>
 </html>

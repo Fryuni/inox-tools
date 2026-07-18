@@ -1,5 +1,13 @@
 # @inox-tools/content-utils
 
+## 0.15.1
+
+### Patch Changes
+
+- 6674224: Adds support for Astro 7 and Vite 8 while retaining support for previously compatible versions. `@inox-tools/star-warp` also adds support for Starlight 0.41.
+- Updated dependencies [6674224]
+  - @inox-tools/modular-station@0.10.1
+
 ## 0.15.0
 
 ### Minor Changes

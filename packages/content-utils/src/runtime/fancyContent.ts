@@ -2,11 +2,10 @@
 
 import {
 	defineCollection as defineNative,
-	z,
 	type BaseSchema,
 	type SchemaContext,
 } from 'astro:content';
-import type { ZodIntersection } from 'astro/zod';
+import { z, type ZodIntersection } from 'astro/zod';
 
 export type { BaseSchema };
 

@@ -49,8 +49,8 @@ test('ending request with a component failure', async () => {
 	expect(res.headers.get('Content-Type')).toEqual('text/html');
 
 	const content = await res.text();
-	expect(content).toEqual(
-		'<!DOCTYPE html><html> <head><title>Its broken</title></head> <body> <p>This is my custom error 500 page!</p> </body></html>'
+	expect(content).toMatch(
+		/^\s*<!DOCTYPE html>\s*<html>\s*<head>\s*<title>Its broken<\/title>\s*<\/head>\s*<body>\s*<p>This is my custom error 500 page!<\/p>\s*<\/body>\s*<\/html>\s*$/
 	);
 });
 

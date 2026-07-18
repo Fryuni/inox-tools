@@ -1,5 +1,5 @@
 import type { SSRResult } from 'astro';
-import { createAstro, type createComponent as $createComponent } from 'astro/compiler-runtime';
+import { type createComponent as $createComponent } from 'astro/compiler-runtime';
 import type { AstroComponentFactory } from 'astro/runtime/server/index.js';
 import { CarrierError, LOCALS_KEY } from '../internal/carrier.js';
 
@@ -17,11 +17,9 @@ export function wrapCreateComponent(
 	};
 }
 
-const Astro = createAstro(undefined);
-
 function wrapFactory(factory: AstroComponentFactory): AstroComponentFactory {
 	return Object.assign(async (result: SSRResult, props: any, slots: any) => {
-		const localAstro = result.createAstro(Astro, props, slots);
+		const localAstro = result.createAstro(props, slots);
 		const state = localAstro.locals[LOCALS_KEY];
 
 		if (!state.response) {

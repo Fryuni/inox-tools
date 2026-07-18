@@ -1,6 +1,6 @@
 {
   "name": "@inox-tools/astro-tests",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Utilities for testing your own Astro integrations and libraries based on Astro's own testing tools",
   "keywords": [
     "withastro",
@@ -49,6 +49,6 @@
     "vitest": "catalog:"
   },
   "peerDependencies": {
-    "astro": "catalog:"
+    "astro": "catalog:lax"
   }
 }

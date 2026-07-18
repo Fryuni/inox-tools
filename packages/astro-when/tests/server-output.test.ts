@@ -17,7 +17,7 @@ describe('Astro when on a server output project', () => {
 		});
 
 		afterAll(async () => {
-			devServer?.stop();
+			await devServer?.stop();
 		});
 
 		test('identifies the dev server for prerender routes', async () => {

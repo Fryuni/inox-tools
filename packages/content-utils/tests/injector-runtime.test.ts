@@ -1,5 +1,6 @@
 import { AstroError } from 'astro/errors';
 import { z } from 'astro/zod';
+import type { ZodType } from 'astro/zod';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 const injectedCollections = vi.hoisted(() => ({}) as Record<string, any>);
@@ -65,8 +66,28 @@ describe('injectCollections', () => {
 			}),
 		});
 
-		const schema =
-			typeof result.blog.schema === 'function' ? result.blog.schema({}) : result.blog.schema;
+		const schema = (
+			typeof result.blog.schema === 'function'
+				? result.blog.schema({
+						image: () =>
+							z.object({
+								src: z.string(),
+								width: z.number(),
+								height: z.number(),
+								format: z.union([
+									z.literal('png'),
+									z.literal('jpg'),
+									z.literal('jpeg'),
+									z.literal('tiff'),
+									z.literal('webp'),
+									z.literal('gif'),
+									z.literal('svg'),
+									z.literal('avif'),
+								]),
+							}),
+					})
+				: result.blog.schema
+		) as ZodType;
 		expect(schema?.parse({ title: 'Hello', author: 'Codex' })).toStrictEqual({
 			title: 'Hello',
 			author: 'Codex',

@@ -36,6 +36,7 @@ type ResolvedSource = {
 	routeRoot: string;
 	repository: string;
 	file: boolean;
+	pagesRoot?: string;
 };
 
 type HistoryEntry =
@@ -61,11 +62,12 @@ export default function gitRedirect(sources: GitRedirectSource[]): AstroIntegrat
 		hooks: {
 			'astro:config:setup': async ({ config, updateConfig }) => {
 				const root = fileURLToPath(config.root);
+				const pagesRoot = path.join(fileURLToPath(config.srcDir), 'pages');
 				const resolvedSources = await Promise.all(
-					sources.map((source) => resolveSource(root, source))
+					sources.map((source) => resolveSource(root, pagesRoot, source))
 				);
 				const sourceFiles = await Promise.all(
-					resolvedSources.map((source) => getSourceFiles(source.path))
+					resolvedSources.map((source) => getSourceFiles(source.path, source.pagesRoot))
 				);
 				const historiesByRepository = await getRepositoryHistories(resolvedSources);
 				const existingRedirects = config.redirects ?? {};
@@ -116,7 +118,11 @@ export default function gitRedirect(sources: GitRedirectSource[]): AstroIntegrat
 	};
 }
 
-async function resolveSource(root: string, source: GitRedirectSource): Promise<ResolvedSource> {
+async function resolveSource(
+	root: string,
+	pagesRoot: string,
+	source: GitRedirectSource
+): Promise<ResolvedSource> {
 	const sourcePath = path.resolve(root, source.path);
 	const sourceStat = await getSourceStat(sourcePath);
 	const file = sourceStat.isFile();
@@ -129,7 +135,14 @@ async function resolveSource(root: string, source: GitRedirectSource): Promise<R
 		);
 	}
 
-	return { path: sourcePath, prefix: source.prefix, routeRoot, repository, file };
+	return {
+		path: sourcePath,
+		prefix: source.prefix,
+		routeRoot,
+		repository,
+		file,
+		pagesRoot: isWithin(pagesRoot, sourcePath) ? pagesRoot : undefined,
+	};
 }
 
 async function getSourceStat(sourcePath: string) {
@@ -267,11 +280,15 @@ function resolveRenameTargets(
 	for (const currentPath of currentPaths) paths.set(currentPath, currentPath);
 
 	const targets = new Map<string, string>();
+	const birthsCrossed = new Set<string>();
 	for (const commit of commits) {
 		const before = new Map(paths);
 
 		for (const entry of commit.entries) {
-			if (entry.kind === 'add') before.delete(entry.path);
+			if (entry.kind === 'add') {
+				before.delete(entry.path);
+				birthsCrossed.add(entry.path);
+			}
 		}
 		for (const entry of commit.entries) {
 			if (entry.kind === 'delete') before.set(entry.path, undefined);
@@ -282,7 +299,7 @@ function resolveRenameTargets(
 			const target = paths.get(entry.to);
 			before.delete(entry.to);
 			before.set(entry.from, target);
-			if (target !== undefined && !targets.has(entry.from)) {
+			if (target !== undefined && !targets.has(entry.from) && !birthsCrossed.has(entry.from)) {
 				targets.set(entry.from, target);
 			}
 		}
@@ -307,23 +324,33 @@ function splitNulFields(output: Buffer): string[] {
 }
 
 async function getCurrentRoutes(source: ResolvedSource): Promise<Set<string>> {
-	const files = await getSourceFiles(source.routeRoot);
+	const files = await getSourceFiles(source.routeRoot, source.pagesRoot);
 	return new Set(files.filter(hasSupportedExtension).map((file) => toRoute(source, file)));
 }
 
-async function getSourceFiles(sourcePath: string): Promise<string[]> {
+async function getSourceFiles(sourcePath: string, pagesRoot?: string): Promise<string[]> {
+	if (
+		pagesRoot &&
+		path
+			.relative(pagesRoot, sourcePath)
+			.split(path.sep)
+			.some((segment) => segment.startsWith('_'))
+	) {
+		return [];
+	}
+
 	const sourceStat = await stat(sourcePath);
 	if (sourceStat.isFile()) return [sourcePath];
 	if (!sourceStat.isDirectory()) return [];
 
 	const files: string[] = [];
 	for (const entry of await readdir(sourcePath, { withFileTypes: true })) {
-		if (entry.name === '.git') continue;
+		if (entry.name === '.git' || (pagesRoot && entry.name.startsWith('_'))) continue;
 
 		const entryPath = path.join(sourcePath, entry.name);
 		if (entry.isDirectory()) {
 			if (await hasGitMetadata(entryPath)) continue;
-			files.push(...(await getSourceFiles(entryPath)));
+			files.push(...(await getSourceFiles(entryPath, pagesRoot)));
 		} else if (entry.isFile()) {
 			files.push(entryPath);
 		}

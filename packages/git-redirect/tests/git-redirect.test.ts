@@ -45,7 +45,8 @@ async function withRepository(callback: (repository: string) => Promise<void>) {
 async function resolveRedirects(
 	repository: string,
 	sources: GitRedirectSource[],
-	existingRedirects: Record<string, string> = {}
+	existingRedirects: Record<string, string> = {},
+	srcDir = 'src'
 ) {
 	const integration = gitRedirect(sources);
 	const hook = integration.hooks['astro:config:setup'];
@@ -56,6 +57,7 @@ async function resolveRedirects(
 		config: {
 			redirects: existingRedirects,
 			root: pathToFileURL(`${repository}/`),
+			srcDir: pathToFileURL(`${repository}/${srcDir}/`),
 		},
 		updateConfig: (update: { redirects?: Record<string, string> }) => updates.push(update),
 	} as never);
@@ -130,6 +132,26 @@ describe('gitRedirect', () => {
 		});
 	});
 
+	test('does not redirect an older lifetime after its path is reused and deleted', async () => {
+		await withRepository(async (repository) => {
+			await createFile(repository, 'pages/old.md', '# Original');
+			await commit(repository, 'add original page');
+
+			await moveFile(repository, 'pages/old.md', 'pages/current.md');
+			await commit(repository, 'rename original page');
+
+			await createFile(repository, 'pages/old.md', '# Replacement');
+			await commit(repository, 'reuse old path');
+
+			await rm(join(repository, 'pages/old.md'));
+			await commit(repository, 'delete replacement page');
+
+			await expect(
+				resolveRedirects(repository, [{ path: 'pages', prefix: '/docs' }])
+			).resolves.toEqual({});
+		});
+	});
+
 	test('accepts a current file as the configured source path', async () => {
 		await withRepository(async (repository) => {
 			await createFile(repository, 'pages/old.mdx', '# Old');
@@ -143,6 +165,22 @@ describe('gitRedirect', () => {
 			).resolves.toEqual({
 				'/docs/old': '/docs/current',
 			});
+		});
+	});
+
+	test('excludes underscore-prefixed files in a custom Astro pages directory', async () => {
+		await withRepository(async (repository) => {
+			const srcDir = 'application';
+			const pages = `${srcDir}/pages`;
+			await createFile(repository, `${pages}/old.md`, '# Old');
+			await commit(repository, 'add page');
+
+			await moveFile(repository, `${pages}/old.md`, `${pages}/_draft.md`);
+			await commit(repository, 'move page to draft');
+
+			await expect(
+				resolveRedirects(repository, [{ path: pages, prefix: '/docs' }], {}, srcDir)
+			).resolves.toEqual({});
 		});
 	});
 

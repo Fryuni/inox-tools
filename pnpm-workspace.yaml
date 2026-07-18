@@ -54,6 +54,8 @@ catalog:
   ast-types: ^0.14.2
   astro: ^7.0.7
   content-type: ^1.0.5
+  corepack: 0.34.0
+  cross-spawn: 7.0.6
   debug: ^4.4.3
   devalue: ^5.6.3
   estree-walker: ^3.0.3

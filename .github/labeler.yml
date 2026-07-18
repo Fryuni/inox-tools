@@ -43,6 +43,9 @@ pkg/request-state:
 pkg/route-config:
 - 'packages/route-config/**'
 
+pkg/git-redirect:
+- 'packages/git-redirect/**'
+
 pkg/content-utils:
 - 'packages/content-utils/**'
 

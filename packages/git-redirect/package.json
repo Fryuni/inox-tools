@@ -1,0 +1,44 @@
+{
+  "name": "@inox-tools/git-redirect",
+  "version": "0.0.0",
+  "description": "Astro integration that creates redirects from Git file renames.",
+  "keywords": [
+    "astro-integration",
+    "withastro",
+    "astro",
+    "redirects",
+    "git"
+  ],
+  "repository": {
+    "url": "https://github.com/Fryuni/inox-tools"
+  },
+  "license": "MIT",
+  "author": "Luiz Ferraz <luiz@lferraz.com>",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "prepublish": "pnpm run build",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "astro": "catalog:",
+    "tsup": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "astro": "catalog:lax"
+  }
+}

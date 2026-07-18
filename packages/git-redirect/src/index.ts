@@ -24,9 +24,13 @@ type ResolvedSource = {
 	file: boolean;
 };
 
-type Rename = {
-	from: string;
-	to: string;
+type HistoryEntry =
+	| { kind: 'add'; path: string }
+	| { kind: 'delete'; path: string }
+	| { kind: 'rename'; from: string; to: string };
+
+type HistoryCommit = {
+	entries: HistoryEntry[];
 };
 
 export default function gitRedirect(sources: GitRedirectSource[]): AstroIntegration {
@@ -38,7 +42,10 @@ export default function gitRedirect(sources: GitRedirectSource[]): AstroIntegrat
 				const resolvedSources = await Promise.all(
 					sources.map((source) => resolveSource(root, source))
 				);
-				const renamesByRepository = await getRepositoryRenames(resolvedSources);
+				const sourceFiles = await Promise.all(
+					resolvedSources.map((source) => getSourceFiles(source.path))
+				);
+				const historiesByRepository = await getRepositoryHistories(resolvedSources);
 				const existingRedirects = config.redirects ?? {};
 				const generatedRedirects: Record<string, string> = {};
 				const currentRoutes = new Set<string>();
@@ -46,10 +53,14 @@ export default function gitRedirect(sources: GitRedirectSource[]): AstroIntegrat
 					for (const route of routes) currentRoutes.add(route);
 				}
 
-				for (const source of resolvedSources) {
-					const renames = renamesByRepository.get(source.repository);
-					if (!renames) continue;
+				for (const [index, source] of resolvedSources.entries()) {
+					const history = historiesByRepository.get(source.repository);
+					if (!history) continue;
 
+					const currentPaths = sourceFiles[index].map((file) =>
+						toRepositoryPath(source.repository, file)
+					);
+					const renames = resolveRenameTargets(history, currentPaths);
 					for (const [from, to] of renames) {
 						if (!hasSupportedExtension(from) || !hasSupportedExtension(to)) continue;
 
@@ -65,6 +76,7 @@ export default function gitRedirect(sources: GitRedirectSource[]): AstroIntegrat
 						const redirectTo = toRoute(source, currentPath);
 						if (
 							redirectFrom === redirectTo ||
+							!hasMatchingParameterBindings(redirectFrom, redirectTo) ||
 							currentRoutes.has(redirectFrom) ||
 							Object.hasOwn(existingRedirects, redirectFrom) ||
 							Object.hasOwn(generatedRedirects, redirectFrom)
@@ -126,63 +138,137 @@ async function getRepository(directory: string, sourcePath: string): Promise<str
 	return path.resolve(repositoryPath);
 }
 
-async function getRepositoryRenames(
+async function getRepositoryHistories(
 	sources: ResolvedSource[]
-): Promise<Map<string, Map<string, string>>> {
+): Promise<Map<string, HistoryCommit[]>> {
 	const repositories = new Set(sources.map((source) => source.repository));
 	const entries = await Promise.all(
 		[...repositories].map(
-			async (repository) => [repository, await getRenameTargets(repository)] as const
+			async (repository) => [repository, await getRepositoryHistory(repository)] as const
 		)
 	);
 
 	return new Map(entries);
 }
 
-async function getRenameTargets(repository: string): Promise<Map<string, string>> {
+async function getRepositoryHistory(repository: string): Promise<HistoryCommit[]> {
+	const shallow = await runGit(
+		repository,
+		['rev-parse', '--is-shallow-repository'],
+		'check whether Git history is complete'
+	);
+	if (shallow.toString('utf8').trim() === 'true') {
+		throw new Error(
+			`@inox-tools/git-redirect: repository ${repository} has shallow Git history. Fetch the full history before building redirects (for GitHub Actions, set fetch-depth: 0).`
+		);
+	}
+
 	const output = await runGit(
 		repository,
 		[
 			'log',
-			'--format=%x00',
+			'--format=%x00%H%x00',
 			'--name-status',
 			'-z',
 			'--find-renames',
-			'--diff-filter=R',
+			'--diff-filter=ARD',
+			'--first-parent',
+			'--diff-merges=first-parent',
 			'HEAD',
 			'--',
 		],
-		'inspect rename history at HEAD'
+		'inspect first-parent rename history at HEAD'
 	);
 
+	return parseHistory(output);
+}
+
+function parseHistory(output: Buffer): HistoryCommit[] {
+	const fields = splitNulFields(output);
+	const commits: HistoryCommit[] = [];
+	let index = 0;
+
+	while (index < fields.length) {
+		if (!isCommitFrame(fields, index)) {
+			throw new Error('@inox-tools/git-redirect: Git returned malformed commit history.');
+		}
+		index += 3;
+
+		const entries: HistoryEntry[] = [];
+		while (index < fields.length && !isCommitFrame(fields, index)) {
+			const status = fields[index].trim();
+			if (status === 'A' || status === 'D') {
+				const filePath = fields[index + 1];
+				if (filePath === undefined) {
+					throw new Error('@inox-tools/git-redirect: Git returned an incomplete history entry.');
+				}
+				entries.push({ kind: status === 'A' ? 'add' : 'delete', path: filePath });
+				index += 2;
+				continue;
+			}
+
+			if (/^R\d+$/.test(status)) {
+				const from = fields[index + 1];
+				const to = fields[index + 2];
+				if (from === undefined || to === undefined) {
+					throw new Error('@inox-tools/git-redirect: Git returned an incomplete rename record.');
+				}
+				entries.push({ kind: 'rename', from, to });
+				index += 3;
+				continue;
+			}
+
+			throw new Error(
+				`@inox-tools/git-redirect: Git returned an unsupported history status: ${status}.`
+			);
+		}
+
+		commits.push({ entries });
+	}
+
+	return commits;
+}
+
+function isCommitFrame(fields: string[], index: number): boolean {
+	return (
+		fields[index] === '' &&
+		/^[0-9a-f]{40,64}$/i.test(fields[index + 1] ?? '') &&
+		fields[index + 2] === ''
+	);
+}
+
+function resolveRenameTargets(
+	commits: HistoryCommit[],
+	currentPaths: Iterable<string>
+): Map<string, string> {
+	let paths = new Map<string, string | undefined>();
+	for (const currentPath of currentPaths) paths.set(currentPath, currentPath);
+
 	const targets = new Map<string, string>();
-	for (const rename of parseRenames(output)) {
-		if (targets.has(rename.from)) continue;
-		targets.set(rename.from, targets.get(rename.to) ?? rename.to);
+	for (const commit of commits) {
+		const before = new Map(paths);
+
+		for (const entry of commit.entries) {
+			if (entry.kind === 'add') before.delete(entry.path);
+		}
+		for (const entry of commit.entries) {
+			if (entry.kind === 'delete') before.set(entry.path, undefined);
+		}
+		for (const entry of commit.entries) {
+			if (entry.kind !== 'rename') continue;
+
+			const target = paths.get(entry.to);
+			before.delete(entry.to);
+			before.set(entry.from, target);
+			if (target !== undefined && !targets.has(entry.from)) {
+				targets.set(entry.from, target);
+			}
+		}
+
+		paths = before;
 	}
 
 	return targets;
-}
-
-function parseRenames(output: Buffer): Rename[] {
-	const fields = splitNulFields(output);
-	const renames: Rename[] = [];
-
-	for (let index = 0; index < fields.length; index += 1) {
-		const status = fields[index].trim();
-		if (!/^R\d+$/.test(status)) continue;
-
-		const from = fields[index + 1];
-		const to = fields[index + 2];
-		if (from === undefined || to === undefined) {
-			throw new Error('@inox-tools/git-redirect: Git returned an incomplete rename record.');
-		}
-
-		renames.push({ from, to });
-		index += 2;
-	}
-
-	return renames;
 }
 
 function splitNulFields(output: Buffer): string[] {
@@ -199,7 +285,7 @@ function splitNulFields(output: Buffer): string[] {
 }
 
 async function getCurrentRoutes(source: ResolvedSource): Promise<Set<string>> {
-	const files = await getSourceFiles(source.path);
+	const files = await getSourceFiles(source.routeRoot);
 	return new Set(files.filter(hasSupportedExtension).map((file) => toRoute(source, file)));
 }
 
@@ -210,8 +296,11 @@ async function getSourceFiles(sourcePath: string): Promise<string[]> {
 
 	const files: string[] = [];
 	for (const entry of await readdir(sourcePath, { withFileTypes: true })) {
+		if (entry.name === '.git') continue;
+
 		const entryPath = path.join(sourcePath, entry.name);
 		if (entry.isDirectory()) {
+			if (await hasGitMetadata(entryPath)) continue;
 			files.push(...(await getSourceFiles(entryPath)));
 		} else if (entry.isFile()) {
 			files.push(entryPath);
@@ -219,6 +308,46 @@ async function getSourceFiles(sourcePath: string): Promise<string[]> {
 	}
 
 	return files;
+}
+
+async function hasGitMetadata(directory: string): Promise<boolean> {
+	try {
+		await stat(path.join(directory, '.git'));
+		return true;
+	} catch (error: unknown) {
+		if (isNotFound(error)) return false;
+		throw new Error(`@inox-tools/git-redirect: cannot inspect nested repository ${directory}.`, {
+			cause: error,
+		});
+	}
+}
+
+function hasMatchingParameterBindings(from: string, to: string): boolean {
+	const fromBindings = [...from.matchAll(/\[(\.\.\.)?([^/\]]+)\]/g)].map(
+		(match) => `${match[1] ?? ''}${match[2]}`
+	);
+	const toBindings = [...to.matchAll(/\[(\.\.\.)?([^/\]]+)\]/g)].map(
+		(match) => `${match[1] ?? ''}${match[2]}`
+	);
+	return (
+		fromBindings.length === toBindings.length &&
+		fromBindings.every((binding, index) => binding === toBindings[index])
+	);
+}
+
+function toRepositoryPath(repository: string, filePath: string): string {
+	const relative = path.relative(repository, filePath);
+	if (!relative || !isWithin(repository, filePath)) {
+		throw new Error(
+			`@inox-tools/git-redirect: current file is outside the repository: ${filePath}.`
+		);
+	}
+
+	return relative.split(path.sep).join('/');
+}
+
+function isNotFound(error: unknown): error is { code: 'ENOENT' } {
+	return typeof error === 'object' && error !== null && 'code' in error && error.code === 'ENOENT';
 }
 
 function hasSupportedExtension(filePath: string): boolean {
@@ -230,9 +359,7 @@ async function isFile(filePath: string): Promise<boolean> {
 	try {
 		return (await stat(filePath)).isFile();
 	} catch (error: unknown) {
-		if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'ENOENT') {
-			return false;
-		}
+		if (isNotFound(error)) return false;
 		throw new Error(`@inox-tools/git-redirect: cannot inspect current file ${filePath}.`, {
 			cause: error,
 		});

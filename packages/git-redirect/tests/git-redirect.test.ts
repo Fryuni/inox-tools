@@ -232,6 +232,149 @@ describe('gitRedirect', () => {
 		});
 	});
 
+	test('keeps rename chains within their original path lifetime', async () => {
+		await withRepository(async (repository) => {
+			await createFile(repository, 'pages/a.md', '# Original');
+			await commit(repository, 'add original page');
+
+			await moveFile(repository, 'pages/a.md', 'pages/b.md');
+			await commit(repository, 'rename original page once');
+
+			await moveFile(repository, 'pages/b.md', 'pages/c.md');
+			await commit(repository, 'rename original page twice');
+
+			await createFile(repository, 'pages/b.md', '# Replacement');
+			await commit(repository, 'reuse intermediate path');
+
+			await moveFile(repository, 'pages/b.md', 'pages/d.md');
+			await commit(repository, 'rename replacement page');
+
+			await expect(
+				resolveRedirects(repository, [{ path: 'pages', prefix: '/docs' }])
+			).resolves.toEqual({
+				'/docs/a': '/docs/c',
+				'/docs/b': '/docs/d',
+			});
+		});
+	});
+
+	test('only redirects dynamic routes with identical parameter bindings', async () => {
+		await withRepository(async (repository) => {
+			await createFile(repository, 'pages/renamed/[id].md', '# Renamed parameter');
+			await createFile(repository, 'pages/static/[id].md', '# Static parameter');
+			await createFile(repository, 'pages/rest/[...parts].md', '# Rest parameter');
+			await createFile(repository, 'pages/same/[id]/old.md', '# Compatible parameter');
+			await commit(repository, 'add dynamic pages');
+
+			await moveFile(repository, 'pages/renamed/[id].md', 'pages/renamed/[slug].md');
+			await moveFile(repository, 'pages/static/[id].md', 'pages/static/current.md');
+			await moveFile(repository, 'pages/rest/[...parts].md', 'pages/rest/[parts].md');
+			await moveFile(repository, 'pages/same/[id]/old.md', 'pages/same/[id]/current.md');
+			await commit(repository, 'rename dynamic pages');
+
+			await expect(
+				resolveRedirects(repository, [{ path: 'pages', prefix: '/docs' }])
+			).resolves.toEqual({
+				'/docs/same/[id]/old': '/docs/same/[id]/current',
+			});
+		});
+	});
+
+	test('rejects shallow repositories with fetch-depth guidance', async () => {
+		await withRepository(async (repository) => {
+			await createFile(repository, 'pages/current.md', '# Current');
+			await commit(repository, 'add current page');
+
+			const shallowRepository = join(repository, 'shallow');
+			await git(
+				repository,
+				'clone',
+				'--depth=1',
+				pathToFileURL(repository).href,
+				shallowRepository
+			);
+
+			await expect(
+				resolveRedirects(shallowRepository, [{ path: 'pages', prefix: '/docs' }])
+			).rejects.toThrow(/fetch-depth:\s*0/i);
+		});
+	});
+
+	test('does not shadow recreated sibling routes for configured files', async () => {
+		await withRepository(async (repository) => {
+			await createFile(repository, 'pages/old.md', '# Old');
+			await commit(repository, 'add old page');
+
+			await moveFile(repository, 'pages/old.md', 'pages/current.md');
+			await commit(repository, 'rename page');
+
+			await createFile(repository, 'pages/old.md', '# Replacement');
+			await commit(repository, 'recreate sibling page');
+
+			await expect(
+				resolveRedirects(repository, [{ path: 'pages/current.md', prefix: '/docs' }])
+			).resolves.toEqual({});
+		});
+	});
+
+	test('finds renames introduced by first-parent merge resolution', async () => {
+		await withRepository(async (repository) => {
+			const sharedContent = 'Shared content that makes this a detected rename.\n'.repeat(20);
+			await createFile(repository, 'pages/old.md', sharedContent);
+			await commit(repository, 'add original page');
+
+			await git(repository, 'checkout', '-b', 'feature');
+			await createFile(repository, 'pages/old.md', `Feature branch\n${sharedContent}`);
+			await commit(repository, 'change page on feature branch');
+
+			await git(repository, 'checkout', 'main');
+			await createFile(repository, 'pages/old.md', `Main branch\n${sharedContent}`);
+			await commit(repository, 'change page on main branch');
+
+			await expect(git(repository, 'merge', '--no-commit', 'feature')).rejects.toThrow();
+			await git(repository, 'rm', '--force', 'pages/old.md');
+			await createFile(repository, 'pages/current.md', sharedContent);
+			await commit(repository, 'resolve merge by renaming page');
+
+			await expect(
+				resolveRedirects(repository, [{ path: 'pages', prefix: '/docs' }])
+			).resolves.toEqual({
+				'/docs/old': '/docs/current',
+			});
+		});
+	});
+
+	test('requires nested repositories to be configured separately', async () => {
+		await withRepository(async (repository) => {
+			await createFile(repository, 'pages/nested/old.md', '# Parent page');
+			await commit(repository, 'add parent page');
+
+			await moveFile(repository, 'pages/nested/old.md', 'pages/nested/current.md');
+			await commit(repository, 'rename parent page');
+
+			const nestedRepository = join(repository, 'pages/nested');
+			await rm(nestedRepository, { recursive: true });
+			await mkdir(nestedRepository, { recursive: true });
+			await git(nestedRepository, 'init', '--initial-branch=main');
+			await git(nestedRepository, 'config', 'user.email', 'tests@inox.tools');
+			await git(nestedRepository, 'config', 'user.name', 'Inox Tests');
+			await createFile(nestedRepository, 'old.md', '# Nested page');
+			await commit(nestedRepository, 'add nested page');
+			await moveFile(nestedRepository, 'old.md', 'current.md');
+			await commit(nestedRepository, 'rename nested page');
+			await commit(repository, 'replace directory with nested repository');
+
+			await expect(
+				resolveRedirects(repository, [{ path: 'pages', prefix: '/docs' }])
+			).resolves.toEqual({});
+			await expect(
+				resolveRedirects(repository, [{ path: 'pages/nested', prefix: '/docs' }])
+			).resolves.toEqual({
+				'/docs/old': '/docs/current',
+			});
+		});
+	});
+
 	test('reports source paths outside a Git repository', async () => {
 		const directory = await mkdtemp(join(tmpdir(), 'inox-git-redirect-no-repository-'));
 

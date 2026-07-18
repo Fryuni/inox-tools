@@ -66,14 +66,11 @@ export default function cutShort({
 				});
 			},
 			'astro:config:done': (params) => {
-				// Check if the version of Astro being used has the `injectTypes` utility.
-				if (typeof params.injectTypes === 'function') {
-					debug('Injecting types in .astro structure');
-					params.injectTypes({
-						filename: 'types.d.ts',
-						content: "import '@inox-tools/cut-short';",
-					});
-				}
+				debug('Injecting types in .astro structure');
+				params.injectTypes({
+					filename: 'types.d.ts',
+					content: "import '@inox-tools/cut-short';",
+				});
 			},
 			'astro:build:done': async ({ assets, logger }) => {
 				const pairs = Array.from(assets.entries());

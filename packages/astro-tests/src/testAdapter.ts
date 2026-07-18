@@ -82,10 +82,8 @@ export default function (options: Options = {}): AstroIntegration {
 									const url = new URL(request.url);
 									if(this.#manifest.assets.has(url.pathname)) {
 										const assetPath = this.removeBase(url.pathname);
-										const clientRoots = ['../client/', '../../client/'];
-										const assetPaths = [assetPath, assetPath + '.html', assetPath + '/index.html'];
-										const filePaths = clientRoots.flatMap((clientRoot) =>
-											assetPaths.map((assetPath) => new URL(clientRoot + assetPath, import.meta.url))
+										const filePaths = [assetPath, assetPath + '.html', assetPath + '/index.html'].map(
+											(assetPath) => new URL('../client/' + assetPath, import.meta.url)
 										);
 										const filePath = filePaths.find(
 											(filePath) => fs.existsSync(filePath) && fs.statSync(filePath).isFile()

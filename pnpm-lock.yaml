@@ -227,7 +227,7 @@ catalogs:
       version: 4.4.3
   lax:
     '@astrojs/starlight':
-      specifier: ^0.38.0 || ^0.39.0 || ^0.40.0 || ^0.41.0
+      specifier: ^0.41.0
       version: 0.41.3
 
 overrides:

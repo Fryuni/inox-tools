@@ -1,7 +1,7 @@
 ---
 title: Inline Virtual Modules
 packageName: '@inox-tools/inline-mod'
-description: Pass inline JS values and functions as a virtual module to Vite projects.
+description: Define a virtual module inline with any reference to buildtime values
 sidebar:
   label: Overview
   order: 0

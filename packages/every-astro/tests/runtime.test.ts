@@ -4,10 +4,12 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, test } from 'vitest';
 import {
 	collectInstalledDependencyNames,
+	createRuntimeDependencies,
 	detectPackageManager,
 	discoverAstroWorkspacePackages,
-	resolveInstalledPackageManifest,
 	installedAstroMajor,
+	packageLinkCommands,
+	resolveInstalledPackageManifest,
 } from '../src/runtime.js';
 
 const temporaryRoots: string[] = [];
@@ -75,6 +77,59 @@ describe('detectPackageManager', () => {
 			await expect(detectPackageManager(project)).resolves.toBe(manager);
 		}
 	);
+});
+
+describe('packageLinkCommands', () => {
+	test('uses local folder dependencies for Bun without touching its global link registry', () => {
+		const project = '/project';
+		const links = [
+			{ name: 'astro', path: '/checkout/packages/astro' },
+			{ name: '@astrojs/compiler', path: '/checkout/packages/compiler' },
+		];
+
+		expect(packageLinkCommands('bun', false, project, links)).toEqual([
+			{
+				command: ['bun', 'add', '--no-save', ...links.map(({ path }) => path)],
+				cwd: project,
+			},
+		]);
+	});
+
+	test('uses the Classic Yarn link protocol entirely from the target project', () => {
+		const project = '/project';
+		const links = [
+			{ name: 'astro', path: '/checkout/packages/astro' },
+			{ name: '@astrojs/compiler', path: '/checkout/packages/compiler' },
+		];
+
+		expect(packageLinkCommands('yarn', false, project, links)).toEqual([
+			{
+				command: [
+					'yarn',
+					'add',
+					'--pure-lockfile',
+					'--ignore-workspace-root-check',
+					...links.map(({ path }) => `link:${path}`),
+				],
+				cwd: project,
+			},
+		]);
+	});
+});
+
+describe('createRuntimeDependencies', () => {
+	test('refuses to start a session without a restorable lockfile', async () => {
+		const project = await createProject({
+			packageManager: 'npm@11.4.2',
+			dependencies: { astro: '^7.0.0' },
+		});
+		await writePackage(project, 'node_modules/astro', { name: 'astro', version: '7.0.0' });
+		const dependencies = await createRuntimeDependencies(project, new AbortController().signal);
+
+		await expect(dependencies.createSession()).rejects.toThrow(
+			'every-astro requires a npm lockfile to restore the exact dependency tree'
+		);
+	});
 });
 
 describe('discoverAstroWorkspacePackages', () => {

@@ -1,10 +1,21 @@
 import type { ChildProcess, spawn as NodeSpawn } from 'node:child_process';
 import { once } from 'node:events';
 import { existsSync } from 'node:fs';
-import { mkdtemp, readdir, readFile, realpath, rm, writeFile } from 'node:fs/promises';
+import {
+	lstat,
+	mkdir,
+	mkdtemp,
+	readdir,
+	readFile,
+	readlink,
+	realpath,
+	rm,
+	symlink,
+	writeFile,
+} from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { createInterface } from 'node:readline/promises';
 import { setTimeout as delay } from 'node:timers/promises';
 
@@ -363,6 +374,98 @@ function managerLockfile(manager: PackageManager, projectRoot: string): string {
 	}
 }
 
+type PackageLink = {
+	name: string;
+	path: string;
+};
+
+type PackageLinkCommand = {
+	command: string[];
+	cwd: string;
+};
+
+export function packageLinkCommands(
+	manager: PackageManager,
+	yarnBerry: boolean,
+	projectRoot: string,
+	links: readonly PackageLink[]
+): PackageLinkCommand[] {
+	switch (manager) {
+		case 'npm':
+			return [
+				{
+					command: [
+						'npm',
+						'install',
+						'--no-save',
+						'--package-lock=false',
+						...links.map(({ path }) => path),
+					],
+					cwd: projectRoot,
+				},
+			];
+		case 'bun':
+			return [
+				{
+					command: ['bun', 'add', '--no-save', ...links.map(({ path }) => path)],
+					cwd: projectRoot,
+				},
+			];
+		case 'yarn':
+			return [
+				{
+					command: yarnBerry
+						? ['yarn', 'link', ...links.map(({ path }) => path)]
+						: [
+								'yarn',
+								'add',
+								'--pure-lockfile',
+								'--ignore-workspace-root-check',
+								...links.map(({ path }) => `link:${path}`),
+							],
+					cwd: projectRoot,
+				},
+			];
+		case 'pnpm':
+			return links.map(({ path }) => ({
+				command: ['pnpm', 'link', path],
+				cwd: projectRoot,
+			}));
+	}
+}
+
+type SymlinkSnapshot = {
+	path: string;
+	target: string;
+};
+
+async function snapshotDependencySymlinks(
+	projectRoot: string,
+	managerRoot: string,
+	packageNames: ReadonlySet<string>
+): Promise<SymlinkSnapshot[]> {
+	const requireFrom = createRequire(join(projectRoot, 'package.json'));
+	const snapshots = new Map<string, SymlinkSnapshot>();
+	for (const packageName of packageNames) {
+		if (packageName !== 'astro' && !packageName.startsWith('@astrojs/')) continue;
+		for (const nodeModules of requireFrom.resolve.paths(packageName) ?? []) {
+			const packagePath = join(nodeModules, packageName);
+			const relativePath = relative(managerRoot, packagePath);
+			if (relativePath.startsWith('..') || isAbsolute(relativePath)) continue;
+			try {
+				if (!(await lstat(packagePath)).isSymbolicLink()) continue;
+				snapshots.set(packagePath, {
+					path: packagePath,
+					target: await readlink(packagePath),
+				});
+			} catch (error: unknown) {
+				if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+			}
+		}
+	}
+	return [...snapshots.values()];
+}
+
 class RuntimeSession implements BisectSession {
 	private activeChild: ChildProcess | undefined;
 	private readonly linkedPackages = new Map<string, string>();
@@ -377,8 +480,10 @@ class RuntimeSession implements BisectSession {
 		private readonly manager: PackageManager,
 		private readonly yarnBerry: boolean,
 		private readonly originalManagerManifest: FileSnapshot,
+		private readonly originalProjectManifest: FileSnapshot,
 		private readonly managerLockPath: string,
 		private readonly originalManagerLock: FileSnapshot,
+		private readonly originalDependencySymlinks: readonly SymlinkSnapshot[],
 		private readonly installedDependencies: ReadonlySet<string>,
 		private readonly latest: string,
 		private readonly signal: AbortSignal
@@ -484,30 +589,13 @@ class RuntimeSession implements BisectSession {
 		}
 
 		for (const { name, path } of links) this.linkedPackages.set(name, path);
-		switch (this.manager) {
-			case 'npm':
-				await this.execute(
-					['npm', 'install', '--no-save', '--package-lock=false', ...links.map(({ path }) => path)],
-					this.projectRoot
-				);
-				break;
-			case 'bun':
-				for (const { path } of links) await this.execute(['bun', 'link'], path);
-				await this.execute(
-					['bun', 'link', ...links.map(({ name }) => name), '--no-save'],
-					this.projectRoot
-				);
-				break;
-			case 'yarn':
-				if (this.yarnBerry) {
-					await this.execute(['yarn', 'link', ...links.map(({ path }) => path)], this.projectRoot);
-				} else {
-					for (const { path } of links) await this.execute(['yarn', 'link'], path);
-					await this.execute(['yarn', 'link', ...links.map(({ name }) => name)], this.projectRoot);
-				}
-				break;
-			case 'pnpm':
-				for (const { path } of links) await this.execute(['pnpm', 'link', path], this.projectRoot);
+		for (const { command, cwd } of packageLinkCommands(
+			this.manager,
+			this.yarnBerry,
+			this.projectRoot,
+			links
+		)) {
+			await this.execute(command, cwd);
 		}
 	}
 
@@ -626,14 +714,10 @@ class RuntimeSession implements BisectSession {
 		for (const [name, path] of this.linkedPackages) {
 			switch (this.manager) {
 				case 'npm':
-					break;
 				case 'bun':
-					await unlink(['bun', 'unlink', name], this.projectRoot);
-					await unlink(['bun', 'unlink'], path);
 					break;
 				case 'yarn':
-					await unlink(['yarn', 'unlink', name], this.projectRoot);
-					if (!this.yarnBerry) await unlink(['yarn', 'unlink'], path);
+					if (this.yarnBerry) await unlink(['yarn', 'unlink', name], this.projectRoot);
 					break;
 				case 'pnpm':
 					await unlink(['pnpm', 'unlink', name], this.projectRoot);
@@ -643,6 +727,12 @@ class RuntimeSession implements BisectSession {
 			throw new AggregateError(failures, 'Could not unlink all Astro packages');
 		}
 		this.linkedPackages.clear();
+	}
+
+	private async restoreDependencySymlink(snapshot: SymlinkSnapshot): Promise<void> {
+		await rm(snapshot.path, { recursive: true, force: true });
+		await mkdir(dirname(snapshot.path), { recursive: true });
+		await symlink(snapshot.target, snapshot.path);
 	}
 
 	private async restoreDependencies(): Promise<void> {
@@ -657,21 +747,18 @@ class RuntimeSession implements BisectSession {
 		await restore(() =>
 			restoreFile(join(this.managerRoot, 'package.json'), this.originalManagerManifest)
 		);
+		if (this.projectRoot !== this.managerRoot) {
+			await restore(() =>
+				restoreFile(join(this.projectRoot, 'package.json'), this.originalProjectManifest)
+			);
+		}
 		await restore(() => restoreFile(this.managerLockPath, this.originalManagerLock));
 		switch (this.manager) {
 			case 'pnpm':
 				await restore(() =>
-					this.execute(
-						[
-							'pnpm',
-							'install',
-							...(this.originalManagerLock.exists
-								? ['--frozen-lockfile']
-								: ['--no-frozen-lockfile', '--lockfile=false']),
-						],
-						this.managerRoot,
-						{ ignoreAbort: true }
-					)
+					this.execute(['pnpm', 'install', '--frozen-lockfile'], this.managerRoot, {
+						ignoreAbort: true,
+					})
 				);
 				break;
 			case 'yarn':
@@ -680,11 +767,8 @@ class RuntimeSession implements BisectSession {
 						[
 							'yarn',
 							'install',
-							...(this.originalManagerLock.exists
-								? [this.yarnBerry ? '--immutable' : '--frozen-lockfile']
-								: this.yarnBerry
-									? ['--no-immutable']
-									: []),
+							this.yarnBerry ? '--immutable' : '--frozen-lockfile',
+							...(!this.yarnBerry ? ['--force'] : []),
 						],
 						this.managerRoot,
 						{ ignoreAbort: true }
@@ -693,31 +777,18 @@ class RuntimeSession implements BisectSession {
 				break;
 			case 'bun':
 				await restore(() =>
-					this.execute(
-						[
-							'bun',
-							'install',
-							...(this.originalManagerLock.exists ? ['--frozen-lockfile'] : ['--no-save']),
-						],
-						this.managerRoot,
-						{ ignoreAbort: true }
-					)
+					this.execute(['bun', 'install', '--frozen-lockfile', '--force'], this.managerRoot, {
+						ignoreAbort: true,
+					})
 				);
 				break;
 			case 'npm':
-				await restore(() =>
-					this.execute(
-						[
-							'npm',
-							this.originalManagerLock.exists ? 'ci' : 'install',
-							...(this.originalManagerLock.exists ? [] : ['--no-package-lock']),
-						],
-						this.managerRoot,
-						{ ignoreAbort: true }
-					)
-				);
+				await restore(() => this.execute(['npm', 'ci'], this.managerRoot, { ignoreAbort: true }));
 		}
 		await restore(() => restoreFile(this.managerLockPath, this.originalManagerLock));
+		for (const snapshot of this.originalDependencySymlinks) {
+			await restore(() => this.restoreDependencySymlink(snapshot));
+		}
 		if (failures.length > 0) {
 			throw new AggregateError(failures, 'Could not fully restore project dependencies');
 		}
@@ -756,15 +827,28 @@ async function createRuntimeSession(
 	installedDependencies: ReadonlySet<string>,
 	signal: AbortSignal
 ): Promise<RuntimeSession> {
-	const temporaryRoot = await mkdtemp(join(tmpdir(), 'every-astro-'));
-	const repositoryRoot = join(temporaryRoot, 'astro');
 	const managerRoot = managerInfo.root;
 	const managerLockPath = managerLockfile(managerInfo.manager, managerRoot);
-	const [yarnBerry, originalManagerManifest, originalManagerLock] = await Promise.all([
+	const [
+		yarnBerry,
+		originalManagerManifest,
+		originalProjectManifest,
+		originalManagerLock,
+		originalDependencySymlinks,
+	] = await Promise.all([
 		isYarnBerry(managerRoot),
 		snapshotFile(join(managerRoot, 'package.json')),
+		snapshotFile(join(projectRoot, 'package.json')),
 		snapshotFile(managerLockPath),
+		snapshotDependencySymlinks(projectRoot, managerRoot, installedDependencies),
 	]);
+	if (!originalManagerLock.exists) {
+		throw new Error(
+			`every-astro requires a ${managerInfo.manager} lockfile to restore the exact dependency tree`
+		);
+	}
+	const temporaryRoot = await mkdtemp(join(tmpdir(), 'every-astro-'));
+	const repositoryRoot = join(temporaryRoot, 'astro');
 	try {
 		const bootstrap = new RuntimeSession(
 			projectRoot,
@@ -774,8 +858,10 @@ async function createRuntimeSession(
 			managerInfo.manager,
 			yarnBerry,
 			originalManagerManifest,
+			originalProjectManifest,
 			managerLockPath,
 			originalManagerLock,
+			originalDependencySymlinks,
 			new Set(),
 			'',
 			signal
@@ -792,8 +878,10 @@ async function createRuntimeSession(
 			managerInfo.manager,
 			yarnBerry,
 			originalManagerManifest,
+			originalProjectManifest,
 			managerLockPath,
 			originalManagerLock,
+			originalDependencySymlinks,
 			installedDependencies,
 			latest.trim(),
 			signal

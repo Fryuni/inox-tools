@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -17,6 +17,12 @@ async function createFile(repository: string, file: string, content: string) {
 	const path = join(repository, file);
 	await mkdir(dirname(path), { recursive: true });
 	await writeFile(path, content);
+}
+
+async function createSymlink(repository: string, file: string, target: string) {
+	const path = join(repository, file);
+	await mkdir(dirname(path), { recursive: true });
+	await symlink(target, path);
 }
 
 async function commit(repository: string, message: string) {
@@ -181,6 +187,106 @@ describe('gitRedirect', () => {
 			await expect(
 				resolveRedirects(repository, [{ path: pages, prefix: '/docs' }], {}, srcDir)
 			).resolves.toEqual({});
+		});
+	});
+
+	test('does not redirect a URL served by an unconfigured Astro endpoint', async () => {
+		await withRepository(async (repository) => {
+			await createFile(repository, 'content/old.md', '# Old');
+			await createFile(repository, 'src/pages/old.ts', 'export function GET() {}');
+			await commit(repository, 'add pages');
+
+			await moveFile(repository, 'content/old.md', 'content/current.md');
+			await commit(repository, 'rename content page');
+
+			await expect(
+				resolveRedirects(repository, [{ path: 'content', prefix: '/' }])
+			).resolves.toEqual({});
+		});
+	});
+
+	test('excludes hidden Astro pages while retaining .well-known pages', async () => {
+		await withRepository(async (repository) => {
+			await createFile(repository, 'src/pages/hidden-old.md', '# Hidden');
+			await createFile(repository, 'src/pages/well-known-old.md', '# Well known');
+			await commit(repository, 'add pages');
+
+			await moveFile(repository, 'src/pages/hidden-old.md', 'src/pages/.hidden/current.md');
+			await moveFile(repository, 'src/pages/well-known-old.md', 'src/pages/.well-known/current.md');
+			await commit(repository, 'rename pages');
+
+			await expect(
+				resolveRedirects(repository, [{ path: 'src/pages', prefix: '/docs' }])
+			).resolves.toEqual({
+				'/docs/well-known-old': '/docs/.well-known/current',
+			});
+		});
+	});
+
+	test('creates redirects for renamed symlinked pages', async () => {
+		await withRepository(async (repository) => {
+			await createFile(repository, 'src/pages/target.astro', '<h1>Target</h1>');
+			await createSymlink(repository, 'src/pages/old.astro', 'target.astro');
+			await commit(repository, 'add symlinked page');
+
+			await moveFile(repository, 'src/pages/old.astro', 'src/pages/current.astro');
+			await commit(repository, 'rename symlinked page');
+
+			await expect(
+				resolveRedirects(repository, [{ path: 'src/pages', prefix: '/docs' }])
+			).resolves.toEqual({
+				'/docs/old': '/docs/current',
+			});
+		});
+	});
+
+	test('skips page symlinks outside the repository and directory cycles', async () => {
+		const external = await mkdtemp(join(tmpdir(), 'inox-git-redirect-external-'));
+
+		try {
+			await createFile(external, 'outside.md', '# Outside');
+			await withRepository(async (repository) => {
+				await createFile(repository, 'src/pages/old.md', '# Old');
+				await commit(repository, 'add page');
+
+				await moveFile(repository, 'src/pages/old.md', 'src/pages/current.md');
+				await commit(repository, 'rename page');
+				await createSymlink(repository, 'src/pages/external', external);
+				await createSymlink(repository, 'src/pages/cycle', '.');
+
+				await expect(
+					resolveRedirects(repository, [{ path: 'src/pages', prefix: '/docs' }])
+				).resolves.toEqual({
+					'/docs/old': '/docs/current',
+				});
+			});
+		} finally {
+			await rm(external, { recursive: true, force: true });
+		}
+	});
+
+	test('detects renames despite a low Git rename limit', async () => {
+		await withRepository(async (repository) => {
+			const original = `Original heading\n${'Shared page content.\n'.repeat(20)}`;
+			const replacement = `Replacement heading\n${'Shared page content.\n'.repeat(20)}`;
+			const otherOriginal = `Other original heading\n${'Other shared content.\n'.repeat(20)}`;
+			const otherReplacement = `Other replacement heading\n${'Other shared content.\n'.repeat(20)}`;
+			await createFile(repository, 'src/pages/old.md', original);
+			await createFile(repository, 'fixtures/old.txt', otherOriginal);
+			await commit(repository, 'add files');
+
+			await rm(join(repository, 'src/pages/old.md'));
+			await rm(join(repository, 'fixtures/old.txt'));
+			await createFile(repository, 'src/pages/current.md', replacement);
+			await createFile(repository, 'fixtures/current.txt', otherReplacement);
+			await git(repository, 'config', 'diff.renameLimit', '1');
+			await commit(repository, 'rename files');
+
+			await expect(
+				resolveRedirects(repository, [{ path: 'src/pages', prefix: '/docs' }])
+			).resolves.toEqual({
+				'/docs/old': '/docs/current',
+			});
 		});
 	});
 

@@ -1,14 +1,22 @@
 import { spawn } from 'node:child_process';
 import { once } from 'node:events';
-import { stat, readdir } from 'node:fs/promises';
+import { realpath, readdir, stat } from 'node:fs/promises';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { AstroIntegration } from 'astro';
 
 const supportedExtensions: Record<string, true> = {
 	'.astro': true,
+	'.html': true,
 	'.md': true,
 	'.mdx': true,
+	'.markdown': true,
+	'.mdown': true,
+	'.mkdn': true,
+	'.mkd': true,
+	'.mdwn': true,
+	'.js': true,
+	'.ts': true,
 };
 
 /**
@@ -67,12 +75,14 @@ export default function gitRedirect(sources: GitRedirectSource[]): AstroIntegrat
 					sources.map((source) => resolveSource(root, pagesRoot, source))
 				);
 				const sourceFiles = await Promise.all(
-					resolvedSources.map((source) => getSourceFiles(source.path, source.pagesRoot))
+					resolvedSources.map((source) =>
+						getSourceFiles(source.path, source.pagesRoot, source.repository)
+					)
 				);
 				const historiesByRepository = await getRepositoryHistories(resolvedSources);
 				const existingRedirects = config.redirects ?? {};
 				const generatedRedirects: Record<string, string> = {};
-				const currentRoutes = new Set<string>();
+				const currentRoutes = await getAstroPageRoutes(pagesRoot, root);
 				for (const routes of await Promise.all(resolvedSources.map(getCurrentRoutes))) {
 					for (const route of routes) currentRoutes.add(route);
 				}
@@ -125,11 +135,12 @@ async function resolveSource(
 ): Promise<ResolvedSource> {
 	const sourcePath = path.resolve(root, source.path);
 	const sourceStat = await getSourceStat(sourcePath);
+	const sourceRealPath = await realpath(sourcePath);
 	const file = sourceStat.isFile();
 	const routeRoot = file ? path.dirname(sourcePath) : sourcePath;
 	const repository = await getRepository(routeRoot, sourcePath);
 
-	if (!isWithin(repository, sourcePath)) {
+	if (!isWithin(repository, sourcePath) || !isWithin(await realpath(repository), sourceRealPath)) {
 		throw new Error(
 			`@inox-tools/git-redirect: source path ${source.path} is outside its containing Git repository (${repository}).`
 		);
@@ -205,6 +216,7 @@ async function getRepositoryHistory(repository: string): Promise<HistoryCommit[]
 			'--format=%x00%H%x00',
 			'--name-status',
 			'-z',
+			'-l0',
 			'--find-renames',
 			'--diff-filter=ARD',
 			'--first-parent',
@@ -323,40 +335,100 @@ function splitNulFields(output: Buffer): string[] {
 	return fields;
 }
 
+async function getAstroPageRoutes(pagesRoot: string, root: string): Promise<Set<string>> {
+	try {
+		let repository = root;
+		try {
+			repository = await getRepository(root, root);
+		} catch {
+			repository = root;
+		}
+		const files = await getSourceFiles(pagesRoot, pagesRoot, repository);
+		return new Set(
+			files
+				.filter(hasSupportedExtension)
+				.map((file) => toRoute({ prefix: '/', routeRoot: pagesRoot }, file))
+		);
+	} catch (error: unknown) {
+		if (isNotFound(error)) return new Set();
+		throw error;
+	}
+}
+
 async function getCurrentRoutes(source: ResolvedSource): Promise<Set<string>> {
-	const files = await getSourceFiles(source.routeRoot, source.pagesRoot);
+	const files = await getSourceFiles(source.routeRoot, source.pagesRoot, source.repository);
 	return new Set(files.filter(hasSupportedExtension).map((file) => toRoute(source, file)));
 }
 
-async function getSourceFiles(sourcePath: string, pagesRoot?: string): Promise<string[]> {
-	if (
-		pagesRoot &&
-		path
-			.relative(pagesRoot, sourcePath)
-			.split(path.sep)
-			.some((segment) => segment.startsWith('_'))
-	) {
-		return [];
+async function getSourceFiles(
+	sourcePath: string,
+	pagesRoot?: string,
+	repository?: string
+): Promise<string[]> {
+	return collectSourceFiles(
+		sourcePath,
+		pagesRoot,
+		repository ? await realpath(repository) : undefined,
+		new Set()
+	);
+}
+
+async function collectSourceFiles(
+	sourcePath: string,
+	pagesRoot: string | undefined,
+	repository: string | undefined,
+	ancestors: ReadonlySet<string>
+): Promise<string[]> {
+	if (!isIncludedPagePath(sourcePath, pagesRoot)) return [];
+
+	let realSourcePath: string;
+	try {
+		realSourcePath = await realpath(sourcePath);
+	} catch (error: unknown) {
+		if (isNotFound(error)) return [];
+		throw error;
 	}
+	if (repository && !isWithin(repository, realSourcePath)) return [];
 
 	const sourceStat = await stat(sourcePath);
 	if (sourceStat.isFile()) return [sourcePath];
-	if (!sourceStat.isDirectory()) return [];
+	if (!sourceStat.isDirectory() || ancestors.has(realSourcePath)) return [];
 
+	const nextAncestors = new Set(ancestors).add(realSourcePath);
 	const files: string[] = [];
 	for (const entry of await readdir(sourcePath, { withFileTypes: true })) {
-		if (entry.name === '.git' || (pagesRoot && entry.name.startsWith('_'))) continue;
+		if (
+			entry.name === '.git' ||
+			(pagesRoot &&
+				(entry.name.startsWith('_') ||
+					(entry.name.startsWith('.') && entry.name !== '.well-known')))
+		) {
+			continue;
+		}
 
 		const entryPath = path.join(sourcePath, entry.name);
-		if (entry.isDirectory()) {
+		const entryStat = await stat(entryPath);
+		if (entryStat.isDirectory()) {
 			if (await hasGitMetadata(entryPath)) continue;
-			files.push(...(await getSourceFiles(entryPath, pagesRoot)));
-		} else if (entry.isFile()) {
-			files.push(entryPath);
+			files.push(...(await collectSourceFiles(entryPath, pagesRoot, repository, nextAncestors)));
+		} else if (entryStat.isFile()) {
+			files.push(...(await collectSourceFiles(entryPath, pagesRoot, repository, nextAncestors)));
 		}
 	}
 
 	return files;
+}
+
+function isIncludedPagePath(sourcePath: string, pagesRoot?: string): boolean {
+	if (!pagesRoot || !isWithin(pagesRoot, sourcePath)) return true;
+
+	return path
+		.relative(pagesRoot, sourcePath)
+		.split(path.sep)
+		.every(
+			(segment) =>
+				!segment.startsWith('_') && (!segment.startsWith('.') || segment === '.well-known')
+		);
 }
 
 async function hasGitMetadata(directory: string): Promise<boolean> {
@@ -434,7 +506,7 @@ function isWithin(parent: string, child: string): boolean {
 	);
 }
 
-function toRoute(source: ResolvedSource, filePath: string): string {
+function toRoute(source: Pick<ResolvedSource, 'prefix' | 'routeRoot'>, filePath: string): string {
 	const relative = path.relative(source.routeRoot, filePath);
 	const withoutExtension = relative.slice(0, -path.extname(relative).length);
 	const segments = withoutExtension.split(path.sep);

@@ -16,7 +16,7 @@ Add the integration to your `astro.config.mjs`:
 
 ```js
 // astro.config.mjs
-import { defineConfig } from 'astro';
+import { defineConfig } from 'astro/config';
 import gitRedirect from '@inox-tools/git-redirect';
 
 export default defineConfig({

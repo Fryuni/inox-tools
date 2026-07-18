@@ -38,6 +38,6 @@
     "vite": "catalog:"
   },
   "peerDependencies": {
-    "astro": ">=3"
+    "astro": "catalog:lax"
   }
 }

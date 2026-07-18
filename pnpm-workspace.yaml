@@ -98,11 +98,11 @@ catalogMode: manual
 
 catalogs:
   lax:
-    '@astrojs/starlight': ^0.38.0 || ^0.39.0 || ^0.40.0 || ^0.41.0
-    astro: ^6 || ^7
+    '@astrojs/starlight': ^0.41.0
+    astro: ^7
   min:
-    astro: ^6 || ^7
-    vite: ^7 || ^8
+    astro: ^7
+    vite: ^8
 
 onlyBuiltDependencies:
   - core-js-pure

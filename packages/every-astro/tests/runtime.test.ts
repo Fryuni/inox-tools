@@ -8,6 +8,8 @@ import {
 	detectPackageManager,
 	discoverAstroWorkspacePackages,
 	installedAstroMajor,
+	isolatedBootstrapEnvironment,
+	linkBunPackage,
 	packageLinkCommands,
 	resolveInstalledPackageManifest,
 } from '../src/runtime.js';
@@ -80,19 +82,31 @@ describe('detectPackageManager', () => {
 });
 
 describe('packageLinkCommands', () => {
-	test('uses local folder dependencies for Bun without touching its global link registry', () => {
+	test('does not invoke Bun when packages are linked directly into node_modules', () => {
 		const project = '/project';
 		const links = [
 			{ name: 'astro', path: '/checkout/packages/astro' },
 			{ name: '@astrojs/compiler', path: '/checkout/packages/compiler' },
 		];
 
-		expect(packageLinkCommands('bun', false, project, links)).toEqual([
-			{
-				command: ['bun', 'add', '--no-save', ...links.map(({ path }) => path)],
-				cwd: project,
-			},
-		]);
+		expect(packageLinkCommands('bun', false, project, links)).toEqual([]);
+	});
+
+	test('replaces Bun-installed packages with the checked-out revision', async () => {
+		const project = await createProject({ dependencies: { astro: '7.0.0' } });
+		const revision = await temporaryRoot();
+		await writePackage(project, 'node_modules/astro', {
+			name: 'astro',
+			version: '7.0.0',
+		});
+		await writeJson(join(revision, 'package.json'), {
+			name: 'astro',
+			version: '0.0.0-revision',
+		});
+
+		await linkBunPackage(project, { name: 'astro', path: revision });
+
+		await expect(installedAstroMajor(project)).resolves.toBe(0);
 	});
 
 	test('uses the Classic Yarn link protocol entirely from the target project', () => {
@@ -114,6 +128,37 @@ describe('packageLinkCommands', () => {
 				cwd: project,
 			},
 		]);
+	});
+
+	test('uses portal dependencies for Yarn Berry packages in pnpm workspaces', () => {
+		const project = '/project';
+		const links = [
+			{ name: 'astro', path: '/checkout/packages/astro' },
+			{ name: '@astrojs/compiler', path: '/checkout/packages/compiler' },
+		];
+
+		expect(packageLinkCommands('yarn', true, project, links)).toEqual([
+			{
+				command: [
+					'yarn',
+					'add',
+					'astro@portal:/checkout/packages/astro',
+					'@astrojs/compiler@portal:/checkout/packages/compiler',
+				],
+				cwd: project,
+			},
+		]);
+	});
+});
+
+describe('isolatedBootstrapEnvironment', () => {
+	test('removes consumer Node loader hooks without changing other environment values', () => {
+		expect(
+			isolatedBootstrapEnvironment({
+				NODE_OPTIONS: '--require /project/.pnp.cjs',
+				COREPACK_HOME: '/cache/corepack',
+			})
+		).toEqual({ COREPACK_HOME: '/cache/corepack' });
 	});
 });
 

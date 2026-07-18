@@ -47,6 +47,7 @@ type PackageManifest = {
 
 type CommandOptions = {
 	capture?: boolean;
+	env?: NodeJS.ProcessEnv;
 	ignoreAbort?: boolean;
 };
 
@@ -405,17 +406,16 @@ export function packageLinkCommands(
 				},
 			];
 		case 'bun':
-			return [
-				{
-					command: ['bun', 'add', '--no-save', ...links.map(({ path }) => path)],
-					cwd: projectRoot,
-				},
-			];
+			return [];
 		case 'yarn':
 			return [
 				{
 					command: yarnBerry
-						? ['yarn', 'link', ...links.map(({ path }) => path)]
+						? [
+								'yarn',
+								'add',
+								...links.map(({ name, path }) => `${name}@portal:${path}`),
+							]
 						: [
 								'yarn',
 								'add',
@@ -432,6 +432,39 @@ export function packageLinkCommands(
 				cwd: projectRoot,
 			}));
 	}
+}
+
+async function installedNodeModulesPackagePath(
+	projectRoot: string,
+	packageName: string
+): Promise<string | undefined> {
+	const requireFrom = createRequire(join(projectRoot, 'package.json'));
+	for (const nodeModules of requireFrom.resolve.paths(packageName) ?? []) {
+		const packagePath = join(nodeModules, packageName);
+		if (await manifestAt(join(packagePath, 'package.json'), packageName)) return packagePath;
+	}
+	return undefined;
+}
+
+/** Replace a Bun-installed package with a local package without invoking Bun's registry linker. */
+export async function linkBunPackage(projectRoot: string, link: PackageLink): Promise<string> {
+	const packagePath = await installedNodeModulesPackagePath(projectRoot, link.name);
+	if (!packagePath) {
+		throw new Error(`Could not find the Bun-installed ${link.name} package from ${projectRoot}`);
+	}
+	await rm(packagePath, { recursive: true, force: true });
+	await mkdir(dirname(packagePath), { recursive: true });
+	await symlink(link.path, packagePath, process.platform === 'win32' ? 'junction' : 'dir');
+	return packagePath;
+}
+
+/** Remove the consumer's Node loader hooks from commands that run in the cloned repository. */
+export function isolatedBootstrapEnvironment(
+	environment: NodeJS.ProcessEnv = process.env
+): NodeJS.ProcessEnv {
+	const isolatedEnvironment = { ...environment };
+	delete isolatedEnvironment.NODE_OPTIONS;
+	return isolatedEnvironment;
 }
 
 type SymlinkSnapshot = {
@@ -468,6 +501,7 @@ async function snapshotDependencySymlinks(
 
 class RuntimeSession implements BisectSession {
 	private activeChild: ChildProcess | undefined;
+	private readonly bunLinkTargets = new Map<string, string>();
 	private readonly linkedPackages = new Map<string, string>();
 	private bisectActive = false;
 	private closing: Promise<void> | undefined;
@@ -477,6 +511,7 @@ class RuntimeSession implements BisectSession {
 		private readonly managerRoot: string,
 		private readonly repositoryRoot: string,
 		private readonly temporaryRoot: string,
+		private readonly isolatedCorepackCli: string,
 		private readonly manager: PackageManager,
 		private readonly yarnBerry: boolean,
 		private readonly originalManagerManifest: FileSnapshot,
@@ -534,6 +569,7 @@ class RuntimeSession implements BisectSession {
 		try {
 			child = spawn(file, args, {
 				cwd,
+				env: options.env,
 				stdio: options.capture ? ['ignore', 'pipe', 'pipe'] : 'inherit',
 				detached: process.platform !== 'win32',
 			});
@@ -588,6 +624,14 @@ class RuntimeSession implements BisectSession {
 			);
 		}
 
+		if (this.manager === 'bun') {
+			for (const link of links) {
+				this.bunLinkTargets.set(link.name, await linkBunPackage(this.projectRoot, link));
+				this.linkedPackages.set(link.name, link.path);
+			}
+			return;
+		}
+
 		for (const { name, path } of links) this.linkedPackages.set(name, path);
 		for (const { command, cwd } of packageLinkCommands(
 			this.manager,
@@ -625,12 +669,14 @@ class RuntimeSession implements BisectSession {
 		await this.execute(['git', 'checkout', '--force', revision], this.repositoryRoot);
 		await this.execute(['git', 'clean', '-fdx'], this.repositoryRoot);
 		await this.execute(
-			[process.execPath, corepackCli, 'pnpm', 'install', '--frozen-lockfile'],
-			this.repositoryRoot
+			[process.execPath, this.isolatedCorepackCli, 'pnpm', 'install', '--frozen-lockfile'],
+			this.repositoryRoot,
+			{ env: isolatedBootstrapEnvironment() }
 		);
 		await this.execute(
-			[process.execPath, corepackCli, 'pnpm', 'run', 'build'],
-			this.repositoryRoot
+			[process.execPath, this.isolatedCorepackCli, 'pnpm', 'run', 'build'],
+			this.repositoryRoot,
+			{ env: isolatedBootstrapEnvironment() }
 		);
 		await this.linkPackages(await discoverAstroWorkspacePackages(this.repositoryRoot));
 	}
@@ -704,6 +750,13 @@ class RuntimeSession implements BisectSession {
 
 	private async unlinkPackages(): Promise<void> {
 		const failures: unknown[] = [];
+		const remove = async (path: string): Promise<void> => {
+			try {
+				await rm(path, { recursive: true, force: true });
+			} catch (error) {
+				failures.push(error);
+			}
+		};
 		const unlink = async (command: string[], cwd: string): Promise<void> => {
 			try {
 				await this.execute(command, cwd, { ignoreAbort: true });
@@ -714,15 +767,19 @@ class RuntimeSession implements BisectSession {
 		for (const [name, path] of this.linkedPackages) {
 			switch (this.manager) {
 				case 'npm':
-				case 'bun':
 					break;
+				case 'bun': {
+					const target = this.bunLinkTargets.get(name);
+					if (target) await remove(target);
+					break;
+				}
 				case 'yarn':
-					if (this.yarnBerry) await unlink(['yarn', 'unlink', name], this.projectRoot);
 					break;
 				case 'pnpm':
 					await unlink(['pnpm', 'unlink', name], this.projectRoot);
 			}
 		}
+		this.bunLinkTargets.clear();
 		if (failures.length > 0) {
 			throw new AggregateError(failures, 'Could not unlink all Astro packages');
 		}
@@ -821,6 +878,25 @@ class RuntimeSession implements BisectSession {
 	}
 }
 
+async function copyCorepackCli(temporaryRoot: string): Promise<string> {
+	const isolatedPackage = join(temporaryRoot, 'node_modules', 'corepack');
+	const isolatedDist = join(isolatedPackage, 'dist');
+	const isolatedCli = join(isolatedDist, 'corepack.js');
+	await mkdir(join(isolatedDist, 'lib'), { recursive: true });
+	await Promise.all([
+		writeFile(
+			join(isolatedPackage, 'package.json'),
+			await readFile(join(dirname(dirname(corepackCli)), 'package.json'))
+		),
+		writeFile(isolatedCli, await readFile(corepackCli)),
+		writeFile(
+			join(isolatedDist, 'lib', 'corepack.cjs'),
+			await readFile(join(dirname(corepackCli), 'lib', 'corepack.cjs'))
+		),
+	]);
+	return isolatedCli;
+}
+
 async function createRuntimeSession(
 	projectRoot: string,
 	managerInfo: DetectedPackageManager,
@@ -850,11 +926,13 @@ async function createRuntimeSession(
 	const temporaryRoot = await mkdtemp(join(tmpdir(), 'every-astro-'));
 	const repositoryRoot = join(temporaryRoot, 'astro');
 	try {
+		const isolatedCorepackCli = await copyCorepackCli(temporaryRoot);
 		const bootstrap = new RuntimeSession(
 			projectRoot,
 			managerRoot,
 			repositoryRoot,
 			temporaryRoot,
+			isolatedCorepackCli,
 			managerInfo.manager,
 			yarnBerry,
 			originalManagerManifest,
@@ -875,6 +953,7 @@ async function createRuntimeSession(
 			managerRoot,
 			repositoryRoot,
 			temporaryRoot,
+			isolatedCorepackCli,
 			managerInfo.manager,
 			yarnBerry,
 			originalManagerManifest,

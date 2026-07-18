@@ -4,13 +4,13 @@
 
 ## OVERVIEW
 
-pnpm monorepo of 19 `@inox-tools/*` packages — Astro integrations, Vite plugins, and utilities. Built with Turbo, tsup, TypeScript strict mode. Author: Luiz Ferraz (Fryuni).
+pnpm monorepo of 17 `@inox-tools/*` packages — Astro integrations, Vite plugins, and utilities. Built with Turbo, tsup, TypeScript strict mode. Author: Luiz Ferraz (Fryuni).
 
 ## STRUCTURE
 
 ```
 inox-tools/
-├── packages/           # 19 @inox-tools/* packages (the product)
+├── packages/           # 17 @inox-tools/* packages (the product)
 │   ├── utils/          # Foundational: Lazy, Once, unist visitor (16+ consumers)
 │   ├── inline-mod/     # Most complex: closure serialization via V8 introspection
 │   ├── modular-station/# Integration hook system (withApi, onHook)
@@ -23,8 +23,6 @@ inox-tools/
 │   ├── portal-gun/     # HTML element transport via portals
 │   ├── cut-short/      # Early request termination
 │   ├── server-islands/ # Server island utilities
-│   ├── aik-mod/        # AIK wrapper for inline-mod
-│   ├── aik-route-config/# Per-route configuration
 │   ├── astro-when/     # Lifecycle detection
 │   ├── custom-routing/ # File-based routing override
 │   ├── star-warp/      # Pagefind search integration
@@ -57,7 +55,7 @@ T1 Foundation:  utils (0 deps, 16 consumers), inline-mod
 T2 Infra:       modular-station → utils, runtime-logger → modular-station
 T3 Features:    request-state, portal-gun, cut-short, server-islands → utils
 T4 Composed:    request-nanostores → request-state, content-utils → modular-station
-T5 Wrappers:    aik-mod → inline-mod, sitemap-ext → route-config
+T5 Wrappers:    sitemap-ext → route-config
 ```
 
 ## CONVENTIONS
@@ -102,7 +100,7 @@ T5 Wrappers:    aik-mod → inline-mod, sitemap-ext → route-config
 - **Harness**: `@inox-tools/astro-tests` provides `loadFixture()` + `testAdapter()`
 - **Naming**: Unit = `*.test.ts`, E2E = `*.spec.ts` (exception: request-nanostores E2E uses `.test.ts`)
 - **Parallelism**: `fileParallelism: false` in most vitest configs; turbo runs tests with `--concurrency=1`
-- **Coverage**: `vitest run --coverage` for utils, inline-mod, aik-route-config, cut-short
+- **Coverage**: `vitest run --coverage` for utils, inline-mod, cut-short
 
 ## COMMANDS
 
@@ -128,7 +126,7 @@ turbo gen                       # Scaffold new package from templates
 
 ## CI
 
-- GitHub Actions: build (Node 22+24+26) → lint → test → e2e → dedupe check
+- GitHub Actions: build (Node 20+22) → lint → test → e2e → dedupe check
 - Build timeout: 3min, test timeout: 25min
 - `pkg-pr-new` publishes preview releases on every commit
 - Changesets auto-creates release PRs on main
@@ -139,7 +137,7 @@ turbo gen                       # Scaffold new package from templates
 - Nix flake available for dev environment (`flake.nix`)
 - `inline-mod/src/closure/entry.test.ts` is colocated with source (only exception to test separation)
 - `star-warp/routes/*` exports point to source files directly (not dist)
-- Node 22+ recommended (CI matrix: 22, 24, 26)
+- Node 22+ recommended (CI matrix: 20, 22)
 
 ## Brain — Agent Memory
 

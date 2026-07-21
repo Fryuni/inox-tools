@@ -1,5 +1,4 @@
 import type { ChildProcess, spawn as NodeSpawn } from 'node:child_process';
-import { once } from 'node:events';
 import { existsSync } from 'node:fs';
 import {
 	lstat,
@@ -43,6 +42,7 @@ type PackageManifest = {
 	devDependencies?: Record<string, string>;
 	peerDependencies?: Record<string, string>;
 	optionalDependencies?: Record<string, string>;
+	resolutions?: Record<string, string>;
 };
 
 type CommandOptions = {
@@ -96,13 +96,30 @@ const LOCKFILES: readonly [string, PackageManager][] = [
 	['npm-shrinkwrap.json', 'npm'],
 ];
 
+async function findManagerLockfileRoot(
+	manager: PackageManager,
+	fromDirectory: string
+): Promise<string | undefined> {
+	let directory = resolve(fromDirectory);
+	while (true) {
+		if (existsSync(managerLockfile(manager, directory))) return directory;
+		const parent = dirname(directory);
+		if (parent === directory) return undefined;
+		directory = parent;
+	}
+}
+
 async function detectPackageManagerInfo(projectRoot: string): Promise<DetectedPackageManager> {
 	let directory = resolve(projectRoot);
 	while (true) {
 		const manifest = await existingManifest(join(directory, 'package.json'));
 		const configured = manifest?.packageManager?.split('@', 1)[0];
 		if (configured && (PACKAGE_MANAGERS as readonly string[]).includes(configured)) {
-			return { manager: configured as PackageManager, root: directory };
+			const manager = configured as PackageManager;
+			return {
+				manager,
+				root: (await findManagerLockfileRoot(manager, directory)) ?? directory,
+			};
 		}
 		for (const [lockfile, manager] of LOCKFILES) {
 			if (existsSync(join(directory, lockfile))) return { manager, root: directory };
@@ -118,6 +135,11 @@ export async function detectPackageManager(projectRoot: string): Promise<Package
 	return (await detectPackageManagerInfo(projectRoot)).manager;
 }
 
+/** Locate the lockfile root used by the selected package manager. */
+export async function detectPackageManagerRoot(projectRoot: string): Promise<string> {
+	return (await detectPackageManagerInfo(projectRoot)).root;
+}
+
 type PnpApi = {
 	resolveToUnqualified: (request: string, issuer: string) => string | null;
 	setup?: () => void;
@@ -128,8 +150,10 @@ const pnpApis = new Map<string, PnpApi>();
 function nearestPnpPath(fromDirectory: string): string | undefined {
 	let directory = resolve(fromDirectory);
 	while (true) {
-		const pnpPath = join(directory, '.pnp.cjs');
-		if (existsSync(pnpPath)) return pnpPath;
+		for (const filename of ['.pnp.cjs', '.pnp.js']) {
+			const pnpPath = join(directory, filename);
+			if (existsSync(pnpPath)) return pnpPath;
+		}
 		const parent = dirname(directory);
 		if (parent === directory) return undefined;
 		directory = parent;
@@ -226,6 +250,11 @@ export async function resolveInstalledPackageManifest(
 	}
 }
 
+function astroMajorFromVersion(version: string | undefined): number | undefined {
+	const major = version ? Number.parseInt(version.split('.', 1)[0]!, 10) : Number.NaN;
+	return Number.isSafeInteger(major) && major >= 0 ? major : undefined;
+}
+
 /** Find the locally installed Astro version and return its parsed major number. */
 export async function installedAstroMajor(projectRoot: string): Promise<number> {
 	const manifestPath = await resolveInstalledPackageManifest('astro', projectRoot);
@@ -233,8 +262,8 @@ export async function installedAstroMajor(projectRoot: string): Promise<number> 
 		throw new Error(`Could not resolve the installed Astro package from ${projectRoot}`);
 	}
 	const version = (await readManifest(manifestPath)).version;
-	const major = version ? Number.parseInt(version.split('.', 1)[0]!, 10) : Number.NaN;
-	if (!Number.isSafeInteger(major) || major < 0) {
+	const major = astroMajorFromVersion(version);
+	if (major === undefined) {
 		throw new Error(
 			`Installed Astro at ${manifestPath} has an invalid version: ${version ?? 'missing'}`
 		);
@@ -309,6 +338,30 @@ async function walkPackageManifests(
 	}
 }
 
+const BISECT_COMPLETION = /["']?([0-9a-f]{7,40})["']?\s+is the first\s+["']?bad["']?\s+commit\b/i;
+
+/** Extract the completed bisect revision from Git's C-locale completion message. */
+export function parseBisectCompletion(output: string): string | undefined {
+	return BISECT_COMPLETION.exec(output)?.[1];
+}
+
+/** Distinguish a normal bisect advance from unparseable completion or no progress. */
+export function determineBisectProgress(
+	beforeRevision: string,
+	afterRevision: string,
+	output: string
+): string | undefined {
+	const revision = parseBisectCompletion(output);
+	if (BISECT_COMPLETION.test(output)) {
+		if (!revision) throw new Error(`Could not parse Git bisect completion:\n${output}`);
+		return revision;
+	}
+	if (beforeRevision === afterRevision) {
+		throw new Error(`Could not determine Git bisect progress:\n${output}`);
+	}
+	return undefined;
+}
+
 /** Discover public Astro workspace packages without a glob dependency. */
 export async function discoverAstroWorkspacePackages(
 	repositoryRoot: string
@@ -316,6 +369,37 @@ export async function discoverAstroWorkspacePackages(
 	const manifests = new Map<string, string>();
 	await walkPackageManifests(repositoryRoot, manifests);
 	return manifests;
+}
+
+/**
+ * Select local packages that must accompany the installed graph, including
+ * workspace-protocol edges introduced by the checked-out revision.
+ */
+export async function collectAstroWorkspacePackageClosure(
+	packages: ReadonlyMap<string, string>,
+	installedNames: ReadonlySet<string>
+): Promise<Map<string, string>> {
+	const selected = new Map<string, string>();
+	const pending = [...installedNames];
+	while (pending.length > 0) {
+		const name = pending.pop()!;
+		const packageRoot = packages.get(name);
+		if (!packageRoot || selected.has(name)) continue;
+		selected.set(name, packageRoot);
+		const manifest = await readManifest(join(packageRoot, 'package.json'));
+		for (const dependencies of [
+			manifest.dependencies,
+			manifest.optionalDependencies,
+			manifest.peerDependencies,
+		]) {
+			for (const [dependency, descriptor] of Object.entries(dependencies ?? {})) {
+				if (descriptor.startsWith('workspace:') && packages.has(dependency)) {
+					pending.push(dependency);
+				}
+			}
+		}
+	}
+	return selected;
 }
 
 export function abortError(signal: AbortSignal): Error {
@@ -326,11 +410,16 @@ export function abortError(signal: AbortSignal): Error {
 	return error;
 }
 
-async function isYarnBerry(projectRoot: string): Promise<boolean> {
-	if (existsSync(join(projectRoot, '.yarnrc.yml'))) return true;
-	const manager = (await readManifest(join(projectRoot, 'package.json'))).packageManager;
-	const version = manager?.match(/^yarn@(\d+)/)?.[1];
-	return version !== undefined && Number(version) >= 2;
+async function isYarnBerry(projectRoot: string, managerRoot: string): Promise<boolean> {
+	let directory = resolve(projectRoot);
+	while (true) {
+		if (existsSync(join(directory, '.yarnrc.yml'))) return true;
+		const manager = (await existingManifest(join(directory, 'package.json')))?.packageManager;
+		const version = manager?.match(/^yarn@(\d+)/)?.[1];
+		if (version !== undefined && Number(version) >= 2) return true;
+		if (directory === managerRoot) return false;
+		directory = dirname(directory);
+	}
 }
 
 type FileSnapshot = {
@@ -412,15 +501,12 @@ export function packageLinkCommands(
 		case 'yarn':
 			return [
 				{
-					command: yarnBerry
-						? ['yarn', 'add', ...links.map(({ name, path }) => `${name}@portal:${path}`)]
-						: [
-								'yarn',
-								'add',
-								'--pure-lockfile',
-								'--ignore-workspace-root-check',
-								...links.map(({ path }) => `link:${path}`),
-							],
+					command: [
+						'yarn',
+						'add',
+						...(!yarnBerry ? ['--pure-lockfile', '--ignore-workspace-root-check'] : []),
+						...links.map(({ name, path }) => `${name}@file:${path}`),
+					],
 					cwd: projectRoot,
 				},
 			];
@@ -515,7 +601,6 @@ async function snapshotDependencySymlinks(
 	const requireFrom = createRequire(join(projectRoot, 'package.json'));
 	const snapshots = new Map<string, DependencySymlinkSnapshot>();
 	for (const packageName of packageNames) {
-		if (packageName !== 'astro' && !packageName.startsWith('@astrojs/')) continue;
 		for (const nodeModules of requireFrom.resolve.paths(packageName) ?? []) {
 			const packagePath = join(nodeModules, packageName);
 			const relativePath = relative(managerRoot, packagePath);
@@ -535,11 +620,66 @@ async function snapshotDependencySymlinks(
 	return [...snapshots.values()];
 }
 
+export async function terminateChildProcess(
+	child: ChildProcess | undefined,
+	platform = process.platform,
+	gracePeriod = 5_000
+): Promise<void> {
+	const pid = child?.pid;
+	if (!child || !pid) return;
+
+	if (platform === 'win32') {
+		const taskkill = spawn('taskkill', ['/pid', String(pid), '/t', '/f'], { stdio: 'ignore' });
+		const exitCode = await new Promise<number | null>((resolveExit, rejectExit) => {
+			taskkill.once('error', rejectExit);
+			taskkill.once('close', resolveExit);
+		});
+		if (exitCode !== 0) {
+			throw new Error(`taskkill failed while terminating process ${pid} (exit code ${exitCode})`);
+		}
+		return;
+	}
+
+	const processGroupAlive = (): boolean => {
+		try {
+			process.kill(-pid, 0);
+			return true;
+		} catch (error: unknown) {
+			return (error as NodeJS.ErrnoException).code !== 'ESRCH';
+		}
+	};
+	const signalProcessGroup = (signal: NodeJS.Signals): void => {
+		try {
+			process.kill(-pid, signal);
+		} catch {
+			try {
+				child.kill(signal);
+			} catch {
+				// The process may have already exited.
+			}
+		}
+	};
+	const waitForGroupExit = async (): Promise<boolean> => {
+		const deadline = Date.now() + gracePeriod;
+		while (processGroupAlive()) {
+			if (Date.now() >= deadline) return false;
+			await delay(Math.min(50, deadline - Date.now()));
+		}
+		return true;
+	};
+
+	signalProcessGroup('SIGTERM');
+	if (await waitForGroupExit()) return;
+	signalProcessGroup('SIGKILL');
+	if (!(await waitForGroupExit())) {
+		throw new Error(`Process group ${pid} remained alive after SIGKILL`);
+	}
+}
+
 class RuntimeSession implements BisectSession {
 	private activeChild: ChildProcess | undefined;
 	private readonly bunLinkTargets = new Map<string, string>();
 	private readonly linkedPackages = new Map<string, string>();
-	private bisectActive = false;
 	private closing: Promise<void> | undefined;
 
 	public constructor(
@@ -565,31 +705,7 @@ class RuntimeSession implements BisectSession {
 	}
 
 	private async stopChild(child = this.activeChild): Promise<void> {
-		const pid = child?.pid;
-		if (!child || !pid || child.exitCode !== null) return;
-		const signal = (name: NodeJS.Signals): void => {
-			try {
-				if (process.platform === 'win32') {
-					spawn('taskkill', ['/pid', String(pid), '/t', '/f'], { stdio: 'ignore' });
-				} else {
-					process.kill(-pid, name);
-				}
-			} catch {
-				try {
-					child.kill(name);
-				} catch {
-					// The child may have already exited.
-				}
-			}
-		};
-		const closed = once(child, 'close')
-			.then(() => true)
-			.catch(() => true);
-		signal('SIGTERM');
-		if (!(await Promise.race([closed, delay(5_000).then(() => false)]))) {
-			signal('SIGKILL');
-			await Promise.race([closed, delay(5_000)]).catch(() => undefined);
-		}
+		await terminateChildProcess(child);
 	}
 
 	public async execute(
@@ -649,25 +765,77 @@ class RuntimeSession implements BisectSession {
 		return output;
 	}
 
+	private async materializePackages(
+		packages: ReadonlyMap<string, string>
+	): Promise<Map<string, string>> {
+		const destinationRoot = join(this.temporaryRoot, 'packages');
+		await rm(destinationRoot, { recursive: true, force: true });
+		await mkdir(destinationRoot, { recursive: true });
+
+		const archives = new Map<string, string>();
+		for (const [name, packageRoot] of packages) {
+			const destination = join(destinationRoot, Buffer.from(name).toString('hex'));
+			await this.execute(
+				[
+					process.execPath,
+					this.isolatedCorepackCli,
+					'pnpm',
+					'pack',
+					'--pack-destination',
+					destination,
+				],
+				packageRoot,
+				{ env: isolatedBootstrapEnvironment() }
+			);
+			const archivesInDestination = (await readdir(destination))
+				.filter((entry) => entry.endsWith('.tgz'))
+				.map((entry) => join(destination, entry));
+			if (archivesInDestination.length !== 1) {
+				throw new Error(`Could not materialize exactly one package archive for ${name}`);
+			}
+			archives.set(name, archivesInDestination[0]!);
+		}
+		return archives;
+	}
+
+	private async addYarnResolutions(links: readonly PackageLink[]): Promise<void> {
+		const manifestPath = join(this.managerRoot, 'package.json');
+		const manifest = await readManifest(manifestPath);
+		manifest.resolutions = {
+			...manifest.resolutions,
+			...Object.fromEntries(links.map(({ name, path }) => [name, `file:${path}`])),
+		};
+		await writeFile(manifestPath, `${JSON.stringify(manifest, undefined, '\t')}\n`);
+	}
+
 	private async linkPackages(packages: ReadonlyMap<string, string>): Promise<void> {
-		const links = [...this.installedDependencies].flatMap((name) => {
-			const path = packages.get(name);
-			return path ? [{ name, path }] : [];
-		});
-		if (!links.some(({ name }) => name === 'astro')) {
+		const sourceLinks = [
+			...(await collectAstroWorkspacePackageClosure(packages, this.installedDependencies)),
+		].map(([name, path]) => ({ name, path }));
+		if (!sourceLinks.some(({ name }) => name === 'astro')) {
 			throw new Error(
 				'Astro is not available in both the installed dependencies and this revision'
 			);
 		}
 
 		if (this.manager === 'bun') {
-			for (const link of links) {
+			for (const link of sourceLinks) {
 				this.bunLinkTargets.set(link.name, await linkBunPackage(this.projectRoot, link));
 				this.linkedPackages.set(link.name, link.path);
 			}
 			return;
 		}
 
+		let links: PackageLink[];
+		if (this.manager === 'pnpm') {
+			links = sourceLinks;
+		} else {
+			const archives = await this.materializePackages(
+				new Map(sourceLinks.map(({ name, path }) => [name, path]))
+			);
+			links = sourceLinks.map(({ name }) => ({ name, path: archives.get(name)! }));
+		}
+		if (this.manager === 'yarn') await this.addYarnResolutions(links);
 		for (const { name, path } of links) this.linkedPackages.set(name, path);
 		for (const { command, cwd } of packageLinkCommands(
 			this.manager,
@@ -717,12 +885,12 @@ class RuntimeSession implements BisectSession {
 		await this.linkPackages(await discoverAstroWorkspacePackages(this.repositoryRoot));
 	}
 
-	private async prompt(label: string): Promise<boolean> {
+	private async prompt(label: string, signal: AbortSignal): Promise<boolean> {
 		const readline = createInterface({ input: process.stdin, output: process.stdout });
 		try {
 			while (true) {
 				const response = (
-					await readline.question(`${label}: is the bug present? [y/n] `, { signal: this.signal })
+					await readline.question(`${label}: is the bug present? [y/n] `, { signal })
 				)
 					.trim()
 					.toLowerCase();
@@ -743,6 +911,7 @@ class RuntimeSession implements BisectSession {
 			detached: process.platform !== 'win32',
 		});
 		this.activeChild = child;
+		const promptController = new AbortController();
 		const earlyExit = new Promise<never>((_, reject) => {
 			child.once('error', (error) =>
 				reject(
@@ -755,17 +924,23 @@ class RuntimeSession implements BisectSession {
 				reject(new CommandError([this.manager, 'run', 'dev'], this.projectRoot, code, ''))
 			);
 		});
+		let promptWork: Promise<boolean> | undefined;
 		try {
 			await Promise.race([delay(100, undefined, { signal: this.signal }), earlyExit]);
-			return await Promise.race([this.prompt(label), earlyExit]);
+			promptWork = this.prompt(label, AbortSignal.any([this.signal, promptController.signal]));
+			return await Promise.race([promptWork, earlyExit]);
 		} finally {
+			promptController.abort('The development server exited before the prompt completed.');
+			await promptWork?.catch(() => undefined);
 			await this.stopChild(child);
 			if (this.activeChild === child) this.activeChild = undefined;
 		}
 	}
 
 	public async startBisect(good: string, bad: string): Promise<void> {
-		await this.execute(['git', 'bisect', 'start', bad, good], this.repositoryRoot);
+		await this.execute(['git', 'bisect', 'start', bad, good], this.repositoryRoot, {
+			env: { ...process.env, LC_ALL: 'C', LANG: 'C' },
+		});
 		this.bisectActive = true;
 	}
 
@@ -776,12 +951,32 @@ class RuntimeSession implements BisectSession {
 	}
 
 	public async markCurrent(isBad: boolean): Promise<string | undefined> {
+		const environment = { ...process.env, LC_ALL: 'C', LANG: 'C' };
+		const beforeRevision = (
+			await this.execute(['git', 'rev-parse', 'HEAD'], this.repositoryRoot, {
+				capture: true,
+				env: environment,
+			})
+		).trim();
 		const output = await this.execute(
 			['git', 'bisect', isBad ? 'bad' : 'good'],
 			this.repositoryRoot,
-			{ capture: true }
+			{ capture: true, env: environment }
 		);
-		return output.match(/\b([0-9a-f]{40}) is the first bad commit\b/i)?.[1];
+		const afterRevision = (
+			await this.execute(['git', 'rev-parse', 'HEAD'], this.repositoryRoot, {
+				capture: true,
+				env: environment,
+			})
+		).trim();
+		const revision = determineBisectProgress(beforeRevision, afterRevision, output);
+		if (!revision) return undefined;
+		return (
+			await this.execute(['git', 'rev-parse', `${revision}^{commit}`], this.repositoryRoot, {
+				capture: true,
+				env: environment,
+			})
+		).trim();
 	}
 
 	private async unlinkPackages(): Promise<void> {
@@ -956,6 +1151,16 @@ export function selectLatestAstroReleaseRevision(tags: readonly string[], major:
 	return `${selectLatestAstroReleaseTag(tags, major)}^{commit}`;
 }
 
+export function selectLatestAstroRevision(
+	tags: readonly string[],
+	major: number,
+	headAstroVersion: string | undefined
+): string {
+	return astroMajorFromVersion(headAstroVersion) === major
+		? 'HEAD'
+		: selectLatestAstroReleaseRevision(tags, major);
+}
+
 async function createRuntimeSession(
 	projectRoot: string,
 	managerInfo: DetectedPackageManager,
@@ -972,7 +1177,7 @@ async function createRuntimeSession(
 		originalManagerLock,
 		originalDependencySymlinks,
 	] = await Promise.all([
-		isYarnBerry(managerRoot),
+		isYarnBerry(projectRoot, managerRoot),
 		snapshotFile(join(managerRoot, 'package.json')),
 		snapshotFile(join(projectRoot, 'package.json')),
 		snapshotFile(managerLockPath),
@@ -1008,9 +1213,13 @@ async function createRuntimeSession(
 		const tags = await bootstrap.execute(['git', 'tag', '--list'], repositoryRoot, {
 			capture: true,
 		});
-		const latestRevision = selectLatestAstroReleaseRevision(
+		const headManifest = await existingManifest(
+			join(repositoryRoot, 'packages', 'astro', 'package.json')
+		);
+		const latestRevision = selectLatestAstroRevision(
 			tags.split(/\r?\n/),
-			installedAstroMajor
+			installedAstroMajor,
+			headManifest?.version
 		);
 		const latest = await bootstrap.execute(['git', 'rev-parse', latestRevision], repositoryRoot, {
 			capture: true,
@@ -1035,7 +1244,15 @@ async function createRuntimeSession(
 		signal.addEventListener('abort', () => void session.close(), { once: true });
 		return session;
 	} catch (error) {
-		await rm(temporaryRoot, { recursive: true, force: true });
+		try {
+			await rm(temporaryRoot, { recursive: true, force: true });
+		} catch (cleanupError) {
+			throw new AggregateError(
+				[error, cleanupError],
+				'Could not create every-astro runtime session and remove its temporary directory',
+				{ cause: error }
+			);
+		}
 		throw error;
 	}
 }

@@ -43,12 +43,12 @@ export async function runEveryAstro(deps: EveryAstroDependencies): Promise<void>
 		const latestRevision = await session.latestRevision();
 
 		await session.prepareRevision(latestRevision);
-		if (!(await session.runDevServerAndAsk('latest'))) {
-			result = 'The bug is already fixed in the latest Astro revision.';
+		if (!(await session.runDevServerAndAsk(`latest v${astroMajor}`))) {
+			result = `The bug is already fixed in the latest Astro revision in the installed major (v${astroMajor}).`;
 		} else {
 			await session.prepareRevision(firstReleaseRevision);
 			if (await session.runDevServerAndAsk(firstReleaseLabel)) {
-				result = `The bug predates Astro v${astroMajor}.`;
+				result = `The bug is already present in Astro v${astroMajor}.0.0; its introduction is outside the selected major range.`;
 			} else {
 				await session.startBisect(firstReleaseRevision, latestRevision);
 

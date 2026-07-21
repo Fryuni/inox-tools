@@ -7,9 +7,11 @@
 Find the Astro commit that introduced a regression in your project.
 
 Every Astro clones the Astro repository, builds selected revisions, runs your project's development
-server against each one, and asks whether the bug is present. It checks the latest repository revision
-and the first release of your installed Astro major before starting `git bisect`, so it can also tell you
-when the bug is already fixed or predates that major.
+server against each one, and asks whether the bug is present. It checks the latest revision in the
+installed Astro major and the inclusive first release of that major before starting `git bisect`. When
+clone HEAD's Astro package has the installed major, HEAD is the latest revision; otherwise Every Astro
+uses the highest stable release tag in that major. This can show that the bug is already fixed or already
+present at the selected range's first release.
 
 ## Requirements
 
@@ -37,8 +39,8 @@ reliable result.
 
 The CLI only searches within the installed Astro major. It reports one of these outcomes:
 
-- The bug is fixed in the latest Astro repository revision.
-- The bug was already present in `v<major>.0.0` and therefore predates that major.
+- The bug is fixed in the latest revision in the installed major.
+- The bug is already present in `v<major>.0.0`; its introduction is outside the selected major range.
 - The exact first bad Astro commit.
 
 Every Astro uses the package manager declared in the nearest `package.json`, or detects it from the

@@ -37,7 +37,7 @@ function dependencies(session: FakeSession, astroMajor = 6) {
 }
 
 describe('runEveryAstro', () => {
-	test('stops after the latest revision is good and reports that the bug is fixed', async () => {
+	test('stops after the latest installed-major revision is good and reports that the bug is fixed', async () => {
 		const session = new FakeSession();
 		session.runDevServerAndAsk.mockResolvedValue(false);
 		const { deps, logs } = dependencies(session);
@@ -45,18 +45,20 @@ describe('runEveryAstro', () => {
 		await runEveryAstro(deps);
 
 		expect(session.prepareRevision).toHaveBeenCalledExactlyOnceWith('latest-sha');
-		expect(session.runDevServerAndAsk).toHaveBeenCalledExactlyOnceWith('latest');
+		expect(session.runDevServerAndAsk).toHaveBeenCalledExactlyOnceWith('latest v6');
 		expect(session.startBisect).not.toHaveBeenCalled();
 		expect(session.markCurrent).not.toHaveBeenCalled();
-		expect(logs).toEqual(['The bug is already fixed in the latest Astro revision.']);
+		expect(logs).toEqual([
+			'The bug is already fixed in the latest Astro revision in the installed major (v6).',
+		]);
 		expect(session.close).toHaveBeenCalledExactlyOnceWith();
 		expect(session.events).toEqual([
 			'close',
-			'log:The bug is already fixed in the latest Astro revision.',
+			'log:The bug is already fixed in the latest Astro revision in the installed major (v6).',
 		]);
 	});
 
-	test('stops when the first release of the installed major is bad and reports that it predates the major', async () => {
+	test('stops when the inclusive first release is bad and reports that the introduction is outside the selected range', async () => {
 		const session = new FakeSession();
 		session.runDevServerAndAsk.mockResolvedValue(true);
 		const { deps, logs } = dependencies(session, 7);
@@ -65,16 +67,21 @@ describe('runEveryAstro', () => {
 
 		expect(session.prepareRevision).toHaveBeenNthCalledWith(1, 'latest-sha');
 		expect(session.prepareRevision).toHaveBeenNthCalledWith(2, 'astro@7.0.0');
-		expect(session.runDevServerAndAsk).toHaveBeenNthCalledWith(1, 'latest');
+		expect(session.runDevServerAndAsk).toHaveBeenNthCalledWith(1, 'latest v7');
 		expect(session.runDevServerAndAsk).toHaveBeenNthCalledWith(2, 'v7.0.0');
 		expect(session.startBisect).not.toHaveBeenCalled();
 		expect(session.markCurrent).not.toHaveBeenCalled();
-		expect(logs).toEqual(['The bug predates Astro v7.']);
+		expect(logs).toEqual([
+			'The bug is already present in Astro v7.0.0; its introduction is outside the selected major range.',
+		]);
 		expect(session.close).toHaveBeenCalledExactlyOnceWith();
-		expect(session.events).toEqual(['close', 'log:The bug predates Astro v7.']);
+		expect(session.events).toEqual([
+			'close',
+			'log:The bug is already present in Astro v7.0.0; its introduction is outside the selected major range.',
+		]);
 	});
 
-	test('bisects between the first good release and latest bad revision, then reports the exact first bad commit', async () => {
+	test('bisects between the inclusive first release and latest installed-major revision, then reports the exact first bad commit', async () => {
 		const session = new FakeSession();
 		session.currentRevision
 			.mockResolvedValueOnce('candidate-a')
@@ -94,7 +101,7 @@ describe('runEveryAstro', () => {
 		expect(session.prepareRevision).toHaveBeenNthCalledWith(2, 'astro@5.0.0');
 		expect(session.prepareRevision).toHaveBeenNthCalledWith(3, 'candidate-a');
 		expect(session.prepareRevision).toHaveBeenNthCalledWith(4, 'candidate-b');
-		expect(session.runDevServerAndAsk).toHaveBeenNthCalledWith(1, 'latest');
+		expect(session.runDevServerAndAsk).toHaveBeenNthCalledWith(1, 'latest v5');
 		expect(session.runDevServerAndAsk).toHaveBeenNthCalledWith(2, 'v5.0.0');
 		expect(session.runDevServerAndAsk).toHaveBeenNthCalledWith(3, 'candidate-a');
 		expect(session.runDevServerAndAsk).toHaveBeenNthCalledWith(4, 'candidate-b');

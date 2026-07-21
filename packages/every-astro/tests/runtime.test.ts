@@ -1,22 +1,30 @@
-import { mkdir, mkdtemp, readlink, rm, symlink, writeFile } from 'node:fs/promises';
+import { spawn as spawnChild } from 'node:child_process';
+import { once } from 'node:events';
+import { mkdir, mkdtemp, readlink, readdir, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, test } from 'vitest';
 import {
 	abortError,
 	collectInstalledDependencyNames,
+	collectAstroWorkspacePackageClosure,
 	createRuntimeDependencies,
+	determineBisectProgress,
 	dependencySymlinkType,
 	detectPackageManager,
+	detectPackageManagerRoot,
 	discoverAstroWorkspacePackages,
 	installedAstroMajor,
 	isolatedBootstrapEnvironment,
 	linkBunPackage,
 	packageLinkCommands,
+	parseBisectCompletion,
 	resolveInstalledPackageManifest,
 	restoreDependencySymlink,
 	selectLatestAstroReleaseTag,
 	selectLatestAstroReleaseRevision,
+	selectLatestAstroRevision,
+	terminateChildProcess,
 } from '../src/runtime.js';
 
 const temporaryRoots: string[] = [];
@@ -45,6 +53,29 @@ async function writePackage(
 	manifest: Record<string, unknown>
 ): Promise<void> {
 	await writeJson(join(root, directory, 'package.json'), manifest);
+}
+
+async function runCommand(
+	command: string,
+	args: string[],
+	cwd: string,
+	environment: NodeJS.ProcessEnv = {}
+): Promise<string> {
+	const child = spawnChild(command, args, {
+		cwd,
+		env: { ...process.env, ...environment },
+		stdio: ['ignore', 'pipe', 'pipe'],
+	});
+	let output = '';
+	child.stdout.on('data', (chunk: Buffer) => {
+		output += chunk;
+	});
+	child.stderr.on('data', (chunk: Buffer) => {
+		output += chunk;
+	});
+	const [exitCode] = (await once(child, 'close')) as [number | null];
+	if (exitCode !== 0) throw new Error(`${command} ${args.join(' ')} failed:\n${output}`);
+	return output;
 }
 
 afterEach(async () => {
@@ -81,6 +112,30 @@ describe('selectLatestAstroReleaseTag', () => {
 	test('selects the commit revision rather than a tag object for bisecting', () => {
 		expect(selectLatestAstroReleaseRevision(['astro@7.4.3'], 7)).toBe('astro@7.4.3^{commit}');
 	});
+	test('uses clone HEAD when it remains in the installed major', () => {
+		expect(selectLatestAstroRevision(['astro@7.4.3'], 7, '7.5.0-dev.1')).toBe('HEAD');
+		expect(selectLatestAstroRevision(['astro@7.4.3'], 7, '8.0.0')).toBe('astro@7.4.3^{commit}');
+	});
+
+	test('parses quoted and unquoted Git bisect completion revisions', () => {
+		expect(parseBisectCompletion('abc1234 is the first bad commit')).toBe('abc1234');
+		expect(parseBisectCompletion('"abcdef0123456789" is the first bad commit')).toBe(
+			'abcdef0123456789'
+		);
+		expect(parseBisectCompletion("abcdef0123456789 is the first 'bad' commit")).toBe(
+			'abcdef0123456789'
+		);
+		expect(parseBisectCompletion('bisecting: 4 revisions left')).toBeUndefined();
+	});
+
+	test('fails rather than repeating an unchanged revision on unknown bisect output', () => {
+		expect(() => determineBisectProgress('before', 'before', 'unrecognized completion')).toThrow(
+			'Could not determine Git bisect progress'
+		);
+		expect(
+			determineBisectProgress('before', 'after', 'bisecting: 4 revisions left')
+		).toBeUndefined();
+	});
 });
 
 describe('abortError', () => {
@@ -95,7 +150,36 @@ describe('abortError', () => {
 	});
 });
 
+describe('terminateChildProcess', () => {
+	test.skipIf(process.platform === 'win32')(
+		'waits for the detached process group instead of only the leader',
+		async () => {
+			const child = spawnChild('sh', ['-c', 'sleep 30 & wait'], {
+				detached: true,
+				stdio: 'ignore',
+			});
+			await once(child, 'spawn');
+			const pid = child.pid!;
+
+			await terminateChildProcess(child, process.platform, 500);
+
+			expect(() => process.kill(-pid, 0)).toThrow(/ESRCH/);
+		}
+	);
+});
+
 describe('detectPackageManager', () => {
+	test('uses the ancestor Yarn workspace lockfile root for a nested declaration', async () => {
+		const workspace = await createProject({ private: true });
+		const project = join(workspace, 'apps', 'astro-project');
+		await writeJson(join(project, 'package.json'), {
+			name: 'astro-project',
+			packageManager: 'yarn@4.6.0',
+		});
+		await writeFile(join(workspace, 'yarn.lock'), 'fixture\n');
+
+		await expect(detectPackageManagerRoot(project)).resolves.toBe(workspace);
+	});
 	test('prefers a valid packageManager declaration over lockfiles', async () => {
 		const project = await createProject({ packageManager: 'yarn@4.6.0' });
 		await writeFile(join(project, 'pnpm-lock.yaml'), 'lockfileVersion: 9\n');
@@ -130,6 +214,18 @@ describe('packageLinkCommands', () => {
 		expect(packageLinkCommands('bun', false, project, links)).toEqual([]);
 	});
 
+	test('keeps checkout directory paths for pnpm linking', () => {
+		const project = '/project';
+		const links = [
+			{ name: 'astro', path: '/checkout/packages/astro' },
+			{ name: '@astrojs/compiler', path: '/checkout/packages/compiler' },
+		];
+
+		expect(packageLinkCommands('pnpm', false, project, links)).toEqual(
+			links.map(({ path }) => ({ command: ['pnpm', 'link', path], cwd: project }))
+		);
+	});
+
 	test('replaces Bun-installed packages with the checked-out revision', async () => {
 		const project = await createProject({ dependencies: { astro: '7.0.0' } });
 		const revision = await temporaryRoot();
@@ -147,11 +243,11 @@ describe('packageLinkCommands', () => {
 		await expect(installedAstroMajor(project)).resolves.toBe(0);
 	});
 
-	test('uses the Classic Yarn link protocol entirely from the target project', () => {
+	test('uses publish-shaped file descriptors for Classic Yarn packages', () => {
 		const project = '/project';
 		const links = [
-			{ name: 'astro', path: '/checkout/packages/astro' },
-			{ name: '@astrojs/compiler', path: '/checkout/packages/compiler' },
+			{ name: 'astro', path: '/checkout/packages/astro-7.0.0.tgz' },
+			{ name: '@astrojs/compiler', path: '/checkout/packages/compiler-2.0.0.tgz' },
 		];
 
 		expect(packageLinkCommands('yarn', false, project, links)).toEqual([
@@ -161,18 +257,18 @@ describe('packageLinkCommands', () => {
 					'add',
 					'--pure-lockfile',
 					'--ignore-workspace-root-check',
-					...links.map(({ path }) => `link:${path}`),
+					...links.map(({ name, path }) => `${name}@file:${path}`),
 				],
 				cwd: project,
 			},
 		]);
 	});
 
-	test('uses portal dependencies for Yarn Berry packages in pnpm workspaces', () => {
+	test('uses publish-shaped file descriptors for Yarn Berry packages', () => {
 		const project = '/project';
 		const links = [
-			{ name: 'astro', path: '/checkout/packages/astro' },
-			{ name: '@astrojs/compiler', path: '/checkout/packages/compiler' },
+			{ name: 'astro', path: '/checkout/packages/astro-7.0.0.tgz' },
+			{ name: '@astrojs/compiler', path: '/checkout/packages/compiler-2.0.0.tgz' },
 		];
 
 		expect(packageLinkCommands('yarn', true, project, links)).toEqual([
@@ -180,12 +276,89 @@ describe('packageLinkCommands', () => {
 				command: [
 					'yarn',
 					'add',
-					'astro@portal:/checkout/packages/astro',
-					'@astrojs/compiler@portal:/checkout/packages/compiler',
+					'astro@file:/checkout/packages/astro-7.0.0.tgz',
+					'@astrojs/compiler@file:/checkout/packages/compiler-2.0.0.tgz',
 				],
 				cwd: project,
 			},
 		]);
+	});
+});
+
+describe('packed workspace package activation', () => {
+	test('activates a workspace-protocol graph with npm and Yarn PnP without network access', async () => {
+		const workspace = await temporaryRoot();
+		const helper = join(workspace, 'packages/helper');
+		const astro = join(workspace, 'packages/astro');
+		const archives = join(workspace, 'archives');
+		await writeJson(join(workspace, 'package.json'), { name: 'workspace', private: true });
+		await writeFile(join(workspace, 'pnpm-workspace.yaml'), 'packages:\n  - packages/*\n');
+		await writePackage(workspace, 'packages/helper', {
+			name: '@astrojs/helper',
+			version: '1.0.0',
+			main: 'index.js',
+		});
+		await writeFile(join(helper, 'index.js'), 'module.exports = "local helper";\n');
+		await writePackage(workspace, 'packages/astro', {
+			name: 'astro',
+			version: '7.0.0',
+			main: 'index.js',
+			dependencies: { '@astrojs/helper': 'workspace:*' },
+		});
+		await writeFile(join(astro, 'index.js'), 'module.exports = require("@astrojs/helper");\n');
+		await runCommand('pnpm', ['install', '--offline'], workspace);
+		await mkdir(archives, { recursive: true });
+		await runCommand('pnpm', ['pack', '--pack-destination', archives], helper);
+		await runCommand('pnpm', ['pack', '--pack-destination', archives], astro);
+		const packedArchives = (await readdir(archives)).map((archive) => join(archives, archive));
+		const astroArchive = packedArchives.find((archive) => archive.endsWith('astro-7.0.0.tgz'))!;
+		const helperArchive = packedArchives.find((archive) =>
+			archive.endsWith('astrojs-helper-1.0.0.tgz')
+		)!;
+
+		const npmProject = await createProject();
+		await runCommand(
+			'npm',
+			['install', '--offline', '--no-save', '--package-lock=false', helperArchive, astroArchive],
+			npmProject
+		);
+		await expect(
+			runCommand(
+				process.execPath,
+				['-e', 'process.exit(require("astro") === "local helper" ? 0 : 1)'],
+				npmProject
+			)
+		).resolves.toBe('');
+
+		const yarnProject = await createProject({ packageManager: 'yarn@4.17.1' });
+		await writeFile(join(yarnProject, '.yarnrc.yml'), 'nodeLinker: pnp\n');
+		await writeJson(join(yarnProject, 'package.json'), {
+			name: 'test-project',
+			packageManager: 'yarn@4.17.1',
+			resolutions: {
+				'@astrojs/helper': `file:${helperArchive}`,
+				astro: `file:${astroArchive}`,
+			},
+		});
+		await runCommand(
+			'yarn',
+			[
+				'add',
+				'--mode=skip-build',
+				`@astrojs/helper@file:${helperArchive}`,
+				`astro@file:${astroArchive}`,
+			],
+			yarnProject,
+			{ YARN_ENABLE_NETWORK: '0' }
+		);
+		await expect(
+			runCommand(
+				'yarn',
+				['node', '-e', 'process.exit(require("astro") === "local helper" ? 0 : 1)'],
+				yarnProject,
+				{ YARN_ENABLE_NETWORK: '0' }
+			)
+		).resolves.toBe('');
 	});
 });
 
@@ -275,6 +448,29 @@ describe('discoverAstroWorkspacePackages', () => {
 				['astro', join(repository, 'packages/astro')],
 				['@astrojs/compiler', join(repository, 'packages/compiler')],
 				['@astrojs/node', join(repository, 'packages/node')],
+			])
+		);
+	});
+
+	test('includes workspace-protocol dependencies introduced by the checked-out revision', async () => {
+		const repository = await temporaryRoot();
+		await writePackage(repository, 'packages/astro', {
+			name: 'astro',
+			version: '7.0.0',
+			dependencies: { '@astrojs/new-helper': 'workspace:*' },
+		});
+		await writePackage(repository, 'packages/new-helper', {
+			name: '@astrojs/new-helper',
+			version: '1.0.0',
+		});
+		const packages = await discoverAstroWorkspacePackages(repository);
+
+		await expect(
+			collectAstroWorkspacePackageClosure(packages, new Set(['astro']))
+		).resolves.toEqual(
+			new Map([
+				['astro', join(repository, 'packages/astro')],
+				['@astrojs/new-helper', join(repository, 'packages/new-helper')],
 			])
 		);
 	});
@@ -395,5 +591,23 @@ describe('resolveInstalledPackageManifest', () => {
 		);
 		expect((globalThis as Record<string, unknown>)[marker]).toBe(1);
 		delete (globalThis as Record<string, unknown>)[marker];
+	});
+
+	test('discovers a nearest Yarn Classic .pnp.js API', async () => {
+		const project = await createProject();
+		const packageRoot = join(project, '.cache/astro');
+		await writePackage(project, '.cache/astro', { name: 'astro', version: '7.0.0' });
+		await writeFile(
+			join(project, '.pnp.js'),
+			[
+				`const packageRoot = ${JSON.stringify(packageRoot)};`,
+				'exports.resolveToUnqualified = (request) => request === "astro" ? packageRoot : null;',
+				'',
+			].join('\n')
+		);
+
+		await expect(resolveInstalledPackageManifest('astro', project)).resolves.toBe(
+			join(packageRoot, 'package.json')
+		);
 	});
 });

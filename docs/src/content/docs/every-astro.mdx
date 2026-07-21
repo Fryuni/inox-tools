@@ -32,8 +32,9 @@ npx @inox-tools/every-astro
 The CLI detects the installed Astro major and then:
 
 1. Clones the complete Astro repository into a temporary directory.
-2. Builds and tests the latest repository revision.
-3. Builds and tests the first release of the installed major, displayed as `v<major>.0.0`.
+2. Builds and tests the latest revision in the installed major. When clone HEAD's Astro package has that
+   major, this is HEAD; otherwise it is the highest stable release tag in the installed major.
+3. Builds and tests the inclusive first release of the installed major, displayed as `v<major>.0.0`.
 4. If the two revisions bracket the regression, runs `git bisect` and tests revisions until it finds the
    first bad commit.
 
@@ -46,9 +47,10 @@ For each tested revision, Every Astro starts your project's `dev` script and dis
 Wait for the development server to be ready, reproduce the bug, and answer `y` or `n`. Use the same
 test every time: inconsistent answers can lead `git bisect` to the wrong commit.
 
-Every Astro reports early when the bug is already fixed in the latest repository revision or was
-already present in the first release of the installed major. Otherwise, it reports the exact first bad
-commit. It does not bisect across Astro major versions.
+Every Astro reports early when the bug is already fixed in the latest revision in the installed major or
+already present in the inclusive first release. In the latter case, this only establishes that the
+introduction is outside the selected major range. Otherwise, it reports the exact first bad commit. It
+does not bisect across Astro major versions.
 
 :::note[Allow time and disk space]
 Every tested revision requires an install and a full Astro monorepo build. The complete repository is
@@ -84,9 +86,9 @@ reporting a successful result. Inspect those errors and your dependency state be
 
 The CLI ends with one of three messages:
 
-- **Already fixed:** the bug is absent from the latest Astro repository revision.
-- **Predates the major:** the bug is present in `v<major>.0.0`, so an earlier boundary is outside this
-  run's scope.
+- **Already fixed:** the bug is absent from the latest revision in the installed major.
+- **Outside the selected range:** the bug is already present in `v<major>.0.0`; this only establishes
+  that its introduction is outside the selected major range.
 - **First bad commit:** the reported 40-character commit is the first Astro revision where your answers
   indicated that the bug is present.
 

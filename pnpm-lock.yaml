@@ -830,6 +830,14 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 25.9.4
+  packages/git-redirect:
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 25.9.4
+      astro:
+        specifier: ^7.0.7
+        version: 7.0.7(patch_hash=34ac88963a271f59948954a697fdf4850409d163faae6f020d77c206005cacc4)(@astrojs/markdown-remark@7.2.1)(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@types/node@25.9.4)(@vercel/functions@3.7.2)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(rollup@4.62.2)(terser@5.44.1)(yaml@2.9.0)
       tsup:
         specifier: 'catalog:'
         version: 8.5.1(jiti@2.6.1)(postcss@8.5.19)(typescript@5.9.3)(yaml@2.9.0)

@@ -56,6 +56,10 @@ export default defineConfig({
 							link: '/custom-routing',
 						},
 						{
+							label: 'Git Redirect',
+							link: '/git-redirect',
+						},
+						{
 							label: 'Sitemap Extensions',
 							link: '/sitemap-ext',
 						},

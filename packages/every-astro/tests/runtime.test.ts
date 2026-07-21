@@ -1,10 +1,12 @@
-import { mkdir, mkdtemp, rm, symlink, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readlink, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, test } from 'vitest';
 import {
+	abortError,
 	collectInstalledDependencyNames,
 	createRuntimeDependencies,
+	dependencySymlinkType,
 	detectPackageManager,
 	discoverAstroWorkspacePackages,
 	installedAstroMajor,
@@ -12,6 +14,9 @@ import {
 	linkBunPackage,
 	packageLinkCommands,
 	resolveInstalledPackageManifest,
+	restoreDependencySymlink,
+	selectLatestAstroReleaseTag,
+	selectLatestAstroReleaseRevision,
 } from '../src/runtime.js';
 
 const temporaryRoots: string[] = [];
@@ -54,6 +59,39 @@ describe('installedAstroMajor', () => {
 		await writePackage(project, 'node_modules/astro', { name: 'astro', version: '7.2.1' });
 
 		await expect(installedAstroMajor(project)).resolves.toBe(7);
+	});
+});
+
+describe('selectLatestAstroReleaseTag', () => {
+	test('selects the newest stable tag within the installed Astro major', () => {
+		expect(
+			selectLatestAstroReleaseTag(
+				['astro@8.0.0', 'astro@7.4.1', 'astro@7.5.0-rc.1', 'astro@7.4.3', 'not-an-astro-tag'],
+				7
+			)
+		).toBe('astro@7.4.3');
+	});
+
+	test('fails clearly when the installed major has no stable release tag', () => {
+		expect(() => selectLatestAstroReleaseTag(['astro@8.0.0', 'astro@7.5.0-rc.1'], 7)).toThrow(
+			'Could not find a stable Astro 7 release tag'
+		);
+	});
+
+	test('selects the commit revision rather than a tag object for bisecting', () => {
+		expect(selectLatestAstroReleaseRevision(['astro@7.4.3'], 7)).toBe('astro@7.4.3^{commit}');
+	});
+});
+
+describe('abortError', () => {
+	test('uses the standard abort error name', () => {
+		const controller = new AbortController();
+		controller.abort('cancelled by user');
+
+		expect(abortError(controller.signal)).toMatchObject({
+			name: 'AbortError',
+			message: 'Operation aborted: cancelled by user',
+		});
 	});
 });
 
@@ -151,6 +189,35 @@ describe('packageLinkCommands', () => {
 	});
 });
 
+describe('restoreDependencySymlink', () => {
+	test('restores the saved directory link target', async () => {
+		const project = await createProject({ dependencies: { astro: '7.0.0' } });
+		const originalPackage = join(project, 'packages', 'original-astro');
+		const replacementPackage = join(project, 'packages', 'replacement-astro');
+		const packagePath = join(project, 'node_modules', 'astro');
+		await writePackage(project, 'packages/original-astro', { name: 'astro', version: '7.0.0' });
+		await writePackage(project, 'packages/replacement-astro', {
+			name: 'astro',
+			version: '0.0.0-revision',
+		});
+		await mkdir(join(project, 'node_modules'), { recursive: true });
+		await symlink(replacementPackage, packagePath, 'dir');
+
+		await restoreDependencySymlink({
+			path: packagePath,
+			target: originalPackage,
+			type: 'dir',
+		});
+
+		await expect(readlink(packagePath)).resolves.toBe(originalPackage);
+		await expect(installedAstroMajor(project)).resolves.toBe(7);
+	});
+
+	test('uses junctions for Windows directory links', () => {
+		expect(dependencySymlinkType('win32')).toBe('junction');
+	});
+});
+
 describe('isolatedBootstrapEnvironment', () => {
 	test('removes consumer Node loader hooks without changing other environment values', () => {
 		expect(
@@ -159,6 +226,17 @@ describe('isolatedBootstrapEnvironment', () => {
 				COREPACK_HOME: '/cache/corepack',
 			})
 		).toEqual({ COREPACK_HOME: '/cache/corepack' });
+	});
+
+	test('preserves unrelated Node options while removing all loader hook forms', () => {
+		expect(
+			isolatedBootstrapEnvironment({
+				NODE_OPTIONS:
+					'--max-old-space-size=4096 --require "/project/.pnp.cjs" -r=./register.cjs --import "./instrumentation.mjs" --loader=./loader.mjs --experimental-loader "./legacy loader.mjs" --conditions="development test" --trace-warnings',
+			})
+		).toEqual({
+			NODE_OPTIONS: '--max-old-space-size=4096 --conditions="development test" --trace-warnings',
+		});
 	});
 });
 

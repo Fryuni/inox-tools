@@ -14,11 +14,29 @@ export interface EveryAstroDependencies {
 	log(message: string): void;
 }
 
+export class WorkflowCleanupError extends AggregateError {
+	public constructor(
+		readonly primaryError: unknown,
+		readonly cleanupError: unknown
+	) {
+		super([primaryError, cleanupError], 'Workflow operation and session cleanup both failed.', {
+			cause: primaryError,
+		});
+		this.name = 'WorkflowCleanupError';
+	}
+}
+
+export function isPlainAbortError(error: unknown): error is Error {
+	return error instanceof Error && error.name === 'AbortError';
+}
+
 export async function runEveryAstro(deps: EveryAstroDependencies): Promise<void> {
 	const astroMajor = await deps.installedAstroMajor();
 	const firstReleaseRevision = `astro@${astroMajor}.0.0`;
 	const firstReleaseLabel = `v${astroMajor}.0.0`;
 	const session = await deps.createSession();
+	let operationFailed = false;
+	let operationError: unknown;
 	let result: string | undefined;
 
 	try {
@@ -48,8 +66,20 @@ export async function runEveryAstro(deps: EveryAstroDependencies): Promise<void>
 				}
 			}
 		}
+	} catch (error) {
+		operationFailed = true;
+		operationError = error;
+		throw error;
 	} finally {
-		await session.close();
+		try {
+			await session.close();
+		} catch (cleanupError) {
+			if (operationFailed) {
+				throw new WorkflowCleanupError(operationError, cleanupError);
+			}
+
+			throw cleanupError;
+		}
 	}
 
 	deps.log(result);

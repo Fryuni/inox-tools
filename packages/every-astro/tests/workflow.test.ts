@@ -1,5 +1,11 @@
 import { describe, expect, test, vi } from 'vitest';
-import { runEveryAstro, type BisectSession, type EveryAstroDependencies } from '../src/workflow.js';
+import {
+	isPlainAbortError,
+	runEveryAstro,
+	WorkflowCleanupError,
+	type BisectSession,
+	type EveryAstroDependencies,
+} from '../src/workflow.js';
 
 class FakeSession implements BisectSession {
 	readonly events: string[] = [];
@@ -155,6 +161,69 @@ describe('runEveryAstro', () => {
 
 		expect(logs).toEqual([]);
 		expect(session.close).toHaveBeenCalledExactlyOnceWith();
+		expect(session.events).toEqual(['close']);
+	});
+	test('preserves the workflow failure when session cleanup also fails', async () => {
+		const session = new FakeSession();
+		const primaryError = new Error('prepare failed');
+		const cleanupError = new Error('cleanup failed');
+		session.prepareRevision.mockRejectedValueOnce(primaryError);
+		session.close.mockImplementation(async () => {
+			session.events.push('close');
+			throw cleanupError;
+		});
+		const { deps, logs } = dependencies(session);
+
+		const error = await runEveryAstro(deps).catch((error: unknown) => error);
+
+		expect(error).toBeInstanceOf(WorkflowCleanupError);
+		expect(error).toMatchObject({
+			cause: primaryError,
+			cleanupError,
+			primaryError,
+		});
+		expect((error as WorkflowCleanupError).errors).toEqual([primaryError, cleanupError]);
+		expect(logs).toEqual([]);
+		expect(session.events).toEqual(['close']);
+	});
+
+	test('makes a plain abort interruption suppressible', async () => {
+		const session = new FakeSession();
+		const abortError = new Error('interrupted');
+		abortError.name = 'AbortError';
+		session.prepareRevision.mockRejectedValueOnce(abortError);
+		const { deps, logs } = dependencies(session);
+
+		const error = await runEveryAstro(deps).catch((error: unknown) => error);
+
+		expect(error).toBe(abortError);
+		expect(isPlainAbortError(error)).toBe(true);
+		expect(logs).toEqual([]);
+		expect(session.events).toEqual(['close']);
+	});
+
+	test('keeps cleanup failures reportable when an interruption also fails cleanup', async () => {
+		const session = new FakeSession();
+		const abortError = new Error('interrupted');
+		abortError.name = 'AbortError';
+		const cleanupError = new Error('cleanup failed');
+		session.prepareRevision.mockRejectedValueOnce(abortError);
+		session.close.mockImplementation(async () => {
+			session.events.push('close');
+			throw cleanupError;
+		});
+		const { deps, logs } = dependencies(session);
+
+		const error = await runEveryAstro(deps).catch((error: unknown) => error);
+
+		expect(error).toBeInstanceOf(WorkflowCleanupError);
+		expect(isPlainAbortError(error)).toBe(false);
+		expect(error).toMatchObject({
+			cause: abortError,
+			cleanupError,
+			primaryError: abortError,
+		});
+		expect(logs).toEqual([]);
 		expect(session.events).toEqual(['close']);
 	});
 });

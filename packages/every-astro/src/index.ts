@@ -1,5 +1,5 @@
 import { createRuntimeDependencies } from './runtime.js';
-import { runEveryAstro } from './workflow.js';
+import { isPlainAbortError, runEveryAstro } from './workflow.js';
 
 let interruptedBy: 'SIGINT' | 'SIGTERM' | undefined;
 
@@ -31,7 +31,7 @@ async function main(): Promise<void> {
 process.setSourceMapsEnabled(true);
 
 main().catch((error: unknown) => {
-	if (interruptedBy !== undefined) {
+	if (interruptedBy !== undefined && isPlainAbortError(error)) {
 		// Interrupted by the user; cleanup already ran through the abort signal.
 		process.exitCode = interruptedBy === 'SIGINT' ? 130 : 143;
 		return;
@@ -40,5 +40,5 @@ main().catch((error: unknown) => {
 	// eslint-disable-next-line no-console
 	console.error(error);
 
-	process.exitCode = 1;
+	process.exitCode = interruptedBy === undefined ? 1 : interruptedBy === 'SIGINT' ? 130 : 143;
 });

@@ -318,10 +318,12 @@ export async function discoverAstroWorkspacePackages(
 	return manifests;
 }
 
-function abortError(signal: AbortSignal): Error {
-	return new Error(
+export function abortError(signal: AbortSignal): Error {
+	const error = new Error(
 		signal.reason ? `Operation aborted: ${String(signal.reason)}` : 'Operation aborted'
 	);
+	error.name = 'AbortError';
+	return error;
 }
 
 async function isYarnBerry(projectRoot: string): Promise<boolean> {
@@ -454,27 +456,64 @@ export async function linkBunPackage(projectRoot: string, link: PackageLink): Pr
 	return packagePath;
 }
 
-/** Remove the consumer's Node loader hooks from commands that run in the cloned repository. */
+/** Remove consumer Node loader hooks from commands that run in the cloned repository. */
 export function isolatedBootstrapEnvironment(
 	environment: NodeJS.ProcessEnv = process.env
 ): NodeJS.ProcessEnv {
 	const isolatedEnvironment = { ...environment };
-	delete isolatedEnvironment.NODE_OPTIONS;
+	const nodeOptions = isolatedEnvironment.NODE_OPTIONS;
+	if (nodeOptions === undefined) return isolatedEnvironment;
+
+	const options = nodeOptions.match(/(?:[^\s"']+|"[^"]*"|'[^']*')+/g) ?? [];
+	const loaderOptions: Record<string, true> = {
+		'--require': true,
+		'-r': true,
+		'--import': true,
+		'--loader': true,
+		'--experimental-loader': true,
+	};
+	const retainedOptions: string[] = [];
+	for (let index = 0; index < options.length; index += 1) {
+		const option = options[index]!;
+		const [name] = option.split('=', 1);
+		if (!(name in loaderOptions)) {
+			retainedOptions.push(option);
+			continue;
+		}
+		if (name === option) index += 1;
+	}
+	if (retainedOptions.length > 0) {
+		isolatedEnvironment.NODE_OPTIONS = retainedOptions.join(' ');
+	} else {
+		delete isolatedEnvironment.NODE_OPTIONS;
+	}
 	return isolatedEnvironment;
 }
 
-type SymlinkSnapshot = {
+export type DependencySymlinkSnapshot = {
 	path: string;
 	target: string;
+	type: 'dir' | 'junction';
 };
+
+export function dependencySymlinkType(platform = process.platform): 'dir' | 'junction' {
+	return platform === 'win32' ? 'junction' : 'dir';
+}
+
+/** Restore a dependency link exactly as it was before the bisect session. */
+export async function restoreDependencySymlink(snapshot: DependencySymlinkSnapshot): Promise<void> {
+	await rm(snapshot.path, { recursive: true, force: true });
+	await mkdir(dirname(snapshot.path), { recursive: true });
+	await symlink(snapshot.target, snapshot.path, snapshot.type);
+}
 
 async function snapshotDependencySymlinks(
 	projectRoot: string,
 	managerRoot: string,
 	packageNames: ReadonlySet<string>
-): Promise<SymlinkSnapshot[]> {
+): Promise<DependencySymlinkSnapshot[]> {
 	const requireFrom = createRequire(join(projectRoot, 'package.json'));
-	const snapshots = new Map<string, SymlinkSnapshot>();
+	const snapshots = new Map<string, DependencySymlinkSnapshot>();
 	for (const packageName of packageNames) {
 		if (packageName !== 'astro' && !packageName.startsWith('@astrojs/')) continue;
 		for (const nodeModules of requireFrom.resolve.paths(packageName) ?? []) {
@@ -486,6 +525,7 @@ async function snapshotDependencySymlinks(
 				snapshots.set(packagePath, {
 					path: packagePath,
 					target: await readlink(packagePath),
+					type: dependencySymlinkType(),
 				});
 			} catch (error: unknown) {
 				if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
@@ -514,7 +554,7 @@ class RuntimeSession implements BisectSession {
 		private readonly originalProjectManifest: FileSnapshot,
 		private readonly managerLockPath: string,
 		private readonly originalManagerLock: FileSnapshot,
-		private readonly originalDependencySymlinks: readonly SymlinkSnapshot[],
+		private readonly originalDependencySymlinks: readonly DependencySymlinkSnapshot[],
 		private readonly installedDependencies: ReadonlySet<string>,
 		private readonly latest: string,
 		private readonly signal: AbortSignal
@@ -782,12 +822,6 @@ class RuntimeSession implements BisectSession {
 		this.linkedPackages.clear();
 	}
 
-	private async restoreDependencySymlink(snapshot: SymlinkSnapshot): Promise<void> {
-		await rm(snapshot.path, { recursive: true, force: true });
-		await mkdir(dirname(snapshot.path), { recursive: true });
-		await symlink(snapshot.target, snapshot.path);
-	}
-
 	private async restoreDependencies(): Promise<void> {
 		const failures: unknown[] = [];
 		const restore = async (operation: () => Promise<unknown>): Promise<void> => {
@@ -840,7 +874,7 @@ class RuntimeSession implements BisectSession {
 		}
 		await restore(() => restoreFile(this.managerLockPath, this.originalManagerLock));
 		for (const snapshot of this.originalDependencySymlinks) {
-			await restore(() => this.restoreDependencySymlink(snapshot));
+			await restore(() => restoreDependencySymlink(snapshot));
 		}
 		if (failures.length > 0) {
 			throw new AggregateError(failures, 'Could not fully restore project dependencies');
@@ -893,10 +927,40 @@ async function copyCorepackCli(temporaryRoot: string): Promise<string> {
 	return isolatedCli;
 }
 
+export function selectLatestAstroReleaseTag(tags: readonly string[], major: number): string {
+	const releases: { tag: string; minor: number; patch: number }[] = [];
+	for (const tag of tags) {
+		const match = /^astro@(\d+)\.(\d+)\.(\d+)$/.exec(tag.trim());
+		if (!match || Number(match[1]) !== major) continue;
+		releases.push({
+			tag: tag.trim(),
+			minor: Number(match[2]),
+			patch: Number(match[3]),
+		});
+	}
+	releases.sort(
+		(first, second) =>
+			second.minor - first.minor ||
+			second.patch - first.patch ||
+			first.tag.localeCompare(second.tag)
+	);
+	const latest = releases[0];
+	if (!latest) {
+		throw new Error(`Could not find a stable Astro ${major} release tag in the cloned repository`);
+	}
+	return latest.tag;
+}
+
+/** Git revision expression that resolves a release tag to the commit that bisect needs. */
+export function selectLatestAstroReleaseRevision(tags: readonly string[], major: number): string {
+	return `${selectLatestAstroReleaseTag(tags, major)}^{commit}`;
+}
+
 async function createRuntimeSession(
 	projectRoot: string,
 	managerInfo: DetectedPackageManager,
 	installedDependencies: ReadonlySet<string>,
+	installedAstroMajor: number,
 	signal: AbortSignal
 ): Promise<RuntimeSession> {
 	const managerRoot = managerInfo.root;
@@ -941,7 +1005,14 @@ async function createRuntimeSession(
 			signal
 		);
 		await bootstrap.execute(['git', 'clone', ASTRO_REPOSITORY, repositoryRoot], temporaryRoot);
-		const latest = await bootstrap.execute(['git', 'rev-parse', 'HEAD'], repositoryRoot, {
+		const tags = await bootstrap.execute(['git', 'tag', '--list'], repositoryRoot, {
+			capture: true,
+		});
+		const latestRevision = selectLatestAstroReleaseRevision(
+			tags.split(/\r?\n/),
+			installedAstroMajor
+		);
+		const latest = await bootstrap.execute(['git', 'rev-parse', latestRevision], repositoryRoot, {
 			capture: true,
 		});
 		const session = new RuntimeSession(
@@ -988,6 +1059,7 @@ export async function createRuntimeDependencies(
 				absoluteProjectRoot,
 				managerInfo,
 				installedDependencies,
+				major,
 				signal
 			);
 			return session;

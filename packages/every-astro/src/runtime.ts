@@ -608,7 +608,8 @@ export function isolatedBootstrapEnvironment(
 				? option.slice(1, -1)
 				: option;
 		const [name] = normalizedOption.split('=', 1);
-		if (!(name in loaderOptions)) {
+		const loaderName = name.replaceAll('_', '-');
+		if (!(loaderName in loaderOptions)) {
 			retainedOptions.push(option);
 			continue;
 		}

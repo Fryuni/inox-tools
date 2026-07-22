@@ -385,44 +385,7 @@ describe('windowsJobSupervisorCommand', () => {
 });
 
 test.skipIf(process.platform !== 'win32')(
-	'forwards Unicode arguments through a Unicode batch target and removes its control file',
-	async () => {
-		const root = await temporaryRoot();
-		const toolRoot = join(root, 'tool path café');
-		const batchFile = join(toolRoot, 'runner.cmd');
-		const targetScript = join(toolRoot, 'target.mjs');
-		const argumentsFile = join(root, 'arguments.json');
-		const controlFile = join(root, 'command.json');
-		const forwarded = ['spaced argument', 'café', '%literal%', 'a&b'];
-		await mkdir(toolRoot);
-		await writeFile(
-			targetScript,
-			[
-				"import { writeFile } from 'node:fs/promises';",
-				'await writeFile(process.argv[2], JSON.stringify(process.argv.slice(3)));',
-			].join('\n')
-		);
-		await writeFile(batchFile, `@echo off\r\n"${process.execPath}" "${targetScript}" %*\r\n`);
-		await writeFile(
-			controlFile,
-			JSON.stringify({
-				file: batchFile,
-				args: [argumentsFile, ...forwarded],
-			})
-		);
-		const [file, ...args] = windowsJobSupervisorCommand(controlFile);
-		const child = spawnChild(file, args, { cwd: root, stdio: 'ignore' });
-
-		const [exitCode] = (await once(child, 'close')) as [number | null];
-
-		expect(exitCode).toBe(0);
-		await expect(readFile(argumentsFile, 'utf8').then(JSON.parse)).resolves.toEqual(forwarded);
-		await expect(readFile(controlFile, 'utf8')).rejects.toMatchObject({ code: 'ENOENT' });
-	}
-);
-
-test.skipIf(process.platform !== 'win32')(
-	'kills a delayed descendant when the supervisor closes its Job Object',
+	'forwards Unicode arguments and kills a delayed descendant when the Job Object closes',
 	async () => {
 		const root = await temporaryRoot();
 		const toolRoot = join(root, 'job café');
@@ -431,6 +394,8 @@ test.skipIf(process.platform !== 'win32')(
 		const descendantScript = join(toolRoot, 'descendant.mjs');
 		const sentinelFile = join(root, 'descendant-survived');
 		const startedFile = join(root, 'descendant-started');
+		const argumentsFile = join(root, 'arguments.json');
+		const forwarded = ['spaced argument', 'café', '%literal%', 'a&b'];
 		const controlFile = join(root, 'command.json');
 		await mkdir(toolRoot);
 		await writeFile(
@@ -449,8 +414,10 @@ test.skipIf(process.platform !== 'win32')(
 			[
 				"import { spawn } from 'node:child_process';",
 				"import { existsSync } from 'node:fs';",
+				"import { writeFile } from 'node:fs/promises';",
 				"import { setTimeout as delay } from 'node:timers/promises';",
-				'const [startedFile, sentinelFile] = process.argv.slice(2);',
+				'const [argumentsFile, startedFile, sentinelFile, ...forwarded] = process.argv.slice(2);',
+				'await writeFile(argumentsFile, JSON.stringify(forwarded));',
 				`const descendant = spawn(process.execPath, [${JSON.stringify(descendantScript)}, startedFile, sentinelFile], {`,
 				"\tstdio: 'ignore',",
 				'});',
@@ -469,7 +436,7 @@ test.skipIf(process.platform !== 'win32')(
 			controlFile,
 			JSON.stringify({
 				file: batchFile,
-				args: [startedFile, sentinelFile],
+				args: [argumentsFile, startedFile, sentinelFile, ...forwarded],
 			})
 		);
 		const [file, ...args] = windowsJobSupervisorCommand(controlFile);
@@ -527,6 +494,7 @@ test.skipIf(process.platform !== 'win32')(
 				);
 			});
 			await expect(readFile(startedFile, 'utf8')).resolves.toBe('started');
+			await expect(readFile(argumentsFile, 'utf8').then(JSON.parse)).resolves.toEqual(forwarded);
 			const closed = once(runningSupervisor, 'close');
 			expect(runningSupervisor.kill()).toBe(true);
 			await closed;
@@ -828,6 +796,17 @@ describe('isolatedBootstrapEnvironment', () => {
 			})
 		).toEqual({
 			NODE_OPTIONS: '--max-old-space-size=4096 --conditions="development test" --trace-warnings',
+		});
+	});
+
+	test('removes fully quoted loader options while preserving fully quoted non-loaders', () => {
+		expect(
+			isolatedBootstrapEnvironment({
+				NODE_OPTIONS:
+					'"--require=C:\\project\\double.cjs" \'--import=./single.mjs\' "--loader" "./double-loader.mjs" \'--experimental-loader\' \'./single-loader.mjs\' "--max-old-space-size=4096" \'--conditions=development\'',
+			})
+		).toEqual({
+			NODE_OPTIONS: '"--max-old-space-size=4096" \'--conditions=development\'',
 		});
 	});
 });

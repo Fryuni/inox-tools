@@ -13,6 +13,7 @@ import {
 } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { setTimeout as delay } from 'node:timers/promises';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import {
 	abortError,
@@ -384,19 +385,29 @@ describe('windowsJobSupervisorCommand', () => {
 });
 
 test.skipIf(process.platform !== 'win32')(
-	'launches a target through the Job Object supervisor and removes its control file',
+	'forwards Unicode arguments through a Unicode batch target and removes its control file',
 	async () => {
 		const root = await temporaryRoot();
 		const toolRoot = join(root, 'tool path café');
 		const batchFile = join(toolRoot, 'runner.cmd');
+		const targetScript = join(toolRoot, 'target.mjs');
+		const argumentsFile = join(root, 'arguments.json');
 		const controlFile = join(root, 'command.json');
+		const forwarded = ['spaced argument', 'café', '%literal%', 'a&b'];
 		await mkdir(toolRoot);
-		await writeFile(batchFile, '@echo off\r\nexit /b 0\r\n');
+		await writeFile(
+			targetScript,
+			[
+				"import { writeFile } from 'node:fs/promises';",
+				'await writeFile(process.argv[2], JSON.stringify(process.argv.slice(3)));',
+			].join('\n')
+		);
+		await writeFile(batchFile, `@echo off\r\n"${process.execPath}" "${targetScript}" %*\r\n`);
 		await writeFile(
 			controlFile,
 			JSON.stringify({
 				file: batchFile,
-				args: ['spaced argument', 'café', '%literal%', 'a&b'],
+				args: [argumentsFile, ...forwarded],
 			})
 		);
 		const [file, ...args] = windowsJobSupervisorCommand(controlFile);
@@ -405,7 +416,74 @@ test.skipIf(process.platform !== 'win32')(
 		const [exitCode] = (await once(child, 'close')) as [number | null];
 
 		expect(exitCode).toBe(0);
+		await expect(readFile(argumentsFile, 'utf8').then(JSON.parse)).resolves.toEqual(forwarded);
 		await expect(readFile(controlFile, 'utf8')).rejects.toMatchObject({ code: 'ENOENT' });
+	}
+);
+
+test.skipIf(process.platform !== 'win32')(
+	'kills a delayed descendant when the supervisor closes its Job Object',
+	async () => {
+		const root = await temporaryRoot();
+		const toolRoot = join(root, 'job café');
+		const batchFile = join(toolRoot, 'runner.cmd');
+		const targetScript = join(toolRoot, 'target.mjs');
+		const descendantScript = join(toolRoot, 'descendant.mjs');
+		const sentinelFile = join(root, 'descendant-survived');
+		const controlFile = join(root, 'command.json');
+		await mkdir(toolRoot);
+		await writeFile(
+			descendantScript,
+			[
+				"import { writeFile } from 'node:fs/promises';",
+				"import { setTimeout as delay } from 'node:timers/promises';",
+				'await delay(250);',
+				"await writeFile(process.argv[2], 'escaped');",
+			].join('\n')
+		);
+		await writeFile(
+			targetScript,
+			[
+				"import { spawn } from 'node:child_process';",
+				"import { setTimeout as delay } from 'node:timers/promises';",
+				`const descendant = spawn(process.execPath, [${JSON.stringify(descendantScript)}, process.argv[2]], {`,
+				"\tstdio: 'ignore',",
+				'});',
+				'descendant.unref();',
+				"console.log('ready');",
+				'await delay(600);',
+			].join('\n')
+		);
+		await writeFile(batchFile, `@echo off\r\n"${process.execPath}" "${targetScript}" %*\r\n`);
+		await writeFile(
+			controlFile,
+			JSON.stringify({
+				file: batchFile,
+				args: [sentinelFile],
+			})
+		);
+		const [file, ...args] = windowsJobSupervisorCommand(controlFile);
+		let supervisor: ChildProcess | undefined;
+		try {
+			supervisor = spawnChild(file, args, {
+				cwd: root,
+				stdio: ['ignore', 'pipe', 'pipe'],
+			});
+			await once(supervisor.stdout!, 'data');
+			const closed = once(supervisor, 'close');
+			expect(supervisor.kill()).toBe(true);
+			await closed;
+
+			// The external descendant uses the Windows scheduler, which Vitest fake timers cannot drive.
+			await delay(750);
+			await expect(readFile(sentinelFile, 'utf8')).rejects.toMatchObject({ code: 'ENOENT' });
+		} finally {
+			if (supervisor?.exitCode === null && supervisor.signalCode === null) {
+				const closed = once(supervisor, 'close');
+				supervisor.kill();
+				await closed;
+			}
+		}
 	}
 );
 

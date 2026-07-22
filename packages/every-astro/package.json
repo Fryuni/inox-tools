@@ -1,6 +1,6 @@
 {
   "name": "@inox-tools/every-astro",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Bisect the Astro repository against your project's dev server to find the exact commit that introduced a bug",
   "keywords": [
     "astro",

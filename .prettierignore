@@ -10,6 +10,7 @@
 **/.vercel
 
 # Directories
+.memory
 .github
 .changeset
 .wt
@@ -21,3 +22,5 @@ pnpm-lock.yaml
 flake.lock
 
 **/*.mdx
+
+.memory

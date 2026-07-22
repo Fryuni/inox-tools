@@ -1,7 +1,7 @@
 ---
 title: Astro When
 packageName: '@inox-tools/astro-when'
-description: Know when and where your code is running in your Astro project
+description: Integration that informs when in Astro's lifecycle the code is running
 ---
 
 This integration provides an import that exposes when in the lifecycle of an Astro codebase your code is running.
@@ -70,7 +70,7 @@ const middlewares: Record<When, MiddlewareHandler> = {
 export const onRequest = middlewares[whenAmI];
 ```
 
-For a project using this integration, including the example middleware above, check [this example](https://github.com/Fryuni/inox-tools/tree/main/examples/astro-when). You can also see it in action on a deployment of that project [here](https://inox-tools-ex-astro-when.pages.dev/).
+For a project using this integration, including the example middleware above, check [this example](https://github.com/Fryuni/inox-tools/tree/main/examples/astro-when). You can also see it in action on a deployment of that project [here](https://inox-tools-ex-astro-when.workers.dev/).
 
 ## License
 

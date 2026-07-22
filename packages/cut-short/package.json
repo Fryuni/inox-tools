@@ -1,6 +1,6 @@
 {
   "name": "@inox-tools/cut-short",
-  "version": "1.6.1",
+  "version": "3.0.0",
   "description": "Immediately halt request processing and return custom responses effortlessly.",
   "keywords": [
     "astro-integration",
@@ -34,19 +34,17 @@
   },
   "dependencies": {
     "@inox-tools/utils": "workspace:^",
-    "astro-integration-kit": "catalog:",
     "debug": "catalog:"
   },
   "devDependencies": {
     "@inox-tools/astro-tests": "workspace:^",
+    "@types/debug": "catalog:",
     "@types/node": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "@vitest/ui": "catalog:",
     "astro": "catalog:",
-    "estree-walker": "catalog:",
     "jest-extended": "catalog:",
     "magic-string": "catalog:",
-    "rollup": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",

@@ -1,21 +1,9 @@
 import { defineConfig, envField } from 'astro/config';
 import starlight from '@astrojs/starlight';
-import type { StarlightConfig } from '@astrojs/starlight/types';
 import vercel from '@astrojs/vercel';
 import starWarp from '@inox-tools/star-warp';
 import starlightLinksValidator from 'starlight-links-validator';
 import starlightCoolerCredit from 'starlight-cooler-credit';
-
-const badge = {
-	new: {
-		text: 'NEW',
-		variant: 'success',
-	},
-	updated: {
-		text: 'UPDATED',
-		variant: 'default',
-	},
-} satisfies Record<string, NonNullable<NonNullable<StarlightConfig['sidebar']>[number]['badge']>>;
 
 process.env.ASTRO_PROJECT_ROOT = new URL('../', import.meta.url).toString();
 
@@ -53,6 +41,7 @@ export default defineConfig({
 				},
 			],
 			components: {
+				Banner: './src/components/Banner.astro',
 				Head: './src/components/Head.astro',
 				PageTitle: './src/components/PageTitle.astro',
 				Sidebar: './src/components/Sidebar.astro',
@@ -66,6 +55,10 @@ export default defineConfig({
 						{
 							label: 'Custom Astro Routing',
 							link: '/custom-routing',
+						},
+						{
+							label: 'Git Redirect',
+							link: '/git-redirect',
 						},
 						{
 							label: 'Sitemap Extensions',
@@ -106,9 +99,13 @@ export default defineConfig({
 						{
 							label: 'Content Utilities',
 							collapsed: false,
-							autogenerate: {
-								directory: 'content-utils',
-							},
+							items: [
+								{
+									autogenerate: {
+										directory: 'content-utils',
+									},
+								},
+							],
 						},
 					],
 				},
@@ -117,8 +114,12 @@ export default defineConfig({
 					collapsed: false,
 					items: [
 						{
-							label: 'Astro Integration Kit',
-							link: 'https://astro-integration-kit.netlify.app',
+							label: 'Every Astro',
+							link: '/every-astro',
+						},
+						{
+							label: 'Astro Integration Template',
+							link: 'https://astro-integration-template.netlify.app',
 						},
 						{
 							label: 'Astro Tests',
@@ -127,14 +128,18 @@ export default defineConfig({
 						{
 							label: 'Modular Station',
 							collapsed: false,
-							autogenerate: {
-								directory: 'modular-station',
-							},
+							items: [
+								{
+									autogenerate: {
+										directory: 'modular-station',
+									},
+								},
+							],
 						},
 						{
 							label: 'Inline Module',
 							collapsed: true,
-							autogenerate: { directory: 'inline-mod' },
+							items: [{ autogenerate: { directory: 'inline-mod' } }],
 						},
 					],
 				},
@@ -157,7 +162,7 @@ export default defineConfig({
 	env: {
 		validateSecrets: true,
 		schema: {
-			ORAMA_CLOUD_ENDPOINT: envField.string({
+			ORAMA_CLOUD_PROJECT_ID: envField.string({
 				context: 'client',
 				access: 'public',
 				optional: false,
@@ -167,6 +172,12 @@ export default defineConfig({
 				access: 'public',
 				optional: false,
 			}),
+			KROKI_URL: envField.string({
+				context: 'server',
+				access: 'public',
+				optional: true,
+				default: 'https://kroki.vps1.fryuni.dev',
+			}),
 		},
 	},
 	redirects: {
@@ -174,7 +185,12 @@ export default defineConfig({
 		'/content-utils/git-time': '/content-utils',
 		'/modular-station': '/modular-station/api',
 	},
-	image: {
-		domains: ['mermaid.ink'],
+	vite: {
+		// `@orama/wc-components` duck-type checks the Orama client via
+		// `constructor.name === 'CollectionManager'`. esbuild's default minifier
+		// renames classes, which would break that check.
+		esbuild: {
+			keepNames: true,
+		},
 	},
 });

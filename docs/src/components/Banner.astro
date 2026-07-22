@@ -1,0 +1,37 @@
+---
+import Default from '@astrojs/starlight/components/Banner.astro';
+import { isUnpublishedPackage } from '@/utils/package-versions';
+
+const { packageName } = Astro.locals.starlightRoute.entry.data;
+const isUnpublished = packageName && isUnpublishedPackage(packageName);
+---
+
+{
+	isUnpublished && (
+		<div class="sl-banner unpublished-package-warning" data-pagefind-ignore>
+			<strong>Unpublished package:</strong> This package has not been published to npm yet.
+		</div>
+	)
+}
+
+<Default {...Astro.props}>
+	<slot />
+</Default>
+
+<style>
+	@layer starlight.core {
+		.unpublished-package-warning {
+			--__sl-banner-text: var(--sl-color-banner-text, var(--sl-color-text-invert));
+			padding: var(--sl-nav-pad-y) var(--sl-nav-pad-x);
+			background-color: var(--sl-color-banner-bg, var(--sl-color-bg-accent));
+			color: var(--__sl-banner-text);
+			line-height: var(--sl-line-height-headings);
+			text-align: center;
+			text-wrap: balance;
+			box-shadow: var(--sl-shadow-sm);
+		}
+		.unpublished-package-warning :global(a) {
+			color: var(--__sl-banner-text);
+		}
+	}
+</style>

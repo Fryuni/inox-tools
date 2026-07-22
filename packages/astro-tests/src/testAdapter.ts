@@ -8,9 +8,8 @@ import { getDebug } from './internal/log.js';
 
 const debug = getDebug('testAdapter');
 
-type EntryPoints = HookParameters<'astro:build:ssr'>['entryPoints'];
 type MiddlewareEntryPoint = HookParameters<'astro:build:ssr'>['middlewareEntryPoint'];
-type Routes = HookParameters<'astro:build:done'>['routes'];
+type Routes = HookParameters<'astro:routes:resolved'>['routes'];
 
 export type Options = {
 	/**
@@ -24,14 +23,6 @@ export type Options = {
 	 */
 	provideAddress?: boolean;
 
-	/**
-	 * Callback to collect the build entrypoints.
-	 *
-	 * The collected value is a map from `RouteData` describing a route
-	 * to the URL pointing to the file on disk that can be imported to
-	 * render that route.
-	 */
-	setEntryPoints?: (entryPoints: EntryPoints) => void;
 	/**
 	 * Callback to collect the middleware entrypoint.
 	 *
@@ -48,13 +39,7 @@ export type Options = {
 export default function (options: Options = {}): AstroIntegration {
 	debug('New test adapter created', options);
 
-	const {
-		env,
-		provideAddress = true,
-		setEntryPoints,
-		setMiddlewareEntryPoint,
-		setRoutes,
-	} = options;
+	const { env, provideAddress = true, setMiddlewareEntryPoint, setRoutes } = options;
 
 	return {
 		name: debug.name,
@@ -93,13 +78,20 @@ export default function (options: Options = {}): AstroIntegration {
 													this.#manifest = manifest;
 												}
 
-												async render(request, { routeData, clientAddress, locals, addCookieHeader } = {}) {
-													const url = new URL(request.url);
-													if(this.#manifest.assets.has(url.pathname)) {
-														const filePath = new URL('../../client/' + this.removeBase(url.pathname), import.meta.url);
-														const data = await fs.promises.readFile(filePath);
-														return new Response(data);
-													}
+								async render(request, { routeData, clientAddress, locals, addCookieHeader } = {}) {
+									const url = new URL(request.url);
+									if(this.#manifest.assets.has(url.pathname)) {
+										const assetPath = this.removeBase(url.pathname);
+										const filePaths = [assetPath, assetPath + '.html', assetPath + '/index.html'].map(
+											(assetPath) => new URL('../client/' + assetPath, import.meta.url)
+										);
+										const filePath = filePaths.find(
+											(filePath) => fs.existsSync(filePath) && fs.statSync(filePath).isFile()
+										);
+										if (!filePath) throw new Error('Unable to find prerendered asset for ' + url.pathname);
+										const data = await fs.promises.readFile(filePath);
+										return new Response(data);
+									}
 
 													${provideAddress ? `request[Symbol.for('astro.clientAddress')] = clientAddress ?? '0.0.0.0';` : ''}
 													return super.render(request, { routeData, locals, addCookieHeader });
@@ -136,17 +128,13 @@ export default function (options: Options = {}): AstroIntegration {
 					},
 				});
 			},
-			'astro:build:ssr': ({ entryPoints, middlewareEntryPoint }) => {
-				if (setEntryPoints) {
-					debug('Collecting entry points');
-					setEntryPoints(entryPoints);
-				}
+			'astro:build:ssr': ({ middlewareEntryPoint }) => {
 				if (setMiddlewareEntryPoint) {
 					debug('Collecting middleware entry point');
 					setMiddlewareEntryPoint(middlewareEntryPoint);
 				}
 			},
-			'astro:build:done': ({ routes }) => {
+			'astro:routes:resolved': ({ routes }) => {
 				if (setRoutes) {
 					debug('Collecting routes');
 					setRoutes(routes);

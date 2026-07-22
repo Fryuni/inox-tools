@@ -19,7 +19,7 @@ This can be useful when injecting dynamic pages that require specific field of a
 
 ### `injectCollections`
 
-AIK-style utility for integrations to declare their own content collections.
+Utility for integrations to declare their own content collections.
 It accepts an `entrypoint` which should have the same exports as the `src/content/config.ts` would for a normal collection.
 
 :::tip
@@ -27,12 +27,12 @@ The entrypoint should be resolvable from the root of the Astro project, so if th
 :::
 
 ```ts title="integration.ts"
-import { defineIntegration } from 'astro-integration-kit';
+import type { AstroIntegration } from 'astro';
 import { injectCollections } from '@inox-tools/content-utils';
 
-export default defineIntegration({
-	name: 'my-integration',
-	setup: () => ({
+export default function yourIntegration(): AstroIntegration {
+	return {
+		name: 'your-integration',
 		hooks: {
 			'astro:config:setup': (params) => {
 				injectCollections(params, {
@@ -40,43 +40,40 @@ export default defineIntegration({
 				});
 			},
 		},
-	}),
-});
+	}
+}
 ```
 
 Additionally, you can provide a `seedTemplateDirectory` along with your entrypoint. If you do, a call to [`seedCollections`](#seedcollections) is implied using that path the template.
 
 ```ts title="integration.ts"
-import { defineIntegration } from 'astro-integration-kit';
+import type { AstroIntegration } from 'astro';
 import { injectCollections } from '@inox-tools/content-utils';
 
-export default defineIntegration({
-	name: 'my-integration',
-	setup: () => {
-		const { resolve } = createResolver(import.meta.url);
-
-    return  {
-		  hooks: {
-			  'astro:config:setup': (params) => {
-				  injectCollections(params, {
-					  entrypoint: '@my/package/collections',
-					  seedTemplateDirectory: resolve('./collectionTemplates'),
-				  });
-			  },
-		  },
-	  }
-  }),
-});
+export default function yourIntegration(): AstroIntegration {
+	return {
+		name: 'your-integration',
+		hooks: {
+			'astro:config:setup': (params) => {
+				injectCollections(params, {
+					entrypoint: '@my/package/collections',
+					seedTemplateDirectory: new URL('./collectionTemplates', import.meta.url).toString(),
+				});
+			},
+		},
+	}
+}
 ```
 
 ### `@it-astro:content` virtual module
 
-This virtual module provides the same API as `astro:content`, with the exception of `defineCollection`. Instead, `defineCollection` creates a `FancyCollection`, that can be extended by users of your integration.
+This virtual module provides the same content collection API as `astro:content`, with the exception of `defineCollection`. Instead, `defineCollection` creates a `FancyCollection`, that can be extended by users of your integration. It also re-exports `z` from `astro/zod`.
 
 For integration authors, it is a drop-in replacement.
 
-```ts title="integration/collection.ts" del={1} ins={2}
-import { defineCollection, z } from 'astro:content';
+```ts title="integration/collection.ts" del={1-2} ins={3}
+import { defineCollection } from 'astro:content';
+import { z } from 'astro/zod';
 import { defineCollection, z } from '@it-astro:content';
 
 export const collections = {
@@ -93,7 +90,8 @@ export const collections = {
 Users of your integration would then be able to extend the schema like so:
 
 ```ts title="src/content/config.ts"
-import { defineCollection, z } from 'astro:content';
+import { defineCollection } from 'astro:content';
+import { z } from 'astro/zod';
 import { collections as integrationCollections } from '@my/integration/collections';
 
 export const collections = {
@@ -111,7 +109,7 @@ If you want to provide some initial content for collections used by your integra
 
 ### `seedCollections`
 
-AIK-style utility for integrations to declare a seed for collections.
+Utility for integrations to declare a seed for collections.
 
 It received the absolute path to a directory that should contain collections in the same structure as expected by Astro, each folder inside of it should have the name of the collection and it's contents should follow a set schema.
 
@@ -132,23 +130,20 @@ import { FileTree } from '@astrojs/starlight/components';
 You can declare the seed like so:
 
 ```ts title="integration.ts"
-import { defineIntegration, createResolver } from 'astro-integration-kit';
+import type { AstroIntegration } from 'astro';
 import { seedCollections } from '@inox-tools/content-utils';
 
-export default defineIntegration({
-	name: 'my-integration',
-	setup: () => {
-		const { resolve } = createResolver(import.meta.url);
-
-		return {
-			hooks: {
-				'astro:config:setup': (params) => {
-					seedCollections(params, {
-						templateDirectory: resolve('./collectionTemplates'),
-					});
-				},
+export default function yourIntegration(): AstroIntegration {
+	return {
+		name: 'your-integration',
+		hooks: {
+			'astro:config:setup': (params) => {
+				seedCollections(params, {
+					entrypoint: '@my/package/collections',
+					templateDirectory: new URL('./collectionTemplates', import.meta.url).toString(),
+				});
 			},
-		};
-	},
-});
+		},
+	}
+}
 ```

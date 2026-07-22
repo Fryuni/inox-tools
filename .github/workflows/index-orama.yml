@@ -1,0 +1,53 @@
+name: Index Orama Cloud
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/**'
+      - '.github/workflows/index-orama.yml'
+
+# Only one reindex run should be in-flight per branch at a time. A newer push
+# supersedes the previous one — the live Orama Cloud index should reflect the
+# latest state of `main`, not a stale mid-flight snapshot.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  FORCE_COLOR: true
+  ASTRO_TELEMETRY_DISABLED: true
+  NODE_OPTIONS: --max-old-space-size=6144
+
+jobs:
+  reindex:
+    name: Build docs and reindex
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4.2.0
+        with:
+          node-version: 24
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build docs and reindex Orama Cloud
+        working-directory: docs
+        env:
+          ORAMA_CLOUD_PRIVATE_API_KEY: ${{ secrets.ORAMA_CLOUD_PRIVATE_API_KEY }}
+        run: pnpm run build-index

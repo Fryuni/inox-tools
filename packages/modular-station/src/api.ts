@@ -1,15 +1,11 @@
 import type { AstroConfig, HookParameters, AstroIntegration as NativeIntegration } from 'astro';
 import { AstroError } from 'astro/errors';
-import {
-	DEFAULT_HOOK_FACTORY,
-	allHooksPlugin,
-	type AllHooksPlugin,
-	type HookNames,
-} from './allHooksPlugin.js';
 import type { Prettify } from '@inox-tools/utils/types';
 import { getDebug } from './internal/debug.js';
 
 const debug = getDebug('api');
+
+export type HookNames = keyof Astro.IntegrationHooks;
 
 export type AstroIntegration = NativeIntegration;
 
@@ -53,29 +49,6 @@ export type IntegrationApi<TOptions extends any[], TApi> = {
 	 * Get the instance of this integration API from the list of installed integrations.
 	 */
 	fromIntegrations(integrations: AstroIntegration[]): TApi | null;
-
-	/**
-	 * Use this integration API as an Astro Integration Kit plugin.
-	 *
-	 * The API will be available under the given attribute name to all standard Astro hooks.
-	 *
-	 * If the integration is not already installed, it will be installed using the given options.
-	 */
-	asPlugin<TAttr extends string>(
-		attr: TAttr,
-		...args: TOptions
-	): AllHooksPlugin<TAttr, Record<TAttr, TApi>>;
-
-	/**
-	 * Use this integration API as an optional Astro Integration Kit plugin.
-	 *
-	 * The API will be available under the given attribute name to all standard Astro hooks.
-	 *
-	 * If the integration is not already installed, the plugin will provide a null value.
-	 */
-	asOptionalPlugin<TAttr extends string>(
-		attr: TAttr
-	): AllHooksPlugin<TAttr, Record<TAttr, TApi | null>>;
 };
 
 /**
@@ -236,56 +209,6 @@ export function withApi<
 
 			return instance;
 		},
-		asOptionalPlugin: <TAttr extends string>(attr: TAttr) =>
-			allHooksPlugin({
-				name: attr,
-				setup() {
-					const pluginApi: any = null;
-
-					return {
-						'astro:config:setup': ({ config }) => {
-							pluginApi[attr] = api.fromConfig(config);
-
-							return protectApi('astro:config:setup', attr, pluginApi);
-						},
-						'astro:config:done': ({ config }) => {
-							pluginApi[attr] = api.fromConfig(config);
-
-							return protectApi('astro:config:done', attr, pluginApi);
-						},
-						[DEFAULT_HOOK_FACTORY]: (hookName) => {
-							if (pluginApi === null) {
-								throw new AstroError(
-									`API ${attr} is not available on hook ${hookName} because it is being executed before "astro:config:setup".`
-								);
-							}
-
-							return () => protectApi(hookName, attr, pluginApi);
-						},
-					};
-				},
-			}),
-		asPlugin: <TAttr extends string>(attr: TAttr, ...args: TOptions) =>
-			allHooksPlugin({
-				name: attr,
-				setup() {
-					const pluginApi = { [attr]: null } as any;
-
-					return {
-						'astro:config:setup': (params) => {
-							pluginApi[attr] = api.fromSetup(params, ...args);
-
-							return protectApi('astro:config:setup', attr, pluginApi);
-						},
-						'astro:config:done': ({ config }) => {
-							pluginApi[attr] = api.fromConfig(config);
-
-							return protectApi('astro:config:done', attr, pluginApi);
-						},
-						[DEFAULT_HOOK_FACTORY]: (hookName) => () => protectApi(hookName, attr, pluginApi),
-					};
-				},
-			}),
 	};
 
 	return Object.assign(wrapper, api);

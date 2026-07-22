@@ -1,5 +1,58 @@
 # @inox-tools/sitemap-ext
 
+## 0.11.0
+
+### Minor Changes
+
+- 410697a: Require Astro 7 and Vite 8, dropping support for Astro 6 and Vite 7.
+
+  All Inox Tools integrations now require Astro `^7` in their peer dependencies. Integrations that peer-depend on Vite now require Vite `^8`, matching the Vite version bundled by Astro 7. Additionally, `@inox-tools/star-warp` now requires Starlight `^0.41`.
+
+  To migrate, upgrade your project to Astro 7 (see the [Astro 7 upgrade guide](https://docs.astro.build/en/guides/upgrade-to/v7/)), which brings Vite 8 along. Starlight users must upgrade to `@astrojs/starlight` `^0.41`. No API changes were made to the integrations themselves; projects already on Astro 7 and Vite 8 can upgrade without code changes.
+
+### Patch Changes
+
+- Updated dependencies [410697a]
+  - @inox-tools/route-config@0.1.0
+
+## 0.10.1
+
+### Patch Changes
+
+- 6674224: Adds support for Astro 7 and Vite 8 while retaining support for previously compatible versions. `@inox-tools/star-warp` also adds support for Starlight 0.41.
+- Updated dependencies [6674224]
+  - @inox-tools/route-config@0.0.3
+
+## 0.10.0
+
+### Minor Changes
+
+- 74ad4e5: Simplifies internals
+
+### Patch Changes
+
+- 025bb4d: Fix SSR route-config callback loading during pure server builds so sitemap-ext can include URLs when Astro skips the static generation hook.
+- Updated dependencies [74ad4e5]
+- Updated dependencies [025bb4d]
+  - @inox-tools/route-config@0.0.1
+
+## 0.9.1
+
+### Patch Changes
+
+- 4e209b6: Fixes the options type to correctly allow passing some `@astrojs/sitemap` options
+
+## 0.9.0
+
+### Minor Changes
+
+- 8e64582: Bump Astro support to v6
+
+### Patch Changes
+
+- Updated dependencies [8e64582]
+  - @inox-tools/aik-route-config@1.0.0
+
 ## 0.8.0
 
 ### Minor Changes

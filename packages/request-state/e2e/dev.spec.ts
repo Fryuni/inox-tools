@@ -18,24 +18,12 @@ test.afterAll(async () => {
 
 test('apply new as edited during development', async ({ page }) => {
 	const pageUrl = fixture.resolveUrl('/');
+	const state = page.locator('pre#state');
 
 	await page.goto(pageUrl);
-	await expect
-		.poll(async () => {
-			const state = JSON.parse(await page.locator('pre#state').innerHTML());
-
-			console.log(state);
-			return state;
-		})
-		.toStrictEqual({
-			source: 'Original',
-		});
+	await expect(state).toHaveText(JSON.stringify({ source: 'Original' }, null, 2));
 
 	await fixture.editFile('./src/state.ts', (code) => (code ?? '').replace('Original', 'Updated'));
 
-	await expect
-		.poll(async () => JSON.parse(await page.locator('pre#state').innerHTML()))
-		.toStrictEqual({
-			source: 'Updated',
-		});
+	await expect(state).toHaveText(JSON.stringify({ source: 'Updated' }, null, 2));
 });

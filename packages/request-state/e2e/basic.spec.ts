@@ -20,6 +20,7 @@ injectedState.circular = injectedState;
 
 test.beforeAll(async () => {
 	delete process.env.INJECTED_STATE;
+	await fixture.clean();
 	await fixture.build({});
 });
 
@@ -92,4 +93,18 @@ test('can set state to undefined', async ({ page }) => {
 	// The regular state should work as expected
 	const regularResult = await page.locator('pre#regular-result').innerHTML();
 	expect(regularResult).toBe('hello');
+});
+
+test('has content-length header', async ({ request }) => {
+	server = await fixture.preview({});
+
+	const pageUrl = fixture.resolveUrl('/?name=John+Doe');
+
+	const response = await request.get(pageUrl);
+	console.log('STATUS:', response.status());
+	console.log('HEADERS:', response.headers());
+	expect(response.status()).toBe(200);
+	const contentLength = response.headers()['content-length'];
+	expect(contentLength).toBeDefined();
+	expect(Number(contentLength)).toBeGreaterThan(0);
 });

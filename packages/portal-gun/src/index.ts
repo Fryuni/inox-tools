@@ -1,28 +1,22 @@
-import { createResolver, defineIntegration } from 'astro-integration-kit';
-import { z } from 'astro/zod';
 import { debug } from './internal/debug.js';
 import { runtimeLogger } from '@inox-tools/runtime-logger';
+import type { AstroIntegration } from 'astro';
 
-export default defineIntegration({
-	name: '@inox-tools/portal-gun',
-	optionsSchema: z.never().optional(),
-	setup() {
-		const { resolve } = createResolver(import.meta.url);
+export default function portalGun(): AstroIntegration {
+	return {
+		name: '@inox-tools/portal-gun',
+		hooks: {
+			'astro:config:setup': (params) => {
+				runtimeLogger(params, {
+					name: 'portal-gun',
+				});
 
-		return {
-			hooks: {
-				'astro:config:setup': (params) => {
-					runtimeLogger(params, {
-						name: 'portal-gun',
-					});
-
-					debug('Injecting middleware');
-					params.addMiddleware({
-						order: 'pre',
-						entrypoint: resolve('./runtime/middleware.js'),
-					});
-				},
+				debug('Injecting middleware');
+				params.addMiddleware({
+					order: 'pre',
+					entrypoint: new URL('./runtime/middleware.js', import.meta.url),
+				});
 			},
-		};
-	},
-});
+		},
+	};
+}

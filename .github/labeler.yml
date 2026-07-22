@@ -22,12 +22,6 @@ pkg/cut-short:
 pkg/request-nanostores:
 - 'packages/request-nanostores/**'
 
-pkg/aik-mod:
-- 'packages/aik-mod/**'
-
-pkg/aik-route-config:
-- 'packages/aik-route-config/**'
-
 pkg/custom-routing:
 - 'packages/custom-routing/**'
 
@@ -45,6 +39,12 @@ pkg/sitemap-ext:
 
 pkg/request-state:
 - 'packages/request-state/**'
+
+pkg/route-config:
+- 'packages/route-config/**'
+
+pkg/git-redirect:
+- 'packages/git-redirect/**'
 
 pkg/content-utils:
 - 'packages/content-utils/**'

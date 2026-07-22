@@ -1,0 +1,70 @@
+---
+title: Git Redirect
+description: Generate Astro redirects from Git rename history.
+packageName: '@inox-tools/git-redirect'
+---
+
+`@inox-tools/git-redirect` creates redirects for routes whose `.astro`, `.md`, `.mdx`, `.html`, `.markdown`, `.mdown`, `.mkdn`, `.mkd`, `.mdwn`, `.js`, or `.ts` files were renamed in Git. Ordinary rename chains collapse to the page's current route, while separate lifetimes of a reused path remain isolated rather than being joined into one chain.
+
+## Installation
+
+import InstallCmd from '@/components/InstallCmd.astro';
+
+<InstallCmd />
+
+## Configuration
+
+Add `gitRedirect()` to your Astro configuration. Its sources are processed in order:
+
+```ts title="astro.config.mjs"
+import { defineConfig } from 'astro/config';
+import gitRedirect from '@inox-tools/git-redirect';
+
+export default defineConfig({
+	integrations: [
+		gitRedirect([
+			{
+				path: 'src/pages',
+				prefix: '/',
+			},
+		]),
+	],
+});
+```
+
+### Sources
+
+Each source has these fields:
+
+- `path`: an existing page file or directory. Relative paths resolve from the Astro project root; absolute paths are also supported. A file generates redirects only for that page, while a directory is searched recursively for supported page files. For sources in Astro's pages directory, path components beginning with `_` or `.` are excluded, except for `.well-known`.
+- `prefix`: the URL prefix for the source's routes. It is normalized to have a leading slash and no trailing slash, except for `/`.
+
+For example, a source at `src/pages/guides` with a `/docs` prefix maps `src/pages/guides/getting-started.mdx` to `/docs/getting-started`.
+
+## Route and redirect behavior
+
+Routes are derived from the source path: their file extension is removed, and a terminal `index` segment is collapsed. For example, `src/pages/docs/index.astro` becomes `/docs` with the root prefix, and `src/pages/blog/[slug].mdx` becomes `/blog/[slug]`.
+
+The integration examines the complete first-parent Git history from `HEAD` and creates redirects from historical paths to the current paths. A redirect is generated only when its current target still exists as a file.
+
+Existing Astro routes and redirects configured in `astro.config` take precedence over generated redirects. If more than one source would generate the same redirect, the earlier source wins.
+
+### Dynamic routes
+
+A dynamic redirect is generated only when the old and current routes have identical parameter bindings, including parameter names, positions, and rest parameters. For example, a rename from `blog/[slug].astro` to `posts/[slug].astro` can redirect, while renaming it to `posts/[id].astro` cannot.
+
+### Nested repositories
+
+When a directory source contains a nested Git repository, that nested repository is ignored while scanning the directory. To generate redirects for it, configure it as a separate source.
+
+## Git history in CI
+
+Every source must be inside a Git repository with complete, non-shallow history available during the build. The integration rejects shallow repositories because a partial history could omit old routes.
+
+For GitHub Actions, configure `actions/checkout` to fetch the full history:
+
+```yaml
+- uses: actions/checkout@v4
+  with:
+    fetch-depth: 0
+```

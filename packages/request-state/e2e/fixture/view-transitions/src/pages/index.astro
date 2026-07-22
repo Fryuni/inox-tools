@@ -1,5 +1,5 @@
 ---
-import { ViewTransitions } from 'astro:transitions';
+import { ClientRouter } from 'astro:transitions';
 import { setState } from '@it-astro:state';
 
 const name = Astro.url.searchParams.get('name');
@@ -10,7 +10,7 @@ setState('name', name);
 <html>
 	<head>
 		<title>Basic example</title>
-		<ViewTransitions />
+		<ClientRouter />
 	</head>
 	<body>
 		<p>Hello, <span id="name"></span></p>

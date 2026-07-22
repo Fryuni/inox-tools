@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "astro": "astro",
-    "build": "rm -rf .astro node_modules/.astro && astro build",
+    "build": "rm -rf .astro node_modules/.astro && node --env-file-if-exists=.env.development ./node_modules/astro/bin/astro.mjs build",
+    "index": "node --env-file-if-exists=.env.production ./scripts/index-orama.mjs",
+    "build-index": "pnpm build && pnpm index",
     "dev": "astro dev",
     "preview": "astro preview",
     "start": "astro dev",
@@ -15,8 +17,10 @@
     "@astrojs/starlight": "catalog:",
     "@astrojs/vercel": "catalog:",
     "@croct/plug": "catalog:",
-    "@inox-tools/star-warp": "workspace:^",
-    "@inox-tools/utils": "workspace:^",
+    "@inox-tools/astro-when": "workspace:",
+    "@inox-tools/star-warp": "workspace:",
+    "@inox-tools/utils": "workspace:",
+    "@orama/core": "catalog:",
     "@orama/wc-components": "catalog:",
     "@vercel/analytics": "catalog:",
     "astro": "catalog:",
@@ -27,9 +31,7 @@
   },
   "devDependencies": {
     "@astrojs/check": "catalog:",
-    "@types/pako": "catalog:",
-    "js-base64": "catalog:",
-    "pako": "catalog:",
+    "node-html-parser": "catalog:",
     "typescript": "catalog:"
   }
 }

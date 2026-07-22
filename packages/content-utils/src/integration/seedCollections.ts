@@ -20,7 +20,7 @@ export function seedCollections(state: IntegrationState, options: SeedCollection
 		.filter(([, path]) => lstatSync(path).isDirectory());
 
 	for (const [collectionName, templatePath] of collectionTemplates) {
-		const collectionPath = state.contentPaths.resolve(collectionName);
+		const collectionPath = state.contentPaths.resolve(`./${collectionName}/`);
 
 		if (existsSync(collectionPath)) {
 			// Collection already exists, don't seed.

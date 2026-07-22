@@ -1,6 +1,6 @@
 {
   "name": "@inox-tools/star-warp",
-  "version": "0.6.1",
+  "version": "2.0.0",
   "description": "Warp-drive search for Astro sites using Pagefind",
   "keywords": [
     "astro-integration",
@@ -36,8 +36,7 @@
     "test:dev": "vitest --coverage.enabled=true"
   },
   "dependencies": {
-    "@inox-tools/utils": "workspace:^",
-    "astro-integration-kit": "catalog:"
+    "@inox-tools/utils": "workspace:^"
   },
   "devDependencies": {
     "@types/node": "catalog:",

@@ -1,6 +1,6 @@
 {
   "name": "@inox-tools/sitemap-ext",
-  "version": "0.8.0",
+  "version": "0.11.0",
   "description": "Higher level extension over Astro's official sitemap integration",
   "keywords": [
     "sitemap",
@@ -30,20 +30,22 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "prepublish": "pnpm run build",
-    "test": "echo 'No tests'"
+    "test": "vitest run",
+    "test:dev": "vitest"
   },
   "dependencies": {
     "@astrojs/sitemap": "catalog:",
-    "@inox-tools/aik-route-config": "workspace:^",
-    "astro-integration-kit": "catalog:",
+    "@inox-tools/route-config": "workspace:^",
     "sitemap": "catalog:"
   },
   "devDependencies": {
+    "@inox-tools/astro-tests": "workspace:^",
     "@types/node": "catalog:",
     "astro": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:",
-    "vite": "catalog:"
+    "vite": "catalog:",
+    "vitest": "catalog:"
   },
   "peerDependencies": {
     "astro": "catalog:lax"

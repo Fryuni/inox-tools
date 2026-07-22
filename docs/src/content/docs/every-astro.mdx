@@ -1,0 +1,100 @@
+---
+title: Every Astro
+description: Find the Astro commit that introduced a regression in your project
+packageName: '@inox-tools/every-astro'
+---
+
+Every Astro is an interactive CLI that finds the Astro commit that introduced a bug you can reproduce
+in your project. It tests your project against revisions from the Astro repository and uses
+[`git bisect`](https://git-scm.com/docs/git-bisect) to identify the first bad commit.
+
+## Requirements
+
+Before running Every Astro, make sure the project has:
+
+- Node.js 22.12.0 or newer, Git, and the project's package manager available on your `PATH`.
+- Astro and the project's dependencies already installed.
+- A `dev` script that starts the project and keeps running while you test it.
+- A lockfile for pnpm, npm, Yarn, or Bun.
+
+Both Yarn Classic and Yarn Berry are supported, including Plug'n'Play projects. In a monorepo, run the
+command from the directory of the Astro project you want to test. Every Astro searches upward from that
+directory for package manager configuration and a lockfile.
+
+## Run the bisect
+
+From your Astro project's directory, run:
+
+```sh
+npx @inox-tools/every-astro
+```
+
+The CLI detects the installed Astro major and then:
+
+1. Clones the complete Astro repository into a temporary directory.
+2. Builds and tests the latest revision in the installed major. When clone HEAD's Astro package has that
+   major, this is HEAD; otherwise it is the highest stable release tag in the installed major.
+3. Builds and tests the inclusive first release of the installed major, displayed as `v<major>.0.0`.
+4. If the two revisions bracket the regression, runs `git bisect` and tests revisions until it finds the
+   first bad commit.
+
+For each tested revision, Every Astro starts your project's `dev` script and displays a prompt like:
+
+```text
+<revision>: is the bug present? [y/n]
+```
+
+Wait for the development server to be ready, reproduce the bug, and answer `y` or `n`. Use the same
+test every time: inconsistent answers can lead `git bisect` to the wrong commit.
+
+Every Astro reports early when the bug is already fixed in the latest revision in the installed major or
+already present in the inclusive first release. In the latter case, its introduction is at or before the
+first-release boundary; earlier history is not bisected. Otherwise, it reports the exact first bad commit.
+It does not bisect across Astro major versions.
+
+:::note[Allow time and disk space]
+Every tested revision requires an install and a full Astro monorepo build. The complete repository is
+cloned rather than shallow-cloned, so the process can take significant time and temporary disk space.
+:::
+
+## Package manager detection
+
+Every Astro supports pnpm, npm, Yarn Classic, Yarn Berry, Yarn Plug'n'Play, and Bun. Starting in the
+current directory and walking upward, it uses a recognized `packageManager` field or a conventional
+lockfile. A `packageManager` field at a given directory takes precedence over a lockfile in that same
+directory. Recognized lockfiles are `pnpm-lock.yaml`, `yarn.lock`, `bun.lock`, `bun.lockb`,
+`package-lock.json`, and `npm-shrinkwrap.json`.
+
+The lockfile is required so Every Astro can restore the exact dependency tree after substituting Astro
+packages. For each revision, it discovers the public `astro` and `@astrojs/*` workspace packages that
+exist in that checkout and substitutes the ones used by your project's dependency graph.
+
+## Cleanup and interruption
+
+Every Astro cleans up after a successful result, an error, `Ctrl+C`, or a termination signal. Cleanup:
+
+- Stops the development server and its child processes.
+- Restores package manifests and the original lockfile byte-for-byte.
+- Reinstalls the locked dependency tree and restores original dependency symlinks.
+- Unlinks packages from the tested Astro revision.
+- Resets the temporary repository's bisect state and removes the temporary clone.
+
+If cleanup fails during a normal run, the CLI exits with the collected cleanup errors instead of
+reporting a successful result. Inspect those errors and your dependency state before continuing work.
+
+## Interpreting the result
+
+The CLI ends with one of three messages:
+
+- **Already fixed:** the bug is absent from the latest revision in the installed major.
+- **At or before the first-release boundary:** the bug is already present in `v<major>.0.0`; earlier
+  history is not bisected.
+- **First bad commit:** the reported 40-character commit is the first Astro revision where your answers
+  indicated that the bug is present.
+
+The result is only as reliable as the reproduction. If the behavior depends on timing, external state,
+or an unrelated package version, stabilize those conditions before running the CLI.
+
+## License
+
+Every Astro is available under the MIT license.

@@ -1,0 +1,16 @@
+---
+import { getLatestCommitDate, getOldestCommitDate } from '@it-astro:content/git';
+import { getCollection } from 'astro:content';
+const [entry] = await getCollection('entries');
+const [latest, oldest] = await Promise.all([
+	getLatestCommitDate({ collection: 'entries', id: entry.id }),
+	getOldestCommitDate({ collection: 'entries', id: entry.id }),
+]);
+
+const data = {
+	latest: latest.toISOString(),
+	oldest: oldest.toISOString(),
+};
+---
+
+<pre id="data">{JSON.stringify(data)}</pre>

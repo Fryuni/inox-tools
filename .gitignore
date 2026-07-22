@@ -60,12 +60,13 @@ build/
 
 # Test results
 test-results/
-test-results/
 playwright-report/
 blob-report/
 playwright/.cache/
 patching
 
+# Nested git repos in test fixtures (unpacked from .git.tar.gz during tests)
+packages/*/tests/fixture/**/.git
 /.memory/state.yaml
 .memory/branches/*/log.md
 /.playwright-cli

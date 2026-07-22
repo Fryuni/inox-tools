@@ -25,10 +25,16 @@ export type InjectCollectionOptions = {
 };
 
 export const integration = withApi(
-	({ staticOnlyCollections = [] }: { staticOnlyCollections?: Array<string> } = {}) => {
+	(
+		{
+			staticOnlyCollections = [],
+			collectCommitHistory = true,
+		}: { staticOnlyCollections?: Array<string>; collectCommitHistory?: boolean } = {}
+	) => {
 		debug('Generating empty state');
 		const state = emptyState();
 		state.staticOnlyCollections.push(...staticOnlyCollections);
+		state.collectCommitHistory = collectCommitHistory;
 		const collectionSeedBuffer: SeedCollectionsOptions[] = [];
 
 		const api = {

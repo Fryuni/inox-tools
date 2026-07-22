@@ -430,26 +430,36 @@ test.skipIf(process.platform !== 'win32')(
 		const targetScript = join(toolRoot, 'target.mjs');
 		const descendantScript = join(toolRoot, 'descendant.mjs');
 		const sentinelFile = join(root, 'descendant-survived');
+		const startedFile = join(root, 'descendant-started');
 		const controlFile = join(root, 'command.json');
 		await mkdir(toolRoot);
 		await writeFile(
 			descendantScript,
 			[
+				"import { writeFileSync } from 'node:fs';",
 				"import { writeFile } from 'node:fs/promises';",
 				"import { setTimeout as delay } from 'node:timers/promises';",
+				"writeFileSync(process.argv[2], 'started');",
 				'await delay(250);',
-				"await writeFile(process.argv[2], 'escaped');",
+				"await writeFile(process.argv[3], 'escaped');",
 			].join('\n')
 		);
 		await writeFile(
 			targetScript,
 			[
 				"import { spawn } from 'node:child_process';",
+				"import { existsSync } from 'node:fs';",
 				"import { setTimeout as delay } from 'node:timers/promises';",
-				`const descendant = spawn(process.execPath, [${JSON.stringify(descendantScript)}, process.argv[2]], {`,
+				'const [startedFile, sentinelFile] = process.argv.slice(2);',
+				`const descendant = spawn(process.execPath, [${JSON.stringify(descendantScript)}, startedFile, sentinelFile], {`,
 				"\tstdio: 'ignore',",
 				'});',
 				'descendant.unref();',
+				'const deadline = Date.now() + 5_000;',
+				'while (!existsSync(startedFile)) {',
+				"\tif (Date.now() >= deadline) throw new Error('Descendant did not start');",
+				'\tawait delay(10);',
+				'}',
 				"console.log('ready');",
 				'await delay(600);',
 			].join('\n')
@@ -459,7 +469,7 @@ test.skipIf(process.platform !== 'win32')(
 			controlFile,
 			JSON.stringify({
 				file: batchFile,
-				args: [sentinelFile],
+				args: [startedFile, sentinelFile],
 			})
 		);
 		const [file, ...args] = windowsJobSupervisorCommand(controlFile);
@@ -516,6 +526,7 @@ test.skipIf(process.platform !== 'win32')(
 					10_000
 				);
 			});
+			await expect(readFile(startedFile, 'utf8')).resolves.toBe('started');
 			const closed = once(runningSupervisor, 'close');
 			expect(runningSupervisor.kill()).toBe(true);
 			await closed;

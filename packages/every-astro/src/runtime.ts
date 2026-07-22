@@ -265,6 +265,22 @@ function awaitPnpManifestRead(
 	});
 }
 
+function awaitPnpManifestReadEviction(read: PnpManifestRead, signal?: AbortSignal): Promise<void> {
+	if (signal?.aborted) return Promise.reject(abortError(signal));
+	return new Promise<void>((resolveEviction, rejectEviction) => {
+		const finish = () => {
+			signal?.removeEventListener('abort', abort);
+			resolveEviction();
+		};
+		const abort = () => {
+			signal?.removeEventListener('abort', abort);
+			rejectEviction(abortError(signal!));
+		};
+		signal?.addEventListener('abort', abort, { once: true });
+		void read.promise.then(finish, finish);
+	});
+}
+
 async function spawnSupervisedCommand(
 	temporaryRoot: string,
 	file: string,
@@ -465,11 +481,24 @@ async function readPnpManifest(
 	pnpReaderTemporaryRootCreator = createPnpReaderTemporaryRoot,
 	pnpReaderTemporaryRootRemover = removePnpReaderTemporaryRoot
 ): Promise<PackageManifest> {
+	if (signal?.aborted) throw abortError(signal);
 	const cached = pnpManifests.get(manifestPath);
 	if (cached) return cached;
-	if (signal?.aborted) throw abortError(signal);
 
 	let read = pnpManifestReads.get(manifestPath);
+	if (read?.controller.signal.aborted) {
+		await awaitPnpManifestReadEviction(read, signal);
+		if (signal?.aborted) throw abortError(signal);
+		return readPnpManifest(
+			pnpPath,
+			manifestPath,
+			signal,
+			pnpReaderLauncher,
+			pnpReaderTerminator,
+			pnpReaderTemporaryRootCreator,
+			pnpReaderTemporaryRootRemover
+		);
+	}
 	if (!read) {
 		const controller = new AbortController();
 		const newRead: PnpManifestRead = {
@@ -584,6 +613,7 @@ export async function resolveInstalledPackageManifest(
 	pnpReaderTemporaryRootCreator?: typeof createPnpReaderTemporaryRoot,
 	pnpReaderTemporaryRootRemover?: typeof removePnpReaderTemporaryRoot
 ): Promise<string | undefined> {
+	if (signal?.aborted) throw abortError(signal);
 	const pnpapi = loadPnpApi(pnpPath);
 	const requireFrom = createRequire(join(fromDirectory, 'package.json'));
 	const pnpManifest = await packageManifestFromPnp(

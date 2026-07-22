@@ -363,6 +363,129 @@ test('evicts an aborted in-flight PnP manifest read before a successful retry', 
 	expect(launches).toBe(2);
 });
 
+test('rejects a newly aborted caller even after its PnP manifest was cached', async () => {
+	const project = await createPnpArchiveProject();
+	const stdout = new PassThrough();
+	const reader = Object.assign(new EventEmitter(), {
+		stdout,
+		stderr: new PassThrough(),
+	}) as unknown as ChildProcess;
+	const launch = async (
+		_temporaryRoot: string,
+		_file: string,
+		_args: string[],
+		_options: NonNullable<Parameters<typeof spawnCross>[2]>,
+		observe?: (child: ChildProcess) => void
+	): Promise<ChildProcess> => {
+		observe?.(reader);
+		process.nextTick(() => {
+			stdout.write(JSON.stringify({ name: 'astro', version: '7.0.0' }));
+			reader.emit('exit', 0);
+			reader.emit('close', 0);
+		});
+		return reader;
+	};
+	await expect(
+		resolveInstalledPackageManifest('astro', project, undefined, undefined, launch)
+	).resolves.toMatch(/astro\.zip[\\/]node_modules[\\/]astro[\\/]package\.json$/);
+
+	const controller = new AbortController();
+	controller.abort('cached caller cancelled');
+	await expect(
+		resolveInstalledPackageManifest('astro', project, undefined, controller.signal)
+	).rejects.toMatchObject({ name: 'AbortError' });
+});
+
+test('does not attach an aborting handoff caller to a draining PnP generation', async () => {
+	const project = await createPnpArchiveProject();
+	const firstLaunched = Promise.withResolvers<void>();
+	const cleanupStarted = Promise.withResolvers<void>();
+	const cleanupRelease = Promise.withResolvers<void>();
+	let launches = 0;
+	let terminating = false;
+	const launch = async (
+		_temporaryRoot: string,
+		_file: string,
+		_args: string[],
+		_options: NonNullable<Parameters<typeof spawnCross>[2]>,
+		observe?: (child: ChildProcess) => void
+	): Promise<ChildProcess> => {
+		launches += 1;
+		const stdout = new PassThrough();
+		const reader = Object.assign(new EventEmitter(), {
+			stdout,
+			stderr: new PassThrough(),
+		}) as unknown as ChildProcess;
+		observe?.(reader);
+		if (launches === 1) {
+			firstLaunched.resolve();
+		} else {
+			process.nextTick(() => {
+				stdout.write(JSON.stringify({ name: 'astro', version: '7.0.0' }));
+				reader.emit('exit', 0);
+				reader.emit('close', 0);
+			});
+		}
+		return reader;
+	};
+	const terminate = async (reader: ChildProcess | undefined): Promise<void> => {
+		if (terminating) return;
+		terminating = true;
+		cleanupStarted.resolve();
+		await cleanupRelease.promise;
+		reader?.emit('close', null);
+	};
+	const firstController = new AbortController();
+	const secondController = new AbortController();
+	const first = resolveInstalledPackageManifest(
+		'astro',
+		project,
+		undefined,
+		firstController.signal,
+		launch,
+		terminate
+	);
+	void first.catch(() => undefined);
+	const second = resolveInstalledPackageManifest(
+		'astro',
+		project,
+		undefined,
+		secondController.signal,
+		launch,
+		terminate
+	);
+	await firstLaunched.promise;
+	void second.catch(() => undefined);
+	firstController.abort('first caller cancelled');
+	secondController.abort('second caller cancelled');
+	await cleanupStarted.promise;
+
+	const liveController = new AbortController();
+	const live = resolveInstalledPackageManifest(
+		'astro',
+		project,
+		undefined,
+		liveController.signal,
+		launch,
+		terminate
+	);
+	void live.catch(() => undefined);
+	await Promise.resolve();
+	expect(launches).toBe(1);
+	const liveResult = expect(live).rejects.toMatchObject({ name: 'AbortError' });
+	liveController.abort('handoff caller cancelled');
+
+	await liveResult;
+	expect(launches).toBe(1);
+	cleanupRelease.resolve();
+	await expect(first).rejects.toMatchObject({ name: 'AbortError' });
+	await expect(second).rejects.toMatchObject({ name: 'AbortError' });
+	await expect(
+		resolveInstalledPackageManifest('astro', project, undefined, undefined, launch, terminate)
+	).resolves.toMatch(/astro\.zip[\\/]node_modules[\\/]astro[\\/]package\.json$/);
+	expect(launches).toBe(2);
+});
+
 test.skipIf(process.platform === 'win32')(
 	'aborts while successful PnP reader descendant cleanup is pending without caching',
 	async () => {

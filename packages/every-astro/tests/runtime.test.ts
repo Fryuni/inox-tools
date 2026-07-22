@@ -449,6 +449,9 @@ describe('windowsBatchCommandTail', () => {
 		expect(windowsBatchCommandTail('C:\\p\\node_modules\\.bin\\tool.cmd', ['a&b'])).toBe(
 			'/d /s /c "C:\\p\\node_modules\\.bin\\tool.cmd ^^^"a^^^&b^^^""'
 		);
+		expect(windowsBatchCommandTail('C:\\p\\node_modules\\.bin\\nested\\tool.cmd', ['a&b'])).toBe(
+			'/d /s /c "C:\\p\\node_modules\\.bin\\nested\\tool.cmd ^"a^&b^""'
+		);
 	});
 });
 

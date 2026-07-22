@@ -16,6 +16,7 @@ using System;
 using System.ComponentModel;
 using System.Text;
 using System.Threading;
+using System.Text.RegularExpressions;
 using System.Runtime.InteropServices;
 
 public static class EveryAstroWindowsJob {
@@ -229,9 +230,11 @@ public static class EveryAstroWindowsJob {
     }
 
     private static bool IsCmdShim(string file) {
-        var normalized = file.Replace('/', '\\');
-        return normalized.IndexOf("\\node_modules\\.bin\\", StringComparison.OrdinalIgnoreCase) >= 0 &&
-            normalized.EndsWith(".cmd", StringComparison.OrdinalIgnoreCase);
+        return Regex.IsMatch(
+            file,
+            @"node_modules[\\/]\.bin[\\/][^\\/]+\.cmd$",
+            RegexOptions.IgnoreCase
+        );
     }
 
     private static StringBuilder BuildCmdCommandLine(string cmd, string batchFile, string[] arguments) {

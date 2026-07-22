@@ -214,13 +214,20 @@ function loadPnpApi(pnpPath: string | undefined): PnpApi | undefined {
 	return pnpapi;
 }
 
+type PnpReaderLaunchObserver = (child: ChildProcess) => void;
+
 async function spawnSupervisedCommand(
 	temporaryRoot: string,
 	file: string,
 	args: string[],
-	options: NonNullable<Parameters<typeof spawn>[2]>
+	options: NonNullable<Parameters<typeof spawn>[2]>,
+	observeLaunch?: PnpReaderLaunchObserver
 ): Promise<ChildProcess> {
-	if (process.platform !== 'win32') return spawn(file, args, options);
+	if (process.platform !== 'win32') {
+		const child = spawn(file, args, options);
+		observeLaunch?.(child);
+		return child;
+	}
 
 	const controlFile = join(temporaryRoot, `command-${randomUUID()}.json`);
 	await writeFile(controlFile, JSON.stringify({ file, args }));
@@ -235,7 +242,18 @@ async function spawnSupervisedCommand(
 	const cleanControlFile = () => void rm(controlFile, { force: true }).catch(() => undefined);
 	child.once('error', cleanControlFile);
 	child.once('close', cleanControlFile);
+	observeLaunch?.(child);
 	return child;
+}
+
+async function createPnpReaderTemporaryRoot(): Promise<string | undefined> {
+	return process.platform === 'win32'
+		? mkdtemp(join(tmpdir(), 'every-astro-pnp-reader-'))
+		: undefined;
+}
+
+async function removePnpReaderTemporaryRoot(temporaryRoot: string): Promise<void> {
+	await rm(temporaryRoot, { recursive: true, force: true });
 }
 
 async function readPnpManifest(
@@ -243,7 +261,9 @@ async function readPnpManifest(
 	manifestPath: string,
 	signal?: AbortSignal,
 	pnpReaderLauncher = spawnSupervisedCommand,
-	pnpReaderTerminator: ChildTerminator = terminateChildProcess
+	pnpReaderTerminator: ChildTerminator = terminateChildProcess,
+	pnpReaderTemporaryRootCreator = createPnpReaderTemporaryRoot,
+	pnpReaderTemporaryRootRemover = removePnpReaderTemporaryRoot
 ): Promise<PackageManifest> {
 	const cached = pnpManifests.get(manifestPath);
 	if (cached) return cached;
@@ -252,6 +272,34 @@ async function readPnpManifest(
 	let temporaryRoot: string | undefined;
 	let child: ChildProcess | undefined;
 	let closed: Promise<void> | undefined;
+	let completion: Promise<number | null> | undefined;
+	let output = '';
+	let errors = '';
+	let streamError: unknown;
+	const observeReader = (reader: ChildProcess) => {
+		if (child) return;
+		child = reader;
+		reader.stdout?.on('data', (chunk: Buffer) => {
+			output += chunk;
+		});
+		reader.stdout?.once('error', (error) => {
+			streamError ??= error;
+		});
+		reader.stderr?.on('data', (chunk: Buffer) => {
+			errors += chunk;
+		});
+		reader.stderr?.once('error', (error) => {
+			streamError ??= error;
+		});
+		closed = new Promise<void>((resolveClose) => {
+			reader.once('close', () => resolveClose());
+		});
+		completion = new Promise<number | null>((resolveExit, rejectExit) => {
+			reader.once('error', rejectExit);
+			reader.once('exit', resolveExit);
+		});
+		void completion.catch(() => undefined);
+	};
 	let abortCompletion: Promise<void> | undefined;
 	let rejectAbort!: (reason: unknown) => void;
 	const aborted = new Promise<never>((_resolveAbort, reject) => {
@@ -270,16 +318,11 @@ async function readPnpManifest(
 	};
 	if (signal) signal.addEventListener('abort', abort, { once: true });
 
-	let output = '';
-	let errors = '';
-	let streamError: unknown;
 	let exitCode: number | null | undefined;
+	let manifest: PackageManifest | undefined;
 	let primaryError: unknown;
 	try {
-		temporaryRoot =
-			process.platform === 'win32'
-				? await mkdtemp(join(tmpdir(), 'every-astro-pnp-reader-'))
-				: undefined;
+		temporaryRoot = await pnpReaderTemporaryRootCreator();
 		if (signal?.aborted) throw abortError(signal);
 		const reader = await pnpReaderLauncher(
 			temporaryRoot ?? '',
@@ -297,30 +340,12 @@ async function readPnpManifest(
 				detached: process.platform !== 'win32',
 				env: isolatedBootstrapEnvironment(),
 				stdio: ['ignore', 'pipe', 'pipe'],
-			}
+			},
+			observeReader
 		);
-		child = reader;
-		reader.stdout?.on('data', (chunk: Buffer) => {
-			output += chunk;
-		});
-		reader.stdout?.once('error', (error) => {
-			streamError ??= error;
-		});
-		reader.stderr?.on('data', (chunk: Buffer) => {
-			errors += chunk;
-		});
-		reader.stderr?.once('error', (error) => {
-			streamError ??= error;
-		});
-		closed = new Promise<void>((resolveClose) => {
-			reader.once('close', () => resolveClose());
-		});
-		const completion = new Promise<number | null>((resolveExit, rejectExit) => {
-			reader.once('error', rejectExit);
-			reader.once('exit', resolveExit);
-		});
+		observeReader(reader);
 		if (signal?.aborted) abort();
-		exitCode = await Promise.race([completion, aborted]);
+		exitCode = await Promise.race([completion!, aborted]);
 		if (signal?.aborted) {
 			await abortCompletion;
 			throw abortError(signal);
@@ -329,16 +354,38 @@ async function readPnpManifest(
 		primaryError = error;
 	} finally {
 		const cleanupErrors: unknown[] = [];
+		let terminated = true;
 		try {
-			if (child) {
-				await pnpReaderTerminator(child);
-				await closed;
-			}
+			if (child) await pnpReaderTerminator(child);
 		} catch (error) {
+			terminated = false;
 			cleanupErrors.push(error);
 		}
+		if (child && terminated) {
+			try {
+				await closed;
+			} catch (error) {
+				cleanupErrors.push(error);
+			}
+		}
+		if (signal?.aborted && primaryError === undefined) primaryError = abortError(signal);
+		if (primaryError === undefined) {
+			if (streamError) {
+				primaryError = streamError;
+			} else if (exitCode !== 0) {
+				primaryError = new Error(
+					`Could not read PnP manifest ${manifestPath} with Corepack Yarn (exit code ${exitCode}): ${errors}`
+				);
+			} else {
+				try {
+					manifest = JSON.parse(output) as PackageManifest;
+				} catch (error) {
+					primaryError = error;
+				}
+			}
+		}
 		try {
-			if (temporaryRoot) await rm(temporaryRoot, { recursive: true, force: true });
+			if (temporaryRoot) await pnpReaderTemporaryRootRemover(temporaryRoot);
 		} catch (error) {
 			cleanupErrors.push(error);
 		}
@@ -358,15 +405,8 @@ async function readPnpManifest(
 		}
 	}
 	if (primaryError !== undefined) throw primaryError;
-	if (streamError) throw streamError;
-	if (exitCode !== 0) {
-		throw new Error(
-			`Could not read PnP manifest ${manifestPath} with Corepack Yarn (exit code ${exitCode}): ${errors}`
-		);
-	}
-	const manifest = JSON.parse(output) as PackageManifest;
-	pnpManifests.set(manifestPath, manifest);
-	return manifest;
+	pnpManifests.set(manifestPath, manifest!);
+	return manifest!;
 }
 
 async function manifestAt(path: string, packageName: string): Promise<string | undefined> {
@@ -395,7 +435,9 @@ async function packageManifestFromPnp(
 	fromDirectory: string,
 	signal?: AbortSignal,
 	pnpReaderLauncher?: typeof spawnSupervisedCommand,
-	pnpReaderTerminator?: ChildTerminator
+	pnpReaderTerminator?: ChildTerminator,
+	pnpReaderTemporaryRootCreator?: typeof createPnpReaderTemporaryRoot,
+	pnpReaderTemporaryRootRemover?: typeof removePnpReaderTemporaryRoot
 ): Promise<string | undefined> {
 	if (!pnpapi || !pnpPath) return undefined;
 	let packageRoot: string | null;
@@ -417,7 +459,9 @@ async function packageManifestFromPnp(
 		manifestPath,
 		signal,
 		pnpReaderLauncher,
-		pnpReaderTerminator
+		pnpReaderTerminator,
+		pnpReaderTemporaryRootCreator,
+		pnpReaderTemporaryRootRemover
 	);
 	return manifest.name === packageName ? manifestPath : undefined;
 }
@@ -442,7 +486,9 @@ export async function resolveInstalledPackageManifest(
 	pnpPath = nearestPnpPath(fromDirectory),
 	signal?: AbortSignal,
 	pnpReaderLauncher?: typeof spawnSupervisedCommand,
-	pnpReaderTerminator?: ChildTerminator
+	pnpReaderTerminator?: ChildTerminator,
+	pnpReaderTemporaryRootCreator?: typeof createPnpReaderTemporaryRoot,
+	pnpReaderTemporaryRootRemover?: typeof removePnpReaderTemporaryRoot
 ): Promise<string | undefined> {
 	const pnpapi = loadPnpApi(pnpPath);
 	const requireFrom = createRequire(join(fromDirectory, 'package.json'));
@@ -453,7 +499,9 @@ export async function resolveInstalledPackageManifest(
 		fromDirectory,
 		signal,
 		pnpReaderLauncher,
-		pnpReaderTerminator
+		pnpReaderTerminator,
+		pnpReaderTemporaryRootCreator,
+		pnpReaderTemporaryRootRemover
 	);
 	if (pnpManifest) return pnpManifest;
 	try {

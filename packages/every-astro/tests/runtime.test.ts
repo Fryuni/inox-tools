@@ -13,6 +13,7 @@ import {
 } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { PassThrough } from 'node:stream';
 import { setTimeout as delay } from 'node:timers/promises';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import {
@@ -63,6 +64,18 @@ async function createProject(manifest: Record<string, unknown> = {}): Promise<st
 	const root = await temporaryRoot();
 	await writeJson(join(root, 'package.json'), { name: 'test-project', ...manifest });
 	return root;
+}
+
+async function createPnpArchiveProject(): Promise<string> {
+	const project = await createProject({ dependencies: { astro: '7.0.0' } });
+	const packageRoot = join(project, '.yarn/cache/astro.zip/node_modules/astro');
+	await mkdir(join(project, '.yarn/cache'), { recursive: true });
+	await writeFile(join(project, '.yarn/cache/astro.zip'), '');
+	await writeFile(
+		join(project, '.pnp.cjs'),
+		`exports.resolveToUnqualified = (request) => request === 'astro' ? ${JSON.stringify(packageRoot)} : null;\n`
+	);
+	return project;
 }
 
 async function writePackage(
@@ -312,6 +325,134 @@ test.skipIf(process.platform === 'win32')(
 		}
 	}
 );
+
+test('keeps a nonzero PnP reader stderr failure ahead of termination cleanup failure', async () => {
+	const project = await createPnpArchiveProject();
+	const stderr = new PassThrough();
+	const reader = Object.assign(new EventEmitter(), {
+		stdout: new PassThrough(),
+		stderr,
+	}) as unknown as ChildProcess;
+	const cleanupError = new Error('could not terminate PnP reader');
+	const launch = async (
+		_temporaryRoot: string,
+		_file: string,
+		_args: string[],
+		_options: NonNullable<Parameters<typeof spawnCross>[2]>,
+		observe?: (child: ChildProcess) => void
+	): Promise<ChildProcess> => {
+		observe?.(reader);
+		process.nextTick(() => {
+			stderr.write('complete Corepack stderr');
+			reader.emit('exit', 1);
+			reader.emit('close', 1);
+		});
+		return reader;
+	};
+
+	let failure: unknown;
+	try {
+		await resolveInstalledPackageManifest(
+			'astro',
+			project,
+			undefined,
+			undefined,
+			launch,
+			async () => {
+				throw cleanupError;
+			}
+		);
+	} catch (error) {
+		failure = error;
+	}
+
+	expect(failure).toBeInstanceOf(AggregateError);
+	const aggregate = failure as AggregateError;
+	expect(aggregate.message).toBe('Could not read a PnP manifest and clean up its reader');
+	expect(aggregate.cause).toBe(aggregate.errors[0]);
+	expect(aggregate.errors[0]).toMatchObject({
+		message: expect.stringContaining('complete Corepack stderr'),
+	});
+	expect(aggregate.errors[1]).toBe(cleanupError);
+});
+
+test('keeps a malformed PnP manifest ahead of temporary-root cleanup failure', async () => {
+	const project = await createPnpArchiveProject();
+	const stdout = new PassThrough();
+	const reader = Object.assign(new EventEmitter(), {
+		stdout,
+		stderr: new PassThrough(),
+	}) as unknown as ChildProcess;
+	const cleanupError = new Error('could not remove PnP temporary root');
+	const launch = async (
+		_temporaryRoot: string,
+		_file: string,
+		_args: string[],
+		_options: NonNullable<Parameters<typeof spawnCross>[2]>,
+		observe?: (child: ChildProcess) => void
+	): Promise<ChildProcess> => {
+		observe?.(reader);
+		process.nextTick(() => {
+			stdout.write('not JSON');
+			reader.emit('exit', 0);
+			reader.emit('close', 0);
+		});
+		return reader;
+	};
+
+	let failure: unknown;
+	try {
+		await resolveInstalledPackageManifest(
+			'astro',
+			project,
+			undefined,
+			undefined,
+			launch,
+			async () => undefined,
+			async () => '/injected-pnp-temporary-root',
+			async () => {
+				throw cleanupError;
+			}
+		);
+	} catch (error) {
+		failure = error;
+	}
+
+	expect(failure).toBeInstanceOf(AggregateError);
+	const aggregate = failure as AggregateError;
+	expect(aggregate.message).toBe('Could not read a PnP manifest and clean up its reader');
+	expect(aggregate.cause).toBe(aggregate.errors[0]);
+	expect(aggregate.errors[0]).toBeInstanceOf(SyntaxError);
+	expect(aggregate.errors[1]).toBe(cleanupError);
+});
+
+test('owns an injected PnP launch failure before its error event fires', async () => {
+	const project = await createPnpArchiveProject();
+	const reader = Object.assign(new EventEmitter(), {
+		stdout: new PassThrough(),
+		stderr: new PassThrough(),
+	}) as unknown as ChildProcess;
+	const launchError = new Error('missing Corepack reader executable');
+	const terminate = vi.fn(async () => {
+		reader.emit('close', null);
+	});
+	const launch = async (
+		_temporaryRoot: string,
+		_file: string,
+		_args: string[],
+		_options: NonNullable<Parameters<typeof spawnCross>[2]>,
+		observe?: (child: ChildProcess) => void
+	): Promise<ChildProcess> => {
+		observe?.(reader);
+		process.nextTick(() => reader.emit('error', launchError));
+		return reader;
+	};
+
+	await expect(
+		resolveInstalledPackageManifest('astro', project, undefined, undefined, launch, terminate)
+	).rejects.toBe(launchError);
+	expect(terminate).toHaveBeenCalledExactlyOnceWith(reader);
+});
 
 describe('selectLatestAstroReleaseTag', () => {
 	test('selects the newest stable tag within the installed Astro major', () => {

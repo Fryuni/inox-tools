@@ -663,10 +663,16 @@ async function snapshotDependencySymlinks(
 
 const childTerminations = new WeakMap<ChildProcess, Promise<void>>();
 
+type TaskkillLauncher = (pid: number) => ChildProcess;
+
+const launchTaskkill: TaskkillLauncher = (pid) =>
+	spawn('taskkill', ['/pid', String(pid), '/t', '/f'], { stdio: 'ignore' });
+
 export function terminateChildProcess(
 	child: ChildProcess | undefined,
 	platform = process.platform,
-	gracePeriod = 5_000
+	gracePeriod = 5_000,
+	taskkillLauncher: TaskkillLauncher = launchTaskkill
 ): Promise<void> {
 	if (!child) return Promise.resolve();
 	const termination = childTerminations.get(child);
@@ -681,7 +687,7 @@ export function terminateChildProcess(
 
 	const promise = (async () => {
 		if (platform === 'win32') {
-			const taskkill = spawn('taskkill', ['/pid', String(pid), '/t', '/f'], { stdio: 'ignore' });
+			const taskkill = taskkillLauncher(pid);
 			const exitCode = await new Promise<number | null>((resolveExit, rejectExit) => {
 				taskkill.once('error', rejectExit);
 				taskkill.once('close', resolveExit);

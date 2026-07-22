@@ -1,7 +1,6 @@
 import { type ChildProcess, spawn as spawnChild } from 'node:child_process';
-import { once } from 'node:events';
+import { EventEmitter, once } from 'node:events';
 import {
-	chmod,
 	mkdir,
 	mkdtemp,
 	readFile,
@@ -217,149 +216,76 @@ describe('terminateChildProcess', () => {
 	);
 
 	test('shares Windows taskkill across concurrent and late stop requests', async () => {
-		const root = await temporaryRoot();
-		const bin = join(root, 'bin');
-		const log = join(root, 'taskkill.log');
-		const taskkill = join(bin, 'taskkill');
-		await mkdir(bin);
-		await writeFile(taskkill, '#!/bin/sh\nprintf "%s\\n" "$@" >> "$TASKKILL_LOG"\nsleep 0.05\n');
-		await chmod(taskkill, 0o755);
+		const child = { pid: 4_242, exitCode: null, signalCode: null } as ChildProcess;
+		const taskkill = new EventEmitter();
+		const launchTaskkill = vi.fn<(pid: number) => ChildProcess>(() => taskkill as ChildProcess);
+		const first = terminateChildProcess(child, 'win32', 5_000, launchTaskkill);
+		const second = terminateChildProcess(child, 'win32', 5_000, launchTaskkill);
 
-		const originalPath = process.env.PATH;
-		const originalLog = process.env.TASKKILL_LOG;
-		process.env.PATH = `${bin}:${originalPath ?? ''}`;
-		process.env.TASKKILL_LOG = log;
-		try {
-			const child = { pid: process.pid, exitCode: null, signalCode: null } as ChildProcess;
-			const first = terminateChildProcess(child, 'win32');
-			const second = terminateChildProcess(child, 'win32');
+		expect(second).toBe(first);
+		expect(launchTaskkill).toHaveBeenCalledExactlyOnceWith(4_242);
+		taskkill.emit('close', 0);
+		await Promise.all([first, second]);
+		await terminateChildProcess(child, 'win32', 5_000, launchTaskkill);
 
-			expect(second).toBe(first);
-			await Promise.all([first, second]);
-			await terminateChildProcess(child, 'win32');
-
-			expect((await readFile(log, 'utf8')).match(/^\/pid$/gm) ?? []).toHaveLength(1);
-		} finally {
-			if (originalPath === undefined) delete process.env.PATH;
-			else process.env.PATH = originalPath;
-			if (originalLog === undefined) delete process.env.TASKKILL_LOG;
-			else process.env.TASKKILL_LOG = originalLog;
-		}
+		expect(launchTaskkill).toHaveBeenCalledExactlyOnceWith(4_242);
 	});
 
 	test('does not taskkill a Windows child that exited naturally', async () => {
-		const root = await temporaryRoot();
-		const bin = join(root, 'bin');
-		const log = join(root, 'taskkill.log');
-		const taskkill = join(bin, 'taskkill');
-		await mkdir(bin);
-		await writeFile(taskkill, '#!/bin/sh\nprintf "%s\\n" "$@" >> "$TASKKILL_LOG"\n');
-		await chmod(taskkill, 0o755);
+		const child = { pid: 4_242, exitCode: 0, signalCode: null } as ChildProcess;
+		const launchTaskkill = vi.fn<(pid: number) => ChildProcess>();
+		const first = terminateChildProcess(child, 'win32', 5_000, launchTaskkill);
+		const late = terminateChildProcess(child, 'win32', 5_000, launchTaskkill);
 
-		const originalPath = process.env.PATH;
-		const originalLog = process.env.TASKKILL_LOG;
-		process.env.PATH = `${bin}:${originalPath ?? ''}`;
-		process.env.TASKKILL_LOG = log;
-		try {
-			const child = { pid: process.pid, exitCode: 0, signalCode: null } as ChildProcess;
-			const first = terminateChildProcess(child, 'win32');
-			const late = terminateChildProcess(child, 'win32');
-
-			expect(late).toBe(first);
-			await first;
-			await expect(readFile(log, 'utf8')).rejects.toMatchObject({ code: 'ENOENT' });
-		} finally {
-			if (originalPath === undefined) delete process.env.PATH;
-			else process.env.PATH = originalPath;
-			if (originalLog === undefined) delete process.env.TASKKILL_LOG;
-			else process.env.TASKKILL_LOG = originalLog;
-		}
+		expect(late).toBe(first);
+		await first;
+		expect(launchTaskkill).not.toHaveBeenCalled();
 	});
 
 	test('accepts a Windows taskkill race after the child exits', async () => {
-		const root = await temporaryRoot();
-		const bin = join(root, 'bin');
-		const log = join(root, 'taskkill.log');
-		const taskkill = join(bin, 'taskkill');
-		await mkdir(bin);
-		await writeFile(
-			taskkill,
-			'#!/bin/sh\nprintf "%s\\n" "$@" >> "$TASKKILL_LOG"\nsleep 0.05\nexit 1\n'
-		);
-		await chmod(taskkill, 0o755);
+		const taskkill = new EventEmitter();
+		const launchTaskkill = vi.fn<(pid: number) => ChildProcess>(() => taskkill as ChildProcess);
+		const testChild = { pid: 4_242, exitCode: null as number | null, signalCode: null };
+		const child = testChild as ChildProcess;
+		const termination = terminateChildProcess(child, 'win32', 5_000, launchTaskkill);
+		testChild.exitCode = 0;
+		taskkill.emit('close', 1);
 
-		const originalPath = process.env.PATH;
-		const originalLog = process.env.TASKKILL_LOG;
-		process.env.PATH = `${bin}:${originalPath ?? ''}`;
-		process.env.TASKKILL_LOG = log;
-		try {
-			const testChild = { pid: process.pid, exitCode: null as number | null, signalCode: null };
-			const child = testChild as ChildProcess;
-			const termination = terminateChildProcess(child, 'win32');
-			testChild.exitCode = 0;
-
-			await expect(termination).resolves.toBeUndefined();
-			expect((await readFile(log, 'utf8')).match(/^\/pid$/gm) ?? []).toHaveLength(1);
-		} finally {
-			if (originalPath === undefined) delete process.env.PATH;
-			else process.env.PATH = originalPath;
-			if (originalLog === undefined) delete process.env.TASKKILL_LOG;
-			else process.env.TASKKILL_LOG = originalLog;
-		}
+		await expect(termination).resolves.toBeUndefined();
+		expect(launchTaskkill).toHaveBeenCalledExactlyOnceWith(4_242);
 	});
 
 	test('reports a Windows taskkill failure while the child is still running', async () => {
-		const root = await temporaryRoot();
-		const bin = join(root, 'bin');
-		const taskkill = join(bin, 'taskkill');
-		await mkdir(bin);
-		await writeFile(taskkill, '#!/bin/sh\nexit 1\n');
-		await chmod(taskkill, 0o755);
+		const child = { pid: 4_242, exitCode: null, signalCode: null } as ChildProcess;
+		const taskkill = new EventEmitter();
+		const launchTaskkill = vi.fn<(pid: number) => ChildProcess>(() => taskkill as ChildProcess);
+		const termination = terminateChildProcess(child, 'win32', 5_000, launchTaskkill);
+		taskkill.emit('close', 1);
 
-		const originalPath = process.env.PATH;
-		process.env.PATH = `${bin}:${originalPath ?? ''}`;
-		try {
-			const child = { pid: process.pid, exitCode: null, signalCode: null } as ChildProcess;
-
-			await expect(terminateChildProcess(child, 'win32')).rejects.toThrow(
-				`taskkill failed while terminating process ${process.pid} (exit code 1)`
-			);
-		} finally {
-			if (originalPath === undefined) delete process.env.PATH;
-			else process.env.PATH = originalPath;
-		}
+		await expect(termination).rejects.toThrow(
+			'taskkill failed while terminating process 4242 (exit code 1)'
+		);
 	});
 
 	test('evicts a failed Windows termination so a later cleanup retry can stop the child', async () => {
-		const root = await temporaryRoot();
-		const bin = join(root, 'bin');
-		const attempts = join(root, 'taskkill-attempts');
-		const taskkill = join(bin, 'taskkill');
-		await mkdir(bin);
-		await writeFile(
-			taskkill,
-			'#!/bin/sh\nif [ -e "$TASKKILL_ATTEMPTS" ]; then\n\tprintf 2 > "$TASKKILL_ATTEMPTS"\n\texit 0\nfi\nprintf 1 > "$TASKKILL_ATTEMPTS"\nexit 1\n'
+		const child = { pid: 4_242, exitCode: null, signalCode: null } as ChildProcess;
+		const firstTaskkill = new EventEmitter();
+		const secondTaskkill = new EventEmitter();
+		const launchTaskkill = vi
+			.fn<(pid: number) => ChildProcess>()
+			.mockReturnValueOnce(firstTaskkill as ChildProcess)
+			.mockReturnValueOnce(secondTaskkill as ChildProcess);
+		const first = terminateChildProcess(child, 'win32', 5_000, launchTaskkill);
+		firstTaskkill.emit('close', 1);
+
+		await expect(first).rejects.toThrow(
+			'taskkill failed while terminating process 4242 (exit code 1)'
 		);
-		await chmod(taskkill, 0o755);
+		const second = terminateChildProcess(child, 'win32', 5_000, launchTaskkill);
+		secondTaskkill.emit('close', 0);
 
-		const originalPath = process.env.PATH;
-		const originalAttempts = process.env.TASKKILL_ATTEMPTS;
-		process.env.PATH = `${bin}:${originalPath ?? ''}`;
-		process.env.TASKKILL_ATTEMPTS = attempts;
-		try {
-			const child = { pid: process.pid, exitCode: null, signalCode: null } as ChildProcess;
-
-			await expect(terminateChildProcess(child, 'win32')).rejects.toThrow(
-				`taskkill failed while terminating process ${process.pid} (exit code 1)`
-			);
-			await expect(terminateChildProcess(child, 'win32')).resolves.toBeUndefined();
-			await expect(readFile(attempts, 'utf8')).resolves.toBe('2');
-		} finally {
-			if (originalPath === undefined) delete process.env.PATH;
-			else process.env.PATH = originalPath;
-			if (originalAttempts === undefined) delete process.env.TASKKILL_ATTEMPTS;
-			else process.env.TASKKILL_ATTEMPTS = originalAttempts;
-		}
+		await expect(second).resolves.toBeUndefined();
+		expect(launchTaskkill).toHaveBeenCalledTimes(2);
 	});
 
 	test('rejects an aborted command when termination fails and retries it during cleanup', async () => {

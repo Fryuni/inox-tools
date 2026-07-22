@@ -78,6 +78,7 @@ export const gitBuildPlugin = (state: IntegrationState): Plugin => {
 	let initialSerializedGitState: string | undefined;
 	let collectedGitInformation: Map<string, BuildGitTrackingInfo> | undefined;
 	let retainedContentFiles: Set<string> | undefined;
+	let buildContentLoaderRegistered = false;
 
 	return {
 		name: '@inox-tools/content-utils/gitTimes',
@@ -159,7 +160,17 @@ export const gitBuildPlugin = (state: IntegrationState): Plugin => {
 							);
 						}
 					} finally {
-						Reflect.deleteProperty(globalThis, buildContentLoaderSymbol);
+						if (buildContentLoaderRegistered) {
+							const registration = Reflect.get(
+								globalThis,
+								buildContentLoaderSymbol
+							) as BuildContentLoaderRegistration;
+							registration.references -= 1;
+							if (registration.references === 0) {
+								Reflect.deleteProperty(globalThis, buildContentLoaderSymbol);
+							}
+							buildContentLoaderRegistered = false;
+						}
 					}
 				});
 			}
@@ -173,7 +184,20 @@ export const gitBuildPlugin = (state: IntegrationState): Plugin => {
 				debug('Registering project root:', projectRoot);
 				liveGit.setProjectRoot(projectRoot);
 				liveGit.setCollectCommitHistory(state.collectCommitHistory);
-				Reflect.set(globalThis, buildContentLoaderSymbol, loadCommitContent);
+				if (!buildContentLoaderRegistered) {
+					const registration = Reflect.get(globalThis, buildContentLoaderSymbol) as
+						| BuildContentLoaderRegistration
+						| undefined;
+					if (registration === undefined) {
+						Reflect.set(globalThis, buildContentLoaderSymbol, {
+							loadContent: loadCommitContent,
+							references: 1,
+						} satisfies BuildContentLoaderRegistration);
+					} else {
+						registration.references += 1;
+					}
+					buildContentLoaderRegistered = true;
+				}
 				const trackedFiles = await liveGit.collectGitInfoForContentFiles(loadCommitContent);
 				collectedGitInformation = new Map(trackedFiles);
 				debug('Git tracked file dates:', trackedFiles);
@@ -190,6 +214,11 @@ export { trackedFiles as default };`;
 			}
 		},
 	};
+};
+
+type BuildContentLoaderRegistration = {
+	loadContent: (hash: string, repoPath: string) => string;
+	references: number;
 };
 
 type BuildCommitInfo = {
@@ -321,7 +350,7 @@ import {Lazy} from ${JSON.stringify(import.meta.resolve('@inox-tools/utils/lazy'
 
 const buildContentLoader = globalThis[Symbol.for(${JSON.stringify(
 	`@inox-tools/content-utils:build-content:${projectRoot}`
-)})];
+)})]?.loadContent;
 
 const trackedFiles = unflatten((await import(${JSON.stringify(INNER_MODULE_ID)})).default);
 

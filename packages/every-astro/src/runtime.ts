@@ -112,6 +112,8 @@ export const developmentServerStdio: ['ignore', 'inherit', 'inherit'] = [
 ];
 
 async function readManifest(path: string): Promise<PackageManifest> {
+	const pnpManifest = pnpManifests.get(path);
+	if (pnpManifest) return pnpManifest;
 	return JSON.parse(await readFile(path, 'utf8')) as PackageManifest;
 }
 
@@ -184,10 +186,10 @@ export async function detectPackageManagerRoot(projectRoot: string): Promise<str
 
 type PnpApi = {
 	resolveToUnqualified: (request: string, issuer: string) => string | null;
-	setup?: () => void;
 };
 
 const pnpApis = new Map<string, PnpApi>();
+const pnpManifests = new Map<string, PackageManifest>();
 
 function nearestPnpPath(fromDirectory: string): string | undefined {
 	let directory = resolve(fromDirectory);
@@ -208,9 +210,49 @@ function loadPnpApi(pnpPath: string | undefined): PnpApi | undefined {
 	if (cached) return cached;
 
 	const pnpapi = runtimeRequire(pnpPath) as PnpApi;
-	pnpapi.setup?.();
 	pnpApis.set(pnpPath, pnpapi);
 	return pnpapi;
+}
+
+async function readPnpManifest(pnpPath: string, manifestPath: string): Promise<PackageManifest> {
+	const child = spawn(
+		'yarn',
+		[
+			'node',
+			'-e',
+			"process.stdout.write(require('node:fs').readFileSync(process.argv[1], 'utf8'))",
+			manifestPath,
+		],
+		{
+			cwd: dirname(pnpPath),
+			env: isolatedBootstrapEnvironment(),
+			stdio: ['ignore', 'pipe', 'pipe'],
+		}
+	);
+	let output = '';
+	let errors = '';
+	child.stdout?.on('data', (chunk: Buffer) => {
+		output += chunk;
+	});
+	child.stderr?.on('data', (chunk: Buffer) => {
+		errors += chunk;
+	});
+	await new Promise<void>((resolveExit, rejectExit) => {
+		child.once('error', rejectExit);
+		child.once('close', (exitCode) => {
+			if (exitCode === 0) resolveExit();
+			else {
+				rejectExit(
+					new Error(
+						`Could not read PnP manifest ${manifestPath} with yarn node (exit code ${exitCode}): ${errors}`
+					)
+				);
+			}
+		});
+	});
+	const manifest = JSON.parse(output) as PackageManifest;
+	pnpManifests.set(manifestPath, manifest);
+	return manifest;
 }
 
 async function manifestAt(path: string, packageName: string): Promise<string | undefined> {
@@ -234,21 +276,27 @@ async function packageManifestFromNodeModules(
 
 async function packageManifestFromPnp(
 	pnpapi: PnpApi | undefined,
+	pnpPath: string | undefined,
 	packageName: string,
 	fromDirectory: string
 ): Promise<string | undefined> {
-	if (!pnpapi) return undefined;
+	if (!pnpapi || !pnpPath) return undefined;
+	let packageRoot: string | null;
 	try {
-		const packageRoot = pnpapi.resolveToUnqualified(
-			packageName,
-			join(fromDirectory, 'package.json')
-		);
-		return packageRoot
-			? await manifestAt(join(packageRoot, 'package.json'), packageName)
-			: undefined;
+		packageRoot = pnpapi.resolveToUnqualified(packageName, join(fromDirectory, 'package.json'));
 	} catch {
 		return undefined;
 	}
+	if (!packageRoot) return undefined;
+	const manifestPath = join(packageRoot, 'package.json');
+	try {
+		const manifest = await manifestAt(manifestPath, packageName);
+		if (manifest) return manifest;
+	} catch (error: unknown) {
+		if ((error as NodeJS.ErrnoException).code !== 'ENOTDIR') throw error;
+	}
+	const manifest = await readPnpManifest(pnpPath, manifestPath);
+	return manifest.name === packageName ? manifestPath : undefined;
 }
 async function packageManifestFromEntry(
 	entry: string,
@@ -272,7 +320,7 @@ export async function resolveInstalledPackageManifest(
 ): Promise<string | undefined> {
 	const pnpapi = loadPnpApi(pnpPath);
 	const requireFrom = createRequire(join(fromDirectory, 'package.json'));
-	const pnpManifest = await packageManifestFromPnp(pnpapi, packageName, fromDirectory);
+	const pnpManifest = await packageManifestFromPnp(pnpapi, pnpPath, packageName, fromDirectory);
 	if (pnpManifest) return pnpManifest;
 	try {
 		const manifestPath = await manifestAt(
@@ -586,34 +634,45 @@ export async function linkBunPackage(projectRoot: string, link: PackageLink): Pr
 type NodeOptionToken = {
 	start: number;
 	end: number;
+	value: string;
 };
 
 function scanNodeOptions(nodeOptions: string): NodeOptionToken[] | undefined {
 	const options: NodeOptionToken[] = [];
 	let tokenStart: number | undefined;
+	let value = '';
 	let inDoubleQuotes = false;
 	for (let index = 0; index < nodeOptions.length; index += 1) {
 		const character = nodeOptions[index]!;
-		if (character === '\t' || character === '\n' || character === '\r') return undefined;
-		if (tokenStart === undefined) {
-			if (character === ' ') continue;
-			tokenStart = index;
-		}
 		if (inDoubleQuotes) {
 			if (character === '\\' && index + 1 < nodeOptions.length) {
+				value += nodeOptions[index + 1]!;
 				index += 1;
 			} else if (character === '"') {
 				inDoubleQuotes = false;
+			} else {
+				value += character;
 			}
-		} else if (character === '"') {
+			continue;
+		}
+		if (character === '\t' || character === '\n' || character === '\r') return undefined;
+		if (character === ' ') {
+			if (tokenStart !== undefined) {
+				options.push({ start: tokenStart, end: index, value });
+				tokenStart = undefined;
+				value = '';
+			}
+			continue;
+		}
+		if (tokenStart === undefined) tokenStart = index;
+		if (character === '"') {
 			inDoubleQuotes = true;
-		} else if (character === ' ') {
-			options.push({ start: tokenStart, end: index });
-			tokenStart = undefined;
+		} else {
+			value += character;
 		}
 	}
 	if (inDoubleQuotes) return undefined;
-	if (tokenStart !== undefined) options.push({ start: tokenStart, end: nodeOptions.length });
+	if (tokenStart !== undefined) options.push({ start: tokenStart, end: nodeOptions.length, value });
 	return options;
 }
 
@@ -637,12 +696,24 @@ export function isolatedBootstrapEnvironment(
 	const removed = new Set<number>();
 	for (let index = 0; index < options.length; index += 1) {
 		const option = options[index]!;
-		const value = nodeOptions.slice(option.start, option.end);
-		const [name] = value.split('=', 1);
-		const loaderName = name.replaceAll('"', '').replaceAll('_', '-');
+		const equals = option.value.indexOf('=');
+		const name = equals === -1 ? option.value : option.value.slice(0, equals);
+		const loaderName = name.replaceAll('_', '-');
 		if (!(loaderName in loaderOptions)) continue;
+
+		if (loaderName === '-r' && equals !== -1) return isolatedEnvironment;
+		if (equals !== -1) {
+			if (option.value.slice(equals + 1).length === 0) return isolatedEnvironment;
+			removed.add(index);
+			continue;
+		}
+
+		const operand = options[index + 1];
+		if (operand === undefined || operand.value.length === 0 || operand.value.startsWith('-')) {
+			return isolatedEnvironment;
+		}
 		removed.add(index);
-		if (!value.includes('=') && index + 1 < options.length) removed.add(index + 1);
+		removed.add(index + 1);
 	}
 	if (removed.size === 0) return isolatedEnvironment;
 	if (removed.size === options.length) {

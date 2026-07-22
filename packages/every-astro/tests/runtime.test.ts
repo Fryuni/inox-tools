@@ -745,6 +745,13 @@ describe('packed workspace package activation', () => {
 					{ YARN_ENABLE_NETWORK: '0' }
 				)
 			).resolves.toBe('');
+			const astroManifest = await resolveInstalledPackageManifest('astro', yarnProject);
+
+			expect(astroManifest).toMatch(/\.zip[\\/]node_modules[\\/]astro[\\/]package\.json$/);
+			await expect(installedAstroMajor(yarnProject)).resolves.toBe(7);
+			await expect(collectInstalledDependencyNames(yarnProject)).resolves.toEqual(
+				new Set(['astro', '@astrojs/helper'])
+			);
 		}
 	);
 });
@@ -788,30 +795,84 @@ describe('isolatedBootstrapEnvironment', () => {
 		).toEqual({ COREPACK_HOME: '/cache/corepack' });
 	});
 
-	test('removes loader hooks while preserving raw surrounding whitespace', async () => {
+	test('removes loaders after quoted tabs and newlines while preserving raw retained tokens', async () => {
 		const nodeOptions =
-			'  --trace-warnings --require "./project hook.cjs"  --conditions="development test"  ';
+			'--conditions="line\tbreak\nstill" --require "./project hook.cjs" --trace-warnings';
 		const environment = isolatedBootstrapEnvironment({ NODE_OPTIONS: nodeOptions });
 
 		expect(environment).toEqual({
-			NODE_OPTIONS: '  --trace-warnings    --conditions="development test"  ',
+			NODE_OPTIONS: '--conditions="line\tbreak\nstill"   --trace-warnings',
 		});
 		await expect(
 			runCommand(process.execPath, ['--version'], process.cwd(), environment)
 		).resolves.toMatch(/^v/);
 	});
 
-	test('preserves a no-loader Node options string byte-for-byte', async () => {
-		const nodeOptions = '  --conditions="foo\\" bar"   --trace-warnings  ';
-		const environment = isolatedBootstrapEnvironment({ NODE_OPTIONS: nodeOptions });
+	test('removes loaders whose names concatenate escaped double-quoted segments', async () => {
+		const environment = isolatedBootstrapEnvironment({
+			NODE_OPTIONS: '--requ"\\i"re "./project hook.cjs" --trace-warnings',
+		});
 
-		expect(environment).toEqual({ NODE_OPTIONS: nodeOptions });
+		expect(environment).toEqual({ NODE_OPTIONS: '  --trace-warnings' });
 		await expect(
 			runCommand(process.execPath, ['--version'], process.cwd(), environment)
 		).resolves.toMatch(/^v/);
 	});
 
-	test('removes a loader after an unmatched literal single quote', async () => {
+	test.each([
+		[
+			'require equals',
+			'--require="./project hook.cjs"',
+			'--trace-warnings  --conditions=development',
+		],
+		[
+			'import separate',
+			'--import "./project hook.cjs"',
+			'--trace-warnings   --conditions=development',
+		],
+		[
+			'loader equals',
+			'--loader="./project hook.cjs"',
+			'--trace-warnings  --conditions=development',
+		],
+		[
+			'experimental loader separate',
+			'--experimental-loader "./project hook.cjs"',
+			'--trace-warnings   --conditions=development',
+		],
+		[
+			'underscored experimental loader equals',
+			'--experimental_loader="./project hook.cjs"',
+			'--trace-warnings  --conditions=development',
+		],
+	])('removes valid %s syntax', async (_name, loaderOption, expectedNodeOptions) => {
+		const environment = isolatedBootstrapEnvironment({
+			NODE_OPTIONS: `--trace-warnings ${loaderOption} --conditions=development`,
+		});
+
+		expect(environment).toEqual({
+			NODE_OPTIONS: expectedNodeOptions,
+		});
+		await expect(
+			runCommand(process.execPath, ['--version'], process.cwd(), environment)
+		).resolves.toMatch(/^v/);
+	});
+
+	test.each([
+		['missing operand', '--require'],
+		['option operand', '--import --trace-warnings'],
+		['empty long equals value', '--loader=""'],
+		['invalid short equals form', '-r=./project-hook.cjs'],
+	])('preserves malformed loader syntax for Node to reject: %s', async (_name, nodeOptions) => {
+		const environment = isolatedBootstrapEnvironment({ NODE_OPTIONS: nodeOptions });
+
+		expect(environment).toEqual({ NODE_OPTIONS: nodeOptions });
+		await expect(
+			runCommand(process.execPath, ['--version'], process.cwd(), environment)
+		).rejects.toThrow(/not allowed in NODE_OPTIONS|requires an argument/);
+	});
+
+	test('preserves literal single quotes and removes a later real loader', async () => {
 		const environment = isolatedBootstrapEnvironment({
 			NODE_OPTIONS: "--conditions='foo --require ./project-hook.cjs --trace-warnings",
 		});
@@ -822,8 +883,8 @@ describe('isolatedBootstrapEnvironment', () => {
 		).resolves.toMatch(/^v/);
 	});
 
-	test('preserves single-quoted loader names without classifying them as hooks', async () => {
-		const nodeOptions = "'--require' ./project-hook.cjs --trace-warnings";
+	test('preserves exact no-loader whitespace and single-quoted tokens', async () => {
+		const nodeOptions = `  --conditions="foo\\" bar"   '--require' ./project-hook.cjs  `;
 		const environment = isolatedBootstrapEnvironment({ NODE_OPTIONS: nodeOptions });
 
 		expect(environment).toEqual({ NODE_OPTIONS: nodeOptions });
@@ -845,7 +906,7 @@ describe('isolatedBootstrapEnvironment', () => {
 		).rejects.toThrow('not allowed in NODE_OPTIONS');
 	});
 
-	test('preserves malformed Node options for Node to reject', async () => {
+	test('preserves malformed double-quoted Node options for Node to reject', async () => {
 		const nodeOptions = '--conditions="unterminated';
 		const environment = isolatedBootstrapEnvironment({ NODE_OPTIONS: nodeOptions });
 
@@ -1009,19 +1070,15 @@ describe('collectInstalledDependencyNames', () => {
 });
 
 describe('resolveInstalledPackageManifest', () => {
-	test('loads and caches the target project PnP API before resolving packages', async () => {
+	test('loads the target project PnP API without globally installing it', async () => {
 		const project = await createProject();
 		const packageRoot = join(project, '.yarn/cache/astro');
-		const marker = `__everyAstroPnpSetup${temporaryRoots.length}`;
 		await writePackage(project, '.yarn/cache/astro', { name: 'astro', version: '7.0.0' });
 		await writeFile(
 			join(project, '.pnp.cjs'),
 			[
 				`const packageRoot = ${JSON.stringify(packageRoot)};`,
-				`const marker = ${JSON.stringify(marker)};`,
-				'exports.setup = () => { globalThis[marker] = (globalThis[marker] ?? 0) + 1; };',
 				'exports.resolveToUnqualified = (request) => {',
-				'\tif (!globalThis[marker]) throw new Error("PnP setup was not called");',
 				'\treturn request === "astro" ? packageRoot : null;',
 				'};',
 				'',
@@ -1034,8 +1091,6 @@ describe('resolveInstalledPackageManifest', () => {
 		await expect(resolveInstalledPackageManifest('astro', project)).resolves.toBe(
 			join(packageRoot, 'package.json')
 		);
-		expect((globalThis as Record<string, unknown>)[marker]).toBe(1);
-		delete (globalThis as Record<string, unknown>)[marker];
 	});
 
 	test('discovers a nearest Yarn Classic .pnp.js API', async () => {

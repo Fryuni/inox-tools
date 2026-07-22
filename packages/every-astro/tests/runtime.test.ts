@@ -1,5 +1,6 @@
 import { type ChildProcess, spawn as spawnChild } from 'node:child_process';
 import { EventEmitter, once } from 'node:events';
+import { createRequire } from 'node:module';
 import {
 	mkdir,
 	mkdtemp,
@@ -44,6 +45,8 @@ import {
 const temporaryRoots: string[] = [];
 type PackageManager = 'pnpm' | 'yarn' | 'bun' | 'npm';
 
+const spawnCross = createRequire(import.meta.url)('cross-spawn') as typeof spawnChild;
+
 async function temporaryRoot(): Promise<string> {
 	const root = await mkdtemp(join(tmpdir(), 'every-astro-test-'));
 	temporaryRoots.push(root);
@@ -75,7 +78,7 @@ async function runCommand(
 	cwd: string,
 	environment: NodeJS.ProcessEnv = {}
 ): Promise<string> {
-	const child = spawnChild(command, args, {
+	const child = spawnCross(command, args, {
 		cwd,
 		env: { ...process.env, ...environment },
 		stdio: ['ignore', 'pipe', 'pipe'],
@@ -312,7 +315,8 @@ describe('terminateChildProcess', () => {
 			new Set(),
 			'',
 			controller.signal,
-			terminate
+			terminate,
+			() => new EventEmitter() as ChildProcess
 		);
 		const controllableSession = session as unknown as {
 			unlinkPackages(): Promise<void>;
@@ -321,7 +325,7 @@ describe('terminateChildProcess', () => {
 		vi.spyOn(controllableSession, 'unlinkPackages').mockResolvedValue();
 		vi.spyOn(controllableSession, 'restoreDependencies').mockResolvedValue();
 
-		const execution = session.execute([process.execPath, '-e', ''], project);
+		const execution = session.execute(['fixture-command'], project);
 		controller.abort();
 
 		await expect(execution).rejects.toBe(terminationError);

@@ -741,6 +741,11 @@ export function terminateChildProcess(
 }
 
 type ChildTerminator = (child: ChildProcess | undefined) => Promise<void>;
+type CommandSpawner = (
+	file: string,
+	args: string[],
+	options: NonNullable<Parameters<typeof spawn>[2]>
+) => ChildProcess | Promise<ChildProcess>;
 
 export class RuntimeSession implements BisectSession {
 	private activeChild: ChildProcess | undefined;
@@ -765,7 +770,8 @@ export class RuntimeSession implements BisectSession {
 		private readonly installedDependencies: ReadonlySet<string>,
 		private readonly latest: string,
 		private readonly signal: AbortSignal,
-		private readonly terminate: ChildTerminator = terminateChildProcess
+		private readonly terminate: ChildTerminator = terminateChildProcess,
+		private readonly commandSpawner?: CommandSpawner
 	) {}
 
 	public async latestRevision(): Promise<string> {
@@ -774,6 +780,16 @@ export class RuntimeSession implements BisectSession {
 
 	private async stopChild(child = this.activeChild): Promise<void> {
 		await this.terminate(child);
+	}
+
+	private async launchCommand(
+		file: string,
+		args: string[],
+		options: NonNullable<Parameters<typeof spawn>[2]>
+	): Promise<ChildProcess> {
+		return this.commandSpawner
+			? this.commandSpawner(file, args, options)
+			: this.spawnCommand(file, args, options);
 	}
 
 	private async spawnCommand(
@@ -810,7 +826,7 @@ export class RuntimeSession implements BisectSession {
 
 		let child: ChildProcess;
 		try {
-			child = await this.spawnCommand(file, args, {
+			child = await this.launchCommand(file, args, {
 				cwd,
 				env: options.env,
 				stdio: options.capture ? ['ignore', 'pipe', 'pipe'] : 'inherit',
@@ -1016,7 +1032,7 @@ export class RuntimeSession implements BisectSession {
 	}
 
 	public async runDevServerAndAsk(label: string): Promise<boolean> {
-		const child = await this.spawnCommand(this.manager, ['run', 'dev'], {
+		const child = await this.launchCommand(this.manager, ['run', 'dev'], {
 			cwd: this.projectRoot,
 			stdio: developmentServerStdio,
 			detached: process.platform !== 'win32',

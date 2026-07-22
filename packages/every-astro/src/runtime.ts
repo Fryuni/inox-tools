@@ -629,7 +629,7 @@ export function terminateChildProcess(
 	if (!child) return Promise.resolve();
 	const termination = childTerminations.get(child);
 	if (termination) return termination;
-	if (child.exitCode !== null || child.signalCode !== null) {
+	if (platform === 'win32' && (child.exitCode !== null || child.signalCode !== null)) {
 		const stopped = Promise.resolve();
 		childTerminations.set(child, stopped);
 		return stopped;

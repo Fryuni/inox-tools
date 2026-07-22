@@ -177,6 +177,31 @@ describe('terminateChildProcess', () => {
 		}
 	);
 
+	test.skipIf(process.platform === 'win32')(
+		'terminates a detached process group after its leader exits',
+		async () => {
+			const child = spawnChild('sh', ['-c', 'sleep 30 & exit 0'], {
+				detached: true,
+				stdio: 'ignore',
+			});
+			await once(child, 'spawn');
+			const pid = child.pid!;
+
+			try {
+				await once(child, 'close');
+				await terminateChildProcess(child, process.platform, 500);
+
+				expect(() => process.kill(-pid, 0)).toThrow(/ESRCH/);
+			} finally {
+				try {
+					process.kill(-pid, 'SIGKILL');
+				} catch {
+					// The process group was already terminated.
+				}
+			}
+		}
+	);
+
 	test('shares Windows taskkill across concurrent and late stop requests', async () => {
 		const root = await temporaryRoot();
 		const bin = join(root, 'bin');

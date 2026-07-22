@@ -22,9 +22,10 @@ class FakeSession implements BisectSession {
 	readonly latestRevision = vi.fn(async () => 'latest-sha');
 }
 
-function dependencies(session: FakeSession, astroMajor = 6) {
+function dependencies(session: FakeSession, astroMajor = 6, signal = new AbortController().signal) {
 	const logs: string[] = [];
 	const deps: EveryAstroDependencies = {
+		signal,
 		installedAstroMajor: vi.fn(async () => astroMajor),
 		createSession: vi.fn(async () => session),
 		log: (message) => {
@@ -169,6 +170,86 @@ describe('runEveryAstro', () => {
 		expect(logs).toEqual([]);
 		expect(session.close).toHaveBeenCalledExactlyOnceWith();
 		expect(session.events).toEqual(['close']);
+	});
+
+	test('reports an abort that arrives during successful cleanup without logging a result', async () => {
+		const session = new FakeSession();
+		const controller = new AbortController();
+		session.runDevServerAndAsk.mockResolvedValue(false);
+		session.close.mockImplementation(async () => {
+			session.events.push('close');
+			controller.abort();
+		});
+		const { deps, logs } = dependencies(session, 6, controller.signal);
+
+		const error = await runEveryAstro(deps).catch((error: unknown) => error);
+
+		expect(isPlainAbortError(error)).toBe(true);
+		expect(logs).toEqual([]);
+		expect(session.close).toHaveBeenCalledExactlyOnceWith();
+		expect(session.events).toEqual(['close']);
+	});
+
+	test('keeps cleanup failure precedence when an abort arrives during cleanup', async () => {
+		const session = new FakeSession();
+		const controller = new AbortController();
+		const cleanupError = new Error('cleanup failed');
+		session.runDevServerAndAsk.mockResolvedValue(false);
+		session.close.mockImplementation(async () => {
+			session.events.push('close');
+			controller.abort();
+			throw cleanupError;
+		});
+		const { deps, logs } = dependencies(session, 6, controller.signal);
+
+		const error = await runEveryAstro(deps).catch((error: unknown) => error);
+
+		expect(error).toBe(cleanupError);
+		expect(isPlainAbortError(error)).toBe(false);
+		expect(logs).toEqual([]);
+		expect(session.close).toHaveBeenCalledExactlyOnceWith();
+		expect(session.events).toEqual(['close']);
+	});
+
+	test('defers the single cleanup until an aborted inter-revision restoration completes', async () => {
+		const session = new FakeSession();
+		const controller = new AbortController();
+		let activePackageManagerOperations = 0;
+		let maximumConcurrentPackageManagerOperations = 0;
+		const beginPackageManagerOperation = (): void => {
+			activePackageManagerOperations += 1;
+			maximumConcurrentPackageManagerOperations = Math.max(
+				maximumConcurrentPackageManagerOperations,
+				activePackageManagerOperations
+			);
+		};
+		session.runDevServerAndAsk.mockResolvedValue(true);
+		session.prepareRevision.mockImplementation(async (revision) => {
+			if (revision !== 'astro@6.0.0') return;
+			session.events.push('restore:start');
+			beginPackageManagerOperation();
+			controller.abort();
+			await Promise.resolve();
+			activePackageManagerOperations -= 1;
+			session.events.push('restore:end');
+		});
+		session.close.mockImplementation(async () => {
+			expect(activePackageManagerOperations).toBe(0);
+			session.events.push('close:start');
+			beginPackageManagerOperation();
+			await Promise.resolve();
+			activePackageManagerOperations -= 1;
+			session.events.push('close:end');
+		});
+		const { deps, logs } = dependencies(session, 6, controller.signal);
+
+		const error = await runEveryAstro(deps).catch((error: unknown) => error);
+
+		expect(isPlainAbortError(error)).toBe(true);
+		expect(session.close).toHaveBeenCalledExactlyOnceWith();
+		expect(maximumConcurrentPackageManagerOperations).toBe(1);
+		expect(session.events).toEqual(['restore:start', 'restore:end', 'close:start', 'close:end']);
+		expect(logs).toEqual([]);
 	});
 	test('preserves the workflow failure when session cleanup also fails', async () => {
 		const session = new FakeSession();

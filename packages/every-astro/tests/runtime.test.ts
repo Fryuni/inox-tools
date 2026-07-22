@@ -191,7 +191,7 @@ describe('terminateChildProcess', () => {
 		process.env.PATH = `${bin}:${originalPath ?? ''}`;
 		process.env.TASKKILL_LOG = log;
 		try {
-			const child = { pid: process.pid } as ChildProcess;
+			const child = { pid: process.pid, exitCode: null, signalCode: null } as ChildProcess;
 			const first = terminateChildProcess(child, 'win32');
 			const second = terminateChildProcess(child, 'win32');
 
@@ -205,6 +205,89 @@ describe('terminateChildProcess', () => {
 			else process.env.PATH = originalPath;
 			if (originalLog === undefined) delete process.env.TASKKILL_LOG;
 			else process.env.TASKKILL_LOG = originalLog;
+		}
+	});
+
+	test('does not taskkill a Windows child that exited naturally', async () => {
+		const root = await temporaryRoot();
+		const bin = join(root, 'bin');
+		const log = join(root, 'taskkill.log');
+		const taskkill = join(bin, 'taskkill');
+		await mkdir(bin);
+		await writeFile(taskkill, '#!/bin/sh\nprintf "%s\\n" "$@" >> "$TASKKILL_LOG"\n');
+		await chmod(taskkill, 0o755);
+
+		const originalPath = process.env.PATH;
+		const originalLog = process.env.TASKKILL_LOG;
+		process.env.PATH = `${bin}:${originalPath ?? ''}`;
+		process.env.TASKKILL_LOG = log;
+		try {
+			const child = { pid: process.pid, exitCode: 0, signalCode: null } as ChildProcess;
+			const first = terminateChildProcess(child, 'win32');
+			const late = terminateChildProcess(child, 'win32');
+
+			expect(late).toBe(first);
+			await first;
+			await expect(readFile(log, 'utf8')).rejects.toMatchObject({ code: 'ENOENT' });
+		} finally {
+			if (originalPath === undefined) delete process.env.PATH;
+			else process.env.PATH = originalPath;
+			if (originalLog === undefined) delete process.env.TASKKILL_LOG;
+			else process.env.TASKKILL_LOG = originalLog;
+		}
+	});
+
+	test('accepts a Windows taskkill race after the child exits', async () => {
+		const root = await temporaryRoot();
+		const bin = join(root, 'bin');
+		const log = join(root, 'taskkill.log');
+		const taskkill = join(bin, 'taskkill');
+		await mkdir(bin);
+		await writeFile(
+			taskkill,
+			'#!/bin/sh\nprintf "%s\\n" "$@" >> "$TASKKILL_LOG"\nsleep 0.05\nexit 1\n'
+		);
+		await chmod(taskkill, 0o755);
+
+		const originalPath = process.env.PATH;
+		const originalLog = process.env.TASKKILL_LOG;
+		process.env.PATH = `${bin}:${originalPath ?? ''}`;
+		process.env.TASKKILL_LOG = log;
+		try {
+			const testChild = { pid: process.pid, exitCode: null as number | null, signalCode: null };
+			const child = testChild as ChildProcess;
+			const termination = terminateChildProcess(child, 'win32');
+			testChild.exitCode = 0;
+
+			await expect(termination).resolves.toBeUndefined();
+			expect((await readFile(log, 'utf8')).match(/^\/pid$/gm) ?? []).toHaveLength(1);
+		} finally {
+			if (originalPath === undefined) delete process.env.PATH;
+			else process.env.PATH = originalPath;
+			if (originalLog === undefined) delete process.env.TASKKILL_LOG;
+			else process.env.TASKKILL_LOG = originalLog;
+		}
+	});
+
+	test('reports a Windows taskkill failure while the child is still running', async () => {
+		const root = await temporaryRoot();
+		const bin = join(root, 'bin');
+		const taskkill = join(bin, 'taskkill');
+		await mkdir(bin);
+		await writeFile(taskkill, '#!/bin/sh\nexit 1\n');
+		await chmod(taskkill, 0o755);
+
+		const originalPath = process.env.PATH;
+		process.env.PATH = `${bin}:${originalPath ?? ''}`;
+		try {
+			const child = { pid: process.pid, exitCode: null, signalCode: null } as ChildProcess;
+
+			await expect(terminateChildProcess(child, 'win32')).rejects.toThrow(
+				`taskkill failed while terminating process ${process.pid} (exit code 1)`
+			);
+		} finally {
+			if (originalPath === undefined) delete process.env.PATH;
+			else process.env.PATH = originalPath;
 		}
 	});
 });
@@ -282,6 +365,26 @@ describe('packageLinkCommands', () => {
 		await linkBunPackage(project, { name: 'astro', path: revision });
 
 		await expect(installedAstroMajor(project)).resolves.toBe(0);
+	});
+
+	test('links new scoped workspace dependencies absent from the original Bun installation', async () => {
+		const project = await createProject({ dependencies: { astro: '7.0.0' } });
+		const revision = await temporaryRoot();
+		await writePackage(project, 'node_modules/astro', {
+			name: 'astro',
+			version: '7.0.0',
+		});
+		await writeJson(join(revision, 'package.json'), {
+			name: '@astrojs/new-helper',
+			version: '0.0.0-revision',
+		});
+
+		await expect(
+			linkBunPackage(project, { name: '@astrojs/new-helper', path: revision })
+		).resolves.toBe(join(project, 'node_modules', '@astrojs/new-helper'));
+		await expect(readlink(join(project, 'node_modules', '@astrojs/new-helper'))).resolves.toBe(
+			revision
+		);
 	});
 
 	test('uses publish-shaped file descriptors for Classic Yarn packages', () => {
@@ -461,7 +564,9 @@ describe('createRuntimeDependencies', () => {
 			dependencies: { astro: '^7.0.0' },
 		});
 		await writePackage(project, 'node_modules/astro', { name: 'astro', version: '7.0.0' });
-		const dependencies = await createRuntimeDependencies(project, new AbortController().signal);
+		const controller = new AbortController();
+		const dependencies = await createRuntimeDependencies(project, controller.signal);
+		expect(dependencies.signal).toBe(controller.signal);
 
 		await expect(dependencies.createSession()).rejects.toThrow(
 			'every-astro requires a npm lockfile to restore the exact dependency tree'

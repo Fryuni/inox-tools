@@ -532,10 +532,9 @@ async function installedNodeModulesPackagePath(
 
 /** Replace a Bun-installed package with a local package without invoking Bun's registry linker. */
 export async function linkBunPackage(projectRoot: string, link: PackageLink): Promise<string> {
-	const packagePath = await installedNodeModulesPackagePath(projectRoot, link.name);
-	if (!packagePath) {
-		throw new Error(`Could not find the Bun-installed ${link.name} package from ${projectRoot}`);
-	}
+	const packagePath =
+		(await installedNodeModulesPackagePath(projectRoot, link.name)) ??
+		join(projectRoot, 'node_modules', link.name);
 	await rm(packagePath, { recursive: true, force: true });
 	await mkdir(dirname(packagePath), { recursive: true });
 	await symlink(link.path, packagePath, process.platform === 'win32' ? 'junction' : 'dir');
@@ -630,6 +629,11 @@ export function terminateChildProcess(
 	if (!child) return Promise.resolve();
 	const termination = childTerminations.get(child);
 	if (termination) return termination;
+	if (child.exitCode !== null || child.signalCode !== null) {
+		const stopped = Promise.resolve();
+		childTerminations.set(child, stopped);
+		return stopped;
+	}
 	const pid = child.pid;
 	if (!pid) return Promise.resolve();
 
@@ -640,7 +644,7 @@ export function terminateChildProcess(
 				taskkill.once('error', rejectExit);
 				taskkill.once('close', resolveExit);
 			});
-			if (exitCode !== 0) {
+			if (exitCode !== 0 && child.exitCode === null && child.signalCode === null) {
 				throw new Error(`taskkill failed while terminating process ${pid} (exit code ${exitCode})`);
 			}
 			return;
@@ -687,6 +691,7 @@ export function terminateChildProcess(
 
 class RuntimeSession implements BisectSession {
 	private activeChild: ChildProcess | undefined;
+	private bisectActive = false;
 	private readonly bunLinkTargets = new Map<string, string>();
 	private readonly linkedPackages = new Map<string, string>();
 	private closing: Promise<void> | undefined;
@@ -1250,9 +1255,6 @@ async function createRuntimeSession(
 			latest.trim(),
 			signal
 		);
-		signal.addEventListener('abort', () => void session.close().catch(() => undefined), {
-			once: true,
-		});
 		return session;
 	} catch (error) {
 		try {
@@ -1281,6 +1283,7 @@ export async function createRuntimeDependencies(
 	]);
 	let session: Promise<RuntimeSession> | undefined;
 	return {
+		signal,
 		installedAstroMajor: () => Promise.resolve(major),
 		createSession: () => {
 			session ??= createRuntimeSession(

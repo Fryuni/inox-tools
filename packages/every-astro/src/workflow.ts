@@ -9,6 +9,7 @@ export interface BisectSession {
 }
 
 export interface EveryAstroDependencies {
+	readonly signal: AbortSignal;
 	installedAstroMajor(): Promise<number>;
 	createSession(): Promise<BisectSession>;
 	log(message: string): void;
@@ -82,5 +83,6 @@ export async function runEveryAstro(deps: EveryAstroDependencies): Promise<void>
 		}
 	}
 
+	deps.signal.throwIfAborted();
 	deps.log(result);
 }

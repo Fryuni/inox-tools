@@ -674,6 +674,7 @@ export async function collectInstalledDependencyNames(
 	const visitedManifests = new Set<string>();
 
 	while (pending.length > 0) {
+		if (signal?.aborted) throw abortError(signal);
 		const dependency = pending.pop()!;
 		const manifestPath = await resolveInstalledPackageManifest(
 			dependency.name,
@@ -1889,21 +1890,38 @@ export async function createRuntimeDependencies(
 	signal: AbortSignal
 ): Promise<EveryAstroDependencies> {
 	const absoluteProjectRoot = resolve(projectRoot);
-	const [managerInfo, major, installedDependencies] = await Promise.all([
-		detectPackageManagerInfo(absoluteProjectRoot),
-		installedAstroMajor(absoluteProjectRoot, signal),
-		collectInstalledDependencyNames(absoluteProjectRoot, signal),
-	]);
+	const initializationController = new AbortController();
+	const initializationSignal = AbortSignal.any([signal, initializationController.signal]);
+	const managerInfo = detectPackageManagerInfo(absoluteProjectRoot);
+	const major = installedAstroMajor(absoluteProjectRoot, initializationSignal);
+	const installedDependencies = collectInstalledDependencyNames(
+		absoluteProjectRoot,
+		initializationSignal
+	);
+	let resolvedManagerInfo: DetectedPackageManager;
+	let resolvedMajor: number;
+	let resolvedInstalledDependencies: Set<string>;
+	try {
+		[resolvedManagerInfo, resolvedMajor, resolvedInstalledDependencies] = await Promise.all([
+			managerInfo,
+			major,
+			installedDependencies,
+		]);
+	} catch (error) {
+		initializationController.abort(error);
+		await Promise.allSettled([managerInfo, major, installedDependencies]);
+		throw error;
+	}
 	let session: Promise<RuntimeSession> | undefined;
 	return {
 		signal,
-		installedAstroMajor: () => Promise.resolve(major),
+		installedAstroMajor: () => Promise.resolve(resolvedMajor),
 		createSession: () => {
 			session ??= createRuntimeSession(
 				absoluteProjectRoot,
-				managerInfo,
-				installedDependencies,
-				major,
+				resolvedManagerInfo,
+				resolvedInstalledDependencies,
+				resolvedMajor,
 				signal
 			);
 			return session;

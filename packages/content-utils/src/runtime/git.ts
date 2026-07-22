@@ -6,6 +6,8 @@ import { getDebug } from '../internal/debug.js';
 import type { GitTrackingInfo, CommitInfo } from '@it-astro:content/git';
 
 let projectRoot: string = process.cwd();
+let cachedRepoRoot: string | undefined;
+
 let collectCommitHistory: boolean = true;
 
 const debug = getDebug('git');
@@ -15,6 +17,7 @@ const debug = getDebug('git');
  */
 export function setProjectRoot(path: string) {
 	projectRoot = path;
+	cachedRepoRoot = undefined;
 }
 
 /**
@@ -25,6 +28,7 @@ export function setCollectCommitHistory(value: boolean) {
 }
 
 function getRepoRoot(): string {
+	if (cachedRepoRoot !== undefined) return cachedRepoRoot;
 	debug('Retrieving git repo root', { projectRoot });
 	const result = spawnSync('git', ['rev-parse', '--show-toplevel'], {
 		cwd: projectRoot,
@@ -34,10 +38,12 @@ function getRepoRoot(): string {
 	if (result.error) {
 		debug(`Failed to retrieve repo root:`, result.error, result.stderr);
 		debug('Falling back to contentPath:', projectRoot);
-		return projectRoot;
+		cachedRepoRoot = projectRoot;
+		return cachedRepoRoot;
 	}
 
-	return result.stdout.trim();
+	cachedRepoRoot = result.stdout.trim();
+	return cachedRepoRoot;
 }
 
 /**

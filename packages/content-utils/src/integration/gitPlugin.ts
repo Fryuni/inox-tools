@@ -79,12 +79,28 @@ export const gitBuildPlugin = (state: IntegrationState): Plugin => {
 	let collectedGitInformation: Map<string, BuildGitTrackingInfo> | undefined;
 	let retainedContentFiles: Set<string> | undefined;
 	let buildContentLoaderRegistered = false;
+	const releaseBuildContentLoader = () => {
+		if (!buildContentLoaderRegistered) return;
+		const registration = Reflect.get(globalThis, buildContentLoaderSymbol) as
+			| BuildContentLoaderRegistration
+			| undefined;
+		if (registration !== undefined) {
+			registration.references -= 1;
+			if (registration.references === 0) {
+				Reflect.deleteProperty(globalThis, buildContentLoaderSymbol);
+			}
+		}
+		buildContentLoaderRegistered = false;
+	};
 
 	return {
 		name: '@inox-tools/content-utils/gitTimes',
 		resolveId(id) {
 			if (id === MODULE_ID) return RESOLVED_MODULE_ID;
 			if (id === INNER_MODULE_ID) return RESOLVED_INNER_MODULE_ID;
+		},
+		buildEnd(error) {
+			if (error) releaseBuildContentLoader();
 		},
 		transform(code, id) {
 			if (id !== '\0astro:data-layer-content') return;
@@ -160,17 +176,7 @@ export const gitBuildPlugin = (state: IntegrationState): Plugin => {
 							);
 						}
 					} finally {
-						if (buildContentLoaderRegistered) {
-							const registration = Reflect.get(
-								globalThis,
-								buildContentLoaderSymbol
-							) as BuildContentLoaderRegistration;
-							registration.references -= 1;
-							if (registration.references === 0) {
-								Reflect.deleteProperty(globalThis, buildContentLoaderSymbol);
-							}
-							buildContentLoaderRegistered = false;
-						}
+						releaseBuildContentLoader();
 					}
 				});
 			}

@@ -1024,14 +1024,14 @@ export function isolatedBootstrapEnvironment(
 }
 
 async function windowsDirectorySymlinkType(path: string): Promise<'dir' | 'junction'> {
+	const escapedPath = path.replaceAll("'", "''");
 	const child = spawn(
 		'powershell.exe',
 		[
 			'-NoProfile',
 			'-NonInteractive',
 			'-Command',
-			'(Get-Item -LiteralPath $args[0] -Force).LinkType',
-			path,
+			`(Get-Item -LiteralPath '${escapedPath}' -Force).LinkType`,
 		],
 		{ stdio: ['ignore', 'pipe', 'pipe'] }
 	);
@@ -1169,7 +1169,10 @@ export function terminateChildProcess(
 		return close;
 	}
 	const pid = child.pid;
-	if (!pid) return platform === 'win32' ? close : Promise.resolve();
+	if (!pid) {
+		forgetChildClose(child);
+		return Promise.resolve();
+	}
 
 	const promise = (async () => {
 		if (platform === 'win32') {

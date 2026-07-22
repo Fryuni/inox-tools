@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import * as devalue from 'devalue';
-import type { Plugin } from 'vite';
+import { parseAst, type Plugin } from 'vite';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { IntegrationState } from '../src/integration/state.js';
 
@@ -157,24 +157,37 @@ describe('gitBuildPlugin', () => {
 		git.collectGitInfoForContentFiles.mockResolvedValue(
 			new Map([
 				[
-					'entry.md',
+					'café.md',
 					{
 						authors: [],
 						coAuthors: [],
-						commits: [{ hash: 'entry', repoPath: 'content/entry.md' }],
+						commits: [{ hash: 'entry', repoPath: 'content/café.md' }],
 						earliest: 1,
 						latest: 1,
 					},
 				],
 			])
 		);
-		git.getFileContentAtCommit.mockReturnValue('historical content');
+		git.getFileContentAtCommit.mockReturnValue('café history');
 
 		const transform = plugin.transform as NonNullable<Plugin['transform']>;
 		await transform.call(
-			{} as Parameters<typeof transform.call>[0],
-			`export default ${devalue.stringify(
-				new Map([['blog', new Map([['entry', { filePath: 'entry.md' }]])]])
+			{ parse: parseAst } as Parameters<typeof transform.call>[0],
+			`export default${devalue.stringify(
+				new Map([
+					[
+						'blog',
+						new Map([
+							[
+								'entry',
+								{
+									body: 'export default function example() {}',
+									filePath: 'café.md',
+								},
+							],
+						]),
+					],
+				])
 			)};`,
 			'\0astro:data-layer-content'
 		);
@@ -201,14 +214,14 @@ describe('gitBuildPlugin', () => {
 
 		const finalizedSource = readFileSync(combinedPath, 'utf-8');
 		expect(finalizedSource).toContain('const preserved = true');
-		const encodedState = finalizedSource.match(
-			/__INOX_CONTENT_GIT_STATE_START__(.*?)__INOX_CONTENT_GIT_STATE_END__/
-		)?.[1];
-		expect(encodedState).toBeDefined();
+		// Import the generated output to exercise its runtime UTF-8 decoder.
+		const { default: flattenedState } = await import(
+			`${pathToFileURL(combinedPath).href}?finalized`
+		);
 		const finalizedState: Map<string, { commits: Array<Record<string, unknown>> }> =
-			devalue.unflatten(JSON.parse(Buffer.from(encodedState!, 'base64').toString('utf-8')));
-		expect(finalizedState.get('entry.md')?.commits).toEqual([
-			{ content: 'historical content', hash: 'entry' },
+			devalue.unflatten(flattenedState);
+		expect(finalizedState.get('café.md')?.commits).toEqual([
+			{ content: 'café history', hash: 'entry' },
 		]);
 	});
 });

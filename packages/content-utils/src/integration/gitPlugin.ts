@@ -73,6 +73,9 @@ export const gitBuildPlugin = (state: IntegrationState): Plugin => {
 		liveGit.setProjectRoot(projectRoot);
 		return liveGit.getFileContentAtCommit(hash, repoPath);
 	};
+	const gitStateStart = GIT_STATE_START;
+	const gitStateEnd = GIT_STATE_END;
+	let initialSerializedGitState: string | undefined;
 	let collectedGitInformation: Map<string, BuildGitTrackingInfo> | undefined;
 	let retainedContentFiles: Set<string> | undefined;
 
@@ -84,14 +87,20 @@ export const gitBuildPlugin = (state: IntegrationState): Plugin => {
 		},
 		transform(code, id) {
 			if (id !== '\0astro:data-layer-content') return;
-			const exportPrefix = 'export default ';
-			const exportStart = code.lastIndexOf(exportPrefix);
-			if (exportStart === -1) return;
+			const ast = this.parse(code);
+			const defaultExport = ast.body.find((node) => node.type === 'ExportDefaultDeclaration');
+			if (
+				defaultExport?.type !== 'ExportDefaultDeclaration' ||
+				typeof defaultExport.declaration.start !== 'number' ||
+				typeof defaultExport.declaration.end !== 'number'
+			) {
+				return;
+			}
 
-			const serializedContent = code
-				.slice(exportStart + exportPrefix.length)
-				.trim()
-				.replace(/;$/, '');
+			const serializedContent = code.slice(
+				defaultExport.declaration.start,
+				defaultExport.declaration.end
+			);
 			try {
 				const contentMap: Map<string, Map<string, unknown>> = devalue.unflatten(
 					JSON.parse(serializedContent)
@@ -136,13 +145,16 @@ export const gitBuildPlugin = (state: IntegrationState): Plugin => {
 						if (gitStateIsDedicated && contentDataEntrypoint) {
 							await cleanupState(contentDataEntrypoint, gitStateEntrypoint, loadCommitContent);
 						} else {
-							if (retainedContentFiles === undefined) {
+							if (retainedContentFiles === undefined || initialSerializedGitState === undefined) {
 								throw new Error('Could not determine retained content files for combined output');
 							}
 							cleanupCombinedState(
 								gitStateEntrypoint,
 								collectedGitInformation!,
 								retainedContentFiles,
+								initialSerializedGitState,
+								gitStateStart,
+								gitStateEnd,
 								loadCommitContent
 							);
 						}
@@ -166,9 +178,14 @@ export const gitBuildPlugin = (state: IntegrationState): Plugin => {
 				collectedGitInformation = new Map(trackedFiles);
 				debug('Git tracked file dates:', trackedFiles);
 
-				const serializedState = serializeGitState(collectedGitInformation);
-				return `const trackedFilesPayload = ${JSON.stringify(serializedState)};
-const trackedFiles = JSON.parse(atob(trackedFilesPayload.slice(${GIT_STATE_START.length}, -${GIT_STATE_END.length})));
+				initialSerializedGitState = serializeGitState(
+					collectedGitInformation,
+					gitStateStart,
+					gitStateEnd
+				);
+				return `const trackedFilesPayload = ${JSON.stringify(initialSerializedGitState)};
+const trackedFilesBytes = Uint8Array.from(atob(trackedFilesPayload.slice(${gitStateStart.length}, -${gitStateEnd.length})), (byte) => byte.charCodeAt(0));
+const trackedFiles = JSON.parse(new TextDecoder().decode(trackedFilesBytes));
 export { trackedFiles as default };`;
 			}
 		},
@@ -185,8 +202,12 @@ type BuildGitTrackingInfo = {
 	commits: BuildCommitInfo[];
 };
 
-function serializeGitState(gitInformation: Map<string, BuildGitTrackingInfo>): string {
-	return `${GIT_STATE_START}${Buffer.from(devalue.stringify(gitInformation)).toString('base64')}${GIT_STATE_END}`;
+function serializeGitState(
+	gitInformation: Map<string, BuildGitTrackingInfo>,
+	stateStart: string,
+	stateEnd: string
+): string {
+	return `${stateStart}${Buffer.from(devalue.stringify(gitInformation)).toString('base64')}${stateEnd}`;
 }
 
 function materializeCommitContent(
@@ -259,6 +280,9 @@ function cleanupCombinedState(
 	gitState: string,
 	gitInformation: Map<string, BuildGitTrackingInfo>,
 	retainedContentFiles: Set<string>,
+	initialSerializedState: string,
+	stateStartToken: string,
+	stateEndToken: string,
 	loadCommitContent: (hash: string, repoPath: string) => string
 ): void {
 	const retainedGitInformation = new Map(
@@ -269,17 +293,22 @@ function cleanupCombinedState(
 	}
 
 	const originalContent = readFileSync(gitState, 'utf-8');
-	const stateStart = originalContent.indexOf(GIT_STATE_START);
-	const stateEnd = originalContent.lastIndexOf(GIT_STATE_END);
-	if (stateStart === -1 || stateEnd === -1) {
-		throw new Error('Could not locate serialized Git history in the combined output chunk');
+	const stateStart = originalContent.indexOf(initialSerializedState);
+	if (
+		stateStart === -1 ||
+		originalContent.indexOf(initialSerializedState, stateStart + initialSerializedState.length) !==
+			-1
+	) {
+		throw new Error(
+			'Could not uniquely locate serialized Git history in the combined output chunk'
+		);
 	}
 
-	const serializedState = serializeGitState(retainedGitInformation);
+	const serializedState = serializeGitState(retainedGitInformation, stateStartToken, stateEndToken);
 	writeFileSync(
 		gitState,
 		`${originalContent.slice(0, stateStart)}${serializedState}${originalContent.slice(
-			stateEnd + GIT_STATE_END.length
+			stateStart + initialSerializedState.length
 		)}`,
 		'utf-8'
 	);

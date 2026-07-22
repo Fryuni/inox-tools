@@ -13,6 +13,7 @@ import {
 	writeFile,
 } from 'node:fs/promises';
 import { createRequire } from 'node:module';
+import { randomUUID } from 'node:crypto';
 import { tmpdir } from 'node:os';
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { createInterface } from 'node:readline/promises';
@@ -42,7 +43,6 @@ type PackageManifest = {
 	devDependencies?: Record<string, string>;
 	peerDependencies?: Record<string, string>;
 	optionalDependencies?: Record<string, string>;
-	scripts?: Record<string, string>;
 	resolutions?: Record<string, string>;
 };
 
@@ -70,21 +70,27 @@ function commandText(command: readonly string[]): string {
 	return command.map((part) => JSON.stringify(part)).join(' ');
 }
 
-/** Windows only supports direct, foreground Astro development-server scripts. */
-export function isWindowsForegroundDevScript(script: string | undefined): boolean {
-	if (!script || /[;&|<>`$()]/.test(script)) return false;
-	const tokens = script.trim().split(/\s+/);
-	let commandIndex = 0;
-	if (tokens[0] === 'npx' || tokens[0] === 'bunx') {
-		commandIndex = 1;
-	} else if (
-		(tokens[0] === 'pnpm' || tokens[0] === 'yarn' || tokens[0] === 'bun') &&
-		tokens[1] === 'exec'
-	) {
-		commandIndex = 2;
-	}
-	return tokens[commandIndex] === 'astro' && tokens[commandIndex + 1] === 'dev';
+/** Windows launches commands through this supervisor so target processes join a kill-on-close Job Object. */
+export function windowsJobSupervisorCommand(controlFile: string): [string, ...string[]] {
+	return [
+		'powershell.exe',
+		'-NoProfile',
+		'-NonInteractive',
+		'-ExecutionPolicy',
+		'Bypass',
+		'-File',
+		runtimeRequire.resolve('../src/windows-job-supervisor.ps1'),
+		'-ControlFile',
+		controlFile,
+	];
 }
+
+/** Development servers must not consume the terminal input reserved for the bisect prompt. */
+export const developmentServerStdio: ['ignore', 'inherit', 'inherit'] = [
+	'ignore',
+	'inherit',
+	'inherit',
+];
 
 async function readManifest(path: string): Promise<PackageManifest> {
 	return JSON.parse(await readFile(path, 'utf8')) as PackageManifest;
@@ -745,6 +751,29 @@ export class RuntimeSession implements BisectSession {
 		await this.terminate(child);
 	}
 
+	private async spawnCommand(
+		file: string,
+		args: string[],
+		options: NonNullable<Parameters<typeof spawn>[2]>
+	): Promise<ChildProcess> {
+		if (process.platform !== 'win32') return spawn(file, args, options);
+
+		const controlFile = join(this.temporaryRoot, `command-${randomUUID()}.json`);
+		await writeFile(controlFile, JSON.stringify({ file, args }));
+		let child: ChildProcess;
+		try {
+			const [supervisor, ...supervisorArgs] = windowsJobSupervisorCommand(controlFile);
+			child = spawn(supervisor, supervisorArgs, options);
+		} catch (error) {
+			await rm(controlFile, { force: true });
+			throw error;
+		}
+		const cleanControlFile = () => void rm(controlFile, { force: true }).catch(() => undefined);
+		child.once('error', cleanControlFile);
+		child.once('close', cleanControlFile);
+		return child;
+	}
+
 	public async execute(
 		command: readonly string[],
 		cwd: string,
@@ -756,7 +785,7 @@ export class RuntimeSession implements BisectSession {
 
 		let child: ChildProcess;
 		try {
-			child = spawn(file, args, {
+			child = await this.spawnCommand(file, args, {
 				cwd,
 				env: options.env,
 				stdio: options.capture ? ['ignore', 'pipe', 'pipe'] : 'inherit',
@@ -788,7 +817,10 @@ export class RuntimeSession implements BisectSession {
 						rejectExit(error);
 					});
 				};
-				if (!options.ignoreAbort) this.signal.addEventListener('abort', abort, { once: true });
+				if (!options.ignoreAbort) {
+					if (this.signal.aborted) abort();
+					else this.signal.addEventListener('abort', abort, { once: true });
+				}
 				child.once('error', (error) => {
 					if (!options.ignoreAbort) this.signal.removeEventListener('abort', abort);
 					rejectExit(
@@ -959,17 +991,9 @@ export class RuntimeSession implements BisectSession {
 	}
 
 	public async runDevServerAndAsk(label: string): Promise<boolean> {
-		if (process.platform === 'win32') {
-			const { scripts } = await readManifest(join(this.projectRoot, 'package.json'));
-			if (!isWindowsForegroundDevScript(scripts?.dev)) {
-				throw new Error(
-					'On Windows, every-astro requires a foreground `astro dev` package script without shell operators.'
-				);
-			}
-		}
-		const child = spawn(this.manager, ['run', 'dev'], {
+		const child = await this.spawnCommand(this.manager, ['run', 'dev'], {
 			cwd: this.projectRoot,
-			stdio: 'inherit',
+			stdio: developmentServerStdio,
 			detached: process.platform !== 'win32',
 		});
 		this.activeChild = child;
@@ -1208,6 +1232,15 @@ export function selectLatestAstroReleaseTag(tags: readonly string[], major: numb
 	return latest.tag;
 }
 
+export function assertFirstAstroReleaseTag(tags: readonly string[], major: number): void {
+	const firstRelease = `astro@${major}.0.0`;
+	if (!tags.some((tag) => tag.trim() === firstRelease)) {
+		throw new Error(
+			`Astro ${major} has no stable first-release bisect boundary (${firstRelease}) in the cloned repository`
+		);
+	}
+}
+
 /** Git revision expression that resolves a release tag to the commit that bisect needs. */
 export function selectLatestAstroReleaseRevision(tags: readonly string[], major: number): string {
 	return `${selectLatestAstroReleaseTag(tags, major)}^{commit}`;
@@ -1275,11 +1308,13 @@ async function createRuntimeSession(
 		const tags = await bootstrap.execute(['git', 'tag', '--list'], repositoryRoot, {
 			capture: true,
 		});
+		const tagList = tags.split(/\r?\n/);
+		assertFirstAstroReleaseTag(tagList, installedAstroMajor);
 		const headManifest = await existingManifest(
 			join(repositoryRoot, 'packages', 'astro', 'package.json')
 		);
 		const latestRevision = selectLatestAstroRevision(
-			tags.split(/\r?\n/),
+			tagList,
 			installedAstroMajor,
 			headManifest?.version
 		);

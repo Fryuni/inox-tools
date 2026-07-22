@@ -16,17 +16,19 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import {
 	abortError,
+	assertFirstAstroReleaseTag,
 	collectInstalledDependencyNames,
 	collectAstroWorkspacePackageClosure,
 	createRuntimeDependencies,
 	determineBisectProgress,
+	developmentServerStdio,
 	dependencySymlinkType,
 	detectPackageManager,
 	detectPackageManagerRoot,
 	discoverAstroWorkspacePackages,
 	installedAstroMajor,
 	isolatedBootstrapEnvironment,
-	isWindowsForegroundDevScript,
+	windowsJobSupervisorCommand,
 	linkBunPackage,
 	packageLinkCommands,
 	parseBisectCompletion,
@@ -119,6 +121,15 @@ describe('selectLatestAstroReleaseTag', () => {
 		expect(() => selectLatestAstroReleaseTag(['astro@8.0.0', 'astro@7.5.0-rc.1'], 7)).toThrow(
 			'Could not find a stable Astro 7 release tag'
 		);
+	});
+
+	test('requires the real stable first release before bisecting an installed major', () => {
+		expect(() => assertFirstAstroReleaseTag(['astro@8.0.0-beta.1'], 8)).toThrow(
+			'Astro 8 has no stable first-release bisect boundary (astro@8.0.0)'
+		);
+		expect(() =>
+			assertFirstAstroReleaseTag(['astro@8.0.0', 'astro@8.0.0-beta.1'], 8)
+		).not.toThrow();
 	});
 
 	test('selects the commit revision rather than a tag object for bisecting', () => {
@@ -392,15 +403,39 @@ describe('terminateChildProcess', () => {
 	});
 });
 
-describe('isWindowsForegroundDevScript', () => {
-	test('accepts direct Astro dev commands and rejects wrappers or shell composition', () => {
-		expect(isWindowsForegroundDevScript('astro dev --host')).toBe(true);
-		expect(isWindowsForegroundDevScript('pnpm exec astro dev')).toBe(true);
-		expect(isWindowsForegroundDevScript('npx astro dev')).toBe(true);
-		expect(isWindowsForegroundDevScript('node scripts/start-dev.js')).toBe(false);
-		expect(isWindowsForegroundDevScript('astro dev &')).toBe(false);
-		expect(isWindowsForegroundDevScript('astro dev | tee dev.log')).toBe(false);
-		expect(isWindowsForegroundDevScript('astro dev $(node daemonize.js)')).toBe(false);
+describe('windowsJobSupervisorCommand', () => {
+	test('passes a JSON control-file path to the shipped PowerShell supervisor', () => {
+		const command = windowsJobSupervisorCommand('C:\\temp\\every-astro-command.json');
+
+		expect(command[0]).toBe('powershell.exe');
+		expect(command).toContain('-File');
+		expect(command[command.indexOf('-File') + 1]).toMatch(/src[\\/]windows-job-supervisor\.ps1$/);
+		expect(command.slice(-2)).toEqual(['-ControlFile', 'C:\\temp\\every-astro-command.json']);
+	});
+});
+
+test.skipIf(process.platform !== 'win32')(
+	'launches a target through the Job Object supervisor and removes its control file',
+	async () => {
+		const root = await temporaryRoot();
+		const controlFile = join(root, 'command.json');
+		await writeFile(
+			controlFile,
+			JSON.stringify({ file: process.execPath, args: ['-e', 'process.exit(0)'] })
+		);
+		const [file, ...args] = windowsJobSupervisorCommand(controlFile);
+		const child = spawnChild(file, args, { cwd: root, stdio: 'ignore' });
+
+		const [exitCode] = (await once(child, 'close')) as [number | null];
+
+		expect(exitCode).toBe(0);
+		await expect(readFile(controlFile, 'utf8')).rejects.toMatchObject({ code: 'ENOENT' });
+	}
+);
+
+describe('developmentServerStdio', () => {
+	test('reserves stdin for the interactive bisect prompt', () => {
+		expect(developmentServerStdio).toEqual(['ignore', 'inherit', 'inherit']);
 	});
 });
 

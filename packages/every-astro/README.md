@@ -19,12 +19,14 @@ present at the selected range's first release.
 - Git and the project's package manager available on your `PATH`
 - An Astro project with dependencies already installed
 - A `dev` script that starts the project and keeps running
-- On Windows, a direct foreground Astro dev command such as `"dev": "astro dev"`; wrapper, background, and shell-composed scripts are rejected.
 - A pnpm, npm, Yarn, or Bun lockfile
 
 Both Yarn Classic and Yarn Berry, including Plug'n'Play projects, are supported. In a monorepo, run the
 command from the Astro project's directory; Every Astro searches parent directories for the package
 manager configuration and lockfile.
+
+On Windows, Every Astro launches each command in a kill-on-close Job Object. Its supervisor integration test
+runs only on Windows because non-Windows environments cannot execute the Win32 API path.
 
 ## Usage
 

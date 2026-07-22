@@ -30,6 +30,7 @@ function createState(): IntegrationState {
 	return {
 		cleanups: [],
 		collectCommitHistory: true,
+		staticOnlyCollections: [],
 		contentPaths: {
 			configExists: true,
 			configPath: '',
@@ -169,6 +170,15 @@ describe('gitBuildPlugin', () => {
 		);
 		git.getFileContentAtCommit.mockReturnValue('historical content');
 
+		const transform = plugin.transform as NonNullable<Plugin['transform']>;
+		await transform.call(
+			{} as Parameters<typeof transform.call>[0],
+			`export default ${devalue.stringify(
+				new Map([['blog', new Map([['entry', { filePath: 'entry.md' }]])]])
+			)};`,
+			'\0astro:data-layer-content'
+		);
+
 		const load = plugin.load as (id: string, options: { ssr: boolean }) => Promise<string>;
 		const initialState = await load('\x00@it-astro:content/git/internal', { ssr: true });
 
@@ -191,7 +201,14 @@ describe('gitBuildPlugin', () => {
 
 		const finalizedSource = readFileSync(combinedPath, 'utf-8');
 		expect(finalizedSource).toContain('const preserved = true');
-		expect(finalizedSource).toContain('historical content');
-		expect(finalizedSource).not.toContain('content/entry.md');
+		const encodedState = finalizedSource.match(
+			/__INOX_CONTENT_GIT_STATE_START__(.*?)__INOX_CONTENT_GIT_STATE_END__/
+		)?.[1];
+		expect(encodedState).toBeDefined();
+		const finalizedState: Map<string, { commits: Array<Record<string, unknown>> }> =
+			devalue.unflatten(JSON.parse(Buffer.from(encodedState!, 'base64').toString('utf-8')));
+		expect(finalizedState.get('entry.md')?.commits).toEqual([
+			{ content: 'historical content', hash: 'entry' },
+		]);
 	});
 });

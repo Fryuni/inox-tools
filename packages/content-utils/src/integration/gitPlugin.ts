@@ -6,6 +6,7 @@ import { dirname, join as joinPath, resolve } from 'node:path';
 import { getDebug } from '../internal/debug.js';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { Buffer } from 'node:buffer';
 
 const MODULE_ID = '@it-astro:content/git';
 const RESOLVED_MODULE_ID = '\x00@it-astro:content/git';
@@ -15,8 +16,8 @@ const RESOLVED_DEV_CONFIG_MODULE_ID = '\x00@it-astro:content/git/dev-config';
 
 const INNER_MODULE_ID = '@it-astro:content/git/internal';
 const RESOLVED_INNER_MODULE_ID = '\x00@it-astro:content/git/internal';
-const GIT_STATE_START = '/*! @inox-tools/content-utils:git-state:start */';
-const GIT_STATE_END = '/*! @inox-tools/content-utils:git-state:end */';
+const GIT_STATE_START = '__INOX_CONTENT_GIT_STATE_START__';
+const GIT_STATE_END = '__INOX_CONTENT_GIT_STATE_END__';
 
 const debug = getDebug('git-time-plugin');
 
@@ -73,12 +74,42 @@ export const gitBuildPlugin = (state: IntegrationState): Plugin => {
 		return liveGit.getFileContentAtCommit(hash, repoPath);
 	};
 	let collectedGitInformation: Map<string, BuildGitTrackingInfo> | undefined;
+	let retainedContentFiles: Set<string> | undefined;
 
 	return {
 		name: '@inox-tools/content-utils/gitTimes',
 		resolveId(id) {
 			if (id === MODULE_ID) return RESOLVED_MODULE_ID;
 			if (id === INNER_MODULE_ID) return RESOLVED_INNER_MODULE_ID;
+		},
+		transform(code, id) {
+			if (id !== '\0astro:data-layer-content') return;
+			const exportPrefix = 'export default ';
+			const exportStart = code.lastIndexOf(exportPrefix);
+			if (exportStart === -1) return;
+
+			const serializedContent = code
+				.slice(exportStart + exportPrefix.length)
+				.trim()
+				.replace(/;$/, '');
+			try {
+				const contentMap: Map<string, Map<string, unknown>> = devalue.unflatten(
+					JSON.parse(serializedContent)
+				);
+				for (const collection of state.staticOnlyCollections) {
+					contentMap.delete(collection);
+				}
+				retainedContentFiles = new Set();
+				for (const collection of contentMap.values()) {
+					for (const entry of collection.values()) {
+						if (typeof entry === 'object' && entry && 'filePath' in entry && entry.filePath) {
+							retainedContentFiles.add(entry.filePath as string);
+						}
+					}
+				}
+			} catch (error) {
+				debug('Failed to capture content entry paths for combined output:', error);
+			}
 		},
 		writeBundle(info, bundle) {
 			if (!info.dir) return;
@@ -105,7 +136,15 @@ export const gitBuildPlugin = (state: IntegrationState): Plugin => {
 						if (gitStateIsDedicated && contentDataEntrypoint) {
 							await cleanupState(contentDataEntrypoint, gitStateEntrypoint, loadCommitContent);
 						} else {
-							cleanupCombinedState(gitStateEntrypoint, collectedGitInformation!, loadCommitContent);
+							if (retainedContentFiles === undefined) {
+								throw new Error('Could not determine retained content files for combined output');
+							}
+							cleanupCombinedState(
+								gitStateEntrypoint,
+								collectedGitInformation!,
+								retainedContentFiles,
+								loadCommitContent
+							);
 						}
 					} finally {
 						Reflect.deleteProperty(globalThis, buildContentLoaderSymbol);
@@ -127,7 +166,9 @@ export const gitBuildPlugin = (state: IntegrationState): Plugin => {
 				collectedGitInformation = new Map(trackedFiles);
 				debug('Git tracked file dates:', trackedFiles);
 
-				return `const trackedFiles = ${GIT_STATE_START}${devalue.stringify(collectedGitInformation)}${GIT_STATE_END};
+				const serializedState = serializeGitState(collectedGitInformation);
+				return `const trackedFilesPayload = ${JSON.stringify(serializedState)};
+const trackedFiles = JSON.parse(atob(trackedFilesPayload.slice(${GIT_STATE_START.length}, -${GIT_STATE_END.length})));
 export { trackedFiles as default };`;
 			}
 		},
@@ -143,6 +184,10 @@ type BuildCommitInfo = {
 type BuildGitTrackingInfo = {
 	commits: BuildCommitInfo[];
 };
+
+function serializeGitState(gitInformation: Map<string, BuildGitTrackingInfo>): string {
+	return `${GIT_STATE_START}${Buffer.from(devalue.stringify(gitInformation)).toString('base64')}${GIT_STATE_END}`;
+}
 
 function materializeCommitContent(
 	fileInfo: BuildGitTrackingInfo,
@@ -213,20 +258,24 @@ async function cleanupState(
 function cleanupCombinedState(
 	gitState: string,
 	gitInformation: Map<string, BuildGitTrackingInfo>,
+	retainedContentFiles: Set<string>,
 	loadCommitContent: (hash: string, repoPath: string) => string
 ): void {
-	for (const fileInfo of gitInformation.values()) {
+	const retainedGitInformation = new Map(
+		Array.from(gitInformation.entries()).filter(([path]) => retainedContentFiles.has(path))
+	);
+	for (const fileInfo of retainedGitInformation.values()) {
 		materializeCommitContent(fileInfo, loadCommitContent);
 	}
 
 	const originalContent = readFileSync(gitState, 'utf-8');
 	const stateStart = originalContent.indexOf(GIT_STATE_START);
-	const stateEnd = originalContent.indexOf(GIT_STATE_END, stateStart);
+	const stateEnd = originalContent.lastIndexOf(GIT_STATE_END);
 	if (stateStart === -1 || stateEnd === -1) {
 		throw new Error('Could not locate serialized Git history in the combined output chunk');
 	}
 
-	const serializedState = `${GIT_STATE_START}${devalue.stringify(gitInformation)}${GIT_STATE_END}`;
+	const serializedState = serializeGitState(retainedGitInformation);
 	writeFileSync(
 		gitState,
 		`${originalContent.slice(0, stateStart)}${serializedState}${originalContent.slice(

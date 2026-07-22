@@ -1,6 +1,16 @@
-import { spawn as spawnChild } from 'node:child_process';
+import { type ChildProcess, spawn as spawnChild } from 'node:child_process';
 import { once } from 'node:events';
-import { mkdir, mkdtemp, readlink, readdir, rm, symlink, writeFile } from 'node:fs/promises';
+import {
+	chmod,
+	mkdir,
+	mkdtemp,
+	readFile,
+	readlink,
+	readdir,
+	rm,
+	symlink,
+	writeFile,
+} from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, test } from 'vitest';
@@ -166,6 +176,37 @@ describe('terminateChildProcess', () => {
 			expect(() => process.kill(-pid, 0)).toThrow(/ESRCH/);
 		}
 	);
+
+	test('shares Windows taskkill across concurrent and late stop requests', async () => {
+		const root = await temporaryRoot();
+		const bin = join(root, 'bin');
+		const log = join(root, 'taskkill.log');
+		const taskkill = join(bin, 'taskkill');
+		await mkdir(bin);
+		await writeFile(taskkill, '#!/bin/sh\nprintf "%s\\n" "$@" >> "$TASKKILL_LOG"\nsleep 0.05\n');
+		await chmod(taskkill, 0o755);
+
+		const originalPath = process.env.PATH;
+		const originalLog = process.env.TASKKILL_LOG;
+		process.env.PATH = `${bin}:${originalPath ?? ''}`;
+		process.env.TASKKILL_LOG = log;
+		try {
+			const child = { pid: process.pid } as ChildProcess;
+			const first = terminateChildProcess(child, 'win32');
+			const second = terminateChildProcess(child, 'win32');
+
+			expect(second).toBe(first);
+			await Promise.all([first, second]);
+			await terminateChildProcess(child, 'win32');
+
+			expect((await readFile(log, 'utf8')).match(/^\/pid$/gm) ?? []).toHaveLength(1);
+		} finally {
+			if (originalPath === undefined) delete process.env.PATH;
+			else process.env.PATH = originalPath;
+			if (originalLog === undefined) delete process.env.TASKKILL_LOG;
+			else process.env.TASKKILL_LOG = originalLog;
+		}
+	});
 });
 
 describe('detectPackageManager', () => {

@@ -620,60 +620,69 @@ async function snapshotDependencySymlinks(
 	return [...snapshots.values()];
 }
 
-export async function terminateChildProcess(
+const childTerminations = new WeakMap<ChildProcess, Promise<void>>();
+
+export function terminateChildProcess(
 	child: ChildProcess | undefined,
 	platform = process.platform,
 	gracePeriod = 5_000
 ): Promise<void> {
-	const pid = child?.pid;
-	if (!child || !pid) return;
+	if (!child) return Promise.resolve();
+	const termination = childTerminations.get(child);
+	if (termination) return termination;
+	const pid = child.pid;
+	if (!pid) return Promise.resolve();
 
-	if (platform === 'win32') {
-		const taskkill = spawn('taskkill', ['/pid', String(pid), '/t', '/f'], { stdio: 'ignore' });
-		const exitCode = await new Promise<number | null>((resolveExit, rejectExit) => {
-			taskkill.once('error', rejectExit);
-			taskkill.once('close', resolveExit);
-		});
-		if (exitCode !== 0) {
-			throw new Error(`taskkill failed while terminating process ${pid} (exit code ${exitCode})`);
-		}
-		return;
-	}
-
-	const processGroupAlive = (): boolean => {
-		try {
-			process.kill(-pid, 0);
-			return true;
-		} catch (error: unknown) {
-			return (error as NodeJS.ErrnoException).code !== 'ESRCH';
-		}
-	};
-	const signalProcessGroup = (signal: NodeJS.Signals): void => {
-		try {
-			process.kill(-pid, signal);
-		} catch {
-			try {
-				child.kill(signal);
-			} catch {
-				// The process may have already exited.
+	const promise = (async () => {
+		if (platform === 'win32') {
+			const taskkill = spawn('taskkill', ['/pid', String(pid), '/t', '/f'], { stdio: 'ignore' });
+			const exitCode = await new Promise<number | null>((resolveExit, rejectExit) => {
+				taskkill.once('error', rejectExit);
+				taskkill.once('close', resolveExit);
+			});
+			if (exitCode !== 0) {
+				throw new Error(`taskkill failed while terminating process ${pid} (exit code ${exitCode})`);
 			}
+			return;
 		}
-	};
-	const waitForGroupExit = async (): Promise<boolean> => {
-		const deadline = Date.now() + gracePeriod;
-		while (processGroupAlive()) {
-			if (Date.now() >= deadline) return false;
-			await delay(Math.min(50, deadline - Date.now()));
-		}
-		return true;
-	};
 
-	signalProcessGroup('SIGTERM');
-	if (await waitForGroupExit()) return;
-	signalProcessGroup('SIGKILL');
-	if (!(await waitForGroupExit())) {
-		throw new Error(`Process group ${pid} remained alive after SIGKILL`);
-	}
+		const processGroupAlive = (): boolean => {
+			try {
+				process.kill(-pid, 0);
+				return true;
+			} catch (error: unknown) {
+				return (error as NodeJS.ErrnoException).code !== 'ESRCH';
+			}
+		};
+		const signalProcessGroup = (signal: NodeJS.Signals): void => {
+			try {
+				process.kill(-pid, signal);
+			} catch {
+				try {
+					child.kill(signal);
+				} catch {
+					// The process may have already exited.
+				}
+			}
+		};
+		const waitForGroupExit = async (): Promise<boolean> => {
+			const deadline = Date.now() + gracePeriod;
+			while (processGroupAlive()) {
+				if (Date.now() >= deadline) return false;
+				await delay(Math.min(50, deadline - Date.now()));
+			}
+			return true;
+		};
+
+		signalProcessGroup('SIGTERM');
+		if (await waitForGroupExit()) return;
+		signalProcessGroup('SIGKILL');
+		if (!(await waitForGroupExit())) {
+			throw new Error(`Process group ${pid} remained alive after SIGKILL`);
+		}
+	})();
+	childTerminations.set(child, promise);
+	return promise;
 }
 
 class RuntimeSession implements BisectSession {
@@ -742,7 +751,7 @@ class RuntimeSession implements BisectSession {
 		let exitCode: number | null;
 		try {
 			exitCode = await new Promise<number | null>((resolveExit, rejectExit) => {
-				const abort = () => void this.stopChild(child);
+				const abort = () => void this.stopChild(child).catch(() => undefined);
 				if (!options.ignoreAbort) this.signal.addEventListener('abort', abort, { once: true });
 				child.once('error', (error) => {
 					if (!options.ignoreAbort) this.signal.removeEventListener('abort', abort);
@@ -1241,7 +1250,9 @@ async function createRuntimeSession(
 			latest.trim(),
 			signal
 		);
-		signal.addEventListener('abort', () => void session.close(), { once: true });
+		signal.addEventListener('abort', () => void session.close().catch(() => undefined), {
+			once: true,
+		});
 		return session;
 	} catch (error) {
 		try {

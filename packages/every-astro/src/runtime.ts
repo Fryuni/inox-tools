@@ -214,10 +214,20 @@ function loadPnpApi(pnpPath: string | undefined): PnpApi | undefined {
 	return pnpapi;
 }
 
-async function readPnpManifest(pnpPath: string, manifestPath: string): Promise<PackageManifest> {
+async function readPnpManifest(
+	pnpPath: string,
+	manifestPath: string,
+	signal?: AbortSignal
+): Promise<PackageManifest> {
+	const cached = pnpManifests.get(manifestPath);
+	if (cached) return cached;
+	if (signal?.aborted) throw abortError(signal);
+
 	const child = spawn(
-		'yarn',
+		process.execPath,
 		[
+			corepackCli,
+			'yarn',
 			'node',
 			'-e',
 			"process.stdout.write(require('node:fs').readFileSync(process.argv[1], 'utf8'))",
@@ -225,6 +235,7 @@ async function readPnpManifest(pnpPath: string, manifestPath: string): Promise<P
 		],
 		{
 			cwd: dirname(pnpPath),
+			detached: process.platform !== 'win32',
 			env: isolatedBootstrapEnvironment(),
 			stdio: ['ignore', 'pipe', 'pipe'],
 		}
@@ -237,19 +248,43 @@ async function readPnpManifest(pnpPath: string, manifestPath: string): Promise<P
 	child.stderr?.on('data', (chunk: Buffer) => {
 		errors += chunk;
 	});
-	await new Promise<void>((resolveExit, rejectExit) => {
-		child.once('error', rejectExit);
-		child.once('close', (exitCode) => {
-			if (exitCode === 0) resolveExit();
-			else {
-				rejectExit(
-					new Error(
-						`Could not read PnP manifest ${manifestPath} with yarn node (exit code ${exitCode}): ${errors}`
-					)
-				);
-			}
-		});
+	const closed = new Promise<void>((resolveClose) => {
+		child.once('close', () => resolveClose());
 	});
+	const completion = new Promise<number | null>((resolveExit, rejectExit) => {
+		child.once('error', rejectExit);
+		child.once('close', resolveExit);
+	});
+	let abortCompletion: Promise<void> | undefined;
+	let rejectAbort!: (reason: unknown) => void;
+	const aborted = new Promise<never>((_resolveAbort, reject) => {
+		rejectAbort = reject;
+	});
+	const abort = () => {
+		abortCompletion ??= (async () => {
+			await terminateChildProcess(child);
+			await closed;
+		})();
+		void abortCompletion.then(
+			() => rejectAbort(abortError(signal!)),
+			(error: unknown) => rejectAbort(error)
+		);
+	};
+	if (signal) signal.addEventListener('abort', abort, { once: true });
+	try {
+		const exitCode = await Promise.race([completion, aborted]);
+		if (signal?.aborted) {
+			await abortCompletion;
+			throw abortError(signal);
+		}
+		if (exitCode !== 0) {
+			throw new Error(
+				`Could not read PnP manifest ${manifestPath} with Corepack Yarn (exit code ${exitCode}): ${errors}`
+			);
+		}
+	} finally {
+		signal?.removeEventListener('abort', abort);
+	}
 	const manifest = JSON.parse(output) as PackageManifest;
 	pnpManifests.set(manifestPath, manifest);
 	return manifest;
@@ -278,7 +313,8 @@ async function packageManifestFromPnp(
 	pnpapi: PnpApi | undefined,
 	pnpPath: string | undefined,
 	packageName: string,
-	fromDirectory: string
+	fromDirectory: string,
+	signal?: AbortSignal
 ): Promise<string | undefined> {
 	if (!pnpapi || !pnpPath) return undefined;
 	let packageRoot: string | null;
@@ -295,7 +331,7 @@ async function packageManifestFromPnp(
 	} catch (error: unknown) {
 		if ((error as NodeJS.ErrnoException).code !== 'ENOTDIR') throw error;
 	}
-	const manifest = await readPnpManifest(pnpPath, manifestPath);
+	const manifest = await readPnpManifest(pnpPath, manifestPath, signal);
 	return manifest.name === packageName ? manifestPath : undefined;
 }
 async function packageManifestFromEntry(
@@ -316,11 +352,18 @@ async function packageManifestFromEntry(
 export async function resolveInstalledPackageManifest(
 	packageName: string,
 	fromDirectory: string,
-	pnpPath = nearestPnpPath(fromDirectory)
+	pnpPath = nearestPnpPath(fromDirectory),
+	signal?: AbortSignal
 ): Promise<string | undefined> {
 	const pnpapi = loadPnpApi(pnpPath);
 	const requireFrom = createRequire(join(fromDirectory, 'package.json'));
-	const pnpManifest = await packageManifestFromPnp(pnpapi, pnpPath, packageName, fromDirectory);
+	const pnpManifest = await packageManifestFromPnp(
+		pnpapi,
+		pnpPath,
+		packageName,
+		fromDirectory,
+		signal
+	);
 	if (pnpManifest) return pnpManifest;
 	try {
 		const manifestPath = await manifestAt(
@@ -346,8 +389,16 @@ function astroMajorFromVersion(version: string | undefined): number | undefined 
 }
 
 /** Find the locally installed Astro version and return its parsed major number. */
-export async function installedAstroMajor(projectRoot: string): Promise<number> {
-	const manifestPath = await resolveInstalledPackageManifest('astro', projectRoot);
+export async function installedAstroMajor(
+	projectRoot: string,
+	signal?: AbortSignal
+): Promise<number> {
+	const manifestPath = await resolveInstalledPackageManifest(
+		'astro',
+		projectRoot,
+		undefined,
+		signal
+	);
 	if (!manifestPath) {
 		throw new Error(`Could not resolve the installed Astro package from ${projectRoot}`);
 	}
@@ -374,7 +425,11 @@ function packageDependencies(manifest: PackageManifest, includeDevDependencies =
  * Walk manifests resolved from the project rather than assuming a node_modules layout.
  * This works with scoped names, pnpm's virtual store, and package export maps.
  */
-export async function collectInstalledDependencyNames(projectRoot: string): Promise<Set<string>> {
+export async function collectInstalledDependencyNames(
+	projectRoot: string,
+	signal?: AbortSignal
+): Promise<Set<string>> {
+	if (signal?.aborted) throw abortError(signal);
 	const rootManifest = await readManifest(join(projectRoot, 'package.json'));
 	const pnpPath = nearestPnpPath(projectRoot);
 	loadPnpApi(pnpPath);
@@ -390,7 +445,8 @@ export async function collectInstalledDependencyNames(projectRoot: string): Prom
 		const manifestPath = await resolveInstalledPackageManifest(
 			dependency.name,
 			dependency.from,
-			pnpPath
+			pnpPath,
+			signal
 		);
 		if (!manifestPath || visitedManifests.has(manifestPath)) continue;
 
@@ -1544,8 +1600,8 @@ export async function createRuntimeDependencies(
 	const absoluteProjectRoot = resolve(projectRoot);
 	const [managerInfo, major, installedDependencies] = await Promise.all([
 		detectPackageManagerInfo(absoluteProjectRoot),
-		installedAstroMajor(absoluteProjectRoot),
-		collectInstalledDependencyNames(absoluteProjectRoot),
+		installedAstroMajor(absoluteProjectRoot, signal),
+		collectInstalledDependencyNames(absoluteProjectRoot, signal),
 	]);
 	let session: Promise<RuntimeSession> | undefined;
 	return {

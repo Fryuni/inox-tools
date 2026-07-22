@@ -745,13 +745,20 @@ describe('packed workspace package activation', () => {
 					{ YARN_ENABLE_NETWORK: '0' }
 				)
 			).resolves.toBe('');
-			const astroManifest = await resolveInstalledPackageManifest('astro', yarnProject);
+			const previousPath = process.env.PATH;
+			process.env.PATH = join(yarnProject, 'no-bare-yarn');
+			try {
+				const astroManifest = await resolveInstalledPackageManifest('astro', yarnProject);
 
-			expect(astroManifest).toMatch(/\.zip[\\/]node_modules[\\/]astro[\\/]package\.json$/);
-			await expect(installedAstroMajor(yarnProject)).resolves.toBe(7);
-			await expect(collectInstalledDependencyNames(yarnProject)).resolves.toEqual(
-				new Set(['astro', '@astrojs/helper'])
-			);
+				expect(astroManifest).toMatch(/\.zip[\\/]node_modules[\\/]astro[\\/]package\.json$/);
+				await expect(installedAstroMajor(yarnProject)).resolves.toBe(7);
+				await expect(collectInstalledDependencyNames(yarnProject)).resolves.toEqual(
+					new Set(['astro', '@astrojs/helper'])
+				);
+			} finally {
+				if (previousPath === undefined) delete process.env.PATH;
+				else process.env.PATH = previousPath;
+			}
 		}
 	);
 });
@@ -931,6 +938,68 @@ describe('createRuntimeDependencies', () => {
 		await expect(dependencies.createSession()).rejects.toThrow(
 			'every-astro requires a npm lockfile to restore the exact dependency tree'
 		);
+	});
+
+	test('aborts and reaps the Corepack Yarn PnP manifest reader process tree', async () => {
+		const project = await createProject({
+			packageManager: 'yarn@4.17.1',
+			dependencies: { astro: '7.0.0' },
+		});
+		const pidDirectory = join(project, 'reader-pids');
+		const packageRoot = join(project, '.yarn/cache/astro.zip/node_modules/astro');
+		const previousPidDirectory = process.env.EVERY_ASTRO_PNP_READER_PIDS;
+		await mkdir(pidDirectory, { recursive: true });
+		await mkdir(join(project, '.yarn/cache'), { recursive: true });
+		await writeFile(join(project, '.yarn/cache/astro.zip'), '');
+		await writeFile(
+			join(project, '.pnp.cjs'),
+			`exports.resolveToUnqualified = (request) => request === 'astro' ? ${JSON.stringify(packageRoot)} : null;\n`
+		);
+		await writeFile(
+			join(project, '.yarnrc.yml'),
+			'yarnPath: .yarn/releases/hang.cjs\nnodeLinker: pnp\n'
+		);
+		await mkdir(join(project, '.yarn/releases'), { recursive: true });
+		// The fixture keeps the real Corepack/Yarn reader and its descendant alive until abort.
+		await writeFile(
+			join(project, '.yarn/releases/hang.cjs'),
+			[
+				"const { spawn } = require('node:child_process');",
+				"const { mkdirSync, writeFileSync } = require('node:fs');",
+				"const { join } = require('node:path');",
+				'const directory = process.env.EVERY_ASTRO_PNP_READER_PIDS;',
+				"if (!directory) throw new Error('Missing PID directory');",
+				'mkdirSync(directory, { recursive: true });',
+				"const descendant = spawn(process.execPath, ['-e', \"const { writeFileSync } = require('node:fs'); const { join } = require('node:path'); writeFileSync(join(process.env.EVERY_ASTRO_PNP_READER_PIDS, `descendant-${process.pid}`), ''); setInterval(() => {}, 1_000);\"], { stdio: 'ignore' });",
+				'descendant.unref();',
+				"writeFileSync(join(directory, `reader-${process.pid}`), '');",
+				'setInterval(() => {}, 1_000);',
+			].join('\n')
+		);
+		process.env.EVERY_ASTRO_PNP_READER_PIDS = pidDirectory;
+		const controller = new AbortController();
+		try {
+			const dependencies = createRuntimeDependencies(project, controller.signal);
+			// Filesystem readiness comes from external processes, so Vitest fake timers cannot drive it.
+			let pids: number[] = [];
+			for (let attempt = 0; attempt < 100; attempt += 1) {
+				pids = (await readdir(pidDirectory))
+					.map((entry) => Number(entry.slice(entry.lastIndexOf('-') + 1)))
+					.filter(Number.isSafeInteger);
+				if (pids.length >= 2) break;
+				await delay(10);
+			}
+			expect(pids.length).toBeGreaterThanOrEqual(2);
+
+			controller.abort('cancel PnP reader');
+			await expect(dependencies).rejects.toMatchObject({ name: 'AbortError' });
+			for (const pid of pids) {
+				expect(() => process.kill(pid, 0)).toThrow(/ESRCH/);
+			}
+		} finally {
+			if (previousPidDirectory === undefined) delete process.env.EVERY_ASTRO_PNP_READER_PIDS;
+			else process.env.EVERY_ASTRO_PNP_READER_PIDS = previousPidDirectory;
+		}
 	});
 });
 

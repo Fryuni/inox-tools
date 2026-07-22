@@ -390,10 +390,9 @@ test('rejects a newly aborted caller even after its PnP manifest was cached', as
 	).resolves.toMatch(/astro\.zip[\\/]node_modules[\\/]astro[\\/]package\.json$/);
 
 	const controller = new AbortController();
+	const cached = resolveInstalledPackageManifest('astro', project, undefined, controller.signal);
 	controller.abort('cached caller cancelled');
-	await expect(
-		resolveInstalledPackageManifest('astro', project, undefined, controller.signal)
-	).rejects.toMatchObject({ name: 'AbortError' });
+	await expect(cached).rejects.toMatchObject({ name: 'AbortError' });
 });
 
 test('does not attach an aborting handoff caller to a draining PnP generation', async () => {
@@ -988,6 +987,54 @@ describe('terminateChildProcess', () => {
 		await expect(execution).rejects.toBe(terminationError);
 		await expect(session.close()).rejects.toThrow('every-astro cleanup failed');
 		expect(terminate).toHaveBeenCalledTimes(2);
+	});
+
+	test('bootstrap teardown retries its active clone without restoring consumer dependencies', async () => {
+		const project = await createProject();
+		const temporary = await temporaryRoot();
+		const sentinel = join(project, 'node_modules', 'sentinel');
+		await mkdir(dirname(sentinel), { recursive: true });
+		await writeFile(sentinel, 'unchanged');
+		const controller = new AbortController();
+		const child = new EventEmitter() as ChildProcess;
+		const terminationError = new Error('initial clone stop failed');
+		const terminate = vi
+			.fn<(child: ChildProcess | undefined) => Promise<void>>()
+			.mockRejectedValueOnce(terminationError)
+			.mockResolvedValueOnce(undefined);
+		const commandSpawner = vi.fn(() => child);
+		const session = new RuntimeSession(
+			project,
+			project,
+			join(temporary, 'astro'),
+			temporary,
+			'',
+			'npm',
+			false,
+			{ exists: true, content: Buffer.from('{}\n') },
+			{ exists: true, content: Buffer.from('{}\n') },
+			join(project, 'package-lock.json'),
+			{ exists: true, content: Buffer.from('{}\n') },
+			[],
+			new Set(),
+			'',
+			controller.signal,
+			terminate,
+			commandSpawner
+		);
+		const clone = session.execute(['git', 'clone', 'fixture'], temporary);
+		controller.abort();
+
+		await expect(clone).rejects.toBe(terminationError);
+		await expect(session.closeBootstrap()).resolves.toBeUndefined();
+		expect(terminate).toHaveBeenCalledTimes(2);
+		expect(commandSpawner).toHaveBeenCalledExactlyOnceWith('git', ['clone', 'fixture'], {
+			cwd: temporary,
+			detached: process.platform !== 'win32',
+			env: undefined,
+			stdio: 'inherit',
+		});
+		await expect(readFile(sentinel, 'utf8')).resolves.toBe('unchanged');
 	});
 	test('keeps a development-server early-exit error ahead of its stop failure', async () => {
 		const project = await createProject();

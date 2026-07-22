@@ -483,7 +483,11 @@ async function readPnpManifest(
 ): Promise<PackageManifest> {
 	if (signal?.aborted) throw abortError(signal);
 	const cached = pnpManifests.get(manifestPath);
-	if (cached) return cached;
+	if (cached) {
+		await Promise.resolve();
+		if (signal?.aborted) throw abortError(signal);
+		return cached;
+	}
 
 	let read = pnpManifestReads.get(manifestPath);
 	if (read?.controller.signal.aborted) {
@@ -627,7 +631,11 @@ export async function resolveInstalledPackageManifest(
 		pnpReaderTemporaryRootCreator,
 		pnpReaderTemporaryRootRemover
 	);
-	if (pnpManifest) return pnpManifest;
+	if (pnpManifest) {
+		await Promise.resolve();
+		if (signal?.aborted) throw abortError(signal);
+		return pnpManifest;
+	}
 	try {
 		const manifestPath = await manifestAt(
 			requireFrom.resolve(`${packageName}/package.json`),
@@ -1313,6 +1321,11 @@ export class RuntimeSession implements BisectSession {
 		await this.terminate(child);
 	}
 
+	/** Stop only bootstrap-owned work after session construction fails. */
+	public async closeBootstrap(): Promise<void> {
+		await this.stopChild();
+	}
+
 	private async launchCommand(
 		file: string,
 		args: string[],
@@ -1907,7 +1920,7 @@ async function createRuntimeSession(
 	} catch (error) {
 		const cleanupErrors: unknown[] = [];
 		try {
-			await bootstrap?.close();
+			await bootstrap?.closeBootstrap();
 		} catch (cleanupError) {
 			cleanupErrors.push(cleanupError);
 		}

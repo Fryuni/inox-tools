@@ -24,8 +24,8 @@ function repoRootCalls() {
 	return childProcess.spawnSync.mock.calls.filter(([, args]) => args[0] === 'rev-parse');
 }
 
-function gitCommit(hash: string, seconds: number, entries: string[]) {
-	return `\0t:${hash} ${seconds} Test Author <test@example.com>|\0\n${entries.join('\0')}\0`;
+function gitCommit(hash: string, seconds: number, entries: string[], parents: string[] = []) {
+	return `\0t:${hash}\0p:${parents.join(' ')}\0d:${seconds} Test Author <test@example.com>|\0\n${entries.join('\0')}\0`;
 }
 
 function mockHistory(log: string, currentPaths: string) {
@@ -126,9 +126,19 @@ describe('git commit history rename tracking', () => {
 	it('uses each historical path across a rename chain', async () => {
 		mockHistory(
 			[
-				gitCommit('newest', 30, ['M', 'content/final.md']),
-				gitCommit('rename-final', 20, ['R100', 'content/middle.md', 'content/final.md']),
-				gitCommit('rename-middle', 10, ['R100', 'content/original.md', 'content/middle.md']),
+				gitCommit('newest', 30, ['M', 'content/final.md'], ['rename-final']),
+				gitCommit(
+					'rename-final',
+					20,
+					['R100', 'content/middle.md', 'content/final.md'],
+					['rename-middle']
+				),
+				gitCommit(
+					'rename-middle',
+					10,
+					['R100', 'content/original.md', 'content/middle.md'],
+					['initial']
+				),
 				gitCommit('initial', 5, ['A', 'content/original.md']),
 			].join(''),
 			'content/final.md\0'
@@ -157,10 +167,20 @@ describe('git commit history rename tracking', () => {
 	it('stops rename ancestry when a reused path is added as a new lifetime', async () => {
 		mockHistory(
 			[
-				gitCommit('rename-final', 60, ['R100', 'content/reused.md', 'content/final.md']),
-				gitCommit('reused-add', 50, ['A', 'content/reused.md']),
-				gitCommit('reused-delete', 40, ['D', 'content/reused.md']),
-				gitCommit('old-rename', 30, ['R100', 'content/original.md', 'content/reused.md']),
+				gitCommit(
+					'rename-final',
+					60,
+					['R100', 'content/reused.md', 'content/final.md'],
+					['reused-add']
+				),
+				gitCommit('reused-add', 50, ['A', 'content/reused.md'], ['reused-delete']),
+				gitCommit('reused-delete', 40, ['D', 'content/reused.md'], ['old-rename']),
+				gitCommit(
+					'old-rename',
+					30,
+					['R100', 'content/original.md', 'content/reused.md'],
+					['old-add']
+				),
 				gitCommit('old-add', 20, ['A', 'content/original.md']),
 			].join(''),
 			'content/final.md\0'
@@ -178,8 +198,13 @@ describe('git commit history rename tracking', () => {
 	it('treats copies as a new path lifetime instead of rename ancestry', async () => {
 		mockHistory(
 			[
-				gitCommit('copy', 30, ['C100', 'content/original.md', 'content/copied.md']),
-				gitCommit('original-change', 20, ['M', 'content/original.md']),
+				gitCommit(
+					'copy',
+					30,
+					['C100', 'content/original.md', 'content/copied.md'],
+					['original-change']
+				),
+				gitCommit('original-change', 20, ['M', 'content/original.md'], ['original-add']),
 				gitCommit('original-add', 10, ['A', 'content/original.md']),
 			].join(''),
 			'content/copied.md\0'

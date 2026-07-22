@@ -110,15 +110,26 @@ type GitLogEntry =
 
 type GitLogCommit = {
 	hash: string;
+	parents: string[];
 	date: number;
 	author: GitAuthor;
 	coAuthors: GitAuthor[];
-	entries: GitLogEntry[];
+	parentEntries: GitLogEntry[][];
 };
 
 type TrackedPath = {
 	file: string;
 	info: RawGitTrackingInfo | undefined;
+};
+
+type TrackedPaths = ReadonlySet<TrackedPath>;
+
+type PathState = {
+	size: number;
+	paths?: ReadonlyMap<string, TrackedPaths>;
+	parent?: PathState;
+	changes?: ReadonlyMap<string, TrackedPaths | undefined>;
+	materialized?: ReadonlyMap<string, TrackedPaths>;
 };
 
 function getCurrentRepoPaths(repoRoot: string): Map<string, TrackedPath> {
@@ -147,21 +158,26 @@ function splitNulFields(output: string | Buffer): string[] {
 	return (typeof output === 'string' ? output : output.toString('utf-8')).split('\0');
 }
 
-function parseCommitHeader(header: string): Omit<GitLogCommit, 'entries'> | undefined {
-	if (!header.startsWith('t:')) return undefined;
+function parseCommitHeader(
+	hashHeader: string,
+	parentsHeader: string,
+	metadataHeader: string
+): Omit<GitLogCommit, 'parentEntries'> | undefined {
+	if (
+		!hashHeader.startsWith('t:') ||
+		!parentsHeader.startsWith('p:') ||
+		!metadataHeader.startsWith('d:')
+	) {
+		return undefined;
+	}
 
-	// t:<hash> <seconds since epoch> <author name> <author email>|<co-authors>
-	const firstSpace = header.indexOf(' ');
+	const metadata = metadataHeader.slice(2);
+	const firstSpace = metadata.indexOf(' ');
 	if (firstSpace === -1) return undefined;
-	const hash = header.slice(2, firstSpace);
+	const date = Number.parseInt(metadata.slice(0, firstSpace)) * 1000;
 
-	const rest = header.slice(firstSpace + 1);
-	const secondSpace = rest.indexOf(' ');
-	if (secondSpace === -1) return undefined;
-	const date = Number.parseInt(rest.slice(0, secondSpace)) * 1000;
-
-	const authors = rest
-		.slice(secondSpace + 1)
+	const authors = metadata
+		.slice(firstSpace + 1)
 		.replace(/\|$/, '')
 		.split('|')
 		.map((author) => {
@@ -173,7 +189,11 @@ function parseCommitHeader(header: string): Omit<GitLogCommit, 'entries'> | unde
 		});
 
 	return {
-		hash,
+		hash: hashHeader.slice(2),
+		parents: parentsHeader
+			.slice(2)
+			.split(' ')
+			.filter((parent) => parent !== ''),
 		date,
 		author: authors[0],
 		coAuthors: authors.slice(1),
@@ -189,12 +209,12 @@ function parseGitLog(output: string | Buffer): GitLogCommit[] {
 		while (fields[index] === '') index += 1;
 		if (index >= fields.length) break;
 
-		const header = parseCommitHeader(fields[index]);
+		const header = parseCommitHeader(fields[index], fields[index + 1], fields[index + 2]);
 		if (header === undefined) {
 			debug('Ignoring malformed git history entry:', fields[index]);
 			break;
 		}
-		index += 1;
+		index += 3;
 
 		const entries: GitLogEntry[] = [];
 		while (index < fields.length) {
@@ -226,7 +246,16 @@ function parseGitLog(output: string | Buffer): GitLogCommit[] {
 			else entries.push({ kind: 'change', path });
 		}
 
-		commits.push({ ...header, entries });
+		const previous = commits.at(-1);
+		if (previous !== undefined && previous.hash === header.hash) {
+			if (previous.parents.join(' ') !== header.parents.join(' ')) {
+				debug('Ignoring git history entry with inconsistent parents:', header.hash);
+				break;
+			}
+			previous.parentEntries.push(entries);
+		} else {
+			commits.push({ ...header, parentEntries: [entries] });
+		}
 	}
 
 	return commits;
@@ -263,37 +292,179 @@ function addCommit(
 	}
 }
 
+function createPathState(currentPaths: Map<string, TrackedPath>): PathState {
+	const paths = new Map<string, TrackedPaths>();
+	for (const [path, trackedPath] of currentPaths) {
+		paths.set(path, new Set([trackedPath]));
+	}
+	return { size: paths.size, paths };
+}
+
+function getTrackedPaths(state: PathState, path: string): TrackedPaths | undefined {
+	for (
+		let current: PathState | undefined = state;
+		current !== undefined;
+		current = current.parent
+	) {
+		if (current.changes?.has(path)) return current.changes.get(path);
+		if (current.paths !== undefined) return current.paths.get(path);
+	}
+	return undefined;
+}
+
+function unionTrackedPaths(first: TrackedPaths, second: TrackedPaths): TrackedPaths {
+	if (first === second) return first;
+	const paths = new Set(first);
+	for (const path of second) paths.add(path);
+	return paths;
+}
+
+function rewindPaths(paths: PathState, entries: GitLogEntry[]): PathState {
+	let size = paths.size;
+	let changes: Map<string, TrackedPaths | undefined> | undefined;
+	const get = (path: string) => {
+		if (changes?.has(path)) return changes.get(path);
+		return getTrackedPaths(paths, path);
+	};
+	const set = (path: string, trackedPaths: TrackedPaths | undefined) => {
+		const previous = get(path);
+		if (previous === trackedPaths) return;
+		if (previous === undefined && trackedPaths !== undefined) size += 1;
+		if (previous !== undefined && trackedPaths === undefined) size -= 1;
+		changes ??= new Map();
+		changes.set(path, trackedPaths);
+	};
+
+	for (const entry of entries) {
+		if (entry.kind === 'add' || entry.kind === 'copy') {
+			if (get(entry.path) !== undefined) set(entry.path, undefined);
+			continue;
+		}
+		if (entry.kind !== 'rename') continue;
+
+		const trackedPaths = get(entry.to);
+		if (trackedPaths === undefined) continue;
+		set(entry.to, undefined);
+		const previous = get(entry.from);
+		set(
+			entry.from,
+			previous === undefined ? trackedPaths : unionTrackedPaths(previous, trackedPaths)
+		);
+	}
+
+	return changes === undefined ? paths : { size, parent: paths, changes };
+}
+
+function materializePaths(state: PathState): ReadonlyMap<string, TrackedPaths> {
+	if (state.paths !== undefined) return state.paths;
+	if (state.materialized !== undefined) return state.materialized;
+
+	const paths = new Map(materializePaths(state.parent!));
+	for (const [path, trackedPaths] of state.changes!) {
+		if (trackedPaths === undefined) paths.delete(path);
+		else paths.set(path, trackedPaths);
+	}
+	state.materialized = paths;
+	return paths;
+}
+
+function mergePathStates(states: PathState[]): PathState | undefined {
+	const uniqueStates = Array.from(new Set(states.filter((state) => state.size > 0)));
+	if (uniqueStates.length === 0) return undefined;
+	if (uniqueStates.length === 1) return uniqueStates[0];
+
+	const paths = new Map<string, TrackedPaths>();
+	for (const state of uniqueStates) {
+		for (const [path, trackedPaths] of materializePaths(state)) {
+			const previous = paths.get(path);
+			paths.set(
+				path,
+				previous === undefined ? trackedPaths : unionTrackedPaths(previous, trackedPaths)
+			);
+		}
+	}
+	return { size: paths.size, paths };
+}
+
+function associateMergeParentEntries(commits: GitLogCommit[], repoRoot: string) {
+	for (const commit of commits) {
+		if (commit.parents.length < 2) continue;
+
+		const parentEntries: GitLogEntry[][] = [];
+		let variant = 0;
+		for (const parent of commit.parents) {
+			const result = spawnSync('git', ['diff', '--quiet', '--no-ext-diff', parent, commit.hash], {
+				cwd: repoRoot,
+			});
+			if (result.error || (result.status !== 0 && result.status !== 1)) {
+				debug('Failed to associate git merge diff with parent:', commit.hash, parent, result.error);
+				parentEntries.length = 0;
+				break;
+			}
+			if (result.status === 0) {
+				parentEntries.push([]);
+				continue;
+			}
+
+			const entries = commit.parentEntries[variant++];
+			if (entries === undefined) {
+				debug('Missing git merge diff for parent:', commit.hash, parent);
+				parentEntries.length = 0;
+				break;
+			}
+			parentEntries.push(entries);
+		}
+
+		if (parentEntries.length !== commit.parents.length) continue;
+		const hasEmptyPlaceholder =
+			variant === 0 && commit.parentEntries.length === 1 && commit.parentEntries[0].length === 0;
+		if (variant !== commit.parentEntries.length && !hasEmptyPlaceholder) {
+			debug('Unexpected git merge diff count:', commit.hash);
+			continue;
+		}
+		commit.parentEntries = parentEntries;
+	}
+}
+
 function collectHistory(
 	commits: GitLogCommit[],
 	currentPaths: Map<string, TrackedPath>
 ): Map<string, RawGitTrackingInfo> {
-	let paths = currentPaths;
+	const pathsByCommit = new Map<string, PathState[]>();
+	const initialPaths = createPathState(currentPaths);
+	if (commits[0] !== undefined && initialPaths.size > 0) {
+		pathsByCommit.set(commits[0].hash, [initialPaths]);
+	}
+
 	const fileInfos = new Map<string, RawGitTrackingInfo>();
-
 	for (const commit of commits) {
+		const paths = mergePathStates(pathsByCommit.get(commit.hash) ?? []);
+		if (paths === undefined) continue;
+
 		const recorded = new Set<TrackedPath>();
-		for (const entry of commit.entries) {
-			const repoPath = entry.kind === 'rename' ? entry.to : entry.path;
-			const trackedPath = paths.get(repoPath);
-			if (trackedPath !== undefined && !recorded.has(trackedPath)) {
-				addCommit(trackedPath, commit, repoPath, fileInfos);
-				recorded.add(trackedPath);
+		for (const entries of commit.parentEntries) {
+			for (const entry of entries) {
+				const repoPath = entry.kind === 'rename' ? entry.to : entry.path;
+				for (const trackedPath of getTrackedPaths(paths, repoPath) ?? []) {
+					if (recorded.has(trackedPath)) continue;
+					addCommit(trackedPath, commit, repoPath, fileInfos);
+					recorded.add(trackedPath);
+				}
 			}
 		}
 
-		const before = new Map(paths);
-		for (const entry of commit.entries) {
-			if (entry.kind === 'add' || entry.kind === 'copy' || entry.kind === 'delete') {
-				before.delete(entry.path);
+		for (const [index, parent] of commit.parents.entries()) {
+			const entries = commit.parentEntries[index];
+			if (entries === undefined) {
+				debug('Missing git merge diff for parent:', commit.hash, parent);
+				continue;
 			}
+			const parentPaths = rewindPaths(paths, entries);
+			if (parentPaths.size === 0) continue;
+			const states = pathsByCommit.get(parent);
+			if (states === undefined) pathsByCommit.set(parent, [parentPaths]);
+			else states.push(parentPaths);
 		}
-		for (const entry of commit.entries) {
-			if (entry.kind !== 'rename') continue;
-			const trackedPath = paths.get(entry.to);
-			before.delete(entry.to);
-			if (trackedPath !== undefined) before.set(entry.from, trackedPath);
-		}
-		paths = before;
 	}
 
 	return fileInfos;
@@ -303,17 +474,19 @@ function collectUnfollowedHistory(commits: GitLogCommit[]): Map<string, RawGitTr
 	const fileInfos = new Map<string, RawGitTrackingInfo>();
 
 	for (const commit of commits) {
-		for (const entry of commit.entries) {
-			const repoPath = entry.kind === 'rename' ? entry.to : entry.path;
-			let trackedPath = paths.get(repoPath);
-			if (trackedPath === undefined) {
-				trackedPath = {
-					file: relative(projectRoot, resolve(getRepoRoot(), repoPath)),
-					info: undefined,
-				};
-				paths.set(repoPath, trackedPath);
+		for (const entries of commit.parentEntries) {
+			for (const entry of entries) {
+				const repoPath = entry.kind === 'rename' ? entry.to : entry.path;
+				let trackedPath = paths.get(repoPath);
+				if (trackedPath === undefined) {
+					trackedPath = {
+						file: relative(projectRoot, resolve(getRepoRoot(), repoPath)),
+						info: undefined,
+					};
+					paths.set(repoPath, trackedPath);
+				}
+				addCommit(trackedPath, commit, repoPath, fileInfos);
 			}
-			addCommit(trackedPath, commit, repoPath, fileInfos);
 		}
 	}
 
@@ -328,12 +501,12 @@ export async function collectGitInfoForContentFiles(): Promise<[string, RawGitTr
 
 	const args = [
 		'log',
-		'--format=%x00t:%H %ct %an <%ae>|%(trailers:key=co-authored-by,valueonly,separator=|)%x00',
+		'--format=%x00t:%H%x00p:%P%x00d:%ct %an <%ae>|%(trailers:key=co-authored-by,valueonly,separator=|)%x00',
 		'--name-status',
 		'-z',
 	];
 	if (collectCommitHistory) {
-		args.push('-l0', '--find-renames');
+		args.push('--topo-order', '--diff-merges=separate', '--root', '-l0', '--find-renames');
 	} else {
 		args.push('--', projectRoot);
 	}
@@ -351,6 +524,7 @@ export async function collectGitInfoForContentFiles(): Promise<[string, RawGitTr
 	}
 
 	const commits = parseGitLog(gitLog.stdout);
+	if (collectCommitHistory) associateMergeParentEntries(commits, repoRoot);
 	const fileInfos = collectCommitHistory
 		? collectHistory(commits, getCurrentRepoPaths(repoRoot))
 		: collectUnfollowedHistory(commits);

@@ -105,14 +105,6 @@ export const gitBuildPlugin = (state: IntegrationState): Plugin => {
 				const trackedFiles = await liveGit.collectGitInfoForContentFiles();
 				debug('Git tracked file dates:', trackedFiles);
 
-				// Pre-fetch commit content for immediate build serialization; this mutation is not reused.
-				for (const [, fileInfo] of trackedFiles) {
-					for (const commit of fileInfo.commits) {
-						(commit as any).content = liveGit.getFileContentAtCommit(commit.hash, commit.repoPath);
-						delete (commit as any).repoPath;
-					}
-				}
-
 				return `const trackedFiles = ${devalue.stringify(new Map(trackedFiles))};
 export { trackedFiles as default };`;
 			}
@@ -120,6 +112,15 @@ export { trackedFiles as default };`;
 	};
 };
 
+type BuildCommitInfo = {
+	hash: string;
+	repoPath: string;
+	content?: string;
+};
+
+type BuildGitTrackingInfo = {
+	commits: BuildCommitInfo[];
+};
 async function cleanupState(contentData: string, gitState: string): Promise<void> {
 	if (!existsSync(contentData) || !existsSync(gitState)) return;
 
@@ -134,7 +135,7 @@ async function cleanupState(contentData: string, gitState: string): Promise<void
 
 	// Unflatten the map
 	const contentMap: Map<string, Map<string, unknown>> = devalue.unflatten(contentValue);
-	const gitInformation: Map<string, unknown> = devalue.unflatten(gitValue);
+	const gitInformation: Map<string, BuildGitTrackingInfo> = devalue.unflatten(gitValue);
 
 	const usedFiles = new Set();
 
@@ -152,6 +153,14 @@ async function cleanupState(contentData: string, gitState: string): Promise<void
 		Array.from(gitInformation.entries()).filter(([path]) => usedFiles.has(path))
 	);
 
+	// Content is needed only by the build facade and must be materialized before
+	// serializing the retained entries for its lazy getters.
+	for (const fileInfo of cleanedMap.values()) {
+		for (const commit of fileInfo.commits) {
+			commit.content = liveGit.getFileContentAtCommit(commit.hash, commit.repoPath);
+			delete commit.repoPath;
+		}
+	}
 	// Build the source code with the new map flattened
 	const newContent = [
 		`const trackedFiles = ${devalue.stringify(cleanedMap)}`,

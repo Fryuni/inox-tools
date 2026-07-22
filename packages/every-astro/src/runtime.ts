@@ -1849,9 +1849,10 @@ async function createRuntimeSession(
 	}
 	const temporaryRoot = await mkdtemp(join(tmpdir(), 'every-astro-'));
 	const repositoryRoot = join(temporaryRoot, 'astro');
+	let bootstrap: RuntimeSession | undefined;
 	try {
 		const isolatedCorepackCli = await copyCorepackCli(temporaryRoot);
-		const bootstrap = new RuntimeSession(
+		bootstrap = new RuntimeSession(
 			projectRoot,
 			managerRoot,
 			repositoryRoot,
@@ -1904,12 +1905,28 @@ async function createRuntimeSession(
 		);
 		return session;
 	} catch (error) {
+		const cleanupErrors: unknown[] = [];
+		try {
+			await bootstrap?.close();
+		} catch (cleanupError) {
+			cleanupErrors.push(cleanupError);
+		}
 		try {
 			await rm(temporaryRoot, { recursive: true, force: true });
 		} catch (cleanupError) {
+			cleanupErrors.push(cleanupError);
+		}
+		if (cleanupErrors.length > 0) {
+			const cleanupError =
+				cleanupErrors.length === 1
+					? cleanupErrors[0]!
+					: new AggregateError(
+							cleanupErrors,
+							'Could not fully clean up the every-astro bootstrap session'
+						);
 			throw new AggregateError(
 				[error, cleanupError],
-				'Could not create every-astro runtime session and remove its temporary directory',
+				'Could not create every-astro runtime session and clean up its bootstrap session',
 				{ cause: error }
 			);
 		}

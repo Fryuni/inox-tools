@@ -43,7 +43,7 @@ reliable result.
 The CLI only searches within the installed Astro major. It reports one of these outcomes:
 
 - The bug is fixed in the latest revision in the installed major.
-- The bug is already present in `v<major>.0.0`; its introduction is outside the selected major range.
+- The bug is already present in `v<major>.0.0`; its introduction is at or before the first-release boundary, and earlier history is not bisected.
 - The exact first bad Astro commit.
 
 Every Astro uses the package manager declared in the nearest `package.json`, or detects it from the

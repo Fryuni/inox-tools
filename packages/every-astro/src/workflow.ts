@@ -49,7 +49,7 @@ export async function runEveryAstro(deps: EveryAstroDependencies): Promise<void>
 		} else {
 			await session.prepareRevision(firstReleaseRevision);
 			if (await session.runDevServerAndAsk(firstReleaseLabel)) {
-				result = `The bug is already present in Astro v${astroMajor}.0.0; its introduction is outside the selected major range.`;
+				result = `The bug is already present in Astro v${astroMajor}.0.0; its introduction is at or before the first-release boundary, and earlier history is not bisected.`;
 			} else {
 				await session.startBisect(firstReleaseRevision, latestRevision);
 

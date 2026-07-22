@@ -48,9 +48,9 @@ Wait for the development server to be ready, reproduce the bug, and answer `y` o
 test every time: inconsistent answers can lead `git bisect` to the wrong commit.
 
 Every Astro reports early when the bug is already fixed in the latest revision in the installed major or
-already present in the inclusive first release. In the latter case, this only establishes that the
-introduction is outside the selected major range. Otherwise, it reports the exact first bad commit. It
-does not bisect across Astro major versions.
+already present in the inclusive first release. In the latter case, its introduction is at or before the
+first-release boundary; earlier history is not bisected. Otherwise, it reports the exact first bad commit.
+It does not bisect across Astro major versions.
 
 :::note[Allow time and disk space]
 Every tested revision requires an install and a full Astro monorepo build. The complete repository is
@@ -87,8 +87,8 @@ reporting a successful result. Inspect those errors and your dependency state be
 The CLI ends with one of three messages:
 
 - **Already fixed:** the bug is absent from the latest revision in the installed major.
-- **Outside the selected range:** the bug is already present in `v<major>.0.0`; this only establishes
-  that its introduction is outside the selected major range.
+- **At or before the first-release boundary:** the bug is already present in `v<major>.0.0`; earlier
+  history is not bisected.
 - **First bad commit:** the reported 40-character commit is the first Astro revision where your answers
   indicated that the bug is present.
 

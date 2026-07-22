@@ -59,7 +59,7 @@ describe('runEveryAstro', () => {
 		]);
 	});
 
-	test('stops when the inclusive first release is bad and reports that the introduction is outside the selected range', async () => {
+	test('stops when the inclusive first release is bad and reports the first-release boundary', async () => {
 		const session = new FakeSession();
 		session.runDevServerAndAsk.mockResolvedValue(true);
 		const { deps, logs } = dependencies(session, 7);
@@ -73,12 +73,12 @@ describe('runEveryAstro', () => {
 		expect(session.startBisect).not.toHaveBeenCalled();
 		expect(session.markCurrent).not.toHaveBeenCalled();
 		expect(logs).toEqual([
-			'The bug is already present in Astro v7.0.0; its introduction is outside the selected major range.',
+			'The bug is already present in Astro v7.0.0; its introduction is at or before the first-release boundary, and earlier history is not bisected.',
 		]);
 		expect(session.close).toHaveBeenCalledExactlyOnceWith();
 		expect(session.events).toEqual([
 			'close',
-			'log:The bug is already present in Astro v7.0.0; its introduction is outside the selected major range.',
+			'log:The bug is already present in Astro v7.0.0; its introduction is at or before the first-release boundary, and earlier history is not bisected.',
 		]);
 	});
 

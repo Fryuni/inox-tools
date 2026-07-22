@@ -24,8 +24,15 @@ function repoRootCalls() {
 	return childProcess.spawnSync.mock.calls.filter(([, args]) => args[0] === 'rev-parse');
 }
 
-function gitCommit(hash: string, seconds: number, entries: string[], parents: string[] = []) {
-	return `\0t:${hash}\0p:${parents.join(' ')}\0d:${seconds} Test Author <test@example.com>|\0\n${entries.join('\0')}\0`;
+function gitCommit(
+	hash: string,
+	seconds: number,
+	entries: string[],
+	parents: string[] = [],
+	author = { name: 'Test Author', email: 'test@example.com' },
+	coAuthors: string[] = []
+) {
+	return `\0t:${hash}\0p:${parents.join(' ')}\0d:${seconds}\0a:${author.name}\0e:${author.email}\0c:${coAuthors.join('\0c:')}\0\n${entries.join('\0')}\0`;
 }
 
 function mockHistory(log: string, currentPaths: string) {
@@ -45,6 +52,7 @@ function mockHistory(log: string, currentPaths: string) {
 
 afterEach(() => {
 	childProcess.spawnSync.mockReset();
+	modularStation.hooks.run.mockReset().mockResolvedValue(undefined);
 	setProjectRoot(process.cwd());
 	setCollectCommitHistory(true);
 });
@@ -162,6 +170,68 @@ describe('git commit history rename tracking', () => {
 			latest: 30000,
 			authors: [{ name: 'Test Author', email: 'test@example.com' }],
 		});
+	});
+
+	it('keeps identity delimiters inside author and co-author names', async () => {
+		mockHistory(
+			gitCommit(
+				'only',
+				10,
+				['M', 'content/entry.md'],
+				[],
+				{ name: 'Pipe | Author', email: 'author@example.com' },
+				['Co | Author <coauthor@example.com>']
+			),
+			'content/entry.md\0'
+		);
+		setProjectRoot('/repo/content');
+
+		const [[, entry]] = await collectGitInfoForContentFiles();
+
+		expect(entry.authors).toEqual([{ name: 'Pipe | Author', email: 'author@example.com' }]);
+		expect(entry.coAuthors).toEqual([{ name: 'Co | Author', email: 'coauthor@example.com' }]);
+	});
+
+	it('persists resolved-hook metadata and commit replacements', async () => {
+		mockHistory(
+			[
+				gitCommit('newest', 20, ['M', 'content/entry.md'], ['initial']),
+				gitCommit('initial', 10, ['A', 'content/entry.md']),
+			].join(''),
+			'content/entry.md\0'
+		);
+		modularStation.hooks.run.mockImplementation(async (hook, createArgs) => {
+			if (hook !== '@it/content:git:resolved') return;
+			const [{ fileInfo }] = createArgs({});
+			const commit = fileInfo.commits[1];
+			fileInfo.authors = [{ name: 'Hook Author', email: 'hook@example.com' }];
+			fileInfo.coAuthors = [];
+			fileInfo.commits = [
+				{
+					hash: commit.hash,
+					date: new Date(15_000),
+					author: fileInfo.authors[0],
+					coAuthors: [],
+					content: 'hook content',
+				},
+			];
+		});
+		setProjectRoot('/repo/content');
+
+		const [[, entry]] = await collectGitInfoForContentFiles();
+
+		expect(entry.authors).toEqual([{ name: 'Hook Author', email: 'hook@example.com' }]);
+		expect(entry.coAuthors).toEqual([]);
+		expect(entry.commits).toEqual([
+			{
+				hash: 'initial',
+				date: 15_000,
+				author: { name: 'Hook Author', email: 'hook@example.com' },
+				coAuthors: [],
+				content: 'hook content',
+				repoPath: 'content/entry.md',
+			},
+		]);
 	});
 
 	it('stops rename ancestry when a reused path is added as a new lifetime', async () => {

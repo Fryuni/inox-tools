@@ -64,6 +64,8 @@ export const gitBuildPlugin = (state: IntegrationState): Plugin => {
 	const {
 		contentPaths: { projectRoot },
 	} = state;
+	const buildContentLoaderKey = `@inox-tools/content-utils:build-content:${projectRoot}`;
+	const buildContentLoaderSymbol = Symbol.for(buildContentLoaderKey);
 
 	return {
 		name: '@inox-tools/content-utils/gitTimes',
@@ -90,7 +92,13 @@ export const gitBuildPlugin = (state: IntegrationState): Plugin => {
 			}
 
 			if (contentDataEntrypoint && gitStateEntrypoint) {
-				state.cleanups.push(() => cleanupState(contentDataEntrypoint, gitStateEntrypoint));
+				state.cleanups.push(async () => {
+					try {
+						await cleanupState(contentDataEntrypoint, gitStateEntrypoint);
+					} finally {
+						Reflect.deleteProperty(globalThis, buildContentLoaderSymbol);
+					}
+				});
 			}
 		},
 		async load(id, { ssr } = {}) {
@@ -102,6 +110,7 @@ export const gitBuildPlugin = (state: IntegrationState): Plugin => {
 				debug('Registering project root:', projectRoot);
 				liveGit.setProjectRoot(projectRoot);
 				liveGit.setCollectCommitHistory(state.collectCommitHistory);
+				Reflect.set(globalThis, buildContentLoaderSymbol, liveGit.getFileContentAtCommit);
 				const trackedFiles = await liveGit.collectGitInfoForContentFiles();
 				debug('Git tracked file dates:', trackedFiles);
 
@@ -183,11 +192,10 @@ const buildFacade = (projectRoot: string) => `
 import {getEntry} from 'astro:content';
 import {unflatten} from ${JSON.stringify(import.meta.resolve('devalue'))};
 import {Lazy} from ${JSON.stringify(import.meta.resolve('@inox-tools/utils/lazy'))};
-import {getFileContentAtCommit, setProjectRoot} from ${JSON.stringify(
-	import.meta.resolve('@inox-tools/content-utils/runtime/git')
-)};
 
-setProjectRoot(${JSON.stringify(projectRoot)});
+const buildContentLoader = globalThis[Symbol.for(${JSON.stringify(
+	`@inox-tools/content-utils:build-content:${projectRoot}`
+)})];
 
 const trackedFiles = unflatten((await import(${JSON.stringify(INNER_MODULE_ID)})).default);
 
@@ -199,7 +207,7 @@ function buildCommitInfo(c) {
 		coAuthors: Array.from(c.coAuthors),
 	};
 	Object.defineProperty(ci, 'content', {
-		get: Lazy.wrap(() => c.content ?? getFileContentAtCommit(c.hash, c.repoPath)),
+		get: Lazy.wrap(() => c.content ?? buildContentLoader?.(c.hash, c.repoPath) ?? ''),
 		enumerable: true,
 	});
 	return ci;

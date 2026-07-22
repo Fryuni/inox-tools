@@ -77,6 +77,7 @@ export type RawCommitInfo = {
 	author: GitAuthor;
 	coAuthors: GitAuthor[];
 	repoPath: string;
+	content?: string;
 };
 
 /**
@@ -90,7 +91,7 @@ export function createCommitInfo(commit: RawCommitInfo): CommitInfo {
 		coAuthors: Array.from(commit.coAuthors),
 	};
 	Object.defineProperty(commitInfo, 'content', {
-		get: Lazy.wrap(() => getFileContentAtCommit(commit.hash, commit.repoPath)),
+		get: Lazy.wrap(() => commit.content ?? getFileContentAtCommit(commit.hash, commit.repoPath)),
 		enumerable: true,
 	});
 	return commitInfo as CommitInfo;
@@ -161,32 +162,39 @@ function splitNulFields(output: string | Buffer): string[] {
 function parseCommitHeader(
 	hashHeader: string,
 	parentsHeader: string,
-	metadataHeader: string
+	dateHeader: string,
+	authorNameHeader: string,
+	authorEmailHeader: string,
+	coAuthorHeaders: string[]
 ): Omit<GitLogCommit, 'parentEntries'> | undefined {
 	if (
 		!hashHeader.startsWith('t:') ||
 		!parentsHeader.startsWith('p:') ||
-		!metadataHeader.startsWith('d:')
+		!dateHeader.startsWith('d:') ||
+		!authorNameHeader.startsWith('a:') ||
+		!authorEmailHeader.startsWith('e:')
 	) {
 		return undefined;
 	}
 
-	const metadata = metadataHeader.slice(2);
-	const firstSpace = metadata.indexOf(' ');
-	if (firstSpace === -1) return undefined;
-	const date = Number.parseInt(metadata.slice(0, firstSpace)) * 1000;
+	const date = Number.parseInt(dateHeader.slice(2)) * 1000;
+	if (!Number.isFinite(date)) return undefined;
 
-	const authors = metadata
-		.slice(firstSpace + 1)
-		.replace(/\|$/, '')
-		.split('|')
-		.map((author) => {
-			const [name, email] = author.split('<');
-			return {
-				name: name.trim(),
-				email: email.slice(0, -1),
-			};
+	const coAuthors: GitAuthor[] = [];
+	for (const header of coAuthorHeaders) {
+		const identity = header.slice(2).trim();
+		if (identity === '') continue;
+
+		const emailStart = identity.lastIndexOf('<');
+		if (emailStart === -1 || !identity.endsWith('>')) {
+			debug('Ignoring malformed co-author trailer:', identity);
+			continue;
+		}
+		coAuthors.push({
+			name: identity.slice(0, emailStart).trim(),
+			email: identity.slice(emailStart + 1, -1),
 		});
+	}
 
 	return {
 		hash: hashHeader.slice(2),
@@ -195,8 +203,11 @@ function parseCommitHeader(
 			.split(' ')
 			.filter((parent) => parent !== ''),
 		date,
-		author: authors[0],
-		coAuthors: authors.slice(1),
+		author: {
+			name: authorNameHeader.slice(2),
+			email: authorEmailHeader.slice(2),
+		},
+		coAuthors,
 	};
 }
 
@@ -209,12 +220,24 @@ function parseGitLog(output: string | Buffer): GitLogCommit[] {
 		while (fields[index] === '') index += 1;
 		if (index >= fields.length) break;
 
-		const header = parseCommitHeader(fields[index], fields[index + 1], fields[index + 2]);
+		const coAuthorHeaders: string[] = [];
+		let headerEnd = index + 5;
+		while (fields[headerEnd]?.startsWith('c:')) {
+			coAuthorHeaders.push(fields[headerEnd++]);
+		}
+		const header = parseCommitHeader(
+			fields[index],
+			fields[index + 1],
+			fields[index + 2],
+			fields[index + 3],
+			fields[index + 4],
+			coAuthorHeaders
+		);
 		if (header === undefined) {
 			debug('Ignoring malformed git history entry:', fields[index]);
 			break;
 		}
-		index += 3;
+		index = headerEnd;
 
 		const entries: GitLogEntry[] = [];
 		while (index < fields.length) {
@@ -501,7 +524,7 @@ export async function collectGitInfoForContentFiles(): Promise<[string, RawGitTr
 
 	const args = [
 		'log',
-		'--format=%x00t:%H%x00p:%P%x00d:%ct %an <%ae>|%(trailers:key=co-authored-by,valueonly,separator=|)%x00',
+		'--format=%x00t:%H%x00p:%P%x00d:%ct%x00a:%an%x00e:%ae%x00c:%(trailers:key=co-authored-by,valueonly,separator=%x00c:)%x00',
 		'--name-status',
 		'-z',
 	];
@@ -547,12 +570,21 @@ export async function collectGitInfoForContentFiles(): Promise<[string, RawGitTr
 	const result: [string, RawGitTrackingInfo][] = [];
 
 	for (const [file, rawFileInfo] of fileInfos.entries()) {
+		const rawCommitsByHash = new Map(
+			rawFileInfo.commits.map((commit) => [commit.hash, commit] as const)
+		);
+		const rawCommitByPublicCommit = new WeakMap<CommitInfo, RawCommitInfo>();
+		const commits = rawFileInfo.commits.map((commit) => {
+			const publicCommit = createCommitInfo(commit);
+			rawCommitByPublicCommit.set(publicCommit, commit);
+			return publicCommit;
+		});
 		const fileInfo: GitTrackingInfo = {
 			earliest: new Date(rawFileInfo.earliest),
 			latest: new Date(rawFileInfo.latest),
 			authors: rawFileInfo.authors,
 			coAuthors: rawFileInfo.coAuthors,
-			commits: rawFileInfo.commits.map(createCommitInfo),
+			commits,
 		};
 
 		let dropped = false;
@@ -576,6 +608,26 @@ export async function collectGitInfoForContentFiles(): Promise<[string, RawGitTr
 
 		rawFileInfo.earliest = fileInfo.earliest.valueOf();
 		rawFileInfo.latest = fileInfo.latest.valueOf();
+		rawFileInfo.authors = Array.from(fileInfo.authors);
+		rawFileInfo.coAuthors = Array.from(fileInfo.coAuthors);
+		rawFileInfo.commits = (fileInfo.commits ?? []).map((commit) => {
+			const original = rawCommitByPublicCommit.get(commit) ?? rawCommitsByHash.get(commit.hash);
+			if (original === undefined) {
+				throw new Error(`Cannot add untracked commit ${commit.hash} in the resolved Git hook`);
+			}
+
+			const syncedCommit: RawCommitInfo = {
+				hash: commit.hash,
+				date: commit.date.valueOf(),
+				author: commit.author,
+				coAuthors: Array.from(commit.coAuthors),
+				repoPath: original.repoPath,
+			};
+			if (rawCommitByPublicCommit.get(commit) === undefined) {
+				syncedCommit.content = commit.content;
+			}
+			return syncedCommit;
+		});
 
 		result.push([file, rawFileInfo]);
 	}

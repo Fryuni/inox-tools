@@ -112,9 +112,10 @@ describe('installedAstroMajor', () => {
 });
 
 test.each([
+	['successful manifest', 'success'],
 	['nonzero exit', 'failure'],
 	['malformed manifest', 'malformed'],
-])('reaps a background PnP reader descendant after a %s', async (_name, mode) => {
+])('reaps a pipe-inheriting PnP reader descendant after a %s', async (_name, mode) => {
 	const project = await createProject({
 		packageManager: 'yarn@4.17.1',
 		dependencies: { astro: '7.0.0' },
@@ -143,21 +144,30 @@ test.each([
 			'const directory = process.env.EVERY_ASTRO_PNP_READER_PIDS;',
 			"if (!directory) throw new Error('Missing PID directory');",
 			'mkdirSync(directory, { recursive: true });',
-			"const descendant = spawn(process.execPath, ['-e', 'setInterval(() => {}, 1_000)'], { stdio: 'ignore' });",
+			"const descendant = spawn(process.execPath, ['-e', 'setInterval(() => {}, 1_000)'], { stdio: 'inherit' });",
 			'descendant.unref();',
 			"writeFileSync(join(directory, `reader-${process.pid}`), '');",
 			"writeFileSync(join(directory, `descendant-${descendant.pid}`), '');",
-			mode === 'malformed' ? "process.stdout.write('not JSON');" : '',
-			mode === 'malformed' ? 'process.exit(0);' : 'process.exit(1);',
+			"process.stderr.write('reader stderr');",
+			mode === 'success'
+				? "process.stdout.write(JSON.stringify({ name: 'astro', version: '7.0.0' }));"
+				: mode === 'malformed'
+					? "process.stdout.write('not JSON');"
+					: '',
+			mode === 'failure' ? 'process.exit(1);' : 'process.exit(0);',
 		].join('\n')
 	);
 	const previousPidDirectory = process.env.EVERY_ASTRO_PNP_READER_PIDS;
 	process.env.EVERY_ASTRO_PNP_READER_PIDS = pidDirectory;
 	try {
-		if (mode === 'malformed') {
+		if (mode === 'success') {
+			await expect(installedAstroMajor(project)).resolves.toBe(7);
+		} else if (mode === 'malformed') {
 			await expect(installedAstroMajor(project)).rejects.toThrow(SyntaxError);
 		} else {
-			await expect(installedAstroMajor(project)).rejects.toThrow('Could not read PnP manifest');
+			await expect(installedAstroMajor(project)).rejects.toThrow(
+				/Could not read PnP manifest[\s\S]*reader stderr/
+			);
 		}
 		const pids = (await readdir(pidDirectory))
 			.map((entry) => Number(entry.slice(entry.lastIndexOf('-') + 1)))
@@ -252,7 +262,7 @@ test.skipIf(process.platform === 'win32')(
 				"const { writeFileSync } = require('node:fs');",
 				"const { join } = require('node:path');",
 				'const directory = process.env.EVERY_ASTRO_PNP_READER_PIDS;',
-				"const descendant = spawn(process.execPath, ['-e', 'setInterval(() => {}, 1_000)'], { stdio: 'ignore' });",
+				"const descendant = spawn(process.execPath, ['-e', 'setInterval(() => {}, 1_000)'], { stdio: 'inherit' });",
 				'descendant.unref();',
 				"writeFileSync(join(directory, `reader-${process.pid}`), '');",
 				"writeFileSync(join(directory, `descendant-${descendant.pid}`), '');",

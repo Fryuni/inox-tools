@@ -270,7 +270,10 @@ async function readPnpManifest(
 	};
 	if (signal) signal.addEventListener('abort', abort, { once: true });
 
-	let manifest: PackageManifest | undefined;
+	let output = '';
+	let errors = '';
+	let streamError: unknown;
+	let exitCode: number | null | undefined;
 	let primaryError: unknown;
 	try {
 		temporaryRoot =
@@ -297,33 +300,31 @@ async function readPnpManifest(
 			}
 		);
 		child = reader;
-		let output = '';
-		let errors = '';
 		reader.stdout?.on('data', (chunk: Buffer) => {
 			output += chunk;
 		});
+		reader.stdout?.once('error', (error) => {
+			streamError ??= error;
+		});
 		reader.stderr?.on('data', (chunk: Buffer) => {
 			errors += chunk;
+		});
+		reader.stderr?.once('error', (error) => {
+			streamError ??= error;
 		});
 		closed = new Promise<void>((resolveClose) => {
 			reader.once('close', () => resolveClose());
 		});
 		const completion = new Promise<number | null>((resolveExit, rejectExit) => {
 			reader.once('error', rejectExit);
-			reader.once('close', resolveExit);
+			reader.once('exit', resolveExit);
 		});
 		if (signal?.aborted) abort();
-		const exitCode = await Promise.race([completion, aborted]);
+		exitCode = await Promise.race([completion, aborted]);
 		if (signal?.aborted) {
 			await abortCompletion;
 			throw abortError(signal);
 		}
-		if (exitCode !== 0) {
-			throw new Error(
-				`Could not read PnP manifest ${manifestPath} with Corepack Yarn (exit code ${exitCode}): ${errors}`
-			);
-		}
-		manifest = JSON.parse(output) as PackageManifest;
 	} catch (error) {
 		primaryError = error;
 	} finally {
@@ -357,8 +358,15 @@ async function readPnpManifest(
 		}
 	}
 	if (primaryError !== undefined) throw primaryError;
-	pnpManifests.set(manifestPath, manifest!);
-	return manifest!;
+	if (streamError) throw streamError;
+	if (exitCode !== 0) {
+		throw new Error(
+			`Could not read PnP manifest ${manifestPath} with Corepack Yarn (exit code ${exitCode}): ${errors}`
+		);
+	}
+	const manifest = JSON.parse(output) as PackageManifest;
+	pnpManifests.set(manifestPath, manifest);
+	return manifest;
 }
 
 async function manifestAt(path: string, packageName: string): Promise<string | undefined> {

@@ -809,6 +809,32 @@ describe('isolatedBootstrapEnvironment', () => {
 			NODE_OPTIONS: '"--max-old-space-size=4096" \'--conditions=development\'',
 		});
 	});
+
+	test('preserves escaped quotes inside retained Node options', () => {
+		const nodeOptions = '--conditions="foo\\" bar" --trace-warnings';
+
+		expect(isolatedBootstrapEnvironment({ NODE_OPTIONS: nodeOptions })).toEqual({
+			NODE_OPTIONS: nodeOptions,
+		});
+	});
+
+	test('removes a loader token containing an escaped quote without retaining its tail', () => {
+		expect(
+			isolatedBootstrapEnvironment({
+				NODE_OPTIONS: '--require="/tmp/hook\\" name.cjs" --trace-warnings',
+			})
+		).toEqual({ NODE_OPTIONS: '--trace-warnings' });
+	});
+
+	test('preserves malformed Node options for Node to reject', async () => {
+		const nodeOptions = '--conditions="unterminated';
+		const environment = isolatedBootstrapEnvironment({ NODE_OPTIONS: nodeOptions });
+
+		expect(environment).toEqual({ NODE_OPTIONS: nodeOptions });
+		await expect(
+			runCommand(process.execPath, ['--version'], process.cwd(), environment)
+		).rejects.toThrow('invalid value for NODE_OPTIONS');
+	});
 });
 
 describe('createRuntimeDependencies', () => {

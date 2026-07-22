@@ -583,6 +583,34 @@ export async function linkBunPackage(projectRoot: string, link: PackageLink): Pr
 	return packagePath;
 }
 
+function splitNodeOptions(nodeOptions: string): string[] | undefined {
+	const options: string[] = [];
+	let tokenStart: number | undefined;
+	let quote: '"' | "'" | undefined;
+	for (let index = 0; index < nodeOptions.length; index += 1) {
+		const character = nodeOptions[index]!;
+		if (tokenStart === undefined) {
+			if (/\s/.test(character)) continue;
+			tokenStart = index;
+		}
+		if (quote !== undefined) {
+			if (quote === '"' && character === '\\' && index + 1 < nodeOptions.length) {
+				index += 1;
+			} else if (character === quote) {
+				quote = undefined;
+			}
+		} else if (character === '"' || character === "'") {
+			quote = character;
+		} else if (/\s/.test(character)) {
+			options.push(nodeOptions.slice(tokenStart, index));
+			tokenStart = undefined;
+		}
+	}
+	if (quote !== undefined) return undefined;
+	if (tokenStart !== undefined) options.push(nodeOptions.slice(tokenStart));
+	return options;
+}
+
 /** Remove consumer Node loader hooks from commands that run in the cloned repository. */
 export function isolatedBootstrapEnvironment(
 	environment: NodeJS.ProcessEnv = process.env
@@ -591,7 +619,8 @@ export function isolatedBootstrapEnvironment(
 	const nodeOptions = isolatedEnvironment.NODE_OPTIONS;
 	if (nodeOptions === undefined) return isolatedEnvironment;
 
-	const options = nodeOptions.match(/(?:[^\s"']+|"[^"]*"|'[^']*')+/g) ?? [];
+	const options = splitNodeOptions(nodeOptions);
+	if (options === undefined) return isolatedEnvironment;
 	const loaderOptions: Record<string, true> = {
 		'--require': true,
 		'-r': true,

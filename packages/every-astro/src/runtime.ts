@@ -241,19 +241,42 @@ async function spawnSupervisedCommand(
 async function readPnpManifest(
 	pnpPath: string,
 	manifestPath: string,
-	signal?: AbortSignal
+	signal?: AbortSignal,
+	pnpReaderLauncher = spawnSupervisedCommand
 ): Promise<PackageManifest> {
 	const cached = pnpManifests.get(manifestPath);
 	if (cached) return cached;
 	if (signal?.aborted) throw abortError(signal);
 
-	const temporaryRoot =
-		process.platform === 'win32'
-			? await mkdtemp(join(tmpdir(), 'every-astro-pnp-reader-'))
-			: undefined;
-	let child: ChildProcess;
+	let temporaryRoot: string | undefined;
+	let child: ChildProcess | undefined;
+	let closed: Promise<void> | undefined;
+	let abortCompletion: Promise<void> | undefined;
+	let rejectAbort!: (reason: unknown) => void;
+	const aborted = new Promise<never>((_resolveAbort, reject) => {
+		rejectAbort = reject;
+	});
+	const abort = () => {
+		if (!child || !closed) return;
+		abortCompletion ??= (async () => {
+			await terminateChildProcess(child);
+			await closed;
+		})();
+		void abortCompletion.then(
+			() => rejectAbort(abortError(signal!)),
+			(error: unknown) => rejectAbort(error)
+		);
+	};
+	if (signal) signal.addEventListener('abort', abort, { once: true });
+
+	let primaryError: unknown;
 	try {
-		child = await spawnSupervisedCommand(
+		temporaryRoot =
+			process.platform === 'win32'
+				? await mkdtemp(join(tmpdir(), 'every-astro-pnp-reader-'))
+				: undefined;
+		if (signal?.aborted) throw abortError(signal);
+		const reader = await pnpReaderLauncher(
 			temporaryRoot ?? '',
 			process.execPath,
 			[
@@ -271,43 +294,23 @@ async function readPnpManifest(
 				stdio: ['ignore', 'pipe', 'pipe'],
 			}
 		);
-	} catch (error) {
-		if (temporaryRoot) await rm(temporaryRoot, { recursive: true, force: true });
-		throw error;
-	}
-	let output = '';
-	let errors = '';
-	child.stdout?.on('data', (chunk: Buffer) => {
-		output += chunk;
-	});
-	child.stderr?.on('data', (chunk: Buffer) => {
-		errors += chunk;
-	});
-	const closed = new Promise<void>((resolveClose) => {
-		child.once('close', () => resolveClose());
-	});
-	const completion = new Promise<number | null>((resolveExit, rejectExit) => {
-		child.once('error', rejectExit);
-		child.once('close', resolveExit);
-	});
-	let abortCompletion: Promise<void> | undefined;
-	let rejectAbort!: (reason: unknown) => void;
-	const aborted = new Promise<never>((_resolveAbort, reject) => {
-		rejectAbort = reject;
-	});
-	const abort = () => {
-		abortCompletion ??= (async () => {
-			await terminateChildProcess(child);
-			await closed;
-		})();
-		void abortCompletion.then(
-			() => rejectAbort(abortError(signal!)),
-			(error: unknown) => rejectAbort(error)
-		);
-	};
-	if (signal) signal.addEventListener('abort', abort, { once: true });
-	let primaryError: unknown;
-	try {
+		child = reader;
+		let output = '';
+		let errors = '';
+		reader.stdout?.on('data', (chunk: Buffer) => {
+			output += chunk;
+		});
+		reader.stderr?.on('data', (chunk: Buffer) => {
+			errors += chunk;
+		});
+		closed = new Promise<void>((resolveClose) => {
+			reader.once('close', () => resolveClose());
+		});
+		const completion = new Promise<number | null>((resolveExit, rejectExit) => {
+			reader.once('error', rejectExit);
+			reader.once('close', resolveExit);
+		});
+		if (signal?.aborted) abort();
 		const exitCode = await Promise.race([completion, aborted]);
 		if (signal?.aborted) {
 			await abortCompletion;
@@ -326,19 +329,32 @@ async function readPnpManifest(
 		throw error;
 	} finally {
 		signal?.removeEventListener('abort', abort);
-		let cleanupError: unknown;
+		const cleanupErrors: unknown[] = [];
 		try {
-			await terminateChildProcess(child);
-			await closed;
+			if (child) {
+				await terminateChildProcess(child);
+				await closed;
+			}
 		} catch (error) {
-			cleanupError = error;
+			cleanupErrors.push(error);
 		}
 		try {
 			if (temporaryRoot) await rm(temporaryRoot, { recursive: true, force: true });
 		} catch (error) {
-			cleanupError ??= error;
+			cleanupErrors.push(error);
 		}
-		if (cleanupError && primaryError === undefined) throw cleanupError;
+		if (cleanupErrors.length > 0) {
+			const cleanupError =
+				cleanupErrors.length === 1
+					? cleanupErrors[0]!
+					: new AggregateError(cleanupErrors, 'Could not fully clean up the PnP manifest reader');
+			if (primaryError === undefined) throw cleanupError;
+			throw new AggregateError(
+				[primaryError, cleanupError],
+				'Could not read a PnP manifest and clean up its reader',
+				{ cause: primaryError }
+			);
+		}
 	}
 }
 
@@ -366,7 +382,8 @@ async function packageManifestFromPnp(
 	pnpPath: string | undefined,
 	packageName: string,
 	fromDirectory: string,
-	signal?: AbortSignal
+	signal?: AbortSignal,
+	pnpReaderLauncher?: typeof spawnSupervisedCommand
 ): Promise<string | undefined> {
 	if (!pnpapi || !pnpPath) return undefined;
 	let packageRoot: string | null;
@@ -383,7 +400,7 @@ async function packageManifestFromPnp(
 	} catch (error: unknown) {
 		if ((error as NodeJS.ErrnoException).code !== 'ENOTDIR') throw error;
 	}
-	const manifest = await readPnpManifest(pnpPath, manifestPath, signal);
+	const manifest = await readPnpManifest(pnpPath, manifestPath, signal, pnpReaderLauncher);
 	return manifest.name === packageName ? manifestPath : undefined;
 }
 async function packageManifestFromEntry(
@@ -405,7 +422,8 @@ export async function resolveInstalledPackageManifest(
 	packageName: string,
 	fromDirectory: string,
 	pnpPath = nearestPnpPath(fromDirectory),
-	signal?: AbortSignal
+	signal?: AbortSignal,
+	pnpReaderLauncher?: typeof spawnSupervisedCommand
 ): Promise<string | undefined> {
 	const pnpapi = loadPnpApi(pnpPath);
 	const requireFrom = createRequire(join(fromDirectory, 'package.json'));
@@ -414,7 +432,8 @@ export async function resolveInstalledPackageManifest(
 		pnpPath,
 		packageName,
 		fromDirectory,
-		signal
+		signal,
+		pnpReaderLauncher
 	);
 	if (pnpManifest) return pnpManifest;
 	try {

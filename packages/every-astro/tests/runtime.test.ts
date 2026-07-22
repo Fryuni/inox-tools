@@ -172,6 +172,57 @@ test.each([
 	}
 });
 
+test('aborts a PnP reader launched after setup starts without caching its manifest', async () => {
+	const project = await createProject({
+		packageManager: 'yarn@4.17.1',
+		dependencies: { astro: '7.0.0' },
+	});
+	const packageRoot = join(project, '.yarn/cache/astro.zip/node_modules/astro');
+	await mkdir(join(project, '.yarn/cache'), { recursive: true });
+	await writeFile(join(project, '.yarn/cache/astro.zip'), '');
+	await writeFile(
+		join(project, '.pnp.cjs'),
+		`exports.resolveToUnqualified = (request) => request === 'astro' ? ${JSON.stringify(packageRoot)} : null;\n`
+	);
+	await writeFile(
+		join(project, '.yarnrc.yml'),
+		'yarnPath: .yarn/releases/reader.cjs\nnodeLinker: pnp\n'
+	);
+	await mkdir(join(project, '.yarn/releases'), { recursive: true });
+	// The reader stays alive until setup-window abort handling terminates it.
+	await writeFile(join(project, '.yarn/releases/reader.cjs'), 'setInterval(() => {}, 1_000);\n');
+	const controller = new AbortController();
+	let reader: ChildProcess | undefined;
+	const delayedLaunch = async (
+		_temporaryRoot: string,
+		file: string,
+		args: string[],
+		options: NonNullable<Parameters<typeof spawnCross>[2]>
+	): Promise<ChildProcess> => {
+		controller.abort('during PnP reader setup');
+		await Promise.resolve();
+		reader = spawnCross(file, args, options);
+		return reader;
+	};
+	try {
+		await expect(
+			resolveInstalledPackageManifest('astro', project, undefined, controller.signal, delayedLaunch)
+		).rejects.toMatchObject({ name: 'AbortError' });
+		expect(reader?.pid).toBeTypeOf('number');
+		expect(() => process.kill(reader!.pid!, 0)).toThrow(/ESRCH/);
+
+		await writeFile(
+			join(project, '.yarn/releases/reader.cjs'),
+			"process.stdout.write(JSON.stringify({ name: 'astro', version: '7.0.0' }));\n"
+		);
+		await expect(resolveInstalledPackageManifest('astro', project)).resolves.toBe(
+			join(packageRoot, 'package.json')
+		);
+	} finally {
+		await terminateChildProcess(reader);
+	}
+});
+
 describe('selectLatestAstroReleaseTag', () => {
 	test('selects the newest stable tag within the installed Astro major', () => {
 		expect(

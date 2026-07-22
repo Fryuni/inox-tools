@@ -242,7 +242,8 @@ async function readPnpManifest(
 	pnpPath: string,
 	manifestPath: string,
 	signal?: AbortSignal,
-	pnpReaderLauncher = spawnSupervisedCommand
+	pnpReaderLauncher = spawnSupervisedCommand,
+	pnpReaderTerminator: ChildTerminator = terminateChildProcess
 ): Promise<PackageManifest> {
 	const cached = pnpManifests.get(manifestPath);
 	if (cached) return cached;
@@ -259,7 +260,7 @@ async function readPnpManifest(
 	const abort = () => {
 		if (!child || !closed) return;
 		abortCompletion ??= (async () => {
-			await terminateChildProcess(child);
+			await pnpReaderTerminator(child);
 			await closed;
 		})();
 		void abortCompletion.then(
@@ -269,6 +270,7 @@ async function readPnpManifest(
 	};
 	if (signal) signal.addEventListener('abort', abort, { once: true });
 
+	let manifest: PackageManifest | undefined;
 	let primaryError: unknown;
 	try {
 		temporaryRoot =
@@ -321,18 +323,14 @@ async function readPnpManifest(
 				`Could not read PnP manifest ${manifestPath} with Corepack Yarn (exit code ${exitCode}): ${errors}`
 			);
 		}
-		const manifest = JSON.parse(output) as PackageManifest;
-		pnpManifests.set(manifestPath, manifest);
-		return manifest;
+		manifest = JSON.parse(output) as PackageManifest;
 	} catch (error) {
 		primaryError = error;
-		throw error;
 	} finally {
-		signal?.removeEventListener('abort', abort);
 		const cleanupErrors: unknown[] = [];
 		try {
 			if (child) {
-				await terminateChildProcess(child);
+				await pnpReaderTerminator(child);
 				await closed;
 			}
 		} catch (error) {
@@ -343,6 +341,8 @@ async function readPnpManifest(
 		} catch (error) {
 			cleanupErrors.push(error);
 		}
+		if (signal?.aborted && primaryError === undefined) primaryError = abortError(signal);
+		signal?.removeEventListener('abort', abort);
 		if (cleanupErrors.length > 0) {
 			const cleanupError =
 				cleanupErrors.length === 1
@@ -356,6 +356,9 @@ async function readPnpManifest(
 			);
 		}
 	}
+	if (primaryError !== undefined) throw primaryError;
+	pnpManifests.set(manifestPath, manifest!);
+	return manifest!;
 }
 
 async function manifestAt(path: string, packageName: string): Promise<string | undefined> {
@@ -383,7 +386,8 @@ async function packageManifestFromPnp(
 	packageName: string,
 	fromDirectory: string,
 	signal?: AbortSignal,
-	pnpReaderLauncher?: typeof spawnSupervisedCommand
+	pnpReaderLauncher?: typeof spawnSupervisedCommand,
+	pnpReaderTerminator?: ChildTerminator
 ): Promise<string | undefined> {
 	if (!pnpapi || !pnpPath) return undefined;
 	let packageRoot: string | null;
@@ -400,7 +404,13 @@ async function packageManifestFromPnp(
 	} catch (error: unknown) {
 		if ((error as NodeJS.ErrnoException).code !== 'ENOTDIR') throw error;
 	}
-	const manifest = await readPnpManifest(pnpPath, manifestPath, signal, pnpReaderLauncher);
+	const manifest = await readPnpManifest(
+		pnpPath,
+		manifestPath,
+		signal,
+		pnpReaderLauncher,
+		pnpReaderTerminator
+	);
 	return manifest.name === packageName ? manifestPath : undefined;
 }
 async function packageManifestFromEntry(
@@ -423,7 +433,8 @@ export async function resolveInstalledPackageManifest(
 	fromDirectory: string,
 	pnpPath = nearestPnpPath(fromDirectory),
 	signal?: AbortSignal,
-	pnpReaderLauncher?: typeof spawnSupervisedCommand
+	pnpReaderLauncher?: typeof spawnSupervisedCommand,
+	pnpReaderTerminator?: ChildTerminator
 ): Promise<string | undefined> {
 	const pnpapi = loadPnpApi(pnpPath);
 	const requireFrom = createRequire(join(fromDirectory, 'package.json'));
@@ -433,7 +444,8 @@ export async function resolveInstalledPackageManifest(
 		packageName,
 		fromDirectory,
 		signal,
-		pnpReaderLauncher
+		pnpReaderLauncher,
+		pnpReaderTerminator
 	);
 	if (pnpManifest) return pnpManifest;
 	try {

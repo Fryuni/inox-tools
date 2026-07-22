@@ -223,6 +223,86 @@ test('aborts a PnP reader launched after setup starts without caching its manife
 	}
 });
 
+test.skipIf(process.platform === 'win32')(
+	'aborts while successful PnP reader descendant cleanup is pending without caching',
+	async () => {
+		const project = await createProject({
+			packageManager: 'yarn@4.17.1',
+			dependencies: { astro: '7.0.0' },
+		});
+		const pidDirectory = join(project, 'reader-pids');
+		const packageRoot = join(project, '.yarn/cache/astro.zip/node_modules/astro');
+		await mkdir(pidDirectory, { recursive: true });
+		await mkdir(join(project, '.yarn/cache'), { recursive: true });
+		await writeFile(join(project, '.yarn/cache/astro.zip'), '');
+		await writeFile(
+			join(project, '.pnp.cjs'),
+			`exports.resolveToUnqualified = (request) => request === 'astro' ? ${JSON.stringify(packageRoot)} : null;\n`
+		);
+		await writeFile(
+			join(project, '.yarnrc.yml'),
+			'yarnPath: .yarn/releases/reader.cjs\nnodeLinker: pnp\n'
+		);
+		await mkdir(join(project, '.yarn/releases'), { recursive: true });
+		// The unrefed child deliberately survives its successful reader until cleanup owns it.
+		await writeFile(
+			join(project, '.yarn/releases/reader.cjs'),
+			[
+				"const { spawn } = require('node:child_process');",
+				"const { writeFileSync } = require('node:fs');",
+				"const { join } = require('node:path');",
+				'const directory = process.env.EVERY_ASTRO_PNP_READER_PIDS;',
+				"const descendant = spawn(process.execPath, ['-e', 'setInterval(() => {}, 1_000)'], { stdio: 'ignore' });",
+				'descendant.unref();',
+				"writeFileSync(join(directory, `reader-${process.pid}`), '');",
+				"writeFileSync(join(directory, `descendant-${descendant.pid}`), '');",
+				"process.stdout.write(JSON.stringify({ name: 'astro', version: '7.0.0' }));",
+			].join('\n')
+		);
+		const previousPidDirectory = process.env.EVERY_ASTRO_PNP_READER_PIDS;
+		process.env.EVERY_ASTRO_PNP_READER_PIDS = pidDirectory;
+		const controller = new AbortController();
+		const cleanupStarted = Promise.withResolvers<void>();
+		const cleanupRelease = Promise.withResolvers<void>();
+		const pausedTerminator = async (child: ChildProcess | undefined): Promise<void> => {
+			cleanupStarted.resolve();
+			await cleanupRelease.promise;
+			await terminateChildProcess(child);
+		};
+		try {
+			const manifest = resolveInstalledPackageManifest(
+				'astro',
+				project,
+				undefined,
+				controller.signal,
+				undefined,
+				pausedTerminator
+			);
+			await cleanupStarted.promise;
+			controller.abort('during PnP reader cleanup');
+			cleanupRelease.resolve();
+
+			await expect(manifest).rejects.toMatchObject({ name: 'AbortError' });
+			const pids = (await readdir(pidDirectory))
+				.map((entry) => Number(entry.slice(entry.lastIndexOf('-') + 1)))
+				.filter(Number.isSafeInteger);
+			expect(pids).toHaveLength(2);
+			for (const pid of pids) {
+				expect(() => process.kill(pid, 0)).toThrow(/ESRCH/);
+			}
+
+			await expect(resolveInstalledPackageManifest('astro', project)).resolves.toBe(
+				join(packageRoot, 'package.json')
+			);
+			expect(await readdir(pidDirectory)).toHaveLength(4);
+		} finally {
+			cleanupRelease.resolve();
+			if (previousPidDirectory === undefined) delete process.env.EVERY_ASTRO_PNP_READER_PIDS;
+			else process.env.EVERY_ASTRO_PNP_READER_PIDS = previousPidDirectory;
+		}
+	}
+);
+
 describe('selectLatestAstroReleaseTag', () => {
 	test('selects the newest stable tag within the installed Astro major', () => {
 		expect(

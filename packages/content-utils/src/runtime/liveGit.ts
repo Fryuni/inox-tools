@@ -25,7 +25,7 @@ export async function getEntryGitInfoInner(
 			latest: new Date(info.latest),
 			authors: Array.from(info.authors),
 			coAuthors: Array.from(info.coAuthors),
-			commits: (info.commits || []).map(createCommitInfo),
+			commits: (info.commits || []).map((commit) => createCommitInfo(commit)),
 		},
 	];
 }

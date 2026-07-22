@@ -192,7 +192,7 @@ describe('git commit history rename tracking', () => {
 		expect(entry.coAuthors).toEqual([{ name: 'Co | Author', email: 'coauthor@example.com' }]);
 	});
 
-	it('persists resolved-hook metadata and commit replacements', async () => {
+	it('persists resolved-hook metadata and in-place commit mutations', async () => {
 		mockHistory(
 			[
 				gitCommit('newest', 20, ['M', 'content/entry.md'], ['initial']),
@@ -206,15 +206,11 @@ describe('git commit history rename tracking', () => {
 			const commit = fileInfo.commits[1];
 			fileInfo.authors = [{ name: 'Hook Author', email: 'hook@example.com' }];
 			fileInfo.coAuthors = [];
-			fileInfo.commits = [
-				{
-					hash: commit.hash,
-					date: new Date(15_000),
-					author: fileInfo.authors[0],
-					coAuthors: [],
-					content: 'hook content',
-				},
-			];
+			commit.date = new Date(15_000);
+			commit.author = fileInfo.authors[0];
+			commit.coAuthors = [];
+			commit.content = 'hook content';
+			fileInfo.commits = [commit];
 		});
 		setProjectRoot('/repo/content');
 
@@ -232,6 +228,20 @@ describe('git commit history rename tracking', () => {
 				repoPath: 'content/entry.md',
 			},
 		]);
+	});
+
+	it('rejects resolved-hook mutations to commit identity', async () => {
+		mockHistory(gitCommit('only', 10, ['M', 'content/entry.md']), 'content/entry.md\0');
+		modularStation.hooks.run.mockImplementation(async (hook, createArgs) => {
+			if (hook !== '@it/content:git:resolved') return;
+			const [{ fileInfo }] = createArgs({});
+			fileInfo.commits[0].hash = 'untracked';
+		});
+		setProjectRoot('/repo/content');
+
+		await expect(collectGitInfoForContentFiles()).rejects.toThrow(
+			'Cannot add untracked commit untracked'
+		);
 	});
 
 	it('stops rename ancestry when a reused path is added as a new lifetime', async () => {

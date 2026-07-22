@@ -88,6 +88,22 @@ describe('gitBuildPlugin', () => {
 		writeFileSync(
 			contentDataPath,
 			`export default ${devalue.stringify(
+				new Map([
+					[
+						'blog',
+						new Map([
+							['entry', { filePath: 'entry.md' }],
+							['irrelevant', { filePath: 'irrelevant.md' }],
+						]),
+					],
+				])
+			)};`
+		);
+		// Prime the runtime module cache to reproduce static-collection cleanup importing this chunk.
+		await import(pathToFileURL(contentDataPath).href);
+		writeFileSync(
+			contentDataPath,
+			`export default ${devalue.stringify(
 				new Map([['blog', new Map([['entry', { filePath: 'entry.md' }]])]])
 			)};`
 		);

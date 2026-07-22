@@ -11,11 +11,13 @@ let cachedRepoRoot: string | undefined;
 let collectCommitHistory: boolean = true;
 
 const debug = getDebug('git');
+type CommitContentLoader = (hash: string, repoPath: string) => string;
 
 /**
  * @internal
  */
 export function setProjectRoot(path: string) {
+	if (projectRoot === path) return;
 	projectRoot = path;
 	cachedRepoRoot = undefined;
 }
@@ -83,15 +85,22 @@ export type RawCommitInfo = {
 /**
  * @internal
  */
-export function createCommitInfo(commit: RawCommitInfo): CommitInfo {
+export function createCommitInfo(
+	commit: RawCommitInfo,
+	loadContent: CommitContentLoader = getFileContentAtCommit
+): CommitInfo {
 	const commitInfo: Record<string, unknown> = {
 		hash: commit.hash,
 		date: new Date(commit.date),
 		author: commit.author,
 		coAuthors: Array.from(commit.coAuthors),
 	};
+	const lazyContent = Lazy.wrap(() => commit.content ?? loadContent(commit.hash, commit.repoPath));
 	Object.defineProperty(commitInfo, 'content', {
-		get: Lazy.wrap(() => commit.content ?? getFileContentAtCommit(commit.hash, commit.repoPath)),
+		get: () => commit.content ?? lazyContent(),
+		set: (content: string) => {
+			commit.content = content;
+		},
 		enumerable: true,
 	});
 	return commitInfo as CommitInfo;
@@ -519,7 +528,9 @@ function collectUnfollowedHistory(commits: GitLogCommit[]): Map<string, RawGitTr
 /**
  * @internal
  */
-export async function collectGitInfoForContentFiles(): Promise<[string, RawGitTrackingInfo][]> {
+export async function collectGitInfoForContentFiles(
+	loadContent: CommitContentLoader = getFileContentAtCommit
+): Promise<[string, RawGitTrackingInfo][]> {
 	const repoRoot = getRepoRoot();
 
 	const args = [
@@ -575,7 +586,7 @@ export async function collectGitInfoForContentFiles(): Promise<[string, RawGitTr
 		);
 		const rawCommitByPublicCommit = new WeakMap<CommitInfo, RawCommitInfo>();
 		const commits = rawFileInfo.commits.map((commit) => {
-			const publicCommit = createCommitInfo(commit);
+			const publicCommit = createCommitInfo(commit, loadContent);
 			rawCommitByPublicCommit.set(publicCommit, commit);
 			return publicCommit;
 		});
@@ -611,8 +622,9 @@ export async function collectGitInfoForContentFiles(): Promise<[string, RawGitTr
 		rawFileInfo.authors = Array.from(fileInfo.authors);
 		rawFileInfo.coAuthors = Array.from(fileInfo.coAuthors);
 		rawFileInfo.commits = (fileInfo.commits ?? []).map((commit) => {
-			const original = rawCommitByPublicCommit.get(commit) ?? rawCommitsByHash.get(commit.hash);
-			if (original === undefined) {
+			const identityOriginal = rawCommitByPublicCommit.get(commit);
+			const original = identityOriginal ?? rawCommitsByHash.get(commit.hash);
+			if (original === undefined || (identityOriginal && commit.hash !== identityOriginal.hash)) {
 				throw new Error(`Cannot add untracked commit ${commit.hash} in the resolved Git hook`);
 			}
 
@@ -623,8 +635,10 @@ export async function collectGitInfoForContentFiles(): Promise<[string, RawGitTr
 				coAuthors: Array.from(commit.coAuthors),
 				repoPath: original.repoPath,
 			};
-			if (rawCommitByPublicCommit.get(commit) === undefined) {
+			if (identityOriginal === undefined) {
 				syncedCommit.content = commit.content;
+			} else if (original.content !== undefined) {
+				syncedCommit.content = original.content;
 			}
 			return syncedCommit;
 		});

@@ -5,7 +5,7 @@ import * as devalue from 'devalue';
 import { dirname, join as joinPath, resolve } from 'node:path';
 import { getDebug } from '../internal/debug.js';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const MODULE_ID = '@it-astro:content/git';
 const RESOLVED_MODULE_ID = '\x00@it-astro:content/git';
@@ -66,6 +66,10 @@ export const gitBuildPlugin = (state: IntegrationState): Plugin => {
 	} = state;
 	const buildContentLoaderKey = `@inox-tools/content-utils:build-content:${projectRoot}`;
 	const buildContentLoaderSymbol = Symbol.for(buildContentLoaderKey);
+	const loadCommitContent = (hash: string, repoPath: string) => {
+		liveGit.setProjectRoot(projectRoot);
+		return liveGit.getFileContentAtCommit(hash, repoPath);
+	};
 
 	return {
 		name: '@inox-tools/content-utils/gitTimes',
@@ -94,7 +98,7 @@ export const gitBuildPlugin = (state: IntegrationState): Plugin => {
 			if (contentDataEntrypoint && gitStateEntrypoint) {
 				state.cleanups.push(async () => {
 					try {
-						await cleanupState(contentDataEntrypoint, gitStateEntrypoint);
+						await cleanupState(contentDataEntrypoint, gitStateEntrypoint, loadCommitContent);
 					} finally {
 						Reflect.deleteProperty(globalThis, buildContentLoaderSymbol);
 					}
@@ -110,8 +114,8 @@ export const gitBuildPlugin = (state: IntegrationState): Plugin => {
 				debug('Registering project root:', projectRoot);
 				liveGit.setProjectRoot(projectRoot);
 				liveGit.setCollectCommitHistory(state.collectCommitHistory);
-				Reflect.set(globalThis, buildContentLoaderSymbol, liveGit.getFileContentAtCommit);
-				const trackedFiles = await liveGit.collectGitInfoForContentFiles();
+				Reflect.set(globalThis, buildContentLoaderSymbol, loadCommitContent);
+				const trackedFiles = await liveGit.collectGitInfoForContentFiles(loadCommitContent);
 				debug('Git tracked file dates:', trackedFiles);
 
 				return `const trackedFiles = ${devalue.stringify(new Map(trackedFiles))};
@@ -131,18 +135,25 @@ type BuildGitTrackingInfo = {
 	commits: BuildCommitInfo[];
 };
 
-function materializeCommitContent(fileInfo: BuildGitTrackingInfo): void {
+function materializeCommitContent(
+	fileInfo: BuildGitTrackingInfo,
+	loadCommitContent: (hash: string, repoPath: string) => string
+): void {
 	for (const commit of fileInfo.commits) {
 		if (commit.content === undefined) {
 			if (commit.repoPath === undefined) {
 				throw new Error(`Missing repository path for commit ${commit.hash}`);
 			}
-			commit.content = liveGit.getFileContentAtCommit(commit.hash, commit.repoPath);
+			commit.content = loadCommitContent(commit.hash, commit.repoPath);
 		}
 		delete commit.repoPath;
 	}
 }
-async function cleanupState(contentData: string, gitState: string): Promise<void> {
+async function cleanupState(
+	contentData: string,
+	gitState: string,
+	loadCommitContent: (hash: string, repoPath: string) => string
+): Promise<void> {
 	if (!existsSync(contentData) || !existsSync(gitState)) return;
 
 	const originalContent = readFileSync(gitState, 'utf-8');
@@ -151,7 +162,9 @@ async function cleanupState(contentData: string, gitState: string): Promise<void
 	if (!originalContent.includes('export')) return;
 
 	// Import the chunk, which exports a devalue flattened map as the default export
-	const { default: contentValue } = await import(/*@vite-ignore*/ contentData);
+	const { default: contentValue } = await import(
+		/*@vite-ignore*/ `${pathToFileURL(contentData).href}?git-cleanup`
+	);
 	const { default: gitValue } = await import(/*@vite-ignore*/ gitState);
 
 	// Unflatten the map
@@ -176,7 +189,7 @@ async function cleanupState(contentData: string, gitState: string): Promise<void
 
 	// Content must be stored in the final bundle because Git history may be unavailable at runtime.
 	for (const fileInfo of cleanedMap.values()) {
-		materializeCommitContent(fileInfo);
+		materializeCommitContent(fileInfo, loadCommitContent);
 	}
 	// Build the source code with the new map flattened
 	const newContent = [
@@ -208,6 +221,9 @@ function buildCommitInfo(c) {
 	};
 	Object.defineProperty(ci, 'content', {
 		get: Lazy.wrap(() => c.content ?? buildContentLoader?.(c.hash, c.repoPath) ?? ''),
+		set: (content) => {
+			c.content = content;
+		},
 		enumerable: true,
 	});
 	return ci;

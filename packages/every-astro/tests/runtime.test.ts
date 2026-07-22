@@ -788,42 +788,61 @@ describe('isolatedBootstrapEnvironment', () => {
 		).toEqual({ COREPACK_HOME: '/cache/corepack' });
 	});
 
-	test('preserves unrelated Node options while removing all loader hook forms', () => {
-		expect(
-			isolatedBootstrapEnvironment({
-				NODE_OPTIONS:
-					'--max-old-space-size=4096 --require "/project/.pnp.cjs" -r=./register.cjs --import "./instrumentation.mjs" --loader=./loader.mjs --experimental-loader "./legacy loader.mjs" --conditions="development test" --trace-warnings',
-			})
-		).toEqual({
-			NODE_OPTIONS: '--max-old-space-size=4096 --conditions="development test" --trace-warnings',
+	test('removes loader hooks while preserving raw surrounding whitespace', async () => {
+		const nodeOptions =
+			'  --trace-warnings --require "./project hook.cjs"  --conditions="development test"  ';
+		const environment = isolatedBootstrapEnvironment({ NODE_OPTIONS: nodeOptions });
+
+		expect(environment).toEqual({
+			NODE_OPTIONS: '  --trace-warnings    --conditions="development test"  ',
 		});
+		await expect(
+			runCommand(process.execPath, ['--version'], process.cwd(), environment)
+		).resolves.toMatch(/^v/);
 	});
 
-	test('removes quoted loader option spellings while preserving quoted non-loaders', () => {
-		expect(
-			isolatedBootstrapEnvironment({
-				NODE_OPTIONS:
-					'"--require=C:\\project\\double.cjs" \'--import=./single.mjs\' "--loader" "./double-loader.mjs" \'--experimental-loader\' \'./single-loader.mjs\' \'--experimental_loader=./single-alias.mjs\' "--experimental_loader" "./double-alias.mjs" "--require"="./double mixed.cjs" \'--experimental_loader\'="./single mixed.mjs" "--max-old-space-size=4096" \'--conditions=development\'',
-			})
-		).toEqual({
-			NODE_OPTIONS: '"--max-old-space-size=4096" \'--conditions=development\'',
-		});
+	test('preserves a no-loader Node options string byte-for-byte', async () => {
+		const nodeOptions = '  --conditions="foo\\" bar"   --trace-warnings  ';
+		const environment = isolatedBootstrapEnvironment({ NODE_OPTIONS: nodeOptions });
+
+		expect(environment).toEqual({ NODE_OPTIONS: nodeOptions });
+		await expect(
+			runCommand(process.execPath, ['--version'], process.cwd(), environment)
+		).resolves.toMatch(/^v/);
 	});
 
-	test('preserves escaped quotes inside retained Node options', () => {
-		const nodeOptions = '--conditions="foo\\" bar" --trace-warnings';
-
-		expect(isolatedBootstrapEnvironment({ NODE_OPTIONS: nodeOptions })).toEqual({
-			NODE_OPTIONS: nodeOptions,
+	test('removes a loader after an unmatched literal single quote', async () => {
+		const environment = isolatedBootstrapEnvironment({
+			NODE_OPTIONS: "--conditions='foo --require ./project-hook.cjs --trace-warnings",
 		});
+
+		expect(environment).toEqual({ NODE_OPTIONS: "--conditions='foo   --trace-warnings" });
+		await expect(
+			runCommand(process.execPath, ['--version'], process.cwd(), environment)
+		).resolves.toMatch(/^v/);
 	});
 
-	test('removes a loader token containing an escaped quote without retaining its tail', () => {
-		expect(
-			isolatedBootstrapEnvironment({
-				NODE_OPTIONS: '--require="/tmp/hook\\" name.cjs" --trace-warnings',
-			})
-		).toEqual({ NODE_OPTIONS: '--trace-warnings' });
+	test('preserves single-quoted loader names without classifying them as hooks', async () => {
+		const nodeOptions = "'--require' ./project-hook.cjs --trace-warnings";
+		const environment = isolatedBootstrapEnvironment({ NODE_OPTIONS: nodeOptions });
+
+		expect(environment).toEqual({ NODE_OPTIONS: nodeOptions });
+		await expect(
+			runCommand(process.execPath, ['--version'], process.cwd(), environment)
+		).resolves.toMatch(/^v/);
+	});
+
+	test.each([
+		['tab', '\t'],
+		['newline', '\n'],
+	])('preserves Node-rejected %s separators', async (_name, separator) => {
+		const nodeOptions = `--trace-warnings${separator}--conditions=foo`;
+		const environment = isolatedBootstrapEnvironment({ NODE_OPTIONS: nodeOptions });
+
+		expect(environment).toEqual({ NODE_OPTIONS: nodeOptions });
+		await expect(
+			runCommand(process.execPath, ['--version'], process.cwd(), environment)
+		).rejects.toThrow('not allowed in NODE_OPTIONS');
 	});
 
 	test('preserves malformed Node options for Node to reject', async () => {

@@ -583,31 +583,37 @@ export async function linkBunPackage(projectRoot: string, link: PackageLink): Pr
 	return packagePath;
 }
 
-function splitNodeOptions(nodeOptions: string): string[] | undefined {
-	const options: string[] = [];
+type NodeOptionToken = {
+	start: number;
+	end: number;
+};
+
+function scanNodeOptions(nodeOptions: string): NodeOptionToken[] | undefined {
+	const options: NodeOptionToken[] = [];
 	let tokenStart: number | undefined;
-	let quote: '"' | "'" | undefined;
+	let inDoubleQuotes = false;
 	for (let index = 0; index < nodeOptions.length; index += 1) {
 		const character = nodeOptions[index]!;
+		if (character === '\t' || character === '\n' || character === '\r') return undefined;
 		if (tokenStart === undefined) {
-			if (/\s/.test(character)) continue;
+			if (character === ' ') continue;
 			tokenStart = index;
 		}
-		if (quote !== undefined) {
-			if (quote === '"' && character === '\\' && index + 1 < nodeOptions.length) {
+		if (inDoubleQuotes) {
+			if (character === '\\' && index + 1 < nodeOptions.length) {
 				index += 1;
-			} else if (character === quote) {
-				quote = undefined;
+			} else if (character === '"') {
+				inDoubleQuotes = false;
 			}
-		} else if (character === '"' || character === "'") {
-			quote = character;
-		} else if (/\s/.test(character)) {
-			options.push(nodeOptions.slice(tokenStart, index));
+		} else if (character === '"') {
+			inDoubleQuotes = true;
+		} else if (character === ' ') {
+			options.push({ start: tokenStart, end: index });
 			tokenStart = undefined;
 		}
 	}
-	if (quote !== undefined) return undefined;
-	if (tokenStart !== undefined) options.push(nodeOptions.slice(tokenStart));
+	if (inDoubleQuotes) return undefined;
+	if (tokenStart !== undefined) options.push({ start: tokenStart, end: nodeOptions.length });
 	return options;
 }
 
@@ -619,7 +625,7 @@ export function isolatedBootstrapEnvironment(
 	const nodeOptions = isolatedEnvironment.NODE_OPTIONS;
 	if (nodeOptions === undefined) return isolatedEnvironment;
 
-	const options = splitNodeOptions(nodeOptions);
+	const options = scanNodeOptions(nodeOptions);
 	if (options === undefined) return isolatedEnvironment;
 	const loaderOptions: Record<string, true> = {
 		'--require': true,
@@ -628,22 +634,31 @@ export function isolatedBootstrapEnvironment(
 		'--loader': true,
 		'--experimental-loader': true,
 	};
-	const retainedOptions: string[] = [];
+	const removed = new Set<number>();
 	for (let index = 0; index < options.length; index += 1) {
 		const option = options[index]!;
-		const [name] = option.split('=', 1);
-		const loaderName = name.replaceAll('"', '').replaceAll("'", '').replaceAll('_', '-');
-		if (!(loaderName in loaderOptions)) {
-			retainedOptions.push(option);
-			continue;
-		}
-		if (!option.includes('=')) index += 1;
+		const value = nodeOptions.slice(option.start, option.end);
+		const [name] = value.split('=', 1);
+		const loaderName = name.replaceAll('"', '').replaceAll('_', '-');
+		if (!(loaderName in loaderOptions)) continue;
+		removed.add(index);
+		if (!value.includes('=') && index + 1 < options.length) removed.add(index + 1);
 	}
-	if (retainedOptions.length > 0) {
-		isolatedEnvironment.NODE_OPTIONS = retainedOptions.join(' ');
-	} else {
+	if (removed.size === 0) return isolatedEnvironment;
+	if (removed.size === options.length) {
 		delete isolatedEnvironment.NODE_OPTIONS;
+		return isolatedEnvironment;
 	}
+
+	let isolatedNodeOptions = '';
+	let cursor = 0;
+	for (let index = 0; index < options.length; index += 1) {
+		if (!removed.has(index)) continue;
+		const option = options[index]!;
+		isolatedNodeOptions += nodeOptions.slice(cursor, option.start);
+		cursor = option.end;
+	}
+	isolatedEnvironment.NODE_OPTIONS = isolatedNodeOptions + nodeOptions.slice(cursor);
 	return isolatedEnvironment;
 }
 

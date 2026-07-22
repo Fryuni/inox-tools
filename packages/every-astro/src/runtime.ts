@@ -190,6 +190,7 @@ type PnpApi = {
 
 const pnpApis = new Map<string, PnpApi>();
 const pnpManifests = new Map<string, PackageManifest>();
+const pnpManifestReads = new Map<string, PnpManifestRead>();
 
 function nearestPnpPath(fromDirectory: string): string | undefined {
 	let directory = resolve(fromDirectory);
@@ -215,6 +216,54 @@ function loadPnpApi(pnpPath: string | undefined): PnpApi | undefined {
 }
 
 type PnpReaderLaunchObserver = (child: ChildProcess) => void;
+
+type PnpManifestRead = {
+	controller: AbortController;
+	consumers: Map<symbol, AbortSignal | undefined>;
+	promise: Promise<PackageManifest>;
+	settled: boolean;
+};
+
+function awaitPnpManifestRead(
+	read: PnpManifestRead,
+	signal?: AbortSignal
+): Promise<PackageManifest> {
+	if (signal?.aborted) return Promise.reject(abortError(signal));
+	const consumer = Symbol();
+	read.consumers.set(consumer, signal);
+	return new Promise<PackageManifest>((resolveRead, rejectRead) => {
+		let finished = false;
+		const release = (aborted = false): boolean => {
+			if (finished) return false;
+			finished = true;
+			signal?.removeEventListener('abort', abort);
+			read.consumers.delete(consumer);
+			const cancelsRead = aborted && !read.settled && read.consumers.size === 0;
+			if (cancelsRead) read.controller.abort();
+			return (
+				aborted &&
+				!read.settled &&
+				(cancelsRead || [...read.consumers.values()].every((other) => other === signal))
+			);
+		};
+		const abort = () => {
+			if (!release(true)) rejectRead(abortError(signal!));
+		};
+		signal?.addEventListener('abort', abort, { once: true });
+		void read.promise.then(
+			(manifest) => {
+				release();
+				if (signal?.aborted) rejectRead(abortError(signal));
+				else resolveRead(manifest);
+			},
+			(error: unknown) => {
+				release();
+				if (signal?.aborted) rejectRead(abortError(signal));
+				else rejectRead(error);
+			}
+		);
+	});
+}
 
 async function spawnSupervisedCommand(
 	temporaryRoot: string,
@@ -256,7 +305,7 @@ async function removePnpReaderTemporaryRoot(temporaryRoot: string): Promise<void
 	await rm(temporaryRoot, { recursive: true, force: true });
 }
 
-async function readPnpManifest(
+async function readPnpManifestUncached(
 	pnpPath: string,
 	manifestPath: string,
 	signal?: AbortSignal,
@@ -265,8 +314,6 @@ async function readPnpManifest(
 	pnpReaderTemporaryRootCreator = createPnpReaderTemporaryRoot,
 	pnpReaderTemporaryRootRemover = removePnpReaderTemporaryRoot
 ): Promise<PackageManifest> {
-	const cached = pnpManifests.get(manifestPath);
-	if (cached) return cached;
 	if (signal?.aborted) throw abortError(signal);
 
 	let temporaryRoot: string | undefined;
@@ -404,9 +451,56 @@ async function readPnpManifest(
 			);
 		}
 	}
+
 	if (primaryError !== undefined) throw primaryError;
-	pnpManifests.set(manifestPath, manifest!);
 	return manifest!;
+}
+
+async function readPnpManifest(
+	pnpPath: string,
+	manifestPath: string,
+	signal?: AbortSignal,
+	pnpReaderLauncher = spawnSupervisedCommand,
+	pnpReaderTerminator: ChildTerminator = terminateChildProcess,
+	pnpReaderTemporaryRootCreator = createPnpReaderTemporaryRoot,
+	pnpReaderTemporaryRootRemover = removePnpReaderTemporaryRoot
+): Promise<PackageManifest> {
+	const cached = pnpManifests.get(manifestPath);
+	if (cached) return cached;
+	if (signal?.aborted) throw abortError(signal);
+
+	let read = pnpManifestReads.get(manifestPath);
+	if (!read) {
+		const controller = new AbortController();
+		const newRead: PnpManifestRead = {
+			controller,
+			consumers: new Map<symbol, AbortSignal | undefined>(),
+			promise: undefined!,
+			settled: false,
+		};
+		newRead.promise = readPnpManifestUncached(
+			pnpPath,
+			manifestPath,
+			controller.signal,
+			pnpReaderLauncher,
+			pnpReaderTerminator,
+			pnpReaderTemporaryRootCreator,
+			pnpReaderTemporaryRootRemover
+		)
+			.then((manifest) => {
+				pnpManifests.set(manifestPath, manifest);
+				return manifest;
+			})
+			.finally(() => {
+				newRead.settled = true;
+				if (pnpManifestReads.get(manifestPath) === newRead) {
+					pnpManifestReads.delete(manifestPath);
+				}
+			});
+		pnpManifestReads.set(manifestPath, newRead);
+		read = newRead;
+	}
+	return awaitPnpManifestRead(read, signal);
 }
 
 async function manifestAt(path: string, packageName: string): Promise<string | undefined> {
@@ -928,15 +1022,48 @@ export function isolatedBootstrapEnvironment(
 	return isolatedEnvironment;
 }
 
+async function windowsDirectorySymlinkType(path: string): Promise<'dir' | 'junction'> {
+	const child = spawn(
+		'powershell.exe',
+		[
+			'-NoProfile',
+			'-NonInteractive',
+			'-Command',
+			'(Get-Item -LiteralPath $args[0] -Force).LinkType',
+			path,
+		],
+		{ stdio: ['ignore', 'pipe', 'pipe'] }
+	);
+	let output = '';
+	let errors = '';
+	child.stdout?.on('data', (chunk: Buffer) => {
+		output += chunk;
+	});
+	child.stderr?.on('data', (chunk: Buffer) => {
+		errors += chunk;
+	});
+	const exitCode = await new Promise<number | null>((resolveExit, rejectExit) => {
+		child.once('error', rejectExit);
+		child.once('close', resolveExit);
+	});
+	if (exitCode !== 0) {
+		throw new Error(`Could not inspect Windows directory link ${path}: ${errors}`);
+	}
+	switch (output.trim()) {
+		case 'SymbolicLink':
+			return 'dir';
+		case 'Junction':
+			return 'junction';
+		default:
+			throw new Error(`Could not identify Windows directory link ${path}: ${output}`);
+	}
+}
+
 export type DependencySymlinkSnapshot = {
 	path: string;
 	target: string;
 	type: 'dir' | 'junction';
 };
-
-export function dependencySymlinkType(platform = process.platform): 'dir' | 'junction' {
-	return platform === 'win32' ? 'junction' : 'dir';
-}
 
 /** Restore a dependency link exactly as it was before the bisect session. */
 export async function restoreDependencySymlink(snapshot: DependencySymlinkSnapshot): Promise<void> {
@@ -945,7 +1072,7 @@ export async function restoreDependencySymlink(snapshot: DependencySymlinkSnapsh
 	await symlink(snapshot.target, snapshot.path, snapshot.type);
 }
 
-async function snapshotDependencySymlinks(
+export async function snapshotDependencySymlinks(
 	projectRoot: string,
 	managerRoot: string,
 	packageNames: ReadonlySet<string>
@@ -962,7 +1089,8 @@ async function snapshotDependencySymlinks(
 				snapshots.set(packagePath, {
 					path: packagePath,
 					target: await readlink(packagePath),
-					type: dependencySymlinkType(),
+					type:
+						process.platform === 'win32' ? await windowsDirectorySymlinkType(packagePath) : 'dir',
 				});
 			} catch (error: unknown) {
 				if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
@@ -973,10 +1101,35 @@ async function snapshotDependencySymlinks(
 }
 
 const childTerminations = new WeakMap<ChildProcess, Promise<void>>();
+const childCloses = new WeakMap<ChildProcess, { listener: () => void; promise: Promise<void> }>();
 const TASKKILL_EXIT_OBSERVATION_TIMEOUT = 100;
 
 function childHasExited(child: ChildProcess): boolean {
-	return child.exitCode !== null || child.signalCode !== null;
+	return (
+		(child.exitCode !== null && child.exitCode !== undefined) ||
+		(child.signalCode !== null && child.signalCode !== undefined)
+	);
+}
+
+function observeChildClose(child: ChildProcess): Promise<void> {
+	const observed = childCloses.get(child);
+	if (observed) return observed.promise;
+	if (childHasExited(child)) return Promise.resolve();
+	const close = Promise.withResolvers<void>();
+	const listener = () => {
+		childCloses.delete(child);
+		close.resolve();
+	};
+	child.once('close', listener);
+	childCloses.set(child, { listener, promise: close.promise });
+	return close.promise;
+}
+
+function forgetChildClose(child: ChildProcess): void {
+	const observed = childCloses.get(child);
+	if (!observed) return;
+	child.removeListener('close', observed.listener);
+	childCloses.delete(child);
 }
 
 async function observeChildExit(child: ChildProcess): Promise<void> {
@@ -1009,30 +1162,37 @@ export function terminateChildProcess(
 	if (!child) return Promise.resolve();
 	const termination = childTerminations.get(child);
 	if (termination) return termination;
+	const close = observeChildClose(child);
 	if (platform === 'win32' && childHasExited(child)) {
-		const stopped = Promise.resolve();
-		childTerminations.set(child, stopped);
-		return stopped;
+		childTerminations.set(child, close);
+		return close;
 	}
 	const pid = child.pid;
-	if (!pid) return Promise.resolve();
+	if (!pid) return platform === 'win32' ? close : Promise.resolve();
 
 	const promise = (async () => {
 		if (platform === 'win32') {
-			const taskkill = taskkillLauncher(pid);
-			const exitCode = await new Promise<number | null>((resolveExit, rejectExit) => {
-				taskkill.once('error', rejectExit);
-				taskkill.once('close', resolveExit);
-			});
-			if (exitCode !== 0 && !childHasExited(child)) {
-				await observeChildExit(child);
-				if (!childHasExited(child)) {
-					throw new Error(
-						`taskkill failed while terminating process ${pid} (exit code ${exitCode})`
-					);
+			let stopped = false;
+			try {
+				const taskkill = taskkillLauncher(pid);
+				const exitCode = await new Promise<number | null>((resolveExit, rejectExit) => {
+					taskkill.once('error', rejectExit);
+					taskkill.once('close', resolveExit);
+				});
+				if (exitCode !== 0 && !childHasExited(child)) {
+					await observeChildExit(child);
+					if (!childHasExited(child)) {
+						throw new Error(
+							`taskkill failed while terminating process ${pid} (exit code ${exitCode})`
+						);
+					}
 				}
+				await close;
+				stopped = true;
+				return;
+			} finally {
+				if (!stopped) forgetChildClose(child);
 			}
-			return;
 		}
 
 		const processGroupAlive = (): boolean => {
@@ -1124,9 +1284,11 @@ export class RuntimeSession implements BisectSession {
 		args: string[],
 		options: NonNullable<Parameters<typeof spawn>[2]>
 	): Promise<ChildProcess> {
-		return this.commandSpawner
+		const child = await (this.commandSpawner
 			? this.commandSpawner(file, args, options)
-			: spawnSupervisedCommand(this.temporaryRoot, file, args, options);
+			: spawnSupervisedCommand(this.temporaryRoot, file, args, options));
+		observeChildClose(child);
+		return child;
 	}
 
 	public async execute(
@@ -1366,14 +1528,27 @@ export class RuntimeSession implements BisectSession {
 			);
 		});
 		let promptWork: Promise<boolean> | undefined;
+		let primaryError: unknown;
 		try {
 			await Promise.race([delay(100, undefined, { signal: this.signal }), earlyExit]);
 			promptWork = this.prompt(label, AbortSignal.any([this.signal, promptController.signal]));
 			return await Promise.race([promptWork, earlyExit]);
+		} catch (error) {
+			primaryError = error;
+			throw error;
 		} finally {
 			promptController.abort('The development server exited before the prompt completed.');
 			await promptWork?.catch(() => undefined);
-			await this.stopChild(child);
+			try {
+				await this.stopChild(child);
+			} catch (cleanupError) {
+				if (primaryError === undefined) throw cleanupError;
+				throw new AggregateError(
+					[primaryError, cleanupError],
+					'Could not complete the development-server prompt and stop its process',
+					{ cause: primaryError }
+				);
+			}
 			if (this.activeChild === child) this.activeChild = undefined;
 		}
 	}

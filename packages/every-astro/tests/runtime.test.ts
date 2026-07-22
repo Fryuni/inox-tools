@@ -2,7 +2,9 @@ import { type ChildProcess, spawn as spawnChild } from 'node:child_process';
 import { EventEmitter, once } from 'node:events';
 import { createRequire } from 'node:module';
 import {
+	appendFile,
 	mkdir,
+	lstat,
 	mkdtemp,
 	readFile,
 	readlink,
@@ -12,7 +14,7 @@ import {
 	writeFile,
 } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { PassThrough } from 'node:stream';
 import { setTimeout as delay } from 'node:timers/promises';
 import { afterEach, describe, expect, test, vi } from 'vitest';
@@ -24,7 +26,6 @@ import {
 	createRuntimeDependencies,
 	determineBisectProgress,
 	developmentServerStdio,
-	dependencySymlinkType,
 	detectPackageManager,
 	detectPackageManagerRoot,
 	discoverAstroWorkspacePackages,
@@ -38,6 +39,7 @@ import {
 	RuntimeSession,
 	resolveInstalledPackageManifest,
 	restoreDependencySymlink,
+	snapshotDependencySymlinks,
 	selectLatestAstroReleaseTag,
 	selectLatestAstroReleaseRevision,
 	selectLatestAstroRevision,
@@ -244,6 +246,121 @@ test('aborts a PnP reader launched after setup starts without caching its manife
 	} finally {
 		await terminateChildProcess(reader);
 	}
+});
+
+test('evicts a failed in-flight PnP manifest read before a successful retry', async () => {
+	const project = await createPnpArchiveProject();
+	let launches = 0;
+	const failedLaunch = async (
+		_temporaryRoot: string,
+		_file: string,
+		_args: string[],
+		_options: NonNullable<Parameters<typeof spawnCross>[2]>,
+		observe?: (child: ChildProcess) => void
+	): Promise<ChildProcess> => {
+		launches += 1;
+		const reader = Object.assign(new EventEmitter(), {
+			stdout: new PassThrough(),
+			stderr: new PassThrough(),
+		}) as unknown as ChildProcess;
+		observe?.(reader);
+		process.nextTick(() => {
+			reader.emit('exit', 1);
+			reader.emit('close', 1);
+		});
+		return reader;
+	};
+	const successfulLaunch = async (
+		_temporaryRoot: string,
+		_file: string,
+		_args: string[],
+		_options: NonNullable<Parameters<typeof spawnCross>[2]>,
+		observe?: (child: ChildProcess) => void
+	): Promise<ChildProcess> => {
+		launches += 1;
+		const stdout = new PassThrough();
+		const reader = Object.assign(new EventEmitter(), {
+			stdout,
+			stderr: new PassThrough(),
+		}) as unknown as ChildProcess;
+		observe?.(reader);
+		process.nextTick(() => {
+			stdout.write(JSON.stringify({ name: 'astro', version: '7.0.0' }));
+			reader.emit('exit', 0);
+			reader.emit('close', 0);
+		});
+		return reader;
+	};
+
+	await expect(
+		resolveInstalledPackageManifest('astro', project, undefined, undefined, failedLaunch)
+	).rejects.toThrow('exit code 1');
+	await expect(
+		resolveInstalledPackageManifest('astro', project, undefined, undefined, successfulLaunch)
+	).resolves.toMatch(/astro\.zip[\\/]node_modules[\\/]astro[\\/]package\.json$/);
+	expect(launches).toBe(2);
+});
+
+test('evicts an aborted in-flight PnP manifest read before a successful retry', async () => {
+	const project = await createPnpArchiveProject();
+	const controller = new AbortController();
+	const launched = Promise.withResolvers<void>();
+	let launches = 0;
+	const hangingLaunch = async (
+		_temporaryRoot: string,
+		_file: string,
+		_args: string[],
+		_options: NonNullable<Parameters<typeof spawnCross>[2]>,
+		observe?: (child: ChildProcess) => void
+	): Promise<ChildProcess> => {
+		launches += 1;
+		const reader = Object.assign(new EventEmitter(), {
+			stdout: new PassThrough(),
+			stderr: new PassThrough(),
+		}) as unknown as ChildProcess;
+		observe?.(reader);
+		launched.resolve();
+		return reader;
+	};
+	const successfulLaunch = async (
+		_temporaryRoot: string,
+		_file: string,
+		_args: string[],
+		_options: NonNullable<Parameters<typeof spawnCross>[2]>,
+		observe?: (child: ChildProcess) => void
+	): Promise<ChildProcess> => {
+		launches += 1;
+		const stdout = new PassThrough();
+		const reader = Object.assign(new EventEmitter(), {
+			stdout,
+			stderr: new PassThrough(),
+		}) as unknown as ChildProcess;
+		observe?.(reader);
+		process.nextTick(() => {
+			stdout.write(JSON.stringify({ name: 'astro', version: '7.0.0' }));
+			reader.emit('exit', 0);
+			reader.emit('close', 0);
+		});
+		return reader;
+	};
+	const pending = resolveInstalledPackageManifest(
+		'astro',
+		project,
+		undefined,
+		controller.signal,
+		hangingLaunch,
+		async (reader) => {
+			reader?.emit('close', null);
+		}
+	);
+	await launched.promise;
+	controller.abort('cancelled reader');
+
+	await expect(pending).rejects.toMatchObject({ name: 'AbortError' });
+	await expect(
+		resolveInstalledPackageManifest('astro', project, undefined, undefined, successfulLaunch)
+	).resolves.toMatch(/astro\.zip[\\/]node_modules[\\/]astro[\\/]package\.json$/);
+	expect(launches).toBe(2);
 });
 
 test.skipIf(process.platform === 'win32')(
@@ -563,7 +680,11 @@ describe('terminateChildProcess', () => {
 	);
 
 	test('shares Windows taskkill across concurrent and late stop requests', async () => {
-		const child = { pid: 4_242, exitCode: null, signalCode: null } as ChildProcess;
+		const child = Object.assign(new EventEmitter(), {
+			pid: 4_242,
+			exitCode: null,
+			signalCode: null,
+		}) as ChildProcess;
 		const taskkill = new EventEmitter();
 		const launchTaskkill = vi.fn<(pid: number) => ChildProcess>(() => taskkill as ChildProcess);
 		const first = terminateChildProcess(child, 'win32', 5_000, launchTaskkill);
@@ -572,6 +693,7 @@ describe('terminateChildProcess', () => {
 		expect(second).toBe(first);
 		expect(launchTaskkill).toHaveBeenCalledExactlyOnceWith(4_242);
 		taskkill.emit('close', 0);
+		child.emit('close', 0);
 		await Promise.all([first, second]);
 		await terminateChildProcess(child, 'win32', 5_000, launchTaskkill);
 
@@ -606,6 +728,7 @@ describe('terminateChildProcess', () => {
 			setTimeout(() => {
 				testChild.exitCode = 0;
 				testChild.emit('exit', 0);
+				testChild.emit('close', 0);
 			}, 1);
 			await vi.advanceTimersByTimeAsync(1);
 
@@ -617,6 +740,34 @@ describe('terminateChildProcess', () => {
 			vi.useRealTimers();
 		}
 	});
+	test.skipIf(process.platform !== 'win32')(
+		'does not finish a successful Windows stop until the supervisor closes',
+		async () => {
+			const child = Object.assign(new EventEmitter(), {
+				pid: 4_242,
+				exitCode: null,
+				signalCode: null,
+			}) as ChildProcess;
+			const taskkill = new EventEmitter();
+			const termination = terminateChildProcess(
+				child,
+				'win32',
+				5_000,
+				() => taskkill as ChildProcess
+			);
+			let finished = false;
+			void termination.then(() => {
+				finished = true;
+			});
+
+			taskkill.emit('close', 0);
+			await Promise.resolve();
+			expect(finished).toBe(false);
+			child.emit('close', 0);
+
+			await expect(termination).resolves.toBeUndefined();
+		}
+	);
 
 	test('reports a Windows taskkill failure while the child is still running', async () => {
 		vi.useFakeTimers();
@@ -665,6 +816,7 @@ describe('terminateChildProcess', () => {
 			);
 			const second = terminateChildProcess(child, 'win32', 5_000, launchTaskkill);
 			secondTaskkill.emit('close', 0);
+			child.emit('close', 0);
 
 			await expect(second).resolves.toBeUndefined();
 			expect(launchTaskkill).toHaveBeenCalledTimes(2);
@@ -713,6 +865,50 @@ describe('terminateChildProcess', () => {
 		await expect(execution).rejects.toBe(terminationError);
 		await expect(session.close()).rejects.toThrow('every-astro cleanup failed');
 		expect(terminate).toHaveBeenCalledTimes(2);
+	});
+	test('keeps a development-server early-exit error ahead of its stop failure', async () => {
+		const project = await createProject();
+		const temporary = await temporaryRoot();
+		const child = new EventEmitter() as ChildProcess;
+		const stopError = new Error('could not stop development server');
+		const terminate = vi.fn(async () => {
+			throw stopError;
+		});
+		const session = new RuntimeSession(
+			project,
+			project,
+			join(temporary, 'astro'),
+			temporary,
+			'',
+			'npm',
+			false,
+			{ exists: true, content: Buffer.from('{}\n') },
+			{ exists: true, content: Buffer.from('{}\n') },
+			join(project, 'package-lock.json'),
+			{ exists: true, content: Buffer.from('{}\n') },
+			[],
+			new Set(),
+			'',
+			new AbortController().signal,
+			terminate,
+			() => {
+				process.nextTick(() => child.emit('exit', 1));
+				return child;
+			}
+		);
+
+		let failure: unknown;
+		try {
+			await session.runDevServerAndAsk('revision');
+		} catch (error) {
+			failure = error;
+		}
+
+		expect(failure).toBeInstanceOf(AggregateError);
+		const aggregate = failure as AggregateError;
+		expect(aggregate.cause).toBe(aggregate.errors[0]);
+		expect(aggregate.errors[0]).toMatchObject({ name: 'CommandError' });
+		expect(aggregate.errors[1]).toBe(stopError);
 	});
 });
 
@@ -1130,9 +1326,51 @@ describe('restoreDependencySymlink', () => {
 		await expect(installedAstroMajor(project)).resolves.toBe(7);
 	});
 
-	test('uses junctions for Windows directory links', () => {
-		expect(dependencySymlinkType('win32')).toBe('junction');
-	});
+	test.skipIf(process.platform !== 'win32')(
+		'preserves relative symbolic links and junctions through the dependency snapshot and restore cycle',
+		async () => {
+			const project = await createProject();
+			const symbolicTarget = join(project, 'packages', 'symbolic-target');
+			const junctionTarget = join(project, 'packages', 'junction-target');
+			const symbolicLink = join(project, 'node_modules', 'astro');
+			const junctionLink = join(project, 'node_modules', '@astrojs', 'junction');
+			await Promise.all([
+				mkdir(symbolicTarget, { recursive: true }),
+				mkdir(junctionTarget, { recursive: true }),
+				mkdir(dirname(symbolicLink), { recursive: true }),
+				mkdir(dirname(junctionLink), { recursive: true }),
+			]);
+			const relativeTarget = join('..', 'packages', 'symbolic-target');
+			await symlink(relativeTarget, symbolicLink, 'dir');
+			await symlink(junctionTarget, junctionLink, 'junction');
+
+			const snapshots = await snapshotDependencySymlinks(
+				project,
+				project,
+				new Set(['astro', '@astrojs/junction'])
+			);
+			const byPath = new Map(snapshots.map((snapshot) => [snapshot.path, snapshot]));
+			expect(byPath.get(symbolicLink)).toMatchObject({
+				target: relativeTarget,
+				type: 'dir',
+			});
+			expect(byPath.get(junctionLink)).toMatchObject({ type: 'junction' });
+
+			await rm(symbolicLink, { recursive: true, force: true });
+			await rm(junctionLink, { recursive: true, force: true });
+			await Promise.all(snapshots.map((snapshot) => restoreDependencySymlink(snapshot)));
+
+			expect((await lstat(symbolicLink)).isSymbolicLink()).toBe(true);
+			await expect(readlink(symbolicLink)).resolves.toBe(relativeTarget);
+			const restored = await snapshotDependencySymlinks(
+				project,
+				project,
+				new Set(['@astrojs/junction'])
+			);
+			expect(restored).toHaveLength(1);
+			expect(restored[0]).toMatchObject({ path: junctionLink, type: 'junction' });
+		}
+	);
 });
 
 describe('isolatedBootstrapEnvironment', () => {
@@ -1281,6 +1519,39 @@ describe('createRuntimeDependencies', () => {
 		await expect(dependencies.createSession()).rejects.toThrow(
 			'every-astro requires a npm lockfile to restore the exact dependency tree'
 		);
+	});
+
+	test('coalesces concurrent Corepack PnP reads of the same archive manifest', async () => {
+		const project = await createProject({
+			packageManager: 'yarn@4.17.1',
+			dependencies: { astro: '7.0.0' },
+		});
+		const packageRoot = join(project, '.yarn/cache/astro.zip/node_modules/astro');
+		const launches = join(project, 'pnp-reader-launches');
+		await mkdir(join(project, '.yarn/cache'), { recursive: true });
+		await mkdir(join(project, '.yarn/releases'), { recursive: true });
+		await writeFile(join(project, '.yarn/cache/astro.zip'), '');
+		await writeFile(
+			join(project, '.pnp.cjs'),
+			`exports.resolveToUnqualified = (request) => request === 'astro' ? ${JSON.stringify(packageRoot)} : null;\n`
+		);
+		await writeFile(
+			join(project, '.yarnrc.yml'),
+			'yarnPath: .yarn/releases/reader.cjs\nnodeLinker: pnp\n'
+		);
+		await writeFile(
+			join(project, '.yarn/releases/reader.cjs'),
+			[
+				"const { appendFileSync } = require('node:fs');",
+				`appendFileSync(${JSON.stringify(launches)}, 'reader\\n');`,
+				"process.stdout.write(JSON.stringify({ name: 'astro', version: '7.0.0' }));",
+			].join('\n')
+		);
+
+		await expect(
+			createRuntimeDependencies(project, new AbortController().signal)
+		).resolves.toBeDefined();
+		await expect(readFile(launches, 'utf8')).resolves.toBe('reader\n');
 	});
 
 	test('aborts and reaps the Corepack Yarn PnP manifest reader process tree', async () => {

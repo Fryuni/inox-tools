@@ -6,7 +6,7 @@ param(
 $ErrorActionPreference = 'Stop'
 
 try {
-	$control = Get-Content -LiteralPath $ControlFile -Raw | ConvertFrom-Json
+	$control = Get-Content -LiteralPath $ControlFile -Encoding UTF8 -Raw | ConvertFrom-Json
 	$command = Get-Command -Name $control.file -CommandType Application -ErrorAction Stop | Select-Object -First 1
 	$targetFile = $command.Path
 	$targetArguments = [string[]] @($control.args)

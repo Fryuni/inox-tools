@@ -387,7 +387,7 @@ test.skipIf(process.platform !== 'win32')(
 	'launches a target through the Job Object supervisor and removes its control file',
 	async () => {
 		const root = await temporaryRoot();
-		const toolRoot = join(root, 'tool path');
+		const toolRoot = join(root, 'tool path café');
 		const batchFile = join(toolRoot, 'runner.cmd');
 		const controlFile = join(root, 'command.json');
 		await mkdir(toolRoot);
@@ -396,7 +396,7 @@ test.skipIf(process.platform !== 'win32')(
 			controlFile,
 			JSON.stringify({
 				file: batchFile,
-				args: ['spaced argument', '%literal%', 'a&b'],
+				args: ['spaced argument', 'café', '%literal%', 'a&b'],
 			})
 		);
 		const [file, ...args] = windowsJobSupervisorCommand(controlFile);

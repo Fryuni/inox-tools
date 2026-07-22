@@ -662,6 +662,27 @@ async function snapshotDependencySymlinks(
 }
 
 const childTerminations = new WeakMap<ChildProcess, Promise<void>>();
+const TASKKILL_EXIT_OBSERVATION_TIMEOUT = 100;
+
+function childHasExited(child: ChildProcess): boolean {
+	return child.exitCode !== null || child.signalCode !== null;
+}
+
+async function observeChildExit(child: ChildProcess): Promise<void> {
+	if (childHasExited(child)) return;
+	await new Promise<void>((resolve) => {
+		let timeout: NodeJS.Timeout | undefined;
+		const finish = () => {
+			clearTimeout(timeout);
+			child.removeListener('exit', finish);
+			child.removeListener('close', finish);
+			resolve();
+		};
+		child.once('exit', finish);
+		child.once('close', finish);
+		timeout = setTimeout(finish, TASKKILL_EXIT_OBSERVATION_TIMEOUT);
+	});
+}
 
 type TaskkillLauncher = (pid: number) => ChildProcess;
 
@@ -677,7 +698,7 @@ export function terminateChildProcess(
 	if (!child) return Promise.resolve();
 	const termination = childTerminations.get(child);
 	if (termination) return termination;
-	if (platform === 'win32' && (child.exitCode !== null || child.signalCode !== null)) {
+	if (platform === 'win32' && childHasExited(child)) {
 		const stopped = Promise.resolve();
 		childTerminations.set(child, stopped);
 		return stopped;
@@ -692,8 +713,13 @@ export function terminateChildProcess(
 				taskkill.once('error', rejectExit);
 				taskkill.once('close', resolveExit);
 			});
-			if (exitCode !== 0 && child.exitCode === null && child.signalCode === null) {
-				throw new Error(`taskkill failed while terminating process ${pid} (exit code ${exitCode})`);
+			if (exitCode !== 0 && !childHasExited(child)) {
+				await observeChildExit(child);
+				if (!childHasExited(child)) {
+					throw new Error(
+						`taskkill failed while terminating process ${pid} (exit code ${exitCode})`
+					);
+				}
 			}
 			return;
 		}

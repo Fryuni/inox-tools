@@ -245,50 +245,88 @@ describe('terminateChildProcess', () => {
 		expect(launchTaskkill).not.toHaveBeenCalled();
 	});
 
-	test('accepts a Windows taskkill race after the child exits', async () => {
-		const taskkill = new EventEmitter();
-		const launchTaskkill = vi.fn<(pid: number) => ChildProcess>(() => taskkill as ChildProcess);
-		const testChild = { pid: 4_242, exitCode: null as number | null, signalCode: null };
-		const child = testChild as ChildProcess;
-		const termination = terminateChildProcess(child, 'win32', 5_000, launchTaskkill);
-		testChild.exitCode = 0;
-		taskkill.emit('close', 1);
+	test('accepts a Windows taskkill race when the child exit is reported afterward', async () => {
+		vi.useFakeTimers();
+		try {
+			const taskkill = new EventEmitter();
+			const launchTaskkill = vi.fn<(pid: number) => ChildProcess>(() => taskkill as ChildProcess);
+			const testChild = Object.assign(new EventEmitter(), {
+				pid: 4_242,
+				exitCode: null as number | null,
+				signalCode: null,
+			});
+			const child = testChild as ChildProcess;
+			const termination = terminateChildProcess(child, 'win32', 5_000, launchTaskkill);
+			taskkill.emit('close', 1);
+			await Promise.resolve();
+			setTimeout(() => {
+				testChild.exitCode = 0;
+				testChild.emit('exit', 0);
+			}, 1);
+			await vi.advanceTimersByTimeAsync(1);
 
-		await expect(termination).resolves.toBeUndefined();
-		expect(launchTaskkill).toHaveBeenCalledExactlyOnceWith(4_242);
+			await expect(termination).resolves.toBeUndefined();
+			expect(launchTaskkill).toHaveBeenCalledExactlyOnceWith(4_242);
+			expect(testChild.listenerCount('exit')).toBe(0);
+			expect(testChild.listenerCount('close')).toBe(0);
+		} finally {
+			vi.useRealTimers();
+		}
 	});
 
 	test('reports a Windows taskkill failure while the child is still running', async () => {
-		const child = { pid: 4_242, exitCode: null, signalCode: null } as ChildProcess;
-		const taskkill = new EventEmitter();
-		const launchTaskkill = vi.fn<(pid: number) => ChildProcess>(() => taskkill as ChildProcess);
-		const termination = terminateChildProcess(child, 'win32', 5_000, launchTaskkill);
-		taskkill.emit('close', 1);
+		vi.useFakeTimers();
+		try {
+			const child = Object.assign(new EventEmitter(), {
+				pid: 4_242,
+				exitCode: null,
+				signalCode: null,
+			}) as ChildProcess;
+			const taskkill = new EventEmitter();
+			const launchTaskkill = vi.fn<(pid: number) => ChildProcess>(() => taskkill as ChildProcess);
+			const termination = terminateChildProcess(child, 'win32', 5_000, launchTaskkill);
+			taskkill.emit('close', 1);
+			await vi.advanceTimersByTimeAsync(100);
 
-		await expect(termination).rejects.toThrow(
-			'taskkill failed while terminating process 4242 (exit code 1)'
-		);
+			await expect(termination).rejects.toThrow(
+				'taskkill failed while terminating process 4242 (exit code 1)'
+			);
+			expect(child.listenerCount('exit')).toBe(0);
+			expect(child.listenerCount('close')).toBe(0);
+		} finally {
+			vi.useRealTimers();
+		}
 	});
 
 	test('evicts a failed Windows termination so a later cleanup retry can stop the child', async () => {
-		const child = { pid: 4_242, exitCode: null, signalCode: null } as ChildProcess;
-		const firstTaskkill = new EventEmitter();
-		const secondTaskkill = new EventEmitter();
-		const launchTaskkill = vi
-			.fn<(pid: number) => ChildProcess>()
-			.mockReturnValueOnce(firstTaskkill as ChildProcess)
-			.mockReturnValueOnce(secondTaskkill as ChildProcess);
-		const first = terminateChildProcess(child, 'win32', 5_000, launchTaskkill);
-		firstTaskkill.emit('close', 1);
+		vi.useFakeTimers();
+		try {
+			const child = Object.assign(new EventEmitter(), {
+				pid: 4_242,
+				exitCode: null,
+				signalCode: null,
+			}) as ChildProcess;
+			const firstTaskkill = new EventEmitter();
+			const secondTaskkill = new EventEmitter();
+			const launchTaskkill = vi
+				.fn<(pid: number) => ChildProcess>()
+				.mockReturnValueOnce(firstTaskkill as ChildProcess)
+				.mockReturnValueOnce(secondTaskkill as ChildProcess);
+			const first = terminateChildProcess(child, 'win32', 5_000, launchTaskkill);
+			firstTaskkill.emit('close', 1);
+			await vi.advanceTimersByTimeAsync(100);
 
-		await expect(first).rejects.toThrow(
-			'taskkill failed while terminating process 4242 (exit code 1)'
-		);
-		const second = terminateChildProcess(child, 'win32', 5_000, launchTaskkill);
-		secondTaskkill.emit('close', 0);
+			await expect(first).rejects.toThrow(
+				'taskkill failed while terminating process 4242 (exit code 1)'
+			);
+			const second = terminateChildProcess(child, 'win32', 5_000, launchTaskkill);
+			secondTaskkill.emit('close', 0);
 
-		await expect(second).resolves.toBeUndefined();
-		expect(launchTaskkill).toHaveBeenCalledTimes(2);
+			await expect(second).resolves.toBeUndefined();
+			expect(launchTaskkill).toHaveBeenCalledTimes(2);
+		} finally {
+			vi.useRealTimers();
+		}
 	});
 
 	test('rejects an aborted command when termination fails and retries it during cleanup', async () => {

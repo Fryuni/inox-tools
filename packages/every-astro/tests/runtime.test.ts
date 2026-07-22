@@ -469,9 +469,55 @@ test.skipIf(process.platform !== 'win32')(
 				cwd: root,
 				stdio: ['ignore', 'pipe', 'pipe'],
 			});
-			await once(supervisor.stdout!, 'data');
-			const closed = once(supervisor, 'close');
-			expect(supervisor.kill()).toBe(true);
+			const runningSupervisor = supervisor;
+			const stdout = runningSupervisor.stdout!;
+			const stderr = runningSupervisor.stderr!;
+			let output = '';
+			await new Promise<void>((resolveReady, rejectReady) => {
+				let settled = false;
+				let timeout: NodeJS.Timeout | undefined;
+				const ready = () => finish();
+				const failed = (error: Error) => finish(error);
+				const closed = (exitCode: number | null) =>
+					finish(
+						new Error(
+							`Supervisor exited before readiness (exit code ${exitCode ?? 'signal'})${output ? `:\n${output}` : ''}`
+						)
+					);
+				const captureStderr = (chunk: Buffer) => {
+					output += chunk.toString();
+				};
+				const cleanup = () => {
+					clearTimeout(timeout);
+					stdout.removeListener('data', ready);
+					stderr.removeListener('data', captureStderr);
+					runningSupervisor.removeListener('error', failed);
+					runningSupervisor.removeListener('close', closed);
+				};
+				const finish = (error?: Error) => {
+					if (settled) return;
+					settled = true;
+					cleanup();
+					if (error) rejectReady(error);
+					else resolveReady();
+				};
+				stdout.once('data', ready);
+				stderr.on('data', captureStderr);
+				runningSupervisor.once('error', failed);
+				runningSupervisor.once('close', closed);
+				// This native-process readiness deadline cannot be driven by Vitest fake timers.
+				timeout = setTimeout(
+					() =>
+						finish(
+							new Error(
+								`Supervisor did not signal readiness within 2 seconds${output ? `:\n${output}` : ''}`
+							)
+						),
+					2_000
+				);
+			});
+			const closed = once(runningSupervisor, 'close');
+			expect(runningSupervisor.kill()).toBe(true);
 			await closed;
 
 			// The external descendant uses the Windows scheduler, which Vitest fake timers cannot drive.

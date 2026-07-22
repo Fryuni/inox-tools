@@ -69,6 +69,7 @@ export const gitBuildPlugin = (state: IntegrationState): Plugin => {
 	} = state;
 	const buildContentLoaderKey = `@inox-tools/content-utils:build-content:${projectRoot}`;
 	const buildContentLoaderSymbol = Symbol.for(buildContentLoaderKey);
+	const buildContentLoaderOwner = Symbol();
 	const loadCommitContent = (hash: string, repoPath: string) => {
 		liveGit.setProjectRoot(projectRoot);
 		return liveGit.getFileContentAtCommit(hash, repoPath);
@@ -81,12 +82,14 @@ export const gitBuildPlugin = (state: IntegrationState): Plugin => {
 	let buildContentLoaderRegistered = false;
 	const releaseBuildContentLoader = () => {
 		if (!buildContentLoaderRegistered) return;
-		const registration = Reflect.get(globalThis, buildContentLoaderSymbol) as
-			| BuildContentLoaderRegistration
+		const registry = Reflect.get(globalThis, buildContentLoaderSymbol) as
+			| BuildContentLoaderRegistry
 			| undefined;
-		if (registration !== undefined) {
-			registration.references -= 1;
-			if (registration.references === 0) {
+		if (registry !== undefined) {
+			registry.entries = registry.entries.filter(
+				(entry) => entry.owner !== buildContentLoaderOwner
+			);
+			if (registry.entries.length === 0) {
 				Reflect.deleteProperty(globalThis, buildContentLoaderSymbol);
 			}
 		}
@@ -191,17 +194,21 @@ export const gitBuildPlugin = (state: IntegrationState): Plugin => {
 				liveGit.setProjectRoot(projectRoot);
 				liveGit.setCollectCommitHistory(state.collectCommitHistory);
 				if (!buildContentLoaderRegistered) {
-					const registration = Reflect.get(globalThis, buildContentLoaderSymbol) as
-						| BuildContentLoaderRegistration
+					let registry = Reflect.get(globalThis, buildContentLoaderSymbol) as
+						| BuildContentLoaderRegistry
 						| undefined;
-					if (registration === undefined) {
-						Reflect.set(globalThis, buildContentLoaderSymbol, {
-							loadContent: loadCommitContent,
-							references: 1,
-						} satisfies BuildContentLoaderRegistration);
+					if (registry === undefined) {
+						registry = { entries: [] };
+						Reflect.set(globalThis, buildContentLoaderSymbol, registry);
 					} else {
-						registration.references += 1;
+						registry.entries = registry.entries.filter(
+							(entry) => entry.loadContent.deref() !== undefined
+						);
 					}
+					registry.entries.push({
+						loadContent: new WeakRef(loadCommitContent),
+						owner: buildContentLoaderOwner,
+					});
 					buildContentLoaderRegistered = true;
 				}
 				const trackedFiles = await liveGit.collectGitInfoForContentFiles(loadCommitContent);
@@ -222,9 +229,11 @@ export { trackedFiles as default };`;
 	};
 };
 
-type BuildContentLoaderRegistration = {
-	loadContent: (hash: string, repoPath: string) => string;
-	references: number;
+type BuildContentLoaderRegistry = {
+	entries: Array<{
+		loadContent: WeakRef<(hash: string, repoPath: string) => string>;
+		owner: symbol;
+	}>;
 };
 
 type BuildCommitInfo = {
@@ -354,9 +363,13 @@ import {getEntry} from 'astro:content';
 import {unflatten} from ${JSON.stringify(import.meta.resolve('devalue'))};
 import {Lazy} from ${JSON.stringify(import.meta.resolve('@inox-tools/utils/lazy'))};
 
-const buildContentLoader = globalThis[Symbol.for(${JSON.stringify(
+const buildContentLoaderRegistry = globalThis[Symbol.for(${JSON.stringify(
 	`@inox-tools/content-utils:build-content:${projectRoot}`
-)})]?.loadContent;
+)})];
+let buildContentLoader;
+for (const entry of buildContentLoaderRegistry?.entries ?? []) {
+	buildContentLoader = entry.loadContent.deref() ?? buildContentLoader;
+}
 
 const trackedFiles = unflatten((await import(${JSON.stringify(INNER_MODULE_ID)})).default);
 

@@ -149,4 +149,49 @@ describe('gitBuildPlugin', () => {
 			{ content: 'entry-second:content/entry.md', hash: 'entry-second' },
 		]);
 	});
+
+	it('materializes commit content without replacing a combined output chunk', async () => {
+		const state = createState();
+		const plugin = gitBuildPlugin(state);
+		git.collectGitInfoForContentFiles.mockResolvedValue(
+			new Map([
+				[
+					'entry.md',
+					{
+						authors: [],
+						coAuthors: [],
+						commits: [{ hash: 'entry', repoPath: 'content/entry.md' }],
+						earliest: 1,
+						latest: 1,
+					},
+				],
+			])
+		);
+		git.getFileContentAtCommit.mockReturnValue('historical content');
+
+		const load = plugin.load as (id: string, options: { ssr: boolean }) => Promise<string>;
+		const initialState = await load('\x00@it-astro:content/git/internal', { ssr: true });
+
+		temporaryDirectory = mkdtempSync(join(tmpdir(), 'content-utils-git-plugin-'));
+		const combinedPath = join(temporaryDirectory, 'combined.mjs');
+		writeFileSync(combinedPath, `const preserved = true;\n${initialState}\nexport { preserved };`);
+
+		const writeBundle = plugin.writeBundle as NonNullable<Plugin['writeBundle']>;
+		writeBundle(
+			{ dir: temporaryDirectory } as Parameters<typeof writeBundle>[0],
+			{
+				'combined.mjs': {
+					fileName: 'combined.mjs',
+					moduleIds: ['\x00@it-astro:content/git/internal', '\0astro:data-layer-content', 'entry'],
+					type: 'chunk',
+				},
+			} as Parameters<typeof writeBundle>[1]
+		);
+		await state.cleanups[0]();
+
+		const finalizedSource = readFileSync(combinedPath, 'utf-8');
+		expect(finalizedSource).toContain('const preserved = true');
+		expect(finalizedSource).toContain('historical content');
+		expect(finalizedSource).not.toContain('content/entry.md');
+	});
 });

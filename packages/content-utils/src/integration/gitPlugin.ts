@@ -15,6 +15,8 @@ const RESOLVED_DEV_CONFIG_MODULE_ID = '\x00@it-astro:content/git/dev-config';
 
 const INNER_MODULE_ID = '@it-astro:content/git/internal';
 const RESOLVED_INNER_MODULE_ID = '\x00@it-astro:content/git/internal';
+const GIT_STATE_START = '/*! @inox-tools/content-utils:git-state:start */';
+const GIT_STATE_END = '/*! @inox-tools/content-utils:git-state:end */';
 
 const debug = getDebug('git-time-plugin');
 
@@ -70,6 +72,7 @@ export const gitBuildPlugin = (state: IntegrationState): Plugin => {
 		liveGit.setProjectRoot(projectRoot);
 		return liveGit.getFileContentAtCommit(hash, repoPath);
 	};
+	let collectedGitInformation: Map<string, BuildGitTrackingInfo> | undefined;
 
 	return {
 		name: '@inox-tools/content-utils/gitTimes',
@@ -81,24 +84,29 @@ export const gitBuildPlugin = (state: IntegrationState): Plugin => {
 			if (!info.dir) return;
 			let contentDataEntrypoint: string | undefined;
 			let gitStateEntrypoint: string | undefined;
+			let gitStateIsDedicated = false;
 			for (const chunk of Object.values(bundle)) {
 				if (chunk.type !== 'chunk') continue;
-				if (chunk.moduleIds.length !== 1) continue;
-
-				switch (chunk.moduleIds[0]) {
-					case RESOLVED_INNER_MODULE_ID:
-						gitStateEntrypoint = joinPath(info.dir, chunk.fileName);
-						break;
-					case '\0astro:data-layer-content':
-						contentDataEntrypoint = joinPath(info.dir, chunk.fileName);
-						break;
+				const containsGitState = chunk.moduleIds.includes(RESOLVED_INNER_MODULE_ID);
+				const containsContentData = chunk.moduleIds.includes('\0astro:data-layer-content');
+				if (!containsGitState && !containsContentData) continue;
+				if (containsGitState) {
+					gitStateEntrypoint = joinPath(info.dir, chunk.fileName);
+					gitStateIsDedicated = chunk.moduleIds.length === 1;
+				}
+				if (containsContentData && chunk.moduleIds.length === 1) {
+					contentDataEntrypoint = joinPath(info.dir, chunk.fileName);
 				}
 			}
 
-			if (contentDataEntrypoint && gitStateEntrypoint) {
+			if (gitStateEntrypoint && collectedGitInformation) {
 				state.cleanups.push(async () => {
 					try {
-						await cleanupState(contentDataEntrypoint, gitStateEntrypoint, loadCommitContent);
+						if (gitStateIsDedicated && contentDataEntrypoint) {
+							await cleanupState(contentDataEntrypoint, gitStateEntrypoint, loadCommitContent);
+						} else {
+							cleanupCombinedState(gitStateEntrypoint, collectedGitInformation!, loadCommitContent);
+						}
 					} finally {
 						Reflect.deleteProperty(globalThis, buildContentLoaderSymbol);
 					}
@@ -116,9 +124,10 @@ export const gitBuildPlugin = (state: IntegrationState): Plugin => {
 				liveGit.setCollectCommitHistory(state.collectCommitHistory);
 				Reflect.set(globalThis, buildContentLoaderSymbol, loadCommitContent);
 				const trackedFiles = await liveGit.collectGitInfoForContentFiles(loadCommitContent);
+				collectedGitInformation = new Map(trackedFiles);
 				debug('Git tracked file dates:', trackedFiles);
 
-				return `const trackedFiles = ${devalue.stringify(new Map(trackedFiles))};
+				return `const trackedFiles = ${GIT_STATE_START}${devalue.stringify(collectedGitInformation)}${GIT_STATE_END};
 export { trackedFiles as default };`;
 			}
 		},
@@ -201,6 +210,32 @@ async function cleanupState(
 	writeFileSync(gitState, newContent, 'utf-8');
 }
 
+function cleanupCombinedState(
+	gitState: string,
+	gitInformation: Map<string, BuildGitTrackingInfo>,
+	loadCommitContent: (hash: string, repoPath: string) => string
+): void {
+	for (const fileInfo of gitInformation.values()) {
+		materializeCommitContent(fileInfo, loadCommitContent);
+	}
+
+	const originalContent = readFileSync(gitState, 'utf-8');
+	const stateStart = originalContent.indexOf(GIT_STATE_START);
+	const stateEnd = originalContent.indexOf(GIT_STATE_END, stateStart);
+	if (stateStart === -1 || stateEnd === -1) {
+		throw new Error('Could not locate serialized Git history in the combined output chunk');
+	}
+
+	const serializedState = `${GIT_STATE_START}${devalue.stringify(gitInformation)}${GIT_STATE_END}`;
+	writeFileSync(
+		gitState,
+		`${originalContent.slice(0, stateStart)}${serializedState}${originalContent.slice(
+			stateEnd + GIT_STATE_END.length
+		)}`,
+		'utf-8'
+	);
+}
+
 const buildFacade = (projectRoot: string) => `
 import {getEntry} from 'astro:content';
 import {unflatten} from ${JSON.stringify(import.meta.resolve('devalue'))};
@@ -219,8 +254,9 @@ function buildCommitInfo(c) {
 		author: c.author,
 		coAuthors: Array.from(c.coAuthors),
 	};
+	const lazyContent = Lazy.wrap(() => buildContentLoader?.(c.hash, c.repoPath) ?? '');
 	Object.defineProperty(ci, 'content', {
-		get: Lazy.wrap(() => c.content ?? buildContentLoader?.(c.hash, c.repoPath) ?? ''),
+		get: () => c.content ?? lazyContent(),
 		set: (content) => {
 			c.content = content;
 		},

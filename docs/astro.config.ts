@@ -7,6 +7,11 @@ import starlightCoolerCredit from 'starlight-cooler-credit';
 
 process.env.ASTRO_PROJECT_ROOT = new URL('../', import.meta.url).toString();
 
+const NEW_BADGE = {
+	text: 'NEW',
+	variant: 'success',
+} as const;
+
 const SITE =
 	process.env.VERCEL_ENV !== 'production' && process.env.VERCEL_URL
 		? `https://${process.env.VERCEL_URL}`
@@ -59,6 +64,7 @@ export default defineConfig({
 						{
 							label: 'Git Redirect',
 							link: '/git-redirect',
+							badge: NEW_BADGE,
 						},
 						{
 							label: 'Sitemap Extensions',
@@ -116,6 +122,7 @@ export default defineConfig({
 						{
 							label: 'Every Astro',
 							link: '/every-astro',
+							badge: NEW_BADGE,
 						},
 						{
 							label: 'Astro Integration Template',

@@ -799,11 +799,11 @@ describe('isolatedBootstrapEnvironment', () => {
 		});
 	});
 
-	test('removes fully quoted dashed and underscored loader options while preserving quoted non-loaders', () => {
+	test('removes quoted loader option spellings while preserving quoted non-loaders', () => {
 		expect(
 			isolatedBootstrapEnvironment({
 				NODE_OPTIONS:
-					'"--require=C:\\project\\double.cjs" \'--import=./single.mjs\' "--loader" "./double-loader.mjs" \'--experimental-loader\' \'./single-loader.mjs\' \'--experimental_loader=./single-alias.mjs\' "--experimental_loader" "./double-alias.mjs" "--max-old-space-size=4096" \'--conditions=development\'',
+					'"--require=C:\\project\\double.cjs" \'--import=./single.mjs\' "--loader" "./double-loader.mjs" \'--experimental-loader\' \'./single-loader.mjs\' \'--experimental_loader=./single-alias.mjs\' "--experimental_loader" "./double-alias.mjs" "--require"="./double mixed.cjs" \'--experimental_loader\'="./single mixed.mjs" "--max-old-space-size=4096" \'--conditions=development\'',
 			})
 		).toEqual({
 			NODE_OPTIONS: '"--max-old-space-size=4096" \'--conditions=development\'',

@@ -602,18 +602,13 @@ export function isolatedBootstrapEnvironment(
 	const retainedOptions: string[] = [];
 	for (let index = 0; index < options.length; index += 1) {
 		const option = options[index]!;
-		const outerQuote = option.at(0);
-		const normalizedOption =
-			(outerQuote === '"' || outerQuote === "'") && option.at(-1) === outerQuote
-				? option.slice(1, -1)
-				: option;
-		const [name] = normalizedOption.split('=', 1);
-		const loaderName = name.replaceAll('_', '-');
+		const [name] = option.split('=', 1);
+		const loaderName = name.replaceAll('"', '').replaceAll("'", '').replaceAll('_', '-');
 		if (!(loaderName in loaderOptions)) {
 			retainedOptions.push(option);
 			continue;
 		}
-		if (name === normalizedOption) index += 1;
+		if (!option.includes('=')) index += 1;
 	}
 	if (retainedOptions.length > 0) {
 		isolatedEnvironment.NODE_OPTIONS = retainedOptions.join(' ');

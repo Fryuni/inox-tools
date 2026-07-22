@@ -96,7 +96,7 @@ export const gitBuildPlugin = (state: IntegrationState): Plugin => {
 		async load(id, { ssr } = {}) {
 			if (!ssr) return;
 
-			if (id === RESOLVED_MODULE_ID) return buildFacade;
+			if (id === RESOLVED_MODULE_ID) return buildFacade(projectRoot);
 
 			if (id === RESOLVED_INNER_MODULE_ID) {
 				debug('Registering project root:', projectRoot);
@@ -114,13 +114,25 @@ export { trackedFiles as default };`;
 
 type BuildCommitInfo = {
 	hash: string;
-	repoPath: string;
+	repoPath?: string;
 	content?: string;
 };
 
 type BuildGitTrackingInfo = {
 	commits: BuildCommitInfo[];
 };
+
+function materializeCommitContent(fileInfo: BuildGitTrackingInfo): void {
+	for (const commit of fileInfo.commits) {
+		if (commit.content === undefined) {
+			if (commit.repoPath === undefined) {
+				throw new Error(`Missing repository path for commit ${commit.hash}`);
+			}
+			commit.content = liveGit.getFileContentAtCommit(commit.hash, commit.repoPath);
+		}
+		delete commit.repoPath;
+	}
+}
 async function cleanupState(contentData: string, gitState: string): Promise<void> {
 	if (!existsSync(contentData) || !existsSync(gitState)) return;
 
@@ -153,13 +165,9 @@ async function cleanupState(contentData: string, gitState: string): Promise<void
 		Array.from(gitInformation.entries()).filter(([path]) => usedFiles.has(path))
 	);
 
-	// Content is needed only by the build facade and must be materialized before
-	// serializing the retained entries for its lazy getters.
+	// Content must be stored in the final bundle because Git history may be unavailable at runtime.
 	for (const fileInfo of cleanedMap.values()) {
-		for (const commit of fileInfo.commits) {
-			commit.content = liveGit.getFileContentAtCommit(commit.hash, commit.repoPath);
-			delete commit.repoPath;
-		}
+		materializeCommitContent(fileInfo);
 	}
 	// Build the source code with the new map flattened
 	const newContent = [
@@ -171,10 +179,15 @@ async function cleanupState(contentData: string, gitState: string): Promise<void
 	writeFileSync(gitState, newContent, 'utf-8');
 }
 
-const buildFacade = `
+const buildFacade = (projectRoot: string) => `
 import {getEntry} from 'astro:content';
 import {unflatten} from ${JSON.stringify(import.meta.resolve('devalue'))};
 import {Lazy} from ${JSON.stringify(import.meta.resolve('@inox-tools/utils/lazy'))};
+import {getFileContentAtCommit, setProjectRoot} from ${JSON.stringify(
+	import.meta.resolve('@inox-tools/content-utils/runtime/git')
+)};
+
+setProjectRoot(${JSON.stringify(projectRoot)});
 
 const trackedFiles = unflatten((await import(${JSON.stringify(INNER_MODULE_ID)})).default);
 
@@ -186,7 +199,7 @@ function buildCommitInfo(c) {
 		coAuthors: Array.from(c.coAuthors),
 	};
 	Object.defineProperty(ci, 'content', {
-		get: Lazy.wrap(() => c.content),
+		get: Lazy.wrap(() => c.content ?? getFileContentAtCommit(c.hash, c.repoPath)),
 		enumerable: true,
 	});
 	return ci;

@@ -1061,7 +1061,11 @@ export function isolatedBootstrapEnvironment(
 	return isolatedEnvironment;
 }
 
-async function windowsDirectorySymlinkType(path: string): Promise<'dir' | 'junction'> {
+async function windowsDirectorySymlinkType(
+	path: string,
+	signal?: AbortSignal
+): Promise<'dir' | 'junction'> {
+	if (signal?.aborted) throw abortError(signal);
 	const escapedPath = path.replaceAll("'", "''");
 	const child = spawn(
 		'powershell.exe',
@@ -1071,7 +1075,7 @@ async function windowsDirectorySymlinkType(path: string): Promise<'dir' | 'junct
 			'-Command',
 			`(Get-Item -LiteralPath '${escapedPath}' -Force).LinkType`,
 		],
-		{ stdio: ['ignore', 'pipe', 'pipe'] }
+		{ signal, stdio: ['ignore', 'pipe', 'pipe'] }
 	);
 	let output = '';
 	let errors = '';
@@ -1085,6 +1089,7 @@ async function windowsDirectorySymlinkType(path: string): Promise<'dir' | 'junct
 		child.once('error', rejectExit);
 		child.once('close', resolveExit);
 	});
+	if (signal?.aborted) throw abortError(signal);
 	if (exitCode !== 0) {
 		throw new Error(`Could not inspect Windows directory link ${path}: ${errors}`);
 	}
@@ -1114,22 +1119,31 @@ export async function restoreDependencySymlink(snapshot: DependencySymlinkSnapsh
 export async function snapshotDependencySymlinks(
 	projectRoot: string,
 	managerRoot: string,
-	packageNames: ReadonlySet<string>
+	packageNames: ReadonlySet<string>,
+	signal?: AbortSignal
 ): Promise<DependencySymlinkSnapshot[]> {
+	if (signal?.aborted) throw abortError(signal);
 	const requireFrom = createRequire(join(projectRoot, 'package.json'));
 	const snapshots = new Map<string, DependencySymlinkSnapshot>();
 	for (const packageName of packageNames) {
+		if (signal?.aborted) throw abortError(signal);
 		for (const nodeModules of requireFrom.resolve.paths(packageName) ?? []) {
+			if (signal?.aborted) throw abortError(signal);
 			const packagePath = join(nodeModules, packageName);
 			const relativePath = relative(managerRoot, packagePath);
 			if (relativePath.startsWith('..') || isAbsolute(relativePath)) continue;
 			try {
 				if (!(await lstat(packagePath)).isSymbolicLink()) continue;
+				if (signal?.aborted) throw abortError(signal);
+				const target = await readlink(packagePath);
+				if (signal?.aborted) throw abortError(signal);
 				snapshots.set(packagePath, {
 					path: packagePath,
-					target: await readlink(packagePath),
+					target,
 					type:
-						process.platform === 'win32' ? await windowsDirectorySymlinkType(packagePath) : 'dir',
+						process.platform === 'win32'
+							? await windowsDirectorySymlinkType(packagePath, signal)
+							: 'dir',
 				});
 			} catch (error: unknown) {
 				if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
@@ -1853,7 +1867,7 @@ async function createRuntimeSession(
 		snapshotFile(join(managerRoot, 'package.json')),
 		snapshotFile(join(projectRoot, 'package.json')),
 		snapshotFile(managerLockPath),
-		snapshotDependencySymlinks(projectRoot, managerRoot, installedDependencies),
+		snapshotDependencySymlinks(projectRoot, managerRoot, installedDependencies, signal),
 	]);
 	if (!originalManagerLock.exists) {
 		throw new Error(

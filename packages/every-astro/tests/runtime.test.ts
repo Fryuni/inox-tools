@@ -1472,6 +1472,18 @@ describe('packed workspace package activation', () => {
 	);
 });
 
+describe('snapshotDependencySymlinks', () => {
+	test('honors cancellation before scanning dependency links', async () => {
+		const project = await createProject();
+		const controller = new AbortController();
+		controller.abort('stop dependency scan');
+
+		await expect(
+			snapshotDependencySymlinks(project, project, new Set(['astro']), controller.signal)
+		).rejects.toMatchObject({ name: 'AbortError' });
+	});
+});
+
 describe('restoreDependencySymlink', () => {
 	test('restores the saved directory link target', async () => {
 		const project = await createProject({ dependencies: { astro: '7.0.0' } });

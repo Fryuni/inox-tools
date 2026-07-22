@@ -23,7 +23,7 @@ type EntryData = {
 	commits: CommitData[];
 };
 
-function extractJsonData(html: string): EntryData[] {
+function extractJsonData<T>(html: string): T {
 	const match = html.match(/<pre id="data">([\s\S]*?)<\/pre>/);
 	if (!match) throw new Error('Could not find <pre id="data"> in HTML');
 	// Unescape HTML entities that Astro may have encoded
@@ -31,7 +31,8 @@ function extractJsonData(html: string): EntryData[] {
 		.replace(/&amp;/g, '&')
 		.replace(/&lt;/g, '<')
 		.replace(/&gt;/g, '>')
-		.replace(/&quot;/g, '"');
+		.replace(/&quot;/g, '"')
+		.replace(/&#39;/g, "'");
 	return JSON.parse(json);
 }
 
@@ -56,18 +57,34 @@ describe('Git commit history tracking', () => {
 		const html = await fixture.readFile('commits/index.html');
 		expect(html).not.toBeNull();
 
-		const data = extractJsonData(html!);
+		const data = extractJsonData<EntryData[]>(html!);
 
 		expect(data).toBeArray();
 		expect(data.length).toBeGreaterThan(0);
 		expect(data[0].commitCount).toBeGreaterThan(0);
 	});
 
+	it('returns the earliest and latest dates without swapping them', async () => {
+		const [datesHtml, infoHtml] = await Promise.all([
+			fixture.readFile('dates/index.html'),
+			fixture.readFile('dates-info/index.html'),
+		]);
+		expect(datesHtml).not.toBeNull();
+		expect(infoHtml).not.toBeNull();
+
+		const dates = extractJsonData<{ latest: string; oldest: string }>(datesHtml!);
+		const info = extractJsonData<{ earliest: string; latest: string }>(infoHtml!);
+
+		expect(info.earliest).not.toBe(info.latest);
+		expect(dates.oldest).toBe(info.earliest);
+		expect(dates.latest).toBe(info.latest);
+	});
+
 	it('lazy content getter retrieves file content at commit', async () => {
 		const html = await fixture.readFile('commits/index.html');
 		expect(html).not.toBeNull();
 
-		const data = extractJsonData(html!);
+		const data = extractJsonData<EntryData[]>(html!);
 
 		expect(data).toBeArray();
 		expect(data.length).toBeGreaterThan(0);
@@ -91,13 +108,30 @@ describe('Git commit history tracking', () => {
 		const html = await fixture.readFile('commits/index.html');
 		expect(html).not.toBeNull();
 
-		const data = extractJsonData(html!);
+		const data = extractJsonData<EntryData[]>(html!);
 
 		expect(data).toBeArray();
 		expect(data.length).toBeGreaterThan(0);
 		for (const entry of data) {
 			expect(entry.commitCount).toBe(0);
 			expect(entry.commits).toEqual([]);
+		}
+	});
+
+	it('does not collect commit history in dev when collectCommitHistory is false', async () => {
+		const devServer = await fixture.startDevServer({});
+		try {
+			const response = await fixture.fetch('/commits/');
+			expect(response.ok).toBe(true);
+
+			const data = extractJsonData<EntryData[]>(await response.text());
+			expect(data).not.toHaveLength(0);
+			for (const entry of data) {
+				expect(entry.commitCount).toBe(0);
+				expect(entry.commits).toEqual([]);
+			}
+		} finally {
+			await devServer.stop();
 		}
 	});
 });

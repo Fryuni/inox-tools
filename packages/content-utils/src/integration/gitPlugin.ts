@@ -10,6 +10,9 @@ import { fileURLToPath } from 'node:url';
 const MODULE_ID = '@it-astro:content/git';
 const RESOLVED_MODULE_ID = '\x00@it-astro:content/git';
 
+const DEV_CONFIG_MODULE_ID = '@it-astro:content/git/dev-config';
+const RESOLVED_DEV_CONFIG_MODULE_ID = '\x00@it-astro:content/git/dev-config';
+
 const INNER_MODULE_ID = '@it-astro:content/git/internal';
 const RESOLVED_INNER_MODULE_ID = '\x00@it-astro:content/git/internal';
 
@@ -28,21 +31,30 @@ export const gitDevPlugin = (state: IntegrationState): Plugin => {
 		name: '@inox-tools/content-utils/gitTimes',
 		resolveId(id) {
 			if (id === MODULE_ID) return RESOLVED_MODULE_ID;
+			if (id === DEV_CONFIG_MODULE_ID) return RESOLVED_DEV_CONFIG_MODULE_ID;
 		},
 		load(id, { ssr } = {}) {
-			if (id !== RESOLVED_MODULE_ID || !ssr) return;
+			if (!ssr) return;
+
+			if (id === RESOLVED_DEV_CONFIG_MODULE_ID) {
+				return `
+import {setProjectRoot, setCollectCommitHistory} from ${JSON.stringify(resolve(thisDir, 'runtime/git.js'))};
+
+setProjectRoot(${JSON.stringify(projectRoot)});
+setCollectCommitHistory(${JSON.stringify(state.collectCommitHistory)});
+`;
+			}
+
+			if (id !== RESOLVED_MODULE_ID) return;
 
 			debug(`Generated dev mode git time plugin for ${projectRoot}`);
 			return `
-import {setProjectRoot, setCollectCommitHistory} from ${JSON.stringify(resolve(thisDir, 'runtime/git.js'))};
+import ${JSON.stringify(DEV_CONFIG_MODULE_ID)};
 export {
 	getLatestCommitDate,
 	getOldestCommitDate,
 	getEntryGitInfo,
 } from ${JSON.stringify(resolve(thisDir, 'runtime/liveGit.js'))};
-
-setProjectRoot(${JSON.stringify(projectRoot)});
-setCollectCommitHistory(${JSON.stringify(state.collectCommitHistory)});
 `;
 		},
 	};
@@ -93,7 +105,7 @@ export const gitBuildPlugin = (state: IntegrationState): Plugin => {
 				const trackedFiles = await liveGit.collectGitInfoForContentFiles();
 				debug('Git tracked file dates:', trackedFiles);
 
-				// Pre-fetch commit content for build serialization
+				// Pre-fetch commit content for immediate build serialization; this mutation is not reused.
 				for (const [, fileInfo] of trackedFiles) {
 					for (const commit of fileInfo.commits) {
 						(commit as any).content = liveGit.getFileContentAtCommit(commit.hash, commit.repoPath);

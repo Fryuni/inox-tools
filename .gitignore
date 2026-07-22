@@ -60,7 +60,6 @@ build/
 
 # Test results
 test-results/
-test-results/
 playwright-report/
 blob-report/
 playwright/.cache/

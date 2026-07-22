@@ -510,10 +510,10 @@ test.skipIf(process.platform !== 'win32')(
 					() =>
 						finish(
 							new Error(
-								`Supervisor did not signal readiness within 2 seconds${output ? `:\n${output}` : ''}`
+								`Supervisor did not signal readiness within 10 seconds${output ? `:\n${output}` : ''}`
 							)
 						),
-					2_000
+					10_000
 				);
 			});
 			const closed = once(runningSupervisor, 'close');

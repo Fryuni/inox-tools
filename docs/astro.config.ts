@@ -113,6 +113,10 @@ export default defineConfig({
 					collapsed: false,
 					items: [
 						{
+							label: 'Every Astro',
+							link: '/every-astro',
+						},
+						{
 							label: 'Astro Integration Template',
 							link: 'https://astro-integration-template.netlify.app',
 						},

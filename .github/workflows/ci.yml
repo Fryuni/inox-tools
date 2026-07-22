@@ -138,6 +138,36 @@ jobs:
       - name: Test
         run: pnpm run test
 
+
+  every-astro-windows:
+    name: Every Astro Windows
+    runs-on: windows-latest
+    timeout-minutes: 10
+    needs: build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4.2.0
+        with:
+          node-version: 24
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        shell: pwsh
+        run: pnpm install
+
+      - name: Build every-astro
+        shell: pwsh
+        run: pnpm --filter @inox-tools/every-astro build
+
+      - name: Test every-astro
+        shell: pwsh
+        run: pnpm --filter @inox-tools/every-astro test
   test-e2e:
     name: E2E test
     runs-on: ubuntu-latest

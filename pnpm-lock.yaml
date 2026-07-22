@@ -120,6 +120,12 @@ catalogs:
     content-type:
       specifier: ^1.0.5
       version: 1.0.5
+    corepack:
+      specifier: 0.34.0
+      version: 0.34.0
+    cross-spawn:
+      specifier: 7.0.6
+      version: 7.0.6
     debug:
       specifier: ^4.4.3
       version: 4.4.3
@@ -811,6 +817,28 @@ importers:
       astro:
         specifier: ^7.0.7
         version: 7.0.7(patch_hash=34ac88963a271f59948954a697fdf4850409d163faae6f020d77c206005cacc4)(@astrojs/markdown-remark@7.2.1)(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@types/node@25.9.4)(@vercel/functions@3.7.2)(db0@0.3.4)(ioredis@5.8.2)(jiti@2.6.1)(rollup@4.62.2)(terser@5.44.1)(yaml@2.9.0)
+
+  packages/every-astro:
+    dependencies:
+      corepack:
+        specifier: 'catalog:'
+        version: 0.34.0
+      cross-spawn:
+        specifier: 'catalog:'
+        version: 7.0.6
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 25.9.4
+      tsup:
+        specifier: 'catalog:'
+        version: 8.5.1(jiti@2.6.1)(postcss@8.5.19)(typescript@5.9.3)(yaml@2.9.0)
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.9(@types/node@25.9.4)(@vitest/coverage-v8@4.1.9)(@vitest/ui@4.1.9)(vite@8.1.4(@types/node@25.9.4)(esbuild@0.28.1)(jiti@2.6.1)(terser@5.44.1)(yaml@2.9.0))
 
   packages/git-redirect:
     devDependencies:
@@ -3955,6 +3983,11 @@ packages:
   cookie@1.1.1:
     resolution: {integrity: sha512-ei8Aos7ja0weRpFzJnEA9UHJ/7XQmqglbRwnf2ATjcB9Wq874VKH9kfjjirM6UhU2/E5fFYadylyhFldcqSidQ==}
     engines: {node: '>=18'}
+
+  corepack@0.34.0:
+    resolution: {integrity: sha512-8D9N/k9hDjoISCDGUzH2wBF0fJD49p3G7ifoEZcc0vhB7Py6r+Mc1SpJ8dvnWY/HMP95K60WkQbN7vgbUgXgpA==}
+    engines: {node: ^20.10.0 || ^22.11.0 || >=24.0.0}
+    hasBin: true
 
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
@@ -8892,6 +8925,8 @@ snapshots:
   cookie-es@1.2.3: {}
 
   cookie@1.1.1: {}
+
+  corepack@0.34.0: {}
 
   cross-spawn@7.0.6:
     dependencies:

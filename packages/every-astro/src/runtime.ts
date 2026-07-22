@@ -214,6 +214,30 @@ function loadPnpApi(pnpPath: string | undefined): PnpApi | undefined {
 	return pnpapi;
 }
 
+async function spawnSupervisedCommand(
+	temporaryRoot: string,
+	file: string,
+	args: string[],
+	options: NonNullable<Parameters<typeof spawn>[2]>
+): Promise<ChildProcess> {
+	if (process.platform !== 'win32') return spawn(file, args, options);
+
+	const controlFile = join(temporaryRoot, `command-${randomUUID()}.json`);
+	await writeFile(controlFile, JSON.stringify({ file, args }));
+	let child: ChildProcess;
+	try {
+		const [supervisor, ...supervisorArgs] = windowsJobSupervisorCommand(controlFile);
+		child = spawn(supervisor, supervisorArgs, options);
+	} catch (error) {
+		await rm(controlFile, { force: true });
+		throw error;
+	}
+	const cleanControlFile = () => void rm(controlFile, { force: true }).catch(() => undefined);
+	child.once('error', cleanControlFile);
+	child.once('close', cleanControlFile);
+	return child;
+}
+
 async function readPnpManifest(
 	pnpPath: string,
 	manifestPath: string,
@@ -223,23 +247,34 @@ async function readPnpManifest(
 	if (cached) return cached;
 	if (signal?.aborted) throw abortError(signal);
 
-	const child = spawn(
-		process.execPath,
-		[
-			corepackCli,
-			'yarn',
-			'node',
-			'-e',
-			"process.stdout.write(require('node:fs').readFileSync(process.argv[1], 'utf8'))",
-			manifestPath,
-		],
-		{
-			cwd: dirname(pnpPath),
-			detached: process.platform !== 'win32',
-			env: isolatedBootstrapEnvironment(),
-			stdio: ['ignore', 'pipe', 'pipe'],
-		}
-	);
+	const temporaryRoot =
+		process.platform === 'win32'
+			? await mkdtemp(join(tmpdir(), 'every-astro-pnp-reader-'))
+			: undefined;
+	let child: ChildProcess;
+	try {
+		child = await spawnSupervisedCommand(
+			temporaryRoot ?? '',
+			process.execPath,
+			[
+				corepackCli,
+				'yarn',
+				'node',
+				'-e',
+				"process.stdout.write(require('node:fs').readFileSync(process.argv[1], 'utf8'))",
+				manifestPath,
+			],
+			{
+				cwd: dirname(pnpPath),
+				detached: process.platform !== 'win32',
+				env: isolatedBootstrapEnvironment(),
+				stdio: ['ignore', 'pipe', 'pipe'],
+			}
+		);
+	} catch (error) {
+		if (temporaryRoot) await rm(temporaryRoot, { recursive: true, force: true });
+		throw error;
+	}
 	let output = '';
 	let errors = '';
 	child.stdout?.on('data', (chunk: Buffer) => {
@@ -271,6 +306,7 @@ async function readPnpManifest(
 		);
 	};
 	if (signal) signal.addEventListener('abort', abort, { once: true });
+	let primaryError: unknown;
 	try {
 		const exitCode = await Promise.race([completion, aborted]);
 		if (signal?.aborted) {
@@ -282,12 +318,28 @@ async function readPnpManifest(
 				`Could not read PnP manifest ${manifestPath} with Corepack Yarn (exit code ${exitCode}): ${errors}`
 			);
 		}
+		const manifest = JSON.parse(output) as PackageManifest;
+		pnpManifests.set(manifestPath, manifest);
+		return manifest;
+	} catch (error) {
+		primaryError = error;
+		throw error;
 	} finally {
 		signal?.removeEventListener('abort', abort);
+		let cleanupError: unknown;
+		try {
+			await terminateChildProcess(child);
+			await closed;
+		} catch (error) {
+			cleanupError = error;
+		}
+		try {
+			if (temporaryRoot) await rm(temporaryRoot, { recursive: true, force: true });
+		} catch (error) {
+			cleanupError ??= error;
+		}
+		if (cleanupError && primaryError === undefined) throw cleanupError;
 	}
-	const manifest = JSON.parse(output) as PackageManifest;
-	pnpManifests.set(manifestPath, manifest);
-	return manifest;
 }
 
 async function manifestAt(path: string, packageName: string): Promise<string | undefined> {
@@ -987,30 +1039,7 @@ export class RuntimeSession implements BisectSession {
 	): Promise<ChildProcess> {
 		return this.commandSpawner
 			? this.commandSpawner(file, args, options)
-			: this.spawnCommand(file, args, options);
-	}
-
-	private async spawnCommand(
-		file: string,
-		args: string[],
-		options: NonNullable<Parameters<typeof spawn>[2]>
-	): Promise<ChildProcess> {
-		if (process.platform !== 'win32') return spawn(file, args, options);
-
-		const controlFile = join(this.temporaryRoot, `command-${randomUUID()}.json`);
-		await writeFile(controlFile, JSON.stringify({ file, args }));
-		let child: ChildProcess;
-		try {
-			const [supervisor, ...supervisorArgs] = windowsJobSupervisorCommand(controlFile);
-			child = spawn(supervisor, supervisorArgs, options);
-		} catch (error) {
-			await rm(controlFile, { force: true });
-			throw error;
-		}
-		const cleanControlFile = () => void rm(controlFile, { force: true }).catch(() => undefined);
-		child.once('error', cleanControlFile);
-		child.once('close', cleanControlFile);
-		return child;
+			: spawnSupervisedCommand(this.temporaryRoot, file, args, options);
 	}
 
 	public async execute(

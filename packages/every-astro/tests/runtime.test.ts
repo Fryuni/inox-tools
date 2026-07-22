@@ -111,6 +111,67 @@ describe('installedAstroMajor', () => {
 	});
 });
 
+test.each([
+	['nonzero exit', 'failure'],
+	['malformed manifest', 'malformed'],
+])('reaps a background PnP reader descendant after a %s', async (_name, mode) => {
+	const project = await createProject({
+		packageManager: 'yarn@4.17.1',
+		dependencies: { astro: '7.0.0' },
+	});
+	const pidDirectory = join(project, 'reader-pids');
+	const packageRoot = join(project, '.yarn/cache/astro.zip/node_modules/astro');
+	await mkdir(pidDirectory, { recursive: true });
+	await mkdir(join(project, '.yarn/cache'), { recursive: true });
+	await writeFile(join(project, '.yarn/cache/astro.zip'), '');
+	await writeFile(
+		join(project, '.pnp.cjs'),
+		`exports.resolveToUnqualified = (request) => request === 'astro' ? ${JSON.stringify(packageRoot)} : null;\n`
+	);
+	await writeFile(
+		join(project, '.yarnrc.yml'),
+		'yarnPath: .yarn/releases/reader.cjs\nnodeLinker: pnp\n'
+	);
+	// The unrefed fixture child must outlive its launcher until reader cleanup owns it.
+	await mkdir(join(project, '.yarn/releases'), { recursive: true });
+	await writeFile(
+		join(project, '.yarn/releases/reader.cjs'),
+		[
+			"const { spawn } = require('node:child_process');",
+			"const { mkdirSync, writeFileSync } = require('node:fs');",
+			"const { join } = require('node:path');",
+			'const directory = process.env.EVERY_ASTRO_PNP_READER_PIDS;',
+			"if (!directory) throw new Error('Missing PID directory');",
+			'mkdirSync(directory, { recursive: true });',
+			"const descendant = spawn(process.execPath, ['-e', 'setInterval(() => {}, 1_000)'], { stdio: 'ignore' });",
+			'descendant.unref();',
+			"writeFileSync(join(directory, `reader-${process.pid}`), '');",
+			"writeFileSync(join(directory, `descendant-${descendant.pid}`), '');",
+			mode === 'malformed' ? "process.stdout.write('not JSON');" : '',
+			mode === 'malformed' ? 'process.exit(0);' : 'process.exit(1);',
+		].join('\n')
+	);
+	const previousPidDirectory = process.env.EVERY_ASTRO_PNP_READER_PIDS;
+	process.env.EVERY_ASTRO_PNP_READER_PIDS = pidDirectory;
+	try {
+		if (mode === 'malformed') {
+			await expect(installedAstroMajor(project)).rejects.toThrow(SyntaxError);
+		} else {
+			await expect(installedAstroMajor(project)).rejects.toThrow('Could not read PnP manifest');
+		}
+		const pids = (await readdir(pidDirectory))
+			.map((entry) => Number(entry.slice(entry.lastIndexOf('-') + 1)))
+			.filter(Number.isSafeInteger);
+		expect(pids).toHaveLength(2);
+		for (const pid of pids) {
+			expect(() => process.kill(pid, 0)).toThrow(/ESRCH/);
+		}
+	} finally {
+		if (previousPidDirectory === undefined) delete process.env.EVERY_ASTRO_PNP_READER_PIDS;
+		else process.env.EVERY_ASTRO_PNP_READER_PIDS = previousPidDirectory;
+	}
+});
+
 describe('selectLatestAstroReleaseTag', () => {
 	test('selects the newest stable tag within the installed Astro major', () => {
 		expect(

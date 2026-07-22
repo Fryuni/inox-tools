@@ -42,6 +42,7 @@ type PackageManifest = {
 	devDependencies?: Record<string, string>;
 	peerDependencies?: Record<string, string>;
 	optionalDependencies?: Record<string, string>;
+	scripts?: Record<string, string>;
 	resolutions?: Record<string, string>;
 };
 
@@ -67,6 +68,22 @@ class CommandError extends Error {
 
 function commandText(command: readonly string[]): string {
 	return command.map((part) => JSON.stringify(part)).join(' ');
+}
+
+/** Windows only supports direct, foreground Astro development-server scripts. */
+export function isWindowsForegroundDevScript(script: string | undefined): boolean {
+	if (!script || /[;&|<>`$()]/.test(script)) return false;
+	const tokens = script.trim().split(/\s+/);
+	let commandIndex = 0;
+	if (tokens[0] === 'npx' || tokens[0] === 'bunx') {
+		commandIndex = 1;
+	} else if (
+		(tokens[0] === 'pnpm' || tokens[0] === 'yarn' || tokens[0] === 'bun') &&
+		tokens[1] === 'exec'
+	) {
+		commandIndex = 2;
+	}
+	return tokens[commandIndex] === 'astro' && tokens[commandIndex + 1] === 'dev';
 }
 
 async function readManifest(path: string): Promise<PackageManifest> {
@@ -686,10 +703,15 @@ export function terminateChildProcess(
 		}
 	})();
 	childTerminations.set(child, promise);
+	void promise.catch(() => {
+		if (childTerminations.get(child) === promise) childTerminations.delete(child);
+	});
 	return promise;
 }
 
-class RuntimeSession implements BisectSession {
+type ChildTerminator = (child: ChildProcess | undefined) => Promise<void>;
+
+export class RuntimeSession implements BisectSession {
 	private activeChild: ChildProcess | undefined;
 	private bisectActive = false;
 	private readonly bunLinkTargets = new Map<string, string>();
@@ -711,7 +733,8 @@ class RuntimeSession implements BisectSession {
 		private readonly originalDependencySymlinks: readonly DependencySymlinkSnapshot[],
 		private readonly installedDependencies: ReadonlySet<string>,
 		private readonly latest: string,
-		private readonly signal: AbortSignal
+		private readonly signal: AbortSignal,
+		private readonly terminate: ChildTerminator = terminateChildProcess
 	) {}
 
 	public async latestRevision(): Promise<string> {
@@ -719,7 +742,7 @@ class RuntimeSession implements BisectSession {
 	}
 
 	private async stopChild(child = this.activeChild): Promise<void> {
-		await terminateChildProcess(child);
+		await this.terminate(child);
 	}
 
 	public async execute(
@@ -754,9 +777,17 @@ class RuntimeSession implements BisectSession {
 		}
 
 		let exitCode: number | null;
+		let terminationFailed = false;
 		try {
 			exitCode = await new Promise<number | null>((resolveExit, rejectExit) => {
-				const abort = () => void this.stopChild(child).catch(() => undefined);
+				let abortTermination: Promise<void> | undefined;
+				const abort = () => {
+					abortTermination = this.stopChild(child);
+					void abortTermination.catch((error: unknown) => {
+						terminationFailed = true;
+						rejectExit(error);
+					});
+				};
 				if (!options.ignoreAbort) this.signal.addEventListener('abort', abort, { once: true });
 				child.once('error', (error) => {
 					if (!options.ignoreAbort) this.signal.removeEventListener('abort', abort);
@@ -766,11 +797,21 @@ class RuntimeSession implements BisectSession {
 				});
 				child.once('close', (code) => {
 					if (!options.ignoreAbort) this.signal.removeEventListener('abort', abort);
-					resolveExit(code);
+					if (abortTermination) {
+						void abortTermination.then(
+							() => resolveExit(code),
+							(error: unknown) => {
+								terminationFailed = true;
+								rejectExit(error);
+							}
+						);
+					} else {
+						resolveExit(code);
+					}
 				});
 			});
 		} finally {
-			if (this.activeChild === child) this.activeChild = undefined;
+			if (!terminationFailed && this.activeChild === child) this.activeChild = undefined;
 		}
 		if (this.signal.aborted && !options.ignoreAbort) throw abortError(this.signal);
 		if (exitCode !== 0) {
@@ -918,7 +959,14 @@ class RuntimeSession implements BisectSession {
 	}
 
 	public async runDevServerAndAsk(label: string): Promise<boolean> {
-		if (this.signal.aborted) throw abortError(this.signal);
+		if (process.platform === 'win32') {
+			const { scripts } = await readManifest(join(this.projectRoot, 'package.json'));
+			if (!isWindowsForegroundDevScript(scripts?.dev)) {
+				throw new Error(
+					'On Windows, every-astro requires a foreground `astro dev` package script without shell operators.'
+				);
+			}
+		}
 		const child = spawn(this.manager, ['run', 'dev'], {
 			cwd: this.projectRoot,
 			stdio: 'inherit',

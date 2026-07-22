@@ -13,7 +13,7 @@ import {
 } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, describe, expect, test } from 'vitest';
+import { afterEach, describe, expect, test, vi } from 'vitest';
 import {
 	abortError,
 	collectInstalledDependencyNames,
@@ -26,9 +26,11 @@ import {
 	discoverAstroWorkspacePackages,
 	installedAstroMajor,
 	isolatedBootstrapEnvironment,
+	isWindowsForegroundDevScript,
 	linkBunPackage,
 	packageLinkCommands,
 	parseBisectCompletion,
+	RuntimeSession,
 	resolveInstalledPackageManifest,
 	restoreDependencySymlink,
 	selectLatestAstroReleaseTag,
@@ -314,6 +316,91 @@ describe('terminateChildProcess', () => {
 			if (originalPath === undefined) delete process.env.PATH;
 			else process.env.PATH = originalPath;
 		}
+	});
+
+	test('evicts a failed Windows termination so a later cleanup retry can stop the child', async () => {
+		const root = await temporaryRoot();
+		const bin = join(root, 'bin');
+		const attempts = join(root, 'taskkill-attempts');
+		const taskkill = join(bin, 'taskkill');
+		await mkdir(bin);
+		await writeFile(
+			taskkill,
+			'#!/bin/sh\nif [ -e "$TASKKILL_ATTEMPTS" ]; then\n\tprintf 2 > "$TASKKILL_ATTEMPTS"\n\texit 0\nfi\nprintf 1 > "$TASKKILL_ATTEMPTS"\nexit 1\n'
+		);
+		await chmod(taskkill, 0o755);
+
+		const originalPath = process.env.PATH;
+		const originalAttempts = process.env.TASKKILL_ATTEMPTS;
+		process.env.PATH = `${bin}:${originalPath ?? ''}`;
+		process.env.TASKKILL_ATTEMPTS = attempts;
+		try {
+			const child = { pid: process.pid, exitCode: null, signalCode: null } as ChildProcess;
+
+			await expect(terminateChildProcess(child, 'win32')).rejects.toThrow(
+				`taskkill failed while terminating process ${process.pid} (exit code 1)`
+			);
+			await expect(terminateChildProcess(child, 'win32')).resolves.toBeUndefined();
+			await expect(readFile(attempts, 'utf8')).resolves.toBe('2');
+		} finally {
+			if (originalPath === undefined) delete process.env.PATH;
+			else process.env.PATH = originalPath;
+			if (originalAttempts === undefined) delete process.env.TASKKILL_ATTEMPTS;
+			else process.env.TASKKILL_ATTEMPTS = originalAttempts;
+		}
+	});
+
+	test('rejects an aborted command when termination fails and retries it during cleanup', async () => {
+		const project = await createProject();
+		const temporary = await temporaryRoot();
+		const controller = new AbortController();
+		const terminationError = new Error('could not terminate child');
+		const terminate = vi.fn(async () => {
+			throw terminationError;
+		});
+		const session = new RuntimeSession(
+			project,
+			project,
+			join(temporary, 'astro'),
+			temporary,
+			'',
+			'npm',
+			false,
+			{ exists: true, content: Buffer.from('{}\n') },
+			{ exists: true, content: Buffer.from('{}\n') },
+			join(project, 'package-lock.json'),
+			{ exists: true, content: Buffer.from('{}\n') },
+			[],
+			new Set(),
+			'',
+			controller.signal,
+			terminate
+		);
+		const controllableSession = session as unknown as {
+			unlinkPackages(): Promise<void>;
+			restoreDependencies(): Promise<void>;
+		};
+		vi.spyOn(controllableSession, 'unlinkPackages').mockResolvedValue();
+		vi.spyOn(controllableSession, 'restoreDependencies').mockResolvedValue();
+
+		const execution = session.execute([process.execPath, '-e', ''], project);
+		controller.abort();
+
+		await expect(execution).rejects.toBe(terminationError);
+		await expect(session.close()).rejects.toThrow('every-astro cleanup failed');
+		expect(terminate).toHaveBeenCalledTimes(2);
+	});
+});
+
+describe('isWindowsForegroundDevScript', () => {
+	test('accepts direct Astro dev commands and rejects wrappers or shell composition', () => {
+		expect(isWindowsForegroundDevScript('astro dev --host')).toBe(true);
+		expect(isWindowsForegroundDevScript('pnpm exec astro dev')).toBe(true);
+		expect(isWindowsForegroundDevScript('npx astro dev')).toBe(true);
+		expect(isWindowsForegroundDevScript('node scripts/start-dev.js')).toBe(false);
+		expect(isWindowsForegroundDevScript('astro dev &')).toBe(false);
+		expect(isWindowsForegroundDevScript('astro dev | tee dev.log')).toBe(false);
+		expect(isWindowsForegroundDevScript('astro dev $(node daemonize.js)')).toBe(false);
 	});
 });
 

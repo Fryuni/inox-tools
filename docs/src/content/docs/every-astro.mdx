@@ -15,6 +15,7 @@ Before running Every Astro, make sure the project has:
 - Node.js 22.12.0 or newer, Git, and the project's package manager available on your `PATH`.
 - Astro and the project's dependencies already installed.
 - A `dev` script that starts the project and keeps running while you test it.
+- On Windows, a direct foreground Astro dev command such as `"dev": "astro dev"`; wrapper, background, and shell-composed scripts are rejected.
 - A lockfile for pnpm, npm, Yarn, or Bun.
 
 Both Yarn Classic and Yarn Berry are supported, including Plug'n'Play projects. In a monorepo, run the

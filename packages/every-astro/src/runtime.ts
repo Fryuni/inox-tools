@@ -85,6 +85,25 @@ export function windowsJobSupervisorCommand(controlFile: string): [string, ...st
 	];
 }
 
+const WINDOWS_CMD_META_CHARACTERS = /([()\][%!^"`<>&|;, *?])/g;
+const WINDOWS_CMD_SHIM = /node_modules[\\/]\.bin[\\/][^\\/]+\.cmd$/i;
+
+/** Build the raw `/d /s /c` tail using cross-spawn's Windows escaping semantics. */
+export function windowsBatchCommandTail(file: string, args: readonly string[]): string {
+	const doubleEscapeMetaCharacters = WINDOWS_CMD_SHIM.test(file);
+	const command = file.replaceAll('/', '\\').replace(WINDOWS_CMD_META_CHARACTERS, '^$1');
+	const escapedArguments = args.map((argument) => {
+		let escaped = `${argument}`;
+		escaped = escaped.replace(/(?=(\\+?)?)\1"/g, '$1$1\\"');
+		escaped = escaped.replace(/(?=(\\+?)?)\1$/, '$1$1');
+		escaped = `"${escaped}"`.replace(WINDOWS_CMD_META_CHARACTERS, '^$1');
+		return doubleEscapeMetaCharacters
+			? escaped.replace(WINDOWS_CMD_META_CHARACTERS, '^$1')
+			: escaped;
+	});
+	return `/d /s /c "${[command, ...escapedArguments].join(' ')}"`;
+}
+
 /** Development servers must not consume the terminal input reserved for the bisect prompt. */
 export const developmentServerStdio: ['ignore', 'inherit', 'inherit'] = [
 	'ignore',

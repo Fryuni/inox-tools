@@ -193,6 +193,56 @@ public static class EveryAstroWindowsJob {
         return commandLine;
     }
 
+    private static string EscapeMetaCharacters(string value) {
+        const string metaCharacters = "()[]%!^\"`<>&|;, *?";
+        var escaped = new StringBuilder();
+        foreach (var character in value) {
+            if (metaCharacters.IndexOf(character) >= 0) escaped.Append('^');
+            escaped.Append(character);
+        }
+        return escaped.ToString();
+    }
+
+    private static string EscapeBatchArgument(string value, bool doubleEscapeMetaCharacters) {
+        var escaped = new StringBuilder();
+        for (var index = 0; index < value.Length;) {
+            if (value[index] != '\\') {
+                escaped.Append(value[index++]);
+                continue;
+            }
+            var next = index;
+            while (next < value.Length && value[next] == '\\') next++;
+            var slashCount = next - index;
+            if (next == value.Length) {
+                escaped.Append('\\', slashCount * 2);
+            } else if (value[next] == '"') {
+                escaped.Append('\\', slashCount * 2 + 1);
+                escaped.Append('"');
+                next++;
+            } else {
+                escaped.Append('\\', slashCount);
+            }
+            index = next;
+        }
+        var quoted = EscapeMetaCharacters("\"" + escaped + "\"");
+        return doubleEscapeMetaCharacters ? EscapeMetaCharacters(quoted) : quoted;
+    }
+
+    private static bool IsCmdShim(string file) {
+        var normalized = file.Replace('/', '\\');
+        return normalized.IndexOf("\\node_modules\\.bin\\", StringComparison.OrdinalIgnoreCase) >= 0 &&
+            normalized.EndsWith(".cmd", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static StringBuilder BuildCmdCommandLine(string cmd, string batchFile, string[] arguments) {
+        var shellCommand = new StringBuilder(EscapeMetaCharacters(batchFile.Replace('/', '\\')));
+        var doubleEscapeMetaCharacters = IsCmdShim(batchFile);
+        foreach (var argument in arguments) {
+            shellCommand.Append(' ').Append(EscapeBatchArgument(argument, doubleEscapeMetaCharacters));
+        }
+        return new StringBuilder(Quote(cmd)).Append(" /d /s /c \"").Append(shellCommand).Append("\"");
+    }
+
     private static void Drain(IntPtr job) {
         while (true) {
             JOBOBJECT_BASIC_ACCOUNTING_INFORMATION accounting;
@@ -231,10 +281,10 @@ public static class EveryAstroWindowsJob {
             );
 
             var targetFile = file;
-            var targetArguments = arguments;
+            var commandLine = BuildCommandLine(file, arguments);
             if (file.EndsWith(".cmd", StringComparison.OrdinalIgnoreCase) || file.EndsWith(".bat", StringComparison.OrdinalIgnoreCase)) {
                 targetFile = Environment.GetEnvironmentVariable("ComSpec") ?? "cmd.exe";
-                targetArguments = new[] { "/d", "/s", "/c", BuildCommandLine(file, arguments).ToString() };
+                commandLine = BuildCmdCommandLine(targetFile, file, arguments);
             }
 
             var startupInfo = new STARTUPINFO();
@@ -246,7 +296,7 @@ public static class EveryAstroWindowsJob {
             Check(
                 CreateProcess(
                     targetFile,
-                    BuildCommandLine(targetFile, targetArguments),
+                    commandLine,
                     IntPtr.Zero,
                     IntPtr.Zero,
                     true,

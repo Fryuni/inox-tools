@@ -29,6 +29,7 @@ import {
 	installedAstroMajor,
 	isolatedBootstrapEnvironment,
 	windowsJobSupervisorCommand,
+	windowsBatchCommandTail,
 	linkBunPackage,
 	packageLinkCommands,
 	parseBisectCompletion,
@@ -418,10 +419,17 @@ test.skipIf(process.platform !== 'win32')(
 	'launches a target through the Job Object supervisor and removes its control file',
 	async () => {
 		const root = await temporaryRoot();
+		const toolRoot = join(root, 'tool path');
+		const batchFile = join(toolRoot, 'runner.cmd');
 		const controlFile = join(root, 'command.json');
+		await mkdir(toolRoot);
+		await writeFile(batchFile, '@echo off\r\nexit /b 0\r\n');
 		await writeFile(
 			controlFile,
-			JSON.stringify({ file: process.execPath, args: ['-e', 'process.exit(0)'] })
+			JSON.stringify({
+				file: batchFile,
+				args: ['spaced argument', '%literal%', 'a&b'],
+			})
 		);
 		const [file, ...args] = windowsJobSupervisorCommand(controlFile);
 		const child = spawnChild(file, args, { cwd: root, stdio: 'ignore' });
@@ -432,6 +440,17 @@ test.skipIf(process.platform !== 'win32')(
 		await expect(readFile(controlFile, 'utf8')).rejects.toMatchObject({ code: 'ENOENT' });
 	}
 );
+
+describe('windowsBatchCommandTail', () => {
+	test('ports cross-spawn escaping for batch paths, spaces, percent variables, and metacharacters', () => {
+		expect(
+			windowsBatchCommandTail('C:\\tool path\\runner.cmd', ['spaced argument', '%literal%', 'a&b'])
+		).toBe('/d /s /c "C:\\tool^ path\\runner.cmd ^"spaced^ argument^" ^"^%literal^%^" ^"a^&b^""');
+		expect(windowsBatchCommandTail('C:\\p\\node_modules\\.bin\\tool.cmd', ['a&b'])).toBe(
+			'/d /s /c "C:\\p\\node_modules\\.bin\\tool.cmd ^^^"a^^^&b^^^""'
+		);
+	});
+});
 
 describe('developmentServerStdio', () => {
 	test('reserves stdin for the interactive bisect prompt', () => {

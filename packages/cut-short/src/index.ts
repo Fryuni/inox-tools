@@ -140,22 +140,17 @@ const createComponentTransformer: Transformer = (ctx, code, id) => {
 	const ms = new MagicString(code);
 	const ast = ctx.parse(code);
 
-	visitAst(ast, null, (node, parent) => {
+	visitAst(ast, (node, parents) => {
 		if (!isCreateComponentDeclaration(node)) return;
-		if (parent?.type !== 'Program') {
-			throw new AstroError(
-				'"@inox-tools/cut-short" cannot handle responses from nested components with the installed Astro version.',
-				'Please open an issue on https://github.com/Fryuni/inox-tools/issues/new'
-			);
-		}
+
+		// Closest child to the program
+		const top = parents[1] ?? node;
 
 		ms.prependLeft(
-			node.start,
-			[
-				`import {wrapCreateComponent as $$createComponent} from ${JSON.stringify(fileURLToPath(new URL('./runtime/nestedComponentWrapper.js', import.meta.url)))};`,
-				'const createComponent = $$createComponent(',
-			].join('\n')
+			top.start,
+			`import {wrapCreateComponent as $$createComponent} from ${JSON.stringify(fileURLToPath(new URL('./runtime/nestedComponentWrapper.js', import.meta.url)))};\n`
 		);
+		ms.prependLeft(node.start, 'const createComponent = $$createComponent(');
 		ms.appendRight(node.end, ');');
 	});
 
@@ -167,8 +162,8 @@ const createComponentTransformer: Transformer = (ctx, code, id) => {
 
 function visitAst(
 	value: unknown,
-	parent: ParsedAstNode | null,
-	visitor: (node: ParsedAstNode, parent: ParsedAstNode | null) => void
+	visitor: (node: ParsedAstNode, parents: ParsedAstNode[]) => void,
+	parents: ParsedAstNode[] = []
 ): void {
 	if (!isParsedAstNode(value)) return;
 
@@ -177,13 +172,13 @@ function visitAst(
 
 		const child = value[key];
 		if (Array.isArray(child)) {
-			for (const item of child) visitAst(item, value, visitor);
+			for (const item of child) visitAst(item, visitor, [...parents, value]);
 		} else {
-			visitAst(child, value, visitor);
+			visitAst(child, visitor, [...parents, value]);
 		}
 	}
 
-	visitor(value, parent);
+	visitor(value, parents);
 }
 
 function isParsedAstNode(value: unknown): value is ParsedAstNode {

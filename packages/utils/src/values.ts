@@ -59,12 +59,11 @@ export type NodeEntries<T, NoCircle = never, MaxDepth extends number = 0> = MaxD
 										key: Key;
 										value: Nested['value'];
 									}
-								:
-										| { key: Key; value: T[Key] }
-										| {
-												key: `${Key}.${Nested['key']}`;
-												value: Nested['value'];
-										  }
+								: | { key: Key; value: T[Key] }
+									| {
+											key: `${Key}.${Nested['key']}`;
+											value: Nested['value'];
+									  }
 							: never
 						: never;
 			}[keyof T & string]

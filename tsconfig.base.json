@@ -12,6 +12,7 @@
     "allowImportingTsExtensions": false,
     "verbatimModuleSyntax": true,
     "stripInternal": true,
+    "types": ["node"],
     "lib": ["ESNext"]
   }
 }

@@ -87,7 +87,7 @@ catalog:
   strip-ansi: ^7.2.0
   tsup: 9.0.0
   turbo: ^2.11.9
-  typescript: ^7.0.2
+  typescript: ^6.0.2
   undici: ^8.12.3
   unist-util-is: ^6.0.1
   upath: ^3.0.8

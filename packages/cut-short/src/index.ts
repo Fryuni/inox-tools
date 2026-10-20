@@ -152,8 +152,6 @@ const createComponentTransformer: Transformer = (ctx, code, id) => {
 		);
 		ms.prependLeft(node.start, 'const createComponent = $$createComponent(');
 		ms.appendRight(node.end, ');');
-
-		console.log(ms.toString());
 	});
 
 	return {

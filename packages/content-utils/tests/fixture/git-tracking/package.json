@@ -1,0 +1,14 @@
+{
+  "name": "@content-utils/git-tracking",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "pack-git": "tar czf .git.tar.gz .git",
+    "unpack-git": "tar xzf .git.tar.gz"
+  },
+  "dependencies": {
+    "@inox-tools/content-utils": "workspace:^",
+    "astro": "catalog:"
+  }
+}

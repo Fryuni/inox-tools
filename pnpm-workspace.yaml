@@ -115,6 +115,3 @@ overrides:
   astro: 'catalog:'
   picomatch: 3.0.1
   vite: 'catalog:'
-
-patchedDependencies:
-  astro: patches/astro.patch

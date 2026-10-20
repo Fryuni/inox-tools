@@ -14,87 +14,87 @@ allowBuilds:
   workerd: true
 
 catalog:
-  '@astrojs/check': ^0.9.9
+  '@astrojs/check': ^0.9.11
   '@astrojs/cloudflare': ^14.1.2
   '@astrojs/compiler': ^4.0.0
-  '@astrojs/internal-helpers': ^0.10.1
-  '@astrojs/markdown-remark': ^7.2.1
-  '@astrojs/mdx': ^7.0.2
-  '@astrojs/node': ^11.0.2
-  '@astrojs/preact': ^6.0.1
-  '@astrojs/react': ^6.0.1
+  '@astrojs/internal-helpers': ^0.13.0
+  '@astrojs/markdown-remark': ^7.3.3
+  '@astrojs/mdx': ^8.1.0
+  '@astrojs/node': ^11.1.9
+  '@astrojs/preact': ^6.1.0
+  '@astrojs/react': ^7.1.0
   '@astrojs/rss': ^4.0.19
-  '@astrojs/sitemap': ^3.7.3
-  '@astrojs/starlight': ~0.41.3
-  '@astrojs/vercel': ^11.0.2
-  '@changesets/changelog-github': ^0.7.0
-  '@changesets/cli': ^2.31.1
-  '@croct/plug': ^0.23.0
-  '@faker-js/faker': ^10.3.0
-  '@fortawesome/fontawesome-free': ^7.2.0
-  '@lunariajs/core': ^0.1.1
-  '@nanostores/preact': ^1.0.0
+  '@astrojs/sitemap': ^3.7.4
+  '@astrojs/starlight': ~0.42.6
+  '@astrojs/vercel': ^11.0.16
+  '@changesets/changelog-github': ^1.0.1
+  '@changesets/cli': ^3.0.3
+  '@croct/plug': ^0.25.0
+  '@faker-js/faker': ^10.6.0
+  '@fortawesome/fontawesome-free': ^7.3.1
+  '@lunariajs/core': ^0.2.1
+  '@nanostores/preact': ^1.1.1
   '@orama/core': ^1.2.19
   '@orama/wc-components': ^0.8.1
-  '@playwright/test': ^1.58.2
-  '@turbo/gen': ^2.8.12
-  '@types/content-type': ^1.1.9
-  '@types/debug': ^4.1.12
-  '@types/hast': ^3.0.4
-  '@types/lodash': ^4.17.24
+  '@playwright/test': ^1.64.1
+  '@turbo/gen': ^2.11.9
+  '@types/content-type': ^2.0.0
+  '@types/debug': ^4.1.13
+  '@types/hast': ^3.0.5
+  '@types/lodash': ^4.17.26
   '@types/mdast': ^4.0.4
-  '@types/node': ^25.3.3
-  '@types/react': ^19.2.14
-  '@types/react-dom': ^19.2.3
+  '@types/node': ^26.6.5
+  '@types/react': ^19.3.0
+  '@types/react-dom': ^19.3.0
   '@types/unist': ^3.0.3
   '@types/xast': ^2.0.4
-  '@vercel/analytics': ^1.6.1
-  '@vitest/coverage-v8': ^4.0.18
-  '@vitest/ui': ^4.0.18
-  ast-types: ^0.14.2
-  astro: ^7.0.7
-  content-type: ^1.0.5
-  corepack: 0.34.0
+  '@vercel/analytics': ^2.0.1
+  '@vitest/coverage-v8': ^5.0.5
+  '@vitest/ui': ^5.0.5
+  ast-types: ^0.16.3
+  astro: ^7.4.1
+  content-type: ^3.1.1
+  corepack: 0.36.0
   cross-spawn: 7.0.6
   debug: ^4.4.3
-  devalue: ^5.6.3
+  devalue: ^6.0.3
   estree-walker: ^3.0.3
   fast-glob: ^3.3.3
   husky: ^9.1.7
   jest-extended: ^7.0.0
-  lint-staged: ^16.3.1
-  lodash: ^4.17.23
-  magic-string: ^0.30.21
-  mdast-util-from-markdown: ^2.0.3
+  lint-staged: ^17.6.0
+  lodash: ^4.18.1
+  magic-string: ^1.4.3
+  mdast-util-from-markdown: ^2.1.0
   mermaid: ^11.13.0
-  nanostores: ^1.1.1
-  node-html-parser: ^7.0.1
-  postcss: ^8.5.6
-  preact: ^10.28.4
-  prettier: ^3.8.1
-  prettier-plugin-astro: ^0.14.1
-  react: ^19.2.4
-  react-dom: ^19.2.4
-  recast: ^0.23.11
+  nanostores: ^1.5.5
+  node-html-parser: ^9.0.5
+  postcss: ^8.5.31
+  preact: ^11.0.1
+  prettier: ^3.9.10
+  prettier-plugin-astro: ^1.1.1
+  react: ^19.3.1
+  react-dom: ^19.3.1
+  recast: ^0.24.0
   rehype: ^13.0.2
   rollup: ^4.59.0
-  sharp: ^0.34.5
-  shiki: ^4.0.0
+  sharp: ^0.35.5
+  shiki: ^4.5.0
   sitemap: ^9.0.1
-  starlight-cooler-credit: ^0.6.0
-  starlight-links-validator: ^0.25.2
-  starlight-package-managers: ^0.12.0
+  starlight-cooler-credit: ^0.7.0
+  starlight-links-validator: ^0.27.0
+  starlight-package-managers: ^0.13.0
   strip-ansi: ^7.2.0
-  tsup: 8.5.1
-  turbo: ^2.8.12
-  typescript: ^5.9.3
-  undici: ^7.22.0
+  tsup: 9.0.0
+  turbo: ^2.11.9
+  typescript: ^7.0.2
+  undici: ^8.12.3
   unist-util-is: ^6.0.1
-  upath: ^2.0.1
-  vite: ^8.1.4
-  vitest: ^4.0.18
+  upath: ^3.0.8
+  vite: ^8.3.4
+  vitest: ^5.0.5
   wrangler: ^4.77.0
-  zod: ^4.3.6
+  zod: ^4.6.7
 
 catalogMode: manual
 
@@ -104,7 +104,7 @@ catalogs:
     astro: ^7
   min:
     astro: ^7
-    vite: ^8
+    vite: ^8.3.4
 
 onlyBuiltDependencies:
   - core-js-pure

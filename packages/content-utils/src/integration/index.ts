@@ -116,13 +116,11 @@ export const integration = withApi(
 async function clearStaticCollections(state: IntegrationState) {
 	// After the build is done, if there was such a chunk and there are collections
 	// that should only be present during static build, clean them.
-	if (
-		!(
-			state.staticOnlyCollections.length > 0 &&
-			state.contentDataEntrypoint &&
-			existsSync(state.contentDataEntrypoint)
-		)
-	)
+	if (!(
+		state.staticOnlyCollections.length > 0 &&
+		state.contentDataEntrypoint &&
+		existsSync(state.contentDataEntrypoint)
+	))
 		return;
 
 	const originalContent = readFileSync(state.contentDataEntrypoint, 'utf-8');

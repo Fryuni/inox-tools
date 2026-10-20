@@ -21,10 +21,11 @@ test('CJS dependency default import', async () => {
 		defaultExport: debug,
 	});
 
-	expect(modInfo.text).toEqualIgnoringWhitespace(`
-		import __node_modulespnpmdebug443node_modulesdebugsrcindexjs from './../../node_modules/.pnpm/debug@4.4.3/node_modules/debug/src/index.js';
+	expect(modInfo.text).toMatchInlineSnapshot(`
+		"import __node_modulespnpmdebug443_supportscolor1022node_modulesdebugsrcindexjs from './../../node_modules/.pnpm/debug@4.4.3_supports-color@10.2.2/node_modules/debug/src/index.js';
 
-		export default __node_modulespnpmdebug443node_modulesdebugsrcindexjs;
+
+		export default __node_modulespnpmdebug443_supportscolor1022node_modulesdebugsrcindexjs;"
 	`);
 });
 
@@ -33,12 +34,14 @@ test('CJS dependency named import', async () => {
 		defaultExport: debug.coerce,
 	});
 
-	expect(modInfo.text).toEqualIgnoringWhitespace(`
+	expect(modInfo.text).toMatchInlineSnapshot(`
+		"
 		import {
-			coerce as __coerce,
-		} from './../../node_modules/.pnpm/debug@4.4.3/node_modules/debug/src/index.js';
+		  coerce as __coerce,
+		} from './../../node_modules/.pnpm/debug@4.4.3_supports-color@10.2.2/node_modules/debug/src/index.js';
 
-		export default __coerce;
+
+		export default __coerce;"
 	`);
 });
 

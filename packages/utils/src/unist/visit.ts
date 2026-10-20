@@ -236,9 +236,8 @@ export type InternalAncestor<
 	Depth extends Uint = 0,
 > = Depth extends Max
 	? never
-	:
-			| InternalParent<Node, Child>
-			| InternalAncestor<Node, InternalParent<Node, Child>, Max, Increment<Depth>>;
+	: | InternalParent<Node, Child>
+		| InternalAncestor<Node, InternalParent<Node, Child>, Max, Increment<Depth>>;
 /**
  * Collect nodes in `Tree` that can be ancestors of `Child`.
  */

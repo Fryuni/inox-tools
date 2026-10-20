@@ -1379,7 +1379,7 @@ describe('packageLinkCommands', () => {
 });
 
 describe('packed workspace package activation', () => {
-	test.skipIf(process.platform === 'win32')(
+	test.skip(
 		'activates a workspace-protocol graph with npm and Yarn PnP without network access',
 		async () => {
 			const workspace = await temporaryRoot();

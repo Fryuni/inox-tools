@@ -1,5 +1,11 @@
 # @inox-tools/inline-mod
 
+## 4.0.1
+
+### Patch Changes
+
+- a6ee89b: Bump dependencies
+
 ## 4.0.0
 
 ### Major Changes

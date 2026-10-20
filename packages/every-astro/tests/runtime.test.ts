@@ -1379,97 +1379,94 @@ describe('packageLinkCommands', () => {
 });
 
 describe('packed workspace package activation', () => {
-	test.skip(
-		'activates a workspace-protocol graph with npm and Yarn PnP without network access',
-		async () => {
-			const workspace = await temporaryRoot();
-			const helper = join(workspace, 'packages/helper');
-			const astro = join(workspace, 'packages/astro');
-			const archives = join(workspace, 'archives');
-			await writeJson(join(workspace, 'package.json'), { name: 'workspace', private: true });
-			await writeFile(join(workspace, 'pnpm-workspace.yaml'), 'packages:\n  - packages/*\n');
-			await writePackage(workspace, 'packages/helper', {
-				name: '@astrojs/helper',
-				version: '1.0.0',
-				main: 'index.js',
-			});
-			await writeFile(join(helper, 'index.js'), 'module.exports = "local helper";\n');
-			await writePackage(workspace, 'packages/astro', {
-				name: 'astro',
-				version: '7.0.0',
-				main: 'index.js',
-				dependencies: { '@astrojs/helper': 'workspace:*' },
-			});
-			await writeFile(join(astro, 'index.js'), 'module.exports = require("@astrojs/helper");\n');
-			await runCommand('pnpm', ['install', '--offline'], workspace);
-			await mkdir(archives, { recursive: true });
-			await runCommand('pnpm', ['pack', '--pack-destination', archives], helper);
-			await runCommand('pnpm', ['pack', '--pack-destination', archives], astro);
-			const packedArchives = (await readdir(archives)).map((archive) => join(archives, archive));
-			const astroArchive = packedArchives.find((archive) => archive.endsWith('astro-7.0.0.tgz'))!;
-			const helperArchive = packedArchives.find((archive) =>
-				archive.endsWith('astrojs-helper-1.0.0.tgz')
-			)!;
+	test.skip('activates a workspace-protocol graph with npm and Yarn PnP without network access', async () => {
+		const workspace = await temporaryRoot();
+		const helper = join(workspace, 'packages/helper');
+		const astro = join(workspace, 'packages/astro');
+		const archives = join(workspace, 'archives');
+		await writeJson(join(workspace, 'package.json'), { name: 'workspace', private: true });
+		await writeFile(join(workspace, 'pnpm-workspace.yaml'), 'packages:\n  - packages/*\n');
+		await writePackage(workspace, 'packages/helper', {
+			name: '@astrojs/helper',
+			version: '1.0.0',
+			main: 'index.js',
+		});
+		await writeFile(join(helper, 'index.js'), 'module.exports = "local helper";\n');
+		await writePackage(workspace, 'packages/astro', {
+			name: 'astro',
+			version: '7.0.0',
+			main: 'index.js',
+			dependencies: { '@astrojs/helper': 'workspace:*' },
+		});
+		await writeFile(join(astro, 'index.js'), 'module.exports = require("@astrojs/helper");\n');
+		await runCommand('pnpm', ['install', '--offline'], workspace);
+		await mkdir(archives, { recursive: true });
+		await runCommand('pnpm', ['pack', '--pack-destination', archives], helper);
+		await runCommand('pnpm', ['pack', '--pack-destination', archives], astro);
+		const packedArchives = (await readdir(archives)).map((archive) => join(archives, archive));
+		const astroArchive = packedArchives.find((archive) => archive.endsWith('astro-7.0.0.tgz'))!;
+		const helperArchive = packedArchives.find((archive) =>
+			archive.endsWith('astrojs-helper-1.0.0.tgz')
+		)!;
 
-			const npmProject = await createProject();
-			await runCommand(
-				'npm',
-				['install', '--offline', '--no-save', '--package-lock=false', helperArchive, astroArchive],
+		const npmProject = await createProject();
+		await runCommand(
+			'npm',
+			['install', '--offline', '--no-save', '--package-lock=false', helperArchive, astroArchive],
+			npmProject
+		);
+		await expect(
+			runCommand(
+				process.execPath,
+				['-e', 'process.exit(require("astro") === "local helper" ? 0 : 1)'],
 				npmProject
-			);
-			await expect(
-				runCommand(
-					process.execPath,
-					['-e', 'process.exit(require("astro") === "local helper" ? 0 : 1)'],
-					npmProject
-				)
-			).resolves.toBe('');
+			)
+		).resolves.toBe('');
 
-			const yarnProject = await createProject({ packageManager: 'yarn@4.17.1' });
-			await writeFile(join(yarnProject, '.yarnrc.yml'), 'nodeLinker: pnp\n');
-			await writeJson(join(yarnProject, 'package.json'), {
-				name: 'test-project',
-				packageManager: 'yarn@4.17.1',
-				resolutions: {
-					'@astrojs/helper': `file:${helperArchive}`,
-					astro: `file:${astroArchive}`,
-				},
-			});
-			await runCommand(
+		const yarnProject = await createProject({ packageManager: 'yarn@4.17.1' });
+		await writeFile(join(yarnProject, '.yarnrc.yml'), 'nodeLinker: pnp\n');
+		await writeJson(join(yarnProject, 'package.json'), {
+			name: 'test-project',
+			packageManager: 'yarn@4.17.1',
+			resolutions: {
+				'@astrojs/helper': `file:${helperArchive}`,
+				astro: `file:${astroArchive}`,
+			},
+		});
+		await runCommand(
+			'yarn',
+			[
+				'add',
+				'--mode=skip-build',
+				`@astrojs/helper@file:${helperArchive}`,
+				`astro@file:${astroArchive}`,
+			],
+			yarnProject,
+			{ YARN_ENABLE_NETWORK: '0' }
+		);
+		await expect(
+			runCommand(
 				'yarn',
-				[
-					'add',
-					'--mode=skip-build',
-					`@astrojs/helper@file:${helperArchive}`,
-					`astro@file:${astroArchive}`,
-				],
+				['node', '-e', 'process.exit(require("astro") === "local helper" ? 0 : 1)'],
 				yarnProject,
 				{ YARN_ENABLE_NETWORK: '0' }
-			);
-			await expect(
-				runCommand(
-					'yarn',
-					['node', '-e', 'process.exit(require("astro") === "local helper" ? 0 : 1)'],
-					yarnProject,
-					{ YARN_ENABLE_NETWORK: '0' }
-				)
-			).resolves.toBe('');
-			const previousPath = process.env.PATH;
-			process.env.PATH = join(yarnProject, 'no-bare-yarn');
-			try {
-				const astroManifest = await resolveInstalledPackageManifest('astro', yarnProject);
+			)
+		).resolves.toBe('');
+		const previousPath = process.env.PATH;
+		process.env.PATH = join(yarnProject, 'no-bare-yarn');
+		try {
+			const astroManifest = await resolveInstalledPackageManifest('astro', yarnProject);
 
-				expect(astroManifest).toMatch(/\.zip[\\/]node_modules[\\/]astro[\\/]package\.json$/);
-				await expect(installedAstroMajor(yarnProject)).resolves.toBe(7);
-				await expect(collectInstalledDependencyNames(yarnProject)).resolves.toEqual(
-					new Set(['astro', '@astrojs/helper'])
-				);
-			} finally {
-				if (previousPath === undefined) delete process.env.PATH;
-				else process.env.PATH = previousPath;
-			}
+			expect(astroManifest).toMatch(/\.zip[\\/]node_modules[\\/]astro[\\/]package\.json$/);
+			await expect(installedAstroMajor(yarnProject)).resolves.toBe(7);
+			await expect(collectInstalledDependencyNames(yarnProject)).resolves.toEqual(
+				new Set(['astro', '@astrojs/helper'])
+			);
+		} finally {
+			if (previousPath === undefined) delete process.env.PATH;
+			else process.env.PATH = previousPath;
 		}
-	);
+	});
 });
 
 describe('snapshotDependencySymlinks', () => {

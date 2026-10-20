@@ -1,5 +1,11 @@
 # @inox-tools/cut-short
 
+## 3.1.0
+
+### Minor Changes
+
+- a6ee89b: Resolve brittle component creation wrapper with smarter codemod
+
 ## 3.0.0
 
 ### Major Changes

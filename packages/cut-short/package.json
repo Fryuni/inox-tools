@@ -1,6 +1,6 @@
 {
   "name": "@inox-tools/cut-short",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "Immediately halt request processing and return custom responses effortlessly.",
   "keywords": [
     "astro-integration",

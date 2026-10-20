@@ -29,7 +29,7 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "prepublish": "pnpm run build",
-    "test": "CI= vitest run"
+    "test": "vitest run"
   },
   "dependencies": {
     "corepack": "catalog:",

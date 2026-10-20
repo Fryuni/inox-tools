@@ -8819,7 +8819,7 @@ snapshots:
       sirv: 3.0.2
       tinyglobby: 0.2.17
       tinyrainbow: 3.2.0
-      vitest: 4.1.12(@types/node@25.9.9)(@vitest/coverage-v8@4.1.12)(@vitest/ui@4.1.12)(vite@8.3.4(@types/node@25.9.9)(esbuild@0.28.2)(jiti@1.21.7)(yaml@2.9.1))
+      vitest: 4.1.12(@types/node@25.9.9)(@vitest/coverage-v8@4.1.12)(@vitest/ui@4.1.12)(vite@8.3.4(@types/node@25.9.9)(esbuild@0.27.7)(jiti@1.21.7)(yaml@2.9.1))
 
   '@vitest/utils@4.1.12':
     dependencies:
